@@ -32,6 +32,15 @@ export default async function DashboardPage() {
         <h2 className="text-2xl font-bold">My Characters</h2>
         <p className="mt-2">You do not have any characters yet.</p>
       </section>
+
+      <form action="/auth/signout" method="post" className="mt-8">
+        <button
+            type="submit"
+            className="rounded bg-black px-6 py-3 text-white"
+        >
+         Log out
+         </button>
+        </form>
     </main>
   );
 }
