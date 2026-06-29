@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/utils/supabase/client";
+import VtmCharacterSheet from "./sheets/vtm-character-sheet";
 
 type CharacterData = {
   id: string;
@@ -12,11 +13,18 @@ type CharacterData = {
   sheet_data: Record<string, unknown>;
 };
 
+type VtmSheetData = {
+  clan?: string;
+  hunger?: number;
+};
+
 export default function CharacterEditor({
   character,
 }: {
   character: CharacterData;
 }) {
+  const initialSheetData = character.sheet_data as VtmSheetData;
+
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(character.name);
   const [gameSystem, setGameSystem] = useState(character.game_system);
@@ -24,6 +32,10 @@ export default function CharacterEditor({
     character.description ?? ""
   );
   const [visibility, setVisibility] = useState(character.visibility);
+
+  const [clan, setClan] = useState(initialSheetData.clan ?? "");
+  const [hunger, setHunger] = useState(initialSheetData.hunger ?? 1);
+
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -41,6 +53,11 @@ export default function CharacterEditor({
         game_system: gameSystem,
         description,
         visibility,
+        sheet_data: {
+          ...character.sheet_data,
+          clan,
+          hunger,
+        },
         updated_at: new Date().toISOString(),
       })
       .eq("id", character.id);
@@ -60,10 +77,7 @@ export default function CharacterEditor({
     "mt-1 w-full rounded border p-3 disabled:bg-gray-100 disabled:text-gray-900";
 
   return (
-    <form
-      onSubmit={handleSave}
-      className="mt-8 rounded-lg border p-6"
-    >
+    <form onSubmit={handleSave} className="mt-8 rounded-lg border p-6">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-4xl font-bold">Character Sheet</h1>
 
@@ -130,6 +144,20 @@ export default function CharacterEditor({
           </select>
         </label>
       </div>
+
+      {gameSystem === "Vampire: The Masquerade V5" ? (
+        <VtmCharacterSheet
+          isEditing={isEditing}
+          clan={clan}
+          hunger={hunger}
+          onClanChange={setClan}
+          onHungerChange={setHunger}
+        />
+      ) : (
+        <section className="mt-8 rounded-lg border p-6">
+          <p>A character sheet for this game is not available yet.</p>
+        </section>
+      )}
 
       {isEditing && (
         <button
