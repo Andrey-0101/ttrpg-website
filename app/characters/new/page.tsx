@@ -1,109 +1,42 @@
-"use client";
+import Link from "next/link";
+import { GAME_SYSTEMS } from "@/lib/characters/game-systems";
 
-import { useState, type FormEvent } from "react";
-import { createClient } from "@/utils/supabase/client";
-
-export default function NewCharacterPage() {
-  const [name, setName] = useState("");
-  const [gameSystem, setGameSystem] = useState(
-    "Vampire: The Masquerade V5"
-  );
-  const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState("private");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    setMessage("");
-
-    const supabase = createClient();
-
-    const { data: userData, error: userError } =
-      await supabase.auth.getUser();
-
-    if (userError || !userData.user) {
-      window.location.href = "/login";
-      return;
-    }
-
-    const { error } = await supabase.from("characters").insert({
-      owner_id: userData.user.id,
-      name,
-      game_system: gameSystem,
-      description,
-      visibility,
-    });
-
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-      return;
-    }
-
-    window.location.href = "/characters";
-  }
+export default function SelectGameSystemPage() {
+  const gameSystems = Object.values(GAME_SYSTEMS);
 
   return (
-    <main className="mx-auto min-h-screen max-w-xl p-8">
-      <h1 className="text-4xl font-bold">Create Character</h1>
+    <main className="mx-auto min-h-screen max-w-5xl p-8">
+      <h1 className="text-4xl font-bold">Choose a Game System</h1>
 
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
-        <label>
-          Character name
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="mt-1 w-full rounded border p-3"
-            required
-          />
-        </label>
+      <p className="mt-4">
+        Select the game system for your new character.
+      </p>
 
-        <label>
-          Game system
-          <select
-            value={gameSystem}
-            onChange={(event) => setGameSystem(event.target.value)}
-            className="mt-1 w-full rounded border p-3"
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        {gameSystems.map((system) => (
+          <section
+            key={system.id}
+            className="flex flex-col rounded-lg border p-6"
           >
-            <option>Vampire: The Masquerade V5</option>
-            <option>Call of Cthulhu</option>
-          </select>
-        </label>
+            <h2 className="text-2xl font-bold">{system.name}</h2>
 
-        <label>
-          Description
-          <textarea
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            className="mt-1 min-h-32 w-full rounded border p-3"
-          />
-        </label>
+            <p className="mt-3 flex-1">{system.description}</p>
 
-        <label>
-          Visibility
-          <select
-            value={visibility}
-            onChange={(event) => setVisibility(event.target.value)}
-            className="mt-1 w-full rounded border p-3"
-          >
-            <option value="private">Private</option>
-            <option value="campaign">Campaign members</option>
-            <option value="public">Public</option>
-          </select>
-        </label>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-black px-6 py-3 text-white disabled:opacity-50"
-        >
-          {loading ? "Creating..." : "Create Character"}
-        </button>
-      </form>
-
-      {message && <p className="mt-4">{message}</p>}
+            {system.available ? (
+              <Link
+                href={`/characters/new/${system.id}`}
+                className="mt-6 rounded bg-black px-5 py-3 text-center text-white"
+              >
+                Create Character
+              </Link>
+            ) : (
+              <span className="mt-6 rounded bg-gray-200 px-5 py-3 text-center text-gray-600">
+                Coming Soon
+              </span>
+            )}
+          </section>
+        ))}
+      </div>
     </main>
   );
 }

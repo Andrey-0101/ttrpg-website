@@ -20,11 +20,7 @@ export default function VtmCharacterSheet({
 
   return (
     <section className="mt-8 rounded-lg border p-6">
-      <h2 className="text-2xl font-bold">
-        Vampire: The Masquerade V5
-      </h2>
-
-      <div className="mt-6 grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <label>
           Clan
           <input

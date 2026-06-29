@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import CharacterEditor from "./character-editor";
+import CharacterEditor from "@/components/characters/character-editor";
 
 export default async function CharacterPage({
   params,
