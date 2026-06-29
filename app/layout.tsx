@@ -22,10 +22,11 @@ export default function RootLayout({
             </Link>
 
             <Link href="/games">Games</Link>
-            <Link href="/login">Log in</Link>
-            <Link href="/register">Register</Link>
-            <Link href="/dashboard">Dashboard</Link>
             <Link href="/profile">Profile</Link>
+            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/characters">Characters</Link>
+            <Link href="/login">Log in</Link>
+            <Link href="/register">Register</Link>                        
           </nav>
         </header>
 
