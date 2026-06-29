@@ -1,12 +1,27 @@
+import createMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
-import { updateSession } from "@/utils/supabase/proxy";
+import { routing } from "./i18n/routing";
+import { updateSession } from "./utils/supabase/proxy";
 
-export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+const handleI18nRouting = createMiddleware(routing);
+
+export default async function proxy(request: NextRequest) {
+  const supabaseResponse = await updateSession(request);
+  const intlResponse = handleI18nRouting(request);
+
+  for (const cookie of supabaseResponse.cookies.getAll()) {
+    intlResponse.cookies.set(
+      cookie.name,
+      cookie.value,
+      cookie
+    );
+  }
+
+  return intlResponse;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
   ],
 };

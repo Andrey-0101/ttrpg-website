@@ -1,0 +1,32 @@
+{
+  "Navigation": {
+    "games": "Games",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "characters": "Characters",
+    "login": "Log in",
+    "register": "Register"
+  },
+  "Common": {
+    "english": "English",
+    "russian": "Russian"
+  },
+  "Dashboard": {
+    "title": "My Dashboard",
+    "loggedInAs": "You are logged in as:",
+    "signedInUser": "Signed-in user",
+    "campaignsTitle": "My Campaigns",
+    "noCampaigns": "You do not have any campaigns yet.",
+    "charactersTitle": "My Characters",
+    "noCharacters": "You do not have any characters yet.",
+    "logout": "Log out"
+  },
+  "Register": {
+    "title": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Register",
+    "submitting": "Creating account...",
+    "success": "Registration submitted. Check your email for confirmation."
+  }
+}

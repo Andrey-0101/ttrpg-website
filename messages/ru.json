@@ -1,0 +1,32 @@
+{
+  "Navigation": {
+    "games": "Игры",
+    "profile": "Профиль",
+    "dashboard": "Панель",
+    "characters": "Персонажи",
+    "login": "Войти",
+    "register": "Регистрация"
+  },
+  "Common": {
+    "english": "English",
+    "russian": "Русский"
+  },
+  "Dashboard": {
+    "title": "Моя панель",
+    "loggedInAs": "Вы вошли как:",
+    "signedInUser": "Авторизованный пользователь",
+    "campaignsTitle": "Мои кампании",
+    "noCampaigns": "У вас пока нет кампаний.",
+    "charactersTitle": "Мои персонажи",
+    "noCharacters": "У вас пока нет персонажей.",
+    "logout": "Выйти"
+  },
+  "Register": {
+    "title": "Создать аккаунт",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "submit": "Зарегистрироваться",
+    "submitting": "Создание аккаунта...",
+    "success": "Регистрация отправлена. Проверьте электронную почту и подтвердите аккаунт."
+  }
+}
