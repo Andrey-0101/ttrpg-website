@@ -87,7 +87,7 @@
   "Characters": {
     "title": "My Characters",
     "create": "Create Character",
-    "loadError": "Unable to load characters: {message}",
+    "loadError": "The characters could not be loaded. Please try again.",
     "empty": "You do not have any characters yet.",
     "noDescription": "No short description",
     "open": "Open",
