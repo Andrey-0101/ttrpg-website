@@ -55,5 +55,40 @@
     "saving": "Saving...",
     "loadError": "Unable to load the profile.",
     "saveError": "Unable to save the profile."
+  },
+  "Characters": {
+    "title": "My Characters",
+    "create": "Create Character",
+    "loadError": "Unable to load characters: {message}",
+    "empty": "You do not have any characters yet.",
+    "noDescription": "No short description",
+    "open": "Open",
+    "visibility": {
+      "label": "Visibility",
+      "private": "Private",
+      "campaign": "Campaign members",
+      "public": "Public"
+    }
+  },
+  "CharacterSystemSelection": {
+    "title": "Choose a Game System",
+    "description": "Select the game system for your new character.",
+    "create": "Create Character",
+    "comingSoon": "Coming Soon"
+  },
+  "CharacterNew": {
+    "back": "Back to Game Systems",
+    "title": "Create a {system} Character"
+  },
+  "CharacterDetails": {
+    "back": "Back to My Characters"
+  },
+  "GameSystems": {
+    "vtmV5": {
+      "description": "A game of personal horror, political intrigue, and struggling with the Beast."
+    },
+    "callOfCthulhu7e": {
+      "description": "An investigative horror game about mysteries, dangerous knowledge, and the Cthulhu Mythos."
+    }
   }
 }

@@ -1,46 +1,66 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/utils/supabase/server";
 import { getGameSystemName } from "@/lib/characters/game-systems";
 import DeleteCharacterButton from "@/components/characters/delete-character-button";
+import { Link, redirect } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
 
-export default async function CharactersPage() {
+type CharactersPageProps = {
+  params: Promise<{
+    locale: Locale;
+  }>;
+};
+
+export default async function CharactersPage({
+  params,
+}: CharactersPageProps) {
+  const { locale } = await params;
+  const translations = await getTranslations("Characters");
   const supabase = await createClient();
 
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
 
   if (claimsError || !claimsData?.claims) {
-    redirect("/login");
+    redirect({
+      href: "/login",
+      locale,
+    });
   }
 
   const { data: characters, error } = await supabase
     .from("characters")
-    .select("id, name, game_system, description, visibility")
+    .select(
+      "id, name, game_system, description, visibility"
+    )
     .order("created_at", { ascending: false });
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-4xl font-bold">My Characters</h1>
+        <h1 className="text-4xl font-bold">
+          {translations("title")}
+        </h1>
 
         <Link
           href="/characters/new"
           className="rounded bg-black px-5 py-3 text-white"
         >
-          Create Character
+          {translations("create")}
         </Link>
       </div>
 
       {error && (
         <p className="mt-8">
-          Unable to load characters: {error.message}
+          {translations("loadError", {
+            message: error.message,
+          })}
         </p>
       )}
 
       {!error && characters?.length === 0 && (
         <p className="mt-8">
-          You do not have any characters yet.
+          {translations("empty")}
         </p>
       )}
 
@@ -59,11 +79,17 @@ export default async function CharactersPage() {
             </p>
 
             <p className="mt-2 whitespace-pre-line">
-              {character.description || "No short description"}
+              {character.description ||
+                translations("noDescription")}
             </p>
 
             <p className="mt-2 text-sm">
-              Visibility: {character.visibility}
+              {translations("visibility.label")}:{" "}
+              {character.visibility === "public"
+                ? translations("visibility.public")
+                : character.visibility === "campaign"
+                  ? translations("visibility.campaign")
+                  : translations("visibility.private")}
             </p>
 
             <div className="mt-auto flex items-end justify-between gap-4 pt-6">
@@ -71,7 +97,7 @@ export default async function CharactersPage() {
                 href={`/characters/${character.id}`}
                 className="rounded border px-4 py-2 hover:bg-gray-100 hover:text-black"
               >
-                Open
+                {translations("open")}
               </Link>
 
               <DeleteCharacterButton
