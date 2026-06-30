@@ -184,6 +184,9 @@
     "dashboard": "My Dashboard",
     "characters": "My Characters",
     "profile": "My Profile",
-    "account": "Account Settings"
+    "profileEdit": "Edit Profile",
+    "account": "Account Settings",
+    "login": "Log in",
+    "register": "Create Account"
   }
 }
