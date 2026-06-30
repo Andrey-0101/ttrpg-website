@@ -5,12 +5,16 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { useTranslations } from "next-intl";
+import {
+  useLocale,
+  useTranslations,
+} from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 export default function RegisterPage() {
   const translations = useTranslations("Register");
+  const locale = useLocale();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,7 +73,7 @@ export default function RegisterPage() {
       password,
       options: {
         emailRedirectTo:
-          `${window.location.origin}/auth/confirm`,
+          `${window.location.origin}/auth/confirm?locale=${locale}`,
       },
     });
 
