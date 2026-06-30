@@ -1,8 +1,19 @@
 {
   "AccountArea": {
+    "account": "Аккаунт",
+    "login": "Войти",
+    "register": "Регистрация",
+    "myProfile": "Мой профиль",
+    "accountSettings": "Настройки аккаунта",
     "signOut": "Выйти",
     "signingOut": "Выход...",
     "signOutError": "Не удалось выйти из аккаунта."
+  },
+  "AccountPage": {
+    "title": "Настройки аккаунта",
+    "email": "Электронная почта",
+    "unknownEmail": "Недоступно",
+    "moreSettingsLater": "Здесь позднее появятся настройки пароля, языка, приватности и уведомлений."
   },
   "Navigation": {
     "games": "Игры",

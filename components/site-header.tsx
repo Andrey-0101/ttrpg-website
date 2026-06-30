@@ -1,9 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import LanguageSwitcher from "@/components/language-switcher";
+import AccountArea from "@/components/account/account-area";
 
 export default async function SiteHeader() {
-  const navigation = await getTranslations("Navigation");
+  const navigation =
+    await getTranslations("Navigation");
 
   return (
     <header className="border-b">
@@ -20,10 +22,6 @@ export default async function SiteHeader() {
             {navigation("games")}
           </Link>
 
-          <Link href="/profile">
-            {navigation("profile")}
-          </Link>
-
           <Link href="/dashboard">
             {navigation("dashboard")}
           </Link>
@@ -31,15 +29,9 @@ export default async function SiteHeader() {
           <Link href="/characters">
             {navigation("characters")}
           </Link>
-
-          <Link href="/login">
-            {navigation("login")}
-          </Link>
-
-          <Link href="/register">
-            {navigation("register")}
-          </Link>
         </nav>
+
+        <AccountArea />
 
         <LanguageSwitcher />
       </div>

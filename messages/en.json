@@ -1,8 +1,19 @@
 {
   "AccountArea": {
+    "account": "Account",
+    "login": "Log in",
+    "register": "Register",
+    "myProfile": "My Profile",
+    "accountSettings": "Account Settings",
     "signOut": "Log out",
     "signingOut": "Logging out...",
     "signOutError": "Unable to log out."
+  },
+  "AccountPage": {
+    "title": "Account Settings",
+    "email": "Email",
+    "unknownEmail": "Not available",
+    "moreSettingsLater": "Password, language, privacy and notification settings will be added here later."
   },
   "Navigation": {
     "games": "Games",
