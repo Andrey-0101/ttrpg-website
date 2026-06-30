@@ -172,5 +172,9 @@
     "title": "Page not found",
     "description": "The page you requested does not exist or may have been moved.",
     "home": "Return to Home"
+  },
+  "Metadata": {
+    "title": "TTRPG Hub",
+    "description": "Campaigns, characters, and tools for tabletop role-playing games."
   }
 }
