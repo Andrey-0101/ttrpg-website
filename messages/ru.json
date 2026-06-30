@@ -1,4 +1,9 @@
 {
+  "AccountArea": {
+    "signOut": "Выйти",
+    "signingOut": "Выход...",
+    "signOutError": "Не удалось выйти из аккаунта."
+  },
   "Navigation": {
     "games": "Игры",
     "profile": "Профиль",
@@ -26,7 +31,11 @@
     "email": "Электронная почта",
     "password": "Пароль",
     "submit": "Войти",
-    "submitting": "Вход..."
+    "submitting": "Вход...",
+    "checkingSession": "Проверка сессии...",
+    "signedInAs": "Вы вошли как",
+    "signedInUser": "Авторизованный пользователь",
+    "myProfile": "Мой профиль"
   },
   "Register": {
     "title": "Создать аккаунт",

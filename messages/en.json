@@ -1,4 +1,9 @@
 {
+  "AccountArea": {
+    "signOut": "Log out",
+    "signingOut": "Logging out...",
+    "signOutError": "Unable to log out."
+  },
   "Navigation": {
     "games": "Games",
     "profile": "Profile",
@@ -26,7 +31,11 @@
     "email": "Email",
     "password": "Password",
     "submit": "Log in",
-    "submitting": "Logging in..."
+    "submitting": "Logging in...",
+    "checkingSession": "Checking your session...",
+    "signedInAs": "You are logged in as",
+    "signedInUser": "Signed-in user",
+    "myProfile": "My Profile"
   },
   "Register": {
     "title": "Create account",

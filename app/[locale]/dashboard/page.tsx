@@ -64,18 +64,6 @@ export default async function DashboardPage({
         </p>
       </section>
 
-      <form
-        action="/auth/signout"
-        method="post"
-        className="mt-8"
-      >
-        <button
-          type="submit"
-          className="rounded bg-black px-6 py-3 text-white"
-        >
-          {translations("logout")}
-        </button>
-      </form>
     </main>
   );
 }

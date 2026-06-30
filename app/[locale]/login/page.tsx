@@ -1,9 +1,14 @@
 "use client";
 
+import {
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
 import { useTranslations } from "next-intl";
-import { useState, type FormEvent } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
+import SignOutButton from "@/components/account/sign-out-button";
 
 export default function LoginPage() {
   const translations = useTranslations("Login");
@@ -14,10 +19,48 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [checkingSession, setCheckingSession] =
+    useState(true);
+
+  const [isSignedIn, setIsSignedIn] =
+    useState(false);
+
+  const [signedInEmail, setSignedInEmail] =
+    useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkSession() {
+      const supabase = createClient();
+
+      const { data } =
+        await supabase.auth.getUser();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (data.user) {
+        setIsSignedIn(true);
+        setSignedInEmail(data.user.email ?? "");
+      }
+
+      setCheckingSession(false);
+    }
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
+
     setLoading(true);
     setMessage("");
 
@@ -37,6 +80,53 @@ export default function LoginPage() {
 
     router.replace("/");
     router.refresh();
+  }
+
+  if (checkingSession) {
+    return (
+      <main className="mx-auto min-h-screen max-w-md p-8">
+        <p>{translations("checkingSession")}</p>
+      </main>
+    );
+  }
+
+  if (isSignedIn) {
+    return (
+      <main className="mx-auto min-h-screen max-w-md p-8">
+        <h1 className="text-4xl font-bold">
+          {translations("title")}
+        </h1>
+
+        <p className="mt-6">
+          {translations("signedInAs")}{" "}
+
+          <span className="font-mono font-semibold">
+            {signedInEmail ||
+              translations("signedInUser")}
+          </span>
+
+          .
+        </p>
+
+        <div className="mt-8 flex flex-wrap gap-4">
+          <Link
+            href="/profile"
+            className="rounded bg-black px-5 py-3 text-white"
+          >
+            {translations("myProfile")}
+          </Link>
+
+          <SignOutButton
+            onSignedOut={() => {
+              setIsSignedIn(false);
+              setSignedInEmail("");
+              setMessage("");
+            }}
+            className="rounded border border-red-600 px-5 py-3 text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -80,7 +170,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-black px-6 py-3 text-white disabled:opacity-50"
+          className="rounded bg-black px-6 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading
             ? translations("submitting")
