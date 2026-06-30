@@ -1,23 +1,80 @@
+import type { Metadata } from "next";
+import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import CharacterCreator from "@/components/characters/character-creator";
 import {
   getGameSystem,
   type GameSystemId,
 } from "@/lib/characters/game-systems";
 
-export default async function NewCharacterPage({
-  params,
-}: {
+type NewCharacterPageProps = {
   params: Promise<{
+    locale: string;
     system: string;
   }>;
-}) {
-  const translations =
-    await getTranslations("CharacterNew");
+};
 
-  const { system: systemId } = await params;
+export async function generateMetadata({
+  params,
+}: NewCharacterPageProps): Promise<Metadata> {
+  const {
+    locale: requestedLocale,
+    system: systemId,
+  } = await params;
+
+  const locale = hasLocale(
+    routing.locales,
+    requestedLocale
+  )
+    ? requestedLocale
+    : routing.defaultLocale;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "PageMetadata",
+  });
+
+  const gameSystem = getGameSystem(systemId);
+
+  if (!gameSystem || !gameSystem.available) {
+    return {
+      title: translations("characterCreate"),
+    };
+  }
+
+  return {
+    title: translations(
+      "characterCreateForSystem",
+      {
+        system: gameSystem.name,
+      }
+    ),
+  };
+}
+
+export default async function NewCharacterPage({
+  params,
+}: NewCharacterPageProps) {
+  const {
+    locale: requestedLocale,
+    system: systemId,
+  } = await params;
+
+  const locale = hasLocale(
+    routing.locales,
+    requestedLocale
+  )
+    ? requestedLocale
+    : routing.defaultLocale;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "CharacterNew",
+  });
+
   const gameSystem = getGameSystem(systemId);
 
   if (!gameSystem || !gameSystem.available) {
@@ -27,7 +84,10 @@ export default async function NewCharacterPage({
   return (
     <main className="mx-auto min-h-screen max-w-5xl p-8">
       <Link href="/characters/new">
-        ← {translations("back")}
+        <span aria-hidden="true">
+          &larr;
+        </span>{" "}
+        {translations("back")}
       </Link>
 
       <h1 className="mt-8 text-4xl font-bold">

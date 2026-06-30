@@ -1,14 +1,60 @@
+import type { Metadata } from "next";
+import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import { GAME_SYSTEMS } from "@/lib/characters/game-systems";
 
-export default async function SelectGameSystemPage() {
-  const translations = await getTranslations(
-    "CharacterSystemSelection"
-  );
+type SelectGameSystemPageProps = {
+  params: Promise<{
+    locale: string;
+  }>;
+};
+
+export async function generateMetadata({
+  params,
+}: SelectGameSystemPageProps): Promise<Metadata> {
+  const { locale: requestedLocale } = await params;
+
+  const locale = hasLocale(
+    routing.locales,
+    requestedLocale
+  )
+    ? requestedLocale
+    : routing.defaultLocale;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "PageMetadata",
+  });
+
+  return {
+    title: translations("characterCreate"),
+  };
+}
+
+export default async function SelectGameSystemPage({
+  params,
+}: SelectGameSystemPageProps) {
+  const { locale: requestedLocale } = await params;
+
+  const locale = hasLocale(
+    routing.locales,
+    requestedLocale
+  )
+    ? requestedLocale
+    : routing.defaultLocale;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "CharacterSystemSelection",
+  });
 
   const gameSystemsTranslations =
-    await getTranslations("GameSystems");
+    await getTranslations({
+      locale,
+      namespace: "GameSystems",
+    });
 
   const gameSystems = Object.values(GAME_SYSTEMS);
 
