@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
@@ -13,14 +14,20 @@ export default function DeleteCharacterButton({
   characterId,
   characterName,
 }: DeleteCharacterButtonProps) {
+  const translations =
+    useTranslations("CharacterDelete");
+
   const router = useRouter();
 
   const [deleting, setDeleting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      `Delete character "${characterName}"? This action cannot be undone.`
+      translations("confirm", {
+        name: characterName,
+      })
     );
 
     if (!confirmed) {
@@ -38,7 +45,8 @@ export default function DeleteCharacterButton({
       .eq("id", characterId);
 
     if (error) {
-      setErrorMessage(error.message);
+      console.error(error);
+      setErrorMessage(translations("error"));
       setDeleting(false);
       return;
     }
@@ -54,11 +62,16 @@ export default function DeleteCharacterButton({
         disabled={deleting}
         className="rounded border border-red-600 px-4 py-2 text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {deleting ? "Deleting..." : "Delete"}
+        {deleting
+          ? translations("deleting")
+          : translations("delete")}
       </button>
 
       {errorMessage && (
-        <p className="mt-2 text-sm text-red-600">
+        <p
+          className="mt-2 text-sm text-red-600"
+          role="alert"
+        >
           {errorMessage}
         </p>
       )}

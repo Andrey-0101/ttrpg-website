@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -14,10 +15,17 @@ type CharacterCreatorProps = {
   systemId: GameSystemId;
 };
 
+type CharacterVisibility =
+  | "private"
+  | "campaign"
+  | "public";
+
 export default function CharacterCreator({
   systemId,
 }: CharacterCreatorProps) {
+  const translations = useTranslations("CharacterForm");
   const router = useRouter();
+
   const gameSystem = GAME_SYSTEMS[systemId];
   const vtmDefaults =
     GAME_SYSTEMS["vtm-v5"].defaultSheetData;
@@ -25,7 +33,7 @@ export default function CharacterCreator({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] =
-    useState("private");
+    useState<CharacterVisibility>("private");
 
   const [clan, setClan] = useState<string>(
     vtmDefaults.clan
@@ -83,17 +91,13 @@ export default function CharacterCreator({
         .single();
 
     if (error || !newCharacter) {
-      setMessage(
-        error?.message ??
-          "Unable to create character."
-      );
+      console.error(error);
+      setMessage(translations("createError"));
       setCreating(false);
       return;
     }
 
-    router.push(
-      `/characters/${newCharacter.id}`
-    );
+    router.push(`/characters/${newCharacter.id}`);
     router.refresh();
   }
 
@@ -107,17 +111,17 @@ export default function CharacterCreator({
     >
       <section className="rounded-lg border p-6">
         <h2 className="text-2xl font-bold">
-          General Information
+          {translations("generalInformation")}
         </h2>
 
         <p className="mt-2">
-          Game system:{" "}
+          {translations("gameSystem")}:{" "}
           <strong>{gameSystem.name}</strong>
         </p>
 
         <div className="mt-6 flex flex-col gap-5">
           <label>
-            Character name
+            {translations("characterName")}
 
             <input
               value={name}
@@ -135,25 +139,28 @@ export default function CharacterCreator({
           />
 
           <label>
-            Visibility
+            {translations("visibility")}
 
             <select
               value={visibility}
               onChange={(event) =>
-                setVisibility(event.target.value)
+                setVisibility(
+                  event.target
+                    .value as CharacterVisibility
+                )
               }
               className={fieldStyle}
             >
               <option value="private">
-                Private
+                {translations("visibilityPrivate")}
               </option>
 
               <option value="campaign">
-                Campaign members
+                {translations("visibilityCampaign")}
               </option>
 
               <option value="public">
-                Public
+                {translations("visibilityPublic")}
               </option>
             </select>
           </label>
@@ -176,8 +183,8 @@ export default function CharacterCreator({
         className="mt-6 rounded bg-black px-6 py-3 text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         {creating
-          ? "Creating..."
-          : "Create Character"}
+          ? translations("creating")
+          : translations("create")}
       </button>
 
       {message && (

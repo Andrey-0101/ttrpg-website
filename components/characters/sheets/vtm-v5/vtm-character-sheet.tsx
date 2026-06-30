@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 type VtmCharacterSheetProps = {
   isEditing: boolean;
   clan: string;
@@ -15,6 +17,9 @@ export default function VtmCharacterSheet({
   onClanChange,
   onHungerChange,
 }: VtmCharacterSheetProps) {
+  const translations =
+    useTranslations("VtmCharacterSheet");
+
   const fieldStyle =
     "mt-1 w-full rounded border p-3 disabled:bg-gray-100 disabled:text-gray-900";
 
@@ -22,31 +27,44 @@ export default function VtmCharacterSheet({
     <section className="mt-8 rounded-lg border p-6">
       <div className="grid gap-5 md:grid-cols-2">
         <label>
-          Clan
+          {translations("clan")}
+
           <input
             value={clan}
-            onChange={(event) => onClanChange(event.target.value)}
+            onChange={(event) =>
+              onClanChange(event.target.value)
+            }
             disabled={!isEditing}
             className={fieldStyle}
-            placeholder="For example: Tremere"
+            placeholder={translations(
+              "clanPlaceholder"
+            )}
           />
         </label>
 
         <label>
-          Hunger
+          {translations("hunger")}
+
           <select
             value={hunger}
             onChange={(event) =>
-              onHungerChange(Number(event.target.value))
+              onHungerChange(
+                Number(event.target.value)
+              )
             }
             disabled={!isEditing}
             className={fieldStyle}
           >
-            {[0, 1, 2, 3, 4, 5].map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
+            {[0, 1, 2, 3, 4, 5].map(
+              (value) => (
+                <option
+                  key={value}
+                  value={value}
+                >
+                  {value}
+                </option>
+              )
+            )}
           </select>
         </label>
       </div>

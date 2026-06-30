@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/utils/supabase/client";
 import {
   getGameSystemName,
@@ -23,12 +24,24 @@ type VtmSheetData = {
   hunger?: number;
 };
 
+type CharacterVisibility =
+  | "private"
+  | "campaign"
+  | "public";
+
 export default function CharacterEditor({
   character,
 }: {
   character: CharacterData;
 }) {
-  const initialSheetData = character.sheet_data as VtmSheetData;
+  const formTranslations =
+    useTranslations("CharacterForm");
+
+  const translations =
+    useTranslations("CharacterEditor");
+
+  const initialSheetData =
+    character.sheet_data as VtmSheetData;
 
   const normalizedSystemId = normalizeGameSystemId(
     character.game_system
@@ -38,18 +51,28 @@ export default function CharacterEditor({
     character.game_system
   );
 
+  const initialVisibility =
+    character.visibility === "campaign" ||
+    character.visibility === "public"
+      ? character.visibility
+      : "private";
+
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(character.name);
+
   const [description, setDescription] = useState(
     character.description ?? ""
   );
-  const [visibility, setVisibility] = useState(
-    character.visibility
-  );
+
+  const [visibility, setVisibility] =
+    useState<CharacterVisibility>(
+      initialVisibility
+    );
 
   const [clan, setClan] = useState(
     initialSheetData.clan ?? ""
   );
+
   const [hunger, setHunger] = useState(
     initialSheetData.hunger ?? 1
   );
@@ -83,19 +106,20 @@ export default function CharacterEditor({
       .eq("id", character.id);
 
     if (error) {
-      setMessage(error.message);
+      console.error(error);
+      setMessage(translations("saveError"));
       setSaving(false);
       return;
     }
 
-    setMessage("Changes saved.");
+    setMessage(translations("changesSaved"));
     setSaving(false);
     setIsEditing(false);
   }
 
   function handleClear() {
     const confirmed = window.confirm(
-      "Clear all character fields? The changes will not be saved until you click Save Changes."
+      translations("clearConfirm")
     );
 
     if (!confirmed) {
@@ -108,9 +132,7 @@ export default function CharacterEditor({
     setClan("");
     setHunger(1);
 
-    setMessage(
-      "The form has been cleared. Click Save Changes to save the empty values."
-    );
+    setMessage(translations("clearNotice"));
   }
 
   function renderEditorControls() {
@@ -125,7 +147,7 @@ export default function CharacterEditor({
           disabled={isEditing || saving}
           className="rounded border px-6 py-3 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Edit
+          {translations("edit")}
         </button>
 
         <button
@@ -133,7 +155,9 @@ export default function CharacterEditor({
           disabled={!isEditing || saving}
           className="rounded border bg-black px-6 py-3 text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {saving ? "Saving..." : "Save Changes"}
+          {saving
+            ? translations("saving")
+            : translations("save")}
         </button>
       </div>
     );
@@ -150,7 +174,7 @@ export default function CharacterEditor({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-sm uppercase tracking-wider text-gray-400">
-            Character Sheet
+            {translations("sheetTitle")}
           </p>
 
           <h1 className="mt-1 text-4xl font-bold">
@@ -163,43 +187,56 @@ export default function CharacterEditor({
 
       <div className="mt-8 flex flex-col gap-5">
         <label>
-          Character name
+          {formTranslations("characterName")}
 
           <input
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) =>
+              setName(event.target.value)
+            }
             disabled={!isEditing}
             className={fieldStyle}
             required
           />
         </label>
 
-        <label>
-          Description
-
-          <ShortDescriptionField
-            value={description}
-            onChange={setDescription}
-            disabled={!isEditing}
-          />
-        </label>
+        <ShortDescriptionField
+          value={description}
+          onChange={setDescription}
+          disabled={!isEditing}
+        />
 
         <label>
-          Visibility
+          {formTranslations("visibility")}
 
           <select
             value={visibility}
             onChange={(event) =>
-              setVisibility(event.target.value)
+              setVisibility(
+                event.target
+                  .value as CharacterVisibility
+              )
             }
             disabled={!isEditing}
             className={fieldStyle}
           >
-            <option value="private">Private</option>
-            <option value="campaign">
-              Campaign members
+            <option value="private">
+              {formTranslations(
+                "visibilityPrivate"
+              )}
             </option>
-            <option value="public">Public</option>
+
+            <option value="campaign">
+              {formTranslations(
+                "visibilityCampaign"
+              )}
+            </option>
+
+            <option value="public">
+              {formTranslations(
+                "visibilityPublic"
+              )}
+            </option>
           </select>
         </label>
       </div>
@@ -214,10 +251,7 @@ export default function CharacterEditor({
         />
       ) : (
         <section className="mt-8 rounded-lg border p-6">
-          <p>
-            A character sheet for this game is not
-            available yet.
-          </p>
+          <p>{translations("unsupported")}</p>
         </section>
       )}
 
@@ -230,11 +264,15 @@ export default function CharacterEditor({
           disabled={!isEditing || saving}
           className="rounded border border-orange-600 px-6 py-3 text-orange-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Clear Form
+          {translations("clear")}
         </button>
       </div>
 
-      {message && <p className="mt-4">{message}</p>}
+      {message && (
+        <p className="mt-4" role="status">
+          {message}
+        </p>
+      )}
     </form>
   );
 }

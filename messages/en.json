@@ -90,5 +90,45 @@
     "callOfCthulhu7e": {
       "description": "An investigative horror game about mysteries, dangerous knowledge, and the Cthulhu Mythos."
     }
+  },
+  "CharacterForm": {
+    "generalInformation": "General Information",
+    "gameSystem": "Game system",
+    "characterName": "Character name",
+    "visibility": "Visibility",
+    "visibilityPrivate": "Private",
+    "visibilityCampaign": "Campaign members",
+    "visibilityPublic": "Public",
+    "create": "Create Character",
+    "creating": "Creating...",
+    "createError": "Unable to create the character."
+  },
+  "CharacterEditor": {
+    "sheetTitle": "Character Sheet",
+    "edit": "Edit",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "changesSaved": "Changes saved.",
+    "saveError": "Unable to save the character.",
+    "clear": "Clear Form",
+    "clearConfirm": "Clear all character fields? The changes will not be saved until you select Save Changes.",
+    "clearNotice": "The form has been cleared. Select Save Changes to save the empty values.",
+    "unsupported": "A character sheet for this game is not available yet."
+  },
+  "CharacterDelete": {
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "confirm": "Delete character \"{name}\"? This action cannot be undone.",
+    "error": "Unable to delete the character."
+  },
+  "ShortDescription": {
+    "label": "Short Description",
+    "placeholder": "A short description shown on the character card.",
+    "counter": "{count}/{maximum} characters. Maximum {lines} lines, {perLine} characters per line."
+  },
+  "VtmCharacterSheet": {
+    "clan": "Clan",
+    "clanPlaceholder": "For example: Tremere",
+    "hunger": "Hunger"
   }
 }
