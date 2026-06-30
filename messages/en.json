@@ -176,5 +176,14 @@
   "Metadata": {
     "title": "TTRPG Hub",
     "description": "Campaigns, characters, and tools for tabletop role-playing games."
+  },
+  "PageMetadata": {
+    "home": "Home",
+    "games": "Games",
+    "vampire": "Vampire: The Masquerade",
+    "dashboard": "My Dashboard",
+    "characters": "My Characters",
+    "profile": "My Profile",
+    "account": "Account Settings"
   }
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "@/i18n/navigation";
@@ -9,10 +10,26 @@ type AccountPageProps = {
   }>;
 };
 
+export async function generateMetadata({
+  params,
+}: AccountPageProps): Promise<Metadata> {
+  const { locale } = await params;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "PageMetadata",
+  });
+
+  return {
+    title: translations("account"),
+  };
+}
+
 export default async function AccountPage({
   params,
 }: AccountPageProps) {
   const { locale } = await params;
+
   const translations =
     await getTranslations("AccountPage");
 
@@ -41,7 +58,10 @@ export default async function AccountPage({
 
       <section className="mt-8 rounded-lg border p-6">
         <p>
-          <strong>{translations("email")}:</strong>{" "}
+          <strong>
+            {translations("email")}:
+          </strong>{" "}
+
           <span className="font-mono font-semibold">
             {email}
           </span>

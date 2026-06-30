@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -9,10 +10,26 @@ type DashboardPageProps = {
   }>;
 };
 
+export async function generateMetadata({
+  params,
+}: DashboardPageProps): Promise<Metadata> {
+  const { locale } = await params;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "PageMetadata",
+  });
+
+  return {
+    title: translations("dashboard"),
+  };
+}
+
 export default async function DashboardPage({
   params,
 }: DashboardPageProps) {
   const { locale } = await params;
+
   const translations =
     await getTranslations("Dashboard");
 
@@ -63,7 +80,6 @@ export default async function DashboardPage({
           {translations("noCharacters")}
         </p>
       </section>
-
     </main>
   );
 }

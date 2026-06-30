@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/utils/supabase/server";
 import { getGameSystemName } from "@/lib/characters/game-systems";
@@ -11,18 +12,36 @@ type CharactersPageProps = {
   }>;
 };
 
+export async function generateMetadata({
+  params,
+}: CharactersPageProps): Promise<Metadata> {
+  const { locale } = await params;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "PageMetadata",
+  });
+
+  return {
+    title: translations("characters"),
+  };
+}
+
 export default async function CharactersPage({
   params,
 }: CharactersPageProps) {
   const { locale } = await params;
-  const translations = await getTranslations("Characters");
+
+  const translations =
+    await getTranslations("Characters");
+
   const supabase = await createClient();
 
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
 
   if (claimsError || !claimsData?.claims) {
-    redirect({
+    return redirect({
       href: "/login",
       locale,
     });
@@ -33,7 +52,9 @@ export default async function CharactersPage({
     .select(
       "id, name, game_system, description, visibility"
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false,
+    });
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl p-8">
@@ -51,7 +72,7 @@ export default async function CharactersPage({
       </div>
 
       {error && (
-        <p className="mt-8">
+        <p className="mt-8" role="alert">
           {translations("loadError", {
             message: error.message,
           })}
@@ -75,7 +96,9 @@ export default async function CharactersPage({
             </h2>
 
             <p className="mt-2">
-              {getGameSystemName(character.game_system)}
+              {getGameSystemName(
+                character.game_system
+              )}
             </p>
 
             <p className="mt-2 whitespace-pre-line">
@@ -86,10 +109,17 @@ export default async function CharactersPage({
             <p className="mt-2 text-sm">
               {translations("visibility.label")}:{" "}
               {character.visibility === "public"
-                ? translations("visibility.public")
-                : character.visibility === "campaign"
-                  ? translations("visibility.campaign")
-                  : translations("visibility.private")}
+                ? translations(
+                    "visibility.public"
+                  )
+                : character.visibility ===
+                    "campaign"
+                  ? translations(
+                      "visibility.campaign"
+                    )
+                  : translations(
+                      "visibility.private"
+                    )}
             </p>
 
             <div className="mt-auto flex items-end justify-between gap-4 pt-6">

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/utils/supabase/server";
 import { Link, redirect } from "@/i18n/navigation";
@@ -9,11 +10,29 @@ type ProfilePageProps = {
   }>;
 };
 
+export async function generateMetadata({
+  params,
+}: ProfilePageProps): Promise<Metadata> {
+  const { locale } = await params;
+
+  const translations = await getTranslations({
+    locale,
+    namespace: "PageMetadata",
+  });
+
+  return {
+    title: translations("profile"),
+  };
+}
+
 export default async function ProfilePage({
   params,
 }: ProfilePageProps) {
   const { locale } = await params;
-  const translations = await getTranslations("Profile");
+
+  const translations =
+    await getTranslations("Profile");
+
   const supabase = await createClient();
 
   const { data: claimsData, error: claimsError } =
@@ -21,7 +40,10 @@ export default async function ProfilePage({
 
   const userId = claimsData?.claims?.sub;
 
-  if (claimsError || typeof userId !== "string") {
+  if (
+    claimsError ||
+    typeof userId !== "string"
+  ) {
     return redirect({
       href: "/login",
       locale,
@@ -42,7 +64,7 @@ export default async function ProfilePage({
           {translations("title")}
         </h1>
 
-        <p className="mt-4">
+        <p className="mt-4" role="alert">
           {translations("loadError")}
         </p>
       </main>
@@ -57,19 +79,27 @@ export default async function ProfilePage({
 
       <section className="mt-8 rounded-lg border p-6">
         <p>
-          <strong>{translations("username")}:</strong>{" "}
-          {profile.username || translations("notSpecified")}
+          <strong>
+            {translations("username")}:
+          </strong>{" "}
+          {profile.username ||
+            translations("notSpecified")}
         </p>
 
         <p className="mt-4">
-          <strong>{translations("displayName")}:</strong>{" "}
+          <strong>
+            {translations("displayName")}:
+          </strong>{" "}
           {profile.display_name ||
             translations("notSpecified")}
         </p>
 
         <p className="mt-4">
-          <strong>{translations("bio")}:</strong>{" "}
-          {profile.bio || translations("notSpecified")}
+          <strong>
+            {translations("bio")}:
+          </strong>{" "}
+          {profile.bio ||
+            translations("notSpecified")}
         </p>
       </section>
 
