@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useLocale } from "next-intl";
 import {
   usePathname,
@@ -12,10 +13,16 @@ export default function LanguageSwitcher() {
   const pathname = usePathname();
   const router = useRouter();
 
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   function changeLanguage(nextLocale: Locale) {
     if (nextLocale === locale) {
       return;
     }
+
+    document.documentElement.lang = nextLocale;
 
     router.replace(pathname, {
       locale: nextLocale,

@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "TTRPG Hub",
-  description: "Campaigns, characters, and tools for TTRPG gaming.",
+  description:
+    "Campaigns, characters, and tools for TTRPG gaming.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
-      <body>
-        {children}
-      </body>
+    <html lang={locale}>
+      <body>{children}</body>
     </html>
   );
 }
