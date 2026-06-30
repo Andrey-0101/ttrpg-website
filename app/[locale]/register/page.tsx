@@ -10,23 +10,22 @@ import {
   useTranslations,
 } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { getAuthErrorKey } from "@/lib/auth/get-auth-error-key";
 import { createClient } from "@/utils/supabase/client";
 
 export default function RegisterPage() {
   const translations = useTranslations("Register");
+  const authErrors = useTranslations("AuthErrors");
   const locale = useLocale();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [checkingSession, setCheckingSession] =
     useState(true);
-
   const [isSignedIn, setIsSignedIn] =
     useState(false);
-
   const [signedInEmail, setSignedInEmail] =
     useState("");
 
@@ -34,21 +33,32 @@ export default function RegisterPage() {
     let isMounted = true;
 
     async function checkSession() {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      const { data } =
-        await supabase.auth.getUser();
+        const { data, error } =
+          await supabase.auth.getUser();
 
-      if (!isMounted) {
-        return;
+        if (!isMounted) {
+          return;
+        }
+
+        if (!error && data.user) {
+          setIsSignedIn(true);
+          setSignedInEmail(
+            data.user.email ?? ""
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Failed to check the user session:",
+          error
+        );
+      } finally {
+        if (isMounted) {
+          setCheckingSession(false);
+        }
       }
-
-      if (data.user) {
-        setIsSignedIn(true);
-        setSignedInEmail(data.user.email ?? "");
-      }
-
-      setCheckingSession(false);
     }
 
     checkSession();
@@ -66,30 +76,48 @@ export default function RegisterPage() {
     setLoading(true);
     setMessage("");
 
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo:
-          `${window.location.origin}/auth/confirm?locale=${locale}`,
-      },
-    });
+      const { error } =
+        await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo:
+              `${window.location.origin}/auth/confirm?locale=${locale}`,
+          },
+        });
 
-    setMessage(
-      error
-        ? error.message
-        : translations("success")
-    );
+      if (!error) {
+        setMessage(translations("success"));
+        return;
+      }
 
-    setLoading(false);
+      const errorKey = getAuthErrorKey(error);
+
+      if (
+        errorKey === "userAlreadyRegistered"
+      ) {
+        setMessage(translations("success"));
+        return;
+      }
+
+      setMessage(authErrors(errorKey));
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setMessage(authErrors("generic"));
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (checkingSession) {
     return (
       <main className="mx-auto min-h-screen max-w-md p-8">
-        <p>{translations("checkingSession")}</p>
+        <p>
+          {translations("checkingSession")}
+        </p>
       </main>
     );
   }
@@ -149,6 +177,7 @@ export default function RegisterPage() {
             onChange={(event) =>
               setEmail(event.target.value)
             }
+            autoComplete="email"
             className="mt-1 w-full rounded border p-3"
             required
           />
@@ -163,6 +192,7 @@ export default function RegisterPage() {
             onChange={(event) =>
               setPassword(event.target.value)
             }
+            autoComplete="new-password"
             className="mt-1 w-full rounded border p-3"
             minLength={6}
             required
@@ -181,7 +211,11 @@ export default function RegisterPage() {
       </form>
 
       {message && (
-        <p className="mt-4" role="status">
+        <p
+          className="mt-4"
+          role="status"
+          aria-live="polite"
+        >
           {message}
         </p>
       )}

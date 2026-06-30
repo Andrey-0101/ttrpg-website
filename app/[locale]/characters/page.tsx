@@ -56,6 +56,13 @@ export default async function CharactersPage({
       ascending: false,
     });
 
+  if (error) {
+    console.error(
+      "Failed to load characters:",
+      error
+    );
+  }
+
   return (
     <main className="mx-auto min-h-screen max-w-5xl p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -73,9 +80,7 @@ export default async function CharactersPage({
 
       {error && (
         <p className="mt-8" role="alert">
-          {translations("loadError", {
-            message: error.message,
-          })}
+          {translations("loadError")}
         </p>
       )}
 

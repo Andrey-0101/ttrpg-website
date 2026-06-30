@@ -191,5 +191,14 @@
     "account": "Account Settings",
     "login": "Log in",
     "register": "Create Account"
+  },
+  "AuthErrors": {
+    "invalidCredentials": "The email address or password is incorrect.",
+    "emailNotConfirmed": "Please confirm your email address before logging in.",
+    "emailAddressInvalid": "Please enter a valid email address.",
+    "weakPassword": "The password does not meet the security requirements.",
+    "signupDisabled": "New account registration is currently unavailable.",
+    "rateLimit": "Too many attempts. Please wait a little and try again.",
+    "generic": "Something went wrong. Please try again."
   }
 }

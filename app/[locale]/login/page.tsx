@@ -6,25 +6,27 @@ import {
   type FormEvent,
 } from "react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
-import { createClient } from "@/utils/supabase/client";
+import {
+  Link,
+  useRouter,
+} from "@/i18n/navigation";
 import SignOutButton from "@/components/account/sign-out-button";
+import { getAuthErrorKey } from "@/lib/auth/get-auth-error-key";
+import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
   const translations = useTranslations("Login");
+  const authErrors = useTranslations("AuthErrors");
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [checkingSession, setCheckingSession] =
     useState(true);
-
   const [isSignedIn, setIsSignedIn] =
     useState(false);
-
   const [signedInEmail, setSignedInEmail] =
     useState("");
 
@@ -32,21 +34,32 @@ export default function LoginPage() {
     let isMounted = true;
 
     async function checkSession() {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      const { data } =
-        await supabase.auth.getUser();
+        const { data, error } =
+          await supabase.auth.getUser();
 
-      if (!isMounted) {
-        return;
+        if (!isMounted) {
+          return;
+        }
+
+        if (!error && data.user) {
+          setIsSignedIn(true);
+          setSignedInEmail(
+            data.user.email ?? ""
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Failed to check the user session:",
+          error
+        );
+      } finally {
+        if (isMounted) {
+          setCheckingSession(false);
+        }
       }
-
-      if (data.user) {
-        setIsSignedIn(true);
-        setSignedInEmail(data.user.email ?? "");
-      }
-
-      setCheckingSession(false);
     }
 
     checkSession();
@@ -64,28 +77,45 @@ export default function LoginPage() {
     setLoading(true);
     setMessage("");
 
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    const { error } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-    if (error) {
-      setMessage(error.message);
+      if (error) {
+        const errorKey = getAuthErrorKey(error);
+
+        setMessage(
+          authErrors(
+            errorKey === "userAlreadyRegistered"
+              ? "generic"
+              : errorKey
+          )
+        );
+
+        return;
+      }
+
+      router.replace("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Login failed:", error);
+      setMessage(authErrors("generic"));
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.replace("/");
-    router.refresh();
   }
 
   if (checkingSession) {
     return (
       <main className="mx-auto min-h-screen max-w-md p-8">
-        <p>{translations("checkingSession")}</p>
+        <p>
+          {translations("checkingSession")}
+        </p>
       </main>
     );
   }
@@ -104,7 +134,6 @@ export default function LoginPage() {
             {signedInEmail ||
               translations("signedInUser")}
           </span>
-
           .
         </p>
 
@@ -148,6 +177,7 @@ export default function LoginPage() {
             onChange={(event) =>
               setEmail(event.target.value)
             }
+            autoComplete="email"
             className="mt-1 w-full rounded border p-3"
             required
           />
@@ -162,6 +192,7 @@ export default function LoginPage() {
             onChange={(event) =>
               setPassword(event.target.value)
             }
+            autoComplete="current-password"
             className="mt-1 w-full rounded border p-3"
             required
           />
