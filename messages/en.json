@@ -21,6 +21,13 @@
     "noCharacters": "You do not have any characters yet.",
     "logout": "Log out"
   },
+  "Login": {
+    "title": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "submitting": "Logging in..."
+  },
   "Register": {
     "title": "Create account",
     "email": "Email",
@@ -28,5 +35,25 @@
     "submit": "Register",
     "submitting": "Creating account...",
     "success": "Registration submitted. Check your email for confirmation."
+  },
+  "Profile": {
+    "title": "My Profile",
+    "loadError": "Unable to load the profile.",
+    "username": "Username",
+    "displayName": "Display name",
+    "bio": "Bio",
+    "notSpecified": "Not specified",
+    "edit": "Edit Profile"
+  },
+  "ProfileEdit": {
+    "title": "Edit Profile",
+    "loading": "Loading profile...",
+    "username": "Username",
+    "displayName": "Display name",
+    "bio": "Bio",
+    "save": "Save Profile",
+    "saving": "Saving...",
+    "loadError": "Unable to load the profile.",
+    "saveError": "Unable to save the profile."
   }
 }
