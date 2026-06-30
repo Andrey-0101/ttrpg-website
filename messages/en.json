@@ -54,7 +54,11 @@
     "password": "Password",
     "submit": "Register",
     "submitting": "Creating account...",
-    "success": "Registration submitted. Check your email for confirmation."
+    "success": "If registration is possible, we sent a confirmation email. If you already have an account, log in or reset your password.",
+    "checkingSession": "Checking your session...",
+    "alreadySignedIn": "You are already signed in.",
+    "myProfile": "My Profile",
+    "accountSettings": "Account Settings"
   },
   "Profile": {
     "title": "My Profile",
