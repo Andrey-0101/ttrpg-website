@@ -1,19 +1,25 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-export default function Home() {
+export default async function Home() {
+  const translations =
+    await getTranslations("Home");
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <h1 className="text-4xl font-bold">Welcome to TTRPG Hub</h1>
+      <h1 className="text-4xl font-bold">
+        {translations("title")}
+      </h1>
 
       <p className="mt-4 text-lg">
-        Your campaigns, characters, and gaming tools in one place.
+        {translations("description")}
       </p>
 
       <Link
         href="/games"
         className="mt-8 rounded-lg bg-black px-6 py-3 text-white"
       >
-        Browse Games
+        {translations("browseGames")}
       </Link>
     </main>
   );

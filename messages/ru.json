@@ -27,6 +27,11 @@
     "english": "English",
     "russian": "Русский"
   },
+  "Home": {
+    "title": "Добро пожаловать в TTRPG Hub",
+    "description": "Ваши кампании, персонажи и игровые инструменты в одном месте.",
+    "browseGames": "Выбрать игру"
+  },
   "Dashboard": {
     "title": "Моя панель",
     "loggedInAs": "Вы вошли как:",
