@@ -5,11 +5,18 @@ import { updateSession } from "./utils/supabase/proxy";
 
 const handleI18nRouting = createMiddleware(routing);
 
-export default async function proxy(request: NextRequest) {
-  const supabaseResponse = await updateSession(request);
-  const intlResponse = handleI18nRouting(request);
+export default async function proxy(
+  request: NextRequest
+) {
+  const supabaseResponse =
+    await updateSession(request);
 
-  for (const cookie of supabaseResponse.cookies.getAll()) {
+  const intlResponse =
+    handleI18nRouting(request);
+
+  for (
+    const cookie of supabaseResponse.cookies.getAll()
+  ) {
     intlResponse.cookies.set(
       cookie.name,
       cookie.value,
@@ -22,6 +29,6 @@ export default async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
+    "/((?!api|trpc|auth|_next|_vercel|.*\\..*).*)",
   ],
 };

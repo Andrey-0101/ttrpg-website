@@ -34,8 +34,7 @@
     "campaignsTitle": "My Campaigns",
     "noCampaigns": "You do not have any campaigns yet.",
     "charactersTitle": "My Characters",
-    "noCharacters": "You do not have any characters yet.",
-    "logout": "Log out"
+    "noCharacters": "You do not have any characters yet."
   },
   "Login": {
     "title": "Log in",

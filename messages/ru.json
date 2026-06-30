@@ -34,8 +34,7 @@
     "campaignsTitle": "Мои кампании",
     "noCampaigns": "У вас пока нет кампаний.",
     "charactersTitle": "Мои персонажи",
-    "noCharacters": "У вас пока нет персонажей.",
-    "logout": "Выйти"
+    "noCharacters": "У вас пока нет персонажей."
   },
   "Login": {
     "title": "Вход",
