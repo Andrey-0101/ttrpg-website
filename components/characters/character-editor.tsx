@@ -9,20 +9,32 @@ import {
 } from "@/lib/characters/game-systems";
 import ShortDescriptionField from "./short-description-field";
 import VtmCharacterSheet from "./sheets/vtm-v5/vtm-character-sheet";
+import type { Database, Json } from "@/types/database.types";
 
-type CharacterData = {
-  id: string;
-  name: string;
-  game_system: string;
-  description: string | null;
-  visibility: string;
-  sheet_data: Record<string, unknown>;
+type CharacterRow =
+  Database["public"]["Tables"]["characters"]["Row"];
+
+type CharacterData = Pick<
+  CharacterRow,
+  | "id"
+  | "name"
+  | "game_system"
+  | "description"
+  | "visibility"
+  | "sheet_data"
+>;
+
+type JsonObject = {
+  [key: string]: Json | undefined;
 };
 
-type VtmSheetData = {
-  clan?: string;
-  hunger?: number;
-};
+function isJsonObject(value: Json): value is JsonObject {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  );
+}
 
 type CharacterVisibility =
   | "private"
@@ -40,8 +52,19 @@ export default function CharacterEditor({
   const translations =
     useTranslations("CharacterEditor");
 
-  const initialSheetData =
-    character.sheet_data as VtmSheetData;
+  const initialSheetData = isJsonObject(character.sheet_data)
+    ? character.sheet_data
+    : {};
+
+  const initialClan =
+    typeof initialSheetData.clan === "string"
+      ? initialSheetData.clan
+      : "";
+
+  const initialHunger =
+    typeof initialSheetData.hunger === "number"
+      ? initialSheetData.hunger
+      : 1;
 
   const normalizedSystemId = normalizeGameSystemId(
     character.game_system
@@ -69,13 +92,8 @@ export default function CharacterEditor({
       initialVisibility
     );
 
-  const [clan, setClan] = useState(
-    initialSheetData.clan ?? ""
-  );
-
-  const [hunger, setHunger] = useState(
-    initialSheetData.hunger ?? 1
-  );
+  const [clan, setClan] = useState(initialClan);
+  const [hunger, setHunger] = useState(initialHunger);
 
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -97,7 +115,7 @@ export default function CharacterEditor({
         description,
         visibility,
         sheet_data: {
-          ...character.sheet_data,
+          ...initialSheetData,
           clan,
           hunger,
         },
