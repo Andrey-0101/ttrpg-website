@@ -1,15 +1,31 @@
 import { getTranslations } from "next-intl/server";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
 import { createClient } from "@/utils/supabase/server";
 
-export default async function DashboardPage() {
-  const translations = await getTranslations("Dashboard");
+type DashboardPageProps = {
+  params: Promise<{
+    locale: Locale;
+  }>;
+};
+
+export default async function DashboardPage({
+  params,
+}: DashboardPageProps) {
+  const { locale } = await params;
+  const translations =
+    await getTranslations("Dashboard");
+
   const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getClaims();
+  const { data, error } =
+    await supabase.auth.getClaims();
 
   if (error || !data?.claims) {
-    redirect("/login");
+    return redirect({
+      href: "/login",
+      locale,
+    });
   }
 
   const email =

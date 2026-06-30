@@ -1,17 +1,22 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-export default function VampirePage() {
+export default async function VampirePage() {
+  const translations =
+    await getTranslations("VampireGamePage");
+
   return (
     <main className="mx-auto min-h-screen max-w-4xl p-8">
-      <Link href="/games">← Back to Games</Link>
+      <Link href="/games">
+        ← {translations("back")}
+      </Link>
 
       <h1 className="mt-8 text-4xl font-bold">
         Vampire: The Masquerade
       </h1>
 
       <p className="mt-4 text-lg">
-        A tabletop role-playing game about vampires, personal horror,
-        political intrigue, and the struggle to retain humanity.
+        {translations("description")}
       </p>
     </main>
   );

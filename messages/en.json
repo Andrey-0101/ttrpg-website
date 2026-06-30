@@ -130,5 +130,14 @@
     "clan": "Clan",
     "clanPlaceholder": "For example: Tremere",
     "hunger": "Hunger"
+  },
+  "GamesPage": {
+    "title": "Games",
+    "description": "Choose a tabletop role-playing game.",
+    "vampireDescription": "Personal horror, political intrigue, and the struggle to retain humanity."
+  },
+  "VampireGamePage": {
+    "back": "Back to Games",
+    "description": "A tabletop role-playing game about vampires, personal horror, political intrigue, and the struggle to retain humanity."
   }
 }
