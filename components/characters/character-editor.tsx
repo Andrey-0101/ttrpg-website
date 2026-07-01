@@ -1,15 +1,36 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
+
 import { useTranslations } from "next-intl";
+
 import { createClient } from "@/utils/supabase/client";
 import {
   getGameSystemName,
   normalizeGameSystemId,
 } from "@/lib/characters/game-systems";
-import ShortDescriptionField from "./short-description-field";
+import {
+  getCharacterDraftKey,
+  getCharacterPageKey,
+  readVtmV5EditorDraft,
+  readVtmV5SheetPage,
+  removeVtmV5EditorDraft,
+  writeVtmV5EditorDraft,
+  writeVtmV5SheetPage,
+  type VtmV5DraftVisibility,
+  type VtmV5SheetPage,
+} from "@/lib/characters/vtm-v5/editor-draft";
+import {
+  createDefaultVtmV5SheetData,
+  normalizeVtmV5SheetData,
+} from "@/lib/characters/vtm-v5/schema";
 import VtmCharacterSheet from "./sheets/vtm-v5/vtm-character-sheet";
-import type { Database, Json } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
 
 type CharacterRow =
   Database["public"]["Tables"]["characters"]["Row"];
@@ -19,27 +40,11 @@ type CharacterData = Pick<
   | "id"
   | "name"
   | "game_system"
-  | "description"
   | "visibility"
   | "sheet_data"
 >;
 
-type JsonObject = {
-  [key: string]: Json | undefined;
-};
-
-function isJsonObject(value: Json): value is JsonObject {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value)
-  );
-}
-
-type CharacterVisibility =
-  | "private"
-  | "campaign"
-  | "public";
+type CharacterVisibility = VtmV5DraftVisibility;
 
 export default function CharacterEditor({
   character,
@@ -48,77 +53,140 @@ export default function CharacterEditor({
 }) {
   const formTranslations =
     useTranslations("CharacterForm");
-
   const translations =
     useTranslations("CharacterEditor");
 
-  const initialSheetData = isJsonObject(character.sheet_data)
-    ? character.sheet_data
-    : {};
-
-  const initialClan =
-    typeof initialSheetData.clan === "string"
-      ? initialSheetData.clan
-      : "";
-
-  const initialHunger =
-    typeof initialSheetData.hunger === "number"
-      ? initialSheetData.hunger
-      : 1;
-
   const normalizedSystemId = normalizeGameSystemId(
-    character.game_system
+    character.game_system,
   );
-
   const gameSystemName = getGameSystemName(
-    character.game_system
+    character.game_system,
   );
-
   const initialVisibility =
     character.visibility === "campaign" ||
     character.visibility === "public"
       ? character.visibility
       : "private";
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(character.name);
-
-  const [description, setDescription] = useState(
-    character.description ?? ""
+  const draftStorageKey = useMemo(
+    () => getCharacterDraftKey(character.id),
+    [character.id],
+  );
+  const pageStorageKey = useMemo(
+    () => getCharacterPageKey(character.id),
+    [character.id],
   );
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
+  const [name, setName] = useState(character.name);
   const [visibility, setVisibility] =
     useState<CharacterVisibility>(
-      initialVisibility
+      initialVisibility,
     );
-
-  const [clan, setClan] = useState(initialClan);
-  const [hunger, setHunger] = useState(initialHunger);
-
+  const [vtmSheetData, setVtmSheetData] = useState(
+    () => normalizeVtmV5SheetData(character.sheet_data),
+  );
+  const [activePage, setActivePage] =
+    useState<VtmV5SheetPage>("core");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (normalizedSystemId !== "vtm-v5") {
+      setDraftReady(true);
+      return;
+    }
+
+    const storedPage = readVtmV5SheetPage(
+      pageStorageKey,
+    );
+    const draft = readVtmV5EditorDraft(
+      draftStorageKey,
+    );
+
+    if (draft) {
+      setName(draft.name);
+      setVisibility(draft.visibility);
+      setVtmSheetData(draft.sheetData);
+      setActivePage(draft.activePage);
+      setIsEditing(true);
+    } else if (storedPage) {
+      setActivePage(storedPage);
+    }
+
+    setDraftReady(true);
+  }, [
+    draftStorageKey,
+    normalizedSystemId,
+    pageStorageKey,
+  ]);
+
+  useEffect(() => {
+    if (
+      !draftReady ||
+      normalizedSystemId !== "vtm-v5"
+    ) {
+      return;
+    }
+
+    writeVtmV5SheetPage(
+      pageStorageKey,
+      activePage,
+    );
+  }, [
+    activePage,
+    draftReady,
+    normalizedSystemId,
+    pageStorageKey,
+  ]);
+
+  useEffect(() => {
+    if (
+      !draftReady ||
+      !isEditing ||
+      normalizedSystemId !== "vtm-v5"
+    ) {
+      return;
+    }
+
+    writeVtmV5EditorDraft(draftStorageKey, {
+      version: 1,
+      name,
+      visibility,
+      activePage,
+      sheetData: vtmSheetData,
+    });
+  }, [
+    activePage,
+    draftReady,
+    draftStorageKey,
+    isEditing,
+    name,
+    normalizedSystemId,
+    visibility,
+    vtmSheetData,
+  ]);
+
   async function handleSave(
-    event: FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
-
     setSaving(true);
     setMessage("");
 
     const supabase = createClient();
+    const sheetDataToSave =
+      normalizedSystemId === "vtm-v5"
+        ? vtmSheetData
+        : character.sheet_data;
 
     const { error } = await supabase
       .from("characters")
       .update({
         name,
-        description,
         visibility,
-        sheet_data: {
-          ...initialSheetData,
-          clan,
-          hunger,
-        },
+        sheet_data: sheetDataToSave,
         updated_at: new Date().toISOString(),
       })
       .eq("id", character.id);
@@ -130,6 +198,7 @@ export default function CharacterEditor({
       return;
     }
 
+    removeVtmV5EditorDraft(draftStorageKey);
     setMessage(translations("changesSaved"));
     setSaving(false);
     setIsEditing(false);
@@ -137,7 +206,7 @@ export default function CharacterEditor({
 
   function handleClear() {
     const confirmed = window.confirm(
-      translations("clearConfirm")
+      translations("clearConfirm"),
     );
 
     if (!confirmed) {
@@ -145,17 +214,19 @@ export default function CharacterEditor({
     }
 
     setName("");
-    setDescription("");
     setVisibility("private");
-    setClan("");
-    setHunger(1);
+
+    if (normalizedSystemId === "vtm-v5") {
+      setVtmSheetData(createDefaultVtmV5SheetData());
+      setActivePage("core");
+    }
 
     setMessage(translations("clearNotice"));
   }
 
   function renderEditorControls() {
     return (
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => {
@@ -163,7 +234,7 @@ export default function CharacterEditor({
             setIsEditing(true);
           }}
           disabled={isEditing || saving}
-          className="rounded border px-6 py-3 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
         >
           {translations("edit")}
         </button>
@@ -171,7 +242,7 @@ export default function CharacterEditor({
         <button
           type="submit"
           disabled={!isEditing || saving}
-          className="rounded border bg-black px-6 py-3 text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded border bg-black px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           {saving
             ? translations("saving")
@@ -182,20 +253,19 @@ export default function CharacterEditor({
   }
 
   const fieldStyle =
-    "mt-1 w-full rounded border p-3 disabled:bg-gray-100 disabled:text-gray-900";
+    "mt-1 w-full rounded border px-2 py-1.5 disabled:bg-gray-100 disabled:text-gray-900";
 
   return (
     <form
       onSubmit={handleSave}
-      className="mt-8 rounded-lg border p-6"
+      className="mt-6 rounded-lg border p-4"
     >
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm uppercase tracking-wider text-gray-400">
+          <p className="text-xs uppercase tracking-wider text-gray-400">
             {translations("sheetTitle")}
           </p>
-
-          <h1 className="mt-1 text-4xl font-bold">
+          <h1 className="mt-1 text-2xl font-bold">
             {gameSystemName}
           </h1>
         </div>
@@ -203,10 +273,9 @@ export default function CharacterEditor({
         {renderEditorControls()}
       </div>
 
-      <div className="mt-8 flex flex-col gap-5">
+      <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(12rem,1fr)]">
         <label>
           {formTranslations("characterName")}
-
           <input
             value={name}
             onChange={(event) =>
@@ -218,21 +287,14 @@ export default function CharacterEditor({
           />
         </label>
 
-        <ShortDescriptionField
-          value={description}
-          onChange={setDescription}
-          disabled={!isEditing}
-        />
-
         <label>
           {formTranslations("visibility")}
-
           <select
             value={visibility}
             onChange={(event) =>
               setVisibility(
                 event.target
-                  .value as CharacterVisibility
+                  .value as CharacterVisibility,
               )
             }
             disabled={!isEditing}
@@ -240,19 +302,17 @@ export default function CharacterEditor({
           >
             <option value="private">
               {formTranslations(
-                "visibilityPrivate"
+                "visibilityPrivate",
               )}
             </option>
-
             <option value="campaign">
               {formTranslations(
-                "visibilityCampaign"
+                "visibilityCampaign",
               )}
             </option>
-
             <option value="public">
               {formTranslations(
-                "visibilityPublic"
+                "visibilityPublic",
               )}
             </option>
           </select>
@@ -260,34 +320,39 @@ export default function CharacterEditor({
       </div>
 
       {normalizedSystemId === "vtm-v5" ? (
-        <VtmCharacterSheet
-          isEditing={isEditing}
-          clan={clan}
-          hunger={hunger}
-          onClanChange={setClan}
-          onHungerChange={setHunger}
-        />
+        draftReady ? (
+          <VtmCharacterSheet
+            isEditing={isEditing}
+            sheetData={vtmSheetData}
+            onChange={setVtmSheetData}
+            activePage={activePage}
+            onPageChange={setActivePage}
+          />
+        ) : (
+          <div className="mt-4 min-h-40" />
+        )
       ) : (
-        <section className="mt-8 rounded-lg border p-6">
+
+        <section className="mt-4 rounded-lg border p-4">
           <p>{translations("unsupported")}</p>
         </section>
       )}
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         {renderEditorControls()}
 
         <button
           type="button"
           onClick={handleClear}
           disabled={!isEditing || saving}
-          className="rounded border border-orange-600 px-6 py-3 text-orange-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded border border-orange-600 px-4 py-2 text-sm text-orange-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {translations("clear")}
         </button>
       </div>
 
       {message && (
-        <p className="mt-4" role="status">
+        <p className="mt-3 text-sm" role="status">
           {message}
         </p>
       )}

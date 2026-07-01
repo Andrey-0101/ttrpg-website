@@ -103,7 +103,7 @@ export default async function CharacterPage({
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl p-8">
+    <main className="mx-auto min-h-screen max-w-4xl p-8">
       <Link href="/characters">
         <span aria-hidden="true">
           &larr;

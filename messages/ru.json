@@ -154,11 +154,6 @@
     "placeholder": "Краткое описание, отображаемое на карточке персонажа.",
     "counter": "{count}/{maximum} символов. Максимум {lines} строки по {perLine} символов."
   },
-  "VtmCharacterSheet": {
-    "clan": "Клан",
-    "clanPlaceholder": "Например: Тремер",
-    "hunger": "Голод"
-  },
   "GamesPage": {
     "title": "Игры",
     "description": "Выберите настольную ролевую игру.",

@@ -1,73 +1,48 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import type {
+  VtmV5SheetPage,
+} from "@/lib/characters/vtm-v5/editor-draft";
+import type { VtmV5SheetData } from "@/lib/characters/vtm-v5/schema";
+import BackgroundSheetPage from "./background-sheet-page";
+import CoreSheetPage from "./core-sheet-page";
+import SheetPageNavigation from "./sheet-page-navigation";
 
 type VtmCharacterSheetProps = {
   isEditing: boolean;
-  clan: string;
-  hunger: number;
-  onClanChange: (value: string) => void;
-  onHungerChange: (value: number) => void;
+  sheetData: VtmV5SheetData;
+  onChange: (value: VtmV5SheetData) => void;
+  activePage: VtmV5SheetPage;
+  onPageChange: (page: VtmV5SheetPage) => void;
 };
 
 export default function VtmCharacterSheet({
   isEditing,
-  clan,
-  hunger,
-  onClanChange,
-  onHungerChange,
+  sheetData,
+  onChange,
+  activePage,
+  onPageChange,
 }: VtmCharacterSheetProps) {
-  const translations =
-    useTranslations("VtmCharacterSheet");
-
-  const fieldStyle =
-    "mt-1 w-full rounded border p-3 disabled:bg-gray-100 disabled:text-gray-900";
-
   return (
-    <section className="mt-8 rounded-lg border p-6">
-      <div className="grid gap-5 md:grid-cols-2">
-        <label>
-          {translations("clan")}
+    <div className="mt-4 flex flex-col gap-4 text-sm">
+      <SheetPageNavigation
+        activePage={activePage}
+        onChange={onPageChange}
+      />
 
-          <input
-            value={clan}
-            onChange={(event) =>
-              onClanChange(event.target.value)
-            }
-            disabled={!isEditing}
-            className={fieldStyle}
-            placeholder={translations(
-              "clanPlaceholder"
-            )}
-          />
-        </label>
-
-        <label>
-          {translations("hunger")}
-
-          <select
-            value={hunger}
-            onChange={(event) =>
-              onHungerChange(
-                Number(event.target.value)
-              )
-            }
-            disabled={!isEditing}
-            className={fieldStyle}
-          >
-            {[0, 1, 2, 3, 4, 5].map(
-              (value) => (
-                <option
-                  key={value}
-                  value={value}
-                >
-                  {value}
-                </option>
-              )
-            )}
-          </select>
-        </label>
-      </div>
-    </section>
+      {activePage === "core" ? (
+        <CoreSheetPage
+          isEditing={isEditing}
+          sheetData={sheetData}
+          onChange={onChange}
+        />
+      ) : (
+        <BackgroundSheetPage
+          isEditing={isEditing}
+          sheetData={sheetData}
+          onChange={onChange}
+        />
+      )}
+    </div>
   );
 }
