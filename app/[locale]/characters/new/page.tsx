@@ -59,7 +59,7 @@ export default async function SelectGameSystemPage({
   const gameSystems = Object.values(GAME_SYSTEMS);
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl p-8">
+    <main className="mx-auto min-h-screen max-w-4xl p-8">
       <h1 className="text-4xl font-bold">
         {translations("title")}
       </h1>

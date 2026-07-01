@@ -154,11 +154,6 @@
     "placeholder": "A short description shown on the character card.",
     "counter": "{count}/{maximum} characters. Maximum {lines} lines, {perLine} characters per line."
   },
-  "VtmCharacterSheet": {
-    "clan": "Clan",
-    "clanPlaceholder": "For example: Tremere",
-    "hunger": "Hunger"
-  },
   "GamesPage": {
     "title": "Games",
     "description": "Choose a tabletop role-playing game.",
