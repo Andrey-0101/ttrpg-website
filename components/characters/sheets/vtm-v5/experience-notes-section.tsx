@@ -8,27 +8,26 @@ type ExperienceNotesSectionProps = {
   isEditing: boolean;
   sheetData: VtmV5SheetData;
   onChange: (value: VtmV5SheetData) => void;
+  className?: string;
 };
 
-export default function ExperienceNotesSection({
+export function ExperienceSection({
   isEditing,
   sheetData,
   onChange,
+  className = "",
 }: ExperienceNotesSectionProps) {
-  const translations =
-    useTranslations("VtmCharacterSheet");
-  const fieldStyle =
-    "mt-1 w-full rounded border px-2 py-1.5 text-xs disabled:bg-gray-100 disabled:text-gray-900";
+  const translations = useTranslations("VtmCharacterSheet");
+  const inputStyle =
+    "min-w-0 flex-1 border-0 bg-transparent px-2 py-1 text-right text-xs text-neutral-950 outline-none focus:bg-neutral-50";
 
   return (
-    <section className="px-4 py-3">
-      <h2 className="text-xs font-bold uppercase tracking-wide">
-        {translations("experienceNotesTitle")}
-      </h2>
-
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <label>
+    <section className={className}>
+      <label className="flex min-h-9 items-center border-b border-neutral-400 px-2">
+        <span className="text-xs font-bold italic">
           {translations("totalExperience")}
+        </span>
+        {isEditing ? (
           <input
             type="number"
             min={0}
@@ -39,19 +38,24 @@ export default function ExperienceNotesSection({
                 ...sheetData,
                 experience: {
                   ...sheetData.experience,
-                  total: Number(
-                    event.target.value,
-                  ),
+                  total: Number(event.target.value),
                 },
               })
             }
-            disabled={!isEditing}
-            className={fieldStyle}
+            className={inputStyle}
           />
-        </label>
+        ) : (
+          <span className="ml-auto px-2 text-xs">
+            {sheetData.experience.total}
+          </span>
+        )}
+      </label>
 
-        <label>
+      <label className="flex min-h-9 items-center border-b border-neutral-400 px-2">
+        <span className="text-xs font-bold italic">
           {translations("spentExperience")}
+        </span>
+        {isEditing ? (
           <input
             type="number"
             min={0}
@@ -62,19 +66,39 @@ export default function ExperienceNotesSection({
                 ...sheetData,
                 experience: {
                   ...sheetData.experience,
-                  spent: Number(
-                    event.target.value,
-                  ),
+                  spent: Number(event.target.value),
                 },
               })
             }
-            disabled={!isEditing}
-            className={fieldStyle}
+            className={inputStyle}
           />
-        </label>
+        ) : (
+          <span className="ml-auto px-2 text-xs">
+            {sheetData.experience.spent}
+          </span>
+        )}
+      </label>
+    </section>
+  );
+}
 
-        <label className="sm:col-span-2">
-          {translations("notes")}
+export function NotesSection({
+  isEditing,
+  sheetData,
+  onChange,
+  className = "",
+}: ExperienceNotesSectionProps) {
+  const translations = useTranslations("VtmCharacterSheet");
+
+  return (
+    <section className={`flex min-h-0 flex-col ${className}`}>
+      <h2 className="px-2 pt-1.5 text-xs font-medium">
+        {translations("notes")}
+      </h2>
+
+      {isEditing ? (
+        <label className="flex min-h-0 flex-1 flex-col">
+          <span className="sr-only">{translations("notes")}</span>
           <textarea
             value={sheetData.notes}
             onChange={(event) =>
@@ -83,11 +107,25 @@ export default function ExperienceNotesSection({
                 notes: event.target.value,
               })
             }
-            disabled={!isEditing}
-            className={`${fieldStyle} min-h-32`}
+            className="min-h-32 flex-1 resize-y border-0 bg-transparent px-2 py-1.5 text-xs leading-relaxed text-neutral-950 outline-none focus:bg-neutral-50"
           />
         </label>
-      </div>
+      ) : (
+        <p className="min-h-32 flex-1 whitespace-pre-wrap px-2 py-1.5 text-xs leading-relaxed">
+          {sheetData.notes.trim() || "—"}
+        </p>
+      )}
     </section>
+  );
+}
+
+export default function ExperienceNotesSection(
+  props: ExperienceNotesSectionProps,
+) {
+  return (
+    <div className={props.className}>
+      <ExperienceSection {...props} className="" />
+      <NotesSection {...props} className="min-h-40" />
+    </div>
   );
 }

@@ -6,28 +6,41 @@ import type {
   VtmV5SheetData,
   VtmV5SkillKey,
 } from "@/lib/characters/vtm-v5/schema";
+import A4SheetPage from "./a4-sheet-page";
 import AttributesSection from "./attributes-section";
+import CharacterIdentityCard from "./character-identity-card";
 import DisciplinesSection from "./disciplines-section";
 import HealthWillpowerSection from "./health-willpower-section";
-import IdentitySection from "./identity-section";
+import SheetSectionDivider from "./sheet-section-divider";
 import SkillsSection from "./skills-section";
 import TrackersSection from "./trackers-section";
 
 type CoreSheetPageProps = {
   isEditing: boolean;
+  name: string;
   sheetData: VtmV5SheetData;
+  portraitUrl: string | null;
+  hasPortrait: boolean;
+  portraitBusy?: boolean;
+  onNameChange: (value: string) => void;
   onChange: (value: VtmV5SheetData) => void;
+  onPortraitFileChange?: (file: File) => void;
+  onPortraitRemove?: () => void;
 };
 
 export default function CoreSheetPage({
   isEditing,
+  name,
   sheetData,
+  portraitUrl,
+  hasPortrait,
+  portraitBusy = false,
+  onNameChange,
   onChange,
+  onPortraitFileChange,
+  onPortraitRemove,
 }: CoreSheetPageProps) {
-  function updateAttribute(
-    key: VtmV5AttributeKey,
-    value: number,
-  ) {
+  function updateAttribute(key: VtmV5AttributeKey, value: number) {
     onChange({
       ...sheetData,
       attributes: {
@@ -37,10 +50,7 @@ export default function CoreSheetPage({
     });
   }
 
-  function updateSkill(
-    key: VtmV5SkillKey,
-    value: number,
-  ) {
+  function updateSkill(key: VtmV5SkillKey, value: number) {
     onChange({
       ...sheetData,
       skills: {
@@ -70,9 +80,7 @@ export default function CoreSheetPage({
     });
   }
 
-  function updateDisciplines(
-    disciplines: VtmV5Discipline[],
-  ) {
+  function updateDisciplines(disciplines: VtmV5Discipline[]) {
     onChange({
       ...sheetData,
       disciplines,
@@ -80,41 +88,56 @@ export default function CoreSheetPage({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <IdentitySection
-        isEditing={isEditing}
-        identity={sheetData.identity}
-        onChange={(identity) =>
-          onChange({
-            ...sheetData,
-            identity,
-          })
-        }
-      />
+    <A4SheetPage pageNumber={1}>
+      <div className="flex min-h-full min-w-0 flex-col border border-neutral-400 bg-white">
+        <CharacterIdentityCard
+          isEditing={isEditing}
+          name={name}
+          identity={sheetData.identity}
+          portraitUrl={portraitUrl}
+          hasPortrait={hasPortrait}
+          portraitBusy={portraitBusy}
+          onNameChange={onNameChange}
+          onIdentityChange={(identity) =>
+            onChange({
+              ...sheetData,
+              identity,
+            })
+          }
+          onPortraitFileChange={onPortraitFileChange}
+          onPortraitRemove={onPortraitRemove}
+        />
 
-      <div className="border-t">
+        <SheetSectionDivider />
         <AttributesSection
           isEditing={isEditing}
           attributes={sheetData.attributes}
           onChange={updateAttribute}
         />
-      </div>
 
-      <div className="grid border-t xl:grid-cols-2">
-        <div className="border-b xl:border-b-0 xl:border-r">
-          <HealthWillpowerSection
-            isEditing={isEditing}
-            attributes={sheetData.attributes}
-            trackers={sheetData.trackers}
-            onChange={(trackers) =>
-              onChange({
-                ...sheetData,
-                trackers,
-              })
-            }
-          />
-        </div>
+        <SheetSectionDivider />
+        <HealthWillpowerSection
+          isEditing={isEditing}
+          attributes={sheetData.attributes}
+          trackers={sheetData.trackers}
+          onChange={(trackers) =>
+            onChange({
+              ...sheetData,
+              trackers,
+            })
+          }
+        />
 
+        <SheetSectionDivider />
+        <SkillsSection
+          isEditing={isEditing}
+          skills={sheetData.skills}
+          specialties={sheetData.skillSpecialties}
+          onSkillChange={updateSkill}
+          onSpecialtiesChange={updateSkillSpecialties}
+        />
+
+        <SheetSectionDivider />
         <TrackersSection
           isEditing={isEditing}
           trackers={sheetData.trackers}
@@ -125,27 +148,16 @@ export default function CoreSheetPage({
             })
           }
         />
-      </div>
 
-      <div className="border-t">
-        <SkillsSection
-          isEditing={isEditing}
-          skills={sheetData.skills}
-          specialties={sheetData.skillSpecialties}
-          onSkillChange={updateSkill}
-          onSpecialtiesChange={
-            updateSkillSpecialties
-          }
-        />
+        <SheetSectionDivider />
+        <div className="flex-1">
+          <DisciplinesSection
+            isEditing={isEditing}
+            disciplines={sheetData.disciplines}
+            onChange={updateDisciplines}
+          />
+        </div>
       </div>
-
-      <div className="border-t">
-        <DisciplinesSection
-          isEditing={isEditing}
-          disciplines={sheetData.disciplines}
-          onChange={updateDisciplines}
-        />
-      </div>
-    </div>
+    </A4SheetPage>
   );
 }

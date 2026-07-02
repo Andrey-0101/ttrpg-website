@@ -6,6 +6,8 @@
       "background": "Page 2 — Background & Advancement"
     },
     "identityTitle": "Identity",
+    "portrait": "Portrait",
+    "name": "Name",
     "clan": "Clan",
     "clanPlaceholder": "For example: Tremere",
     "concept": "Concept",
@@ -159,6 +161,18 @@
     "dateOfDeath": "Date of Death",
     "appearance": "Appearance",
     "distinguishingFeatures": "Distinguishing Features",
-    "history": "History"
+    "history": "History",
+    "touchstonesAndConvictions": "Touchstones & Convictions",
+    "stains": "Stains",
+    "decreaseTracker": "Decrease {name}",
+    "increaseTracker": "Increase {name}",
+    "humanityStainsSummary": "Humanity {humanity}, Stains {stains}",
+    "uploadPortrait": "Upload",
+    "replacePortrait": "Replace",
+    "removePortrait": "Remove",
+    "portraitHelp": "JPG, PNG or WebP, up to 5 MB.",
+    "portraitInvalidType": "Choose a JPG, PNG or WebP image.",
+    "portraitTooLarge": "The portrait must be 5 MB or smaller.",
+    "portraitUploadError": "The portrait could not be uploaded. Please try again."
   }
 }

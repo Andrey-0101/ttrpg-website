@@ -21,108 +21,116 @@ function fromMultiline(value: string): string[] {
     .filter(Boolean);
 }
 
+function combineTouchstonesAndConvictions(
+  touchstones: string[],
+  convictions: string[],
+): string[] {
+  return [...touchstones, ...convictions];
+}
+
+function DisplayText({ value }: { value: string }) {
+  return (
+    <p className="min-h-24 whitespace-pre-wrap px-3 py-2 text-xs leading-relaxed">
+      {value.trim() || "—"}
+    </p>
+  );
+}
+
 export default function BackgroundPrinciplesSection({
   isEditing,
   sheetData,
   onChange,
 }: BackgroundPrinciplesSectionProps) {
-  const translations =
-    useTranslations("VtmCharacterSheet");
-  const fieldStyle =
-    "mt-1 min-h-24 w-full rounded border px-2 py-1.5 text-xs disabled:bg-gray-100 disabled:text-gray-900";
+  const translations = useTranslations("VtmCharacterSheet");
+  const editorStyle =
+    "min-h-32 w-full resize-y border-0 bg-transparent px-3 py-2 text-xs leading-relaxed text-neutral-950 outline-none focus:bg-neutral-50";
+  const combinedTouchstonesAndConvictions = toMultiline(
+    combineTouchstonesAndConvictions(
+      sheetData.touchstones,
+      sheetData.convictions,
+    ),
+  );
 
   return (
-    <section className="px-4 py-3">
-      <h2 className="text-xs font-bold uppercase tracking-wide">
-        {translations("principlesTitle")}
-      </h2>
-
-      <div className="mt-3 grid gap-3 lg:grid-cols-3">
-        <label>
+    <section className="grid min-h-[13rem] md:grid-cols-3">
+      <div className="flex min-h-48 flex-col border-b border-neutral-300 md:border-r md:border-b-0">
+        <h2 className="px-3 pt-2 text-center text-sm font-medium">
           {translations("chronicleTenets")}
-          <textarea
-            value={toMultiline(
-              sheetData.chronicleTenets,
-            )}
-            onChange={(event) =>
-              onChange({
-                ...sheetData,
-                chronicleTenets: fromMultiline(
-                  event.target.value,
-                ),
-              })
-            }
-            disabled={!isEditing}
-            className={fieldStyle}
-            placeholder={translations(
-              "onePerLinePlaceholder",
-            )}
-          />
-        </label>
+        </h2>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          <label>
-            {translations("touchstones")}
+        {isEditing ? (
+          <label className="flex flex-1 flex-col">
+            <span className="sr-only">
+              {translations("chronicleTenets")}
+            </span>
             <textarea
-              value={toMultiline(
-                sheetData.touchstones,
-              )}
+              value={toMultiline(sheetData.chronicleTenets)}
               onChange={(event) =>
                 onChange({
                   ...sheetData,
-                  touchstones: fromMultiline(
-                    event.target.value,
-                  ),
+                  chronicleTenets: fromMultiline(event.target.value),
                 })
               }
-              disabled={!isEditing}
-              className={fieldStyle}
-              placeholder={translations(
-                "onePerLinePlaceholder",
-              )}
+              className={`${editorStyle} flex-1`}
+              placeholder={translations("onePerLinePlaceholder")}
             />
           </label>
+        ) : (
+          <DisplayText value={toMultiline(sheetData.chronicleTenets)} />
+        )}
+      </div>
 
-          <label>
-            {translations("convictions")}
+      <div className="flex min-h-48 flex-col border-b border-neutral-300 md:border-r md:border-b-0">
+        <h2 className="px-3 pt-2 text-center text-sm font-medium">
+          {translations("touchstonesAndConvictions")}
+        </h2>
+
+        {isEditing ? (
+          <label className="flex flex-1 flex-col">
+            <span className="sr-only">
+              {translations("touchstonesAndConvictions")}
+            </span>
             <textarea
-              value={toMultiline(
-                sheetData.convictions,
-              )}
+              value={combinedTouchstonesAndConvictions}
               onChange={(event) =>
                 onChange({
                   ...sheetData,
-                  convictions: fromMultiline(
-                    event.target.value,
-                  ),
+                  touchstones: fromMultiline(event.target.value),
+                  convictions: [],
                 })
               }
-              disabled={!isEditing}
-              className={fieldStyle}
-              placeholder={translations(
-                "onePerLinePlaceholder",
-              )}
+              className={`${editorStyle} flex-1`}
+              placeholder={translations("onePerLinePlaceholder")}
             />
           </label>
-        </div>
+        ) : (
+          <DisplayText value={combinedTouchstonesAndConvictions} />
+        )}
+      </div>
 
-        <label>
+      <div className="flex min-h-48 flex-col">
+        <h2 className="px-3 pt-2 text-center text-sm font-medium">
           {translations("clanBane")}
-          <textarea
-            value={sheetData.clanBane}
-            onChange={(event) =>
-              onChange({
-                ...sheetData,
-                clanBane: event.target.value,
-              })
-            }
-            disabled={!isEditing}
-            className={fieldStyle}
-            placeholder={translations(
-              "clanBanePlaceholder",
-            )}
-          />
-        </label>
+        </h2>
+
+        {isEditing ? (
+          <label className="flex flex-1 flex-col">
+            <span className="sr-only">{translations("clanBane")}</span>
+            <textarea
+              value={sheetData.clanBane}
+              onChange={(event) =>
+                onChange({
+                  ...sheetData,
+                  clanBane: event.target.value,
+                })
+              }
+              className={`${editorStyle} flex-1`}
+              placeholder={translations("clanBanePlaceholder")}
+            />
+          </label>
+        ) : (
+          <DisplayText value={sheetData.clanBane} />
+        )}
       </div>
     </section>
   );
