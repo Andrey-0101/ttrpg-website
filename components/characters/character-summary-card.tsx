@@ -142,24 +142,27 @@ export default async function CharacterSummaryCard({
         </div>
       </div>
 
-      <div className="flex flex-col items-stretch gap-3 border-t border-neutral-400 bg-neutral-50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-2">
-        <div className="text-xs text-neutral-700">
+      <div className="border-t border-neutral-400 bg-neutral-50 px-3 py-2">
+        <div className="mb-1.5 text-xs text-neutral-700">
           <span className="font-semibold">{gameSystemName}</span>
+
           <span className="mx-2" aria-hidden="true">
             ·
           </span>
+
           <span>
             {translations("visibility.label")}: {visibilityLabel}
           </span>
         </div>
 
-        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+        <div className="grid grid-cols-2 items-end gap-2">
           <Link
             href={`/characters/${id}`}
-            className="rounded border border-neutral-600 px-3 py-2 text-center text-sm hover:bg-neutral-200 sm:py-1.5"
+            className="w-full justify-self-start rounded border border-neutral-600 px-3 py-2 text-center text-sm hover:bg-neutral-200 sm:w-auto sm:py-1.5"
           >
             {translations("open")}
           </Link>
+
           <DeleteCharacterButton
             characterId={id}
             characterName={name}
