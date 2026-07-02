@@ -40,14 +40,14 @@ export default function AttributesSection({
         {translations("attributesTitle")}
       </h2>
 
-      <div className="mt-1.5 grid md:grid-cols-3">
+      <div className="mt-1.5 grid lg:grid-cols-3">
         {ATTRIBUTE_GROUP_KEYS.map((groupKey, groupIndex) => (
           <div
             key={groupKey}
             className={[
-              "min-w-0 px-2 first:pl-0 last:pr-0 sm:px-3",
+              "min-w-0 border-b border-neutral-300 px-0 py-2 last:border-b-0 sm:px-2 lg:border-b-0 lg:px-3 lg:py-0 lg:first:pl-0 lg:last:pr-0",
               groupIndex < ATTRIBUTE_GROUP_KEYS.length - 1
-                ? "md:border-r md:border-neutral-400"
+                ? "lg:border-r lg:border-neutral-400"
                 : "",
             ].join(" ")}
           >

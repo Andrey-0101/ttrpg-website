@@ -35,7 +35,7 @@ export default function BackgroundSheetPage({
 
   return (
     <A4SheetPage pageNumber={2}>
-      <div className="flex min-h-full flex-col overflow-hidden border-x border-t border-neutral-400 bg-white">
+      <div className="flex min-h-full min-w-0 flex-col border-x border-t border-neutral-400 bg-white">
         <BackgroundPrinciplesSection
           isEditing={isEditing}
           sheetData={sheetData}
@@ -44,8 +44,8 @@ export default function BackgroundSheetPage({
 
         <SheetSectionDivider />
 
-        <div className="grid flex-1 md:min-h-[47rem] md:grid-cols-2">
-          <div className="grid border-b border-neutral-400 md:grid-rows-[minmax(24rem,3fr)_minmax(14rem,2fr)] md:border-r md:border-b-0">
+        <div className="grid flex-1 lg:min-h-[47rem] lg:grid-cols-2">
+          <div className="grid border-b border-neutral-400 lg:grid-rows-[minmax(24rem,3fr)_minmax(14rem,2fr)] lg:border-r lg:border-b-0">
             <AdvantagesSection
               isEditing={isEditing}
               advantages={sheetData.advantages}

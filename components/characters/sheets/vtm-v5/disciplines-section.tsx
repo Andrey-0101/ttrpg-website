@@ -154,7 +154,7 @@ export default function DisciplinesSection({
           {translations("noDisciplines")}
         </p>
       ) : (
-        <div className="mt-2 grid flex-1 md:grid-cols-2">
+        <div className="mt-2 grid flex-1 lg:grid-cols-2">
           {visibleDisciplines.map((discipline, index) => {
             const displayName =
               discipline.name ||
@@ -168,10 +168,10 @@ export default function DisciplinesSection({
                 key={discipline.id}
                 className={[
                   "min-w-0 border-b border-neutral-300 px-2 py-2 first:pt-0 sm:px-3",
-                  isLeftColumn ? "md:border-r md:border-neutral-400" : "",
+                  isLeftColumn ? "lg:border-r lg:border-neutral-400" : "",
                 ].join(" ")}
               >
-                <div className="flex min-w-0 items-end gap-2">
+                <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:items-end">
                   <label className="min-w-0 flex-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
                     {translations("disciplineName")}
                     <input
@@ -208,7 +208,7 @@ export default function DisciplinesSection({
                   <button
                     type="button"
                     onClick={() => removeDiscipline(discipline.id)}
-                    className="rounded border border-red-600 bg-red-600 px-1.5 py-1 text-[10px] font-semibold text-white hover:bg-red-700"
+                    className="w-full rounded border border-red-600 bg-red-600 px-2 py-2 text-[10px] font-semibold text-white hover:bg-red-700 sm:w-auto sm:py-1"
                   >
                     {translations("removeDiscipline")}
                   </button>
@@ -251,10 +251,10 @@ export default function DisciplinesSection({
                 key={discipline.id}
                 className={[
                   "min-w-0 border-b border-neutral-300 px-2 py-2 first:pt-0 sm:px-3",
-                  isLeftColumn ? "md:border-r md:border-neutral-400" : "",
+                  isLeftColumn ? "lg:border-r lg:border-neutral-400" : "",
                 ].join(" ")}
               >
-                <div className="flex min-w-0 items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <strong className="min-w-0 text-xs">{displayName}</strong>
                   <RatingDots
                     label={displayName}

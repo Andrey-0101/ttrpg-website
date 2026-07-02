@@ -115,7 +115,7 @@ export default function DamageTrack({
               disabled={!isEditing}
               aria-label={getBoxLabel(index + 1, state)}
               className={[
-                "flex h-5 w-5 items-center justify-center border text-xs font-bold leading-none",
+                "flex h-8 w-8 items-center justify-center border text-base font-bold leading-none lg:h-5 lg:w-5 lg:text-xs",
                 "disabled:cursor-default",
                 state === "aggravated"
                   ? "border-neutral-950 bg-neutral-950 text-white"

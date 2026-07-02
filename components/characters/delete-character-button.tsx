@@ -65,12 +65,12 @@ export default function DeleteCharacterButton({
   }
 
   return (
-    <div className="text-right">
+    <div className="w-full text-right">
       <button
         type="button"
         onClick={handleDelete}
         disabled={deleting}
-        className="rounded border border-red-600 bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded border border-red-600 bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:py-1.5"
       >
         {deleting ? translations("deleting") : translations("delete")}
       </button>

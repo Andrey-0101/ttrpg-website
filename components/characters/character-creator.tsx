@@ -246,7 +246,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6">
-      <section className="rounded-lg border p-4">
+      <section className="min-w-0 rounded-lg border p-2 sm:p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold">
@@ -318,7 +318,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
       <button
         type="submit"
         disabled={creating}
-        className="mt-4 rounded bg-black px-5 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-4 w-full rounded bg-black px-5 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
       >
         {creating ? translations("creating") : translations("create")}
       </button>

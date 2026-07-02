@@ -41,8 +41,8 @@ export default function HealthWillpowerSection({
   }
 
   return (
-    <section className="grid md:grid-cols-2">
-      <div className="md:border-r md:border-neutral-400">
+    <section className="grid lg:grid-cols-2">
+      <div className="border-b border-neutral-400 lg:border-r lg:border-b-0 lg:border-neutral-400">
         <DamageTrack
           label={translations("health")}
           maximum={healthMaximum}

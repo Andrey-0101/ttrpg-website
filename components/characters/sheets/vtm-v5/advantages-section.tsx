@@ -201,7 +201,7 @@ export default function AdvantagesSection({
                   <button
                     type="button"
                     onClick={() => removeAdvantage(advantage.id)}
-                    className="rounded border border-red-600 bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700"
+                    className="w-full rounded border border-red-600 bg-red-600 px-2 py-2 text-[11px] font-semibold text-white hover:bg-red-700 sm:w-auto sm:py-1"
                   >
                     {translations("removeAdvantage")}
                   </button>

@@ -36,7 +36,7 @@ export default function VtmCharacterSheet({
   onPageChange,
 }: VtmCharacterSheetProps) {
   return (
-    <div className="mt-4 flex flex-col gap-4 text-sm">
+    <div className="mt-4 flex min-w-0 flex-col gap-4 text-sm">
       <SheetPageNavigation activePage={activePage} onChange={onPageChange} />
 
       {activePage === "core" ? (

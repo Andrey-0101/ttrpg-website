@@ -82,13 +82,13 @@ export default async function CharactersPage({
   );
 
   return (
-    <main className="mx-auto min-h-screen max-w-4xl p-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-4xl font-bold">{translations("title")}</h1>
+    <main className="mx-auto min-h-screen w-full max-w-4xl px-3 py-6 sm:px-6 lg:p-8">
+      <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-3xl font-bold sm:text-4xl">{translations("title")}</h1>
 
         <Link
           href="/characters/new"
-          className="rounded bg-black px-5 py-3 text-white"
+          className="w-full rounded bg-black px-5 py-3 text-center text-white sm:w-auto"
         >
           {translations("create")}
         </Link>

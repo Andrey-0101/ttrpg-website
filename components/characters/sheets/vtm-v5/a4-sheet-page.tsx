@@ -12,9 +12,9 @@ export default function A4SheetPage({
   return (
     <section
       data-vtm-sheet-page={pageNumber}
-      className="mx-auto box-border w-full border-[3mm] border-[#b00000] bg-white text-neutral-950 shadow-lg md:aspect-[210/297] print:min-h-[297mm] print:w-[210mm] print:shadow-none"
+      className="mx-auto box-border w-full border-[1.5mm] border-[#b00000] bg-white text-neutral-950 shadow-lg sm:border-[2mm] lg:aspect-[210/297] lg:border-[3mm] print:min-h-[297mm] print:w-[210mm] print:border-[3mm] print:shadow-none"
     >
-      <div className="min-h-full bg-white p-1 sm:p-1.5 md:p-2 print:p-[2mm]">
+      <div className="min-h-full min-w-0 bg-white p-0.5 sm:p-1.5 lg:p-2 print:p-[2mm]">
         {children}
       </div>
     </section>

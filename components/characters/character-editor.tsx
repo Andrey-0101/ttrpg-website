@@ -309,7 +309,7 @@ export default function CharacterEditor({
 
   function renderEditorControls() {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
         <button
           type="button"
           onClick={() => {
@@ -317,7 +317,7 @@ export default function CharacterEditor({
             setIsEditing(true);
           }}
           disabled={isEditing || saving}
-          className="rounded border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+          className="w-full rounded border px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
           {translations("edit")}
         </button>
@@ -325,7 +325,7 @@ export default function CharacterEditor({
         <button
           type="submit"
           disabled={!isEditing || saving}
-          className="rounded border bg-black px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="w-full rounded border bg-black px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
           {saving ? translations("saving") : translations("save")}
         </button>
@@ -345,8 +345,8 @@ export default function CharacterEditor({
   );
 
   return (
-    <form onSubmit={handleSave} className="mt-6 rounded-lg border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <form onSubmit={handleSave} className="mt-6 min-w-0 rounded-lg border p-2 sm:p-4">
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wider text-gray-400">
             {translations("sheetTitle")}
@@ -425,14 +425,14 @@ export default function CharacterEditor({
         </section>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         {renderEditorControls()}
 
         <button
           type="button"
           onClick={handleClear}
           disabled={!isEditing || saving}
-          className="rounded border border-orange-600 px-4 py-2 text-sm text-orange-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="w-full rounded border border-orange-600 px-4 py-2 text-sm text-orange-600 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
           {translations("clear")}
         </button>

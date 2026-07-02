@@ -27,12 +27,12 @@ function SummaryField({
 }: SummaryFieldProps) {
   return (
     <div
-      className={`flex min-w-0 items-center gap-1.5 border-neutral-400 px-2 py-1.5 sm:px-3 ${className}`}
+      className={`flex min-w-0 flex-col items-start gap-0.5 border-neutral-400 px-2 py-1.5 sm:flex-row sm:items-center sm:gap-1.5 sm:px-3 ${className}`}
     >
       <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
         {label}:
       </span>
-      <span className="min-w-0 truncate text-sm text-neutral-950">
+      <span className="min-w-0 break-words text-sm text-neutral-950 sm:truncate">
         {value || "—"}
       </span>
     </div>
@@ -60,8 +60,8 @@ export default async function CharacterSummaryCard({
 
   return (
     <article className="overflow-hidden rounded-lg border border-neutral-400 bg-white text-neutral-950 shadow-sm">
-      <div className="grid md:grid-cols-[27%_73%]">
-        <div className="relative flex min-h-40 items-center justify-center overflow-hidden border-b border-neutral-400 bg-neutral-100 md:min-h-48 md:border-r md:border-b-0">
+      <div className="grid lg:grid-cols-[27%_73%]">
+        <div className="relative flex min-h-52 items-center justify-center overflow-hidden border-b border-neutral-400 bg-neutral-100 lg:min-h-48 lg:border-r lg:border-b-0">
           {portraitUrl ? (
             <img
               src={portraitUrl}
@@ -85,7 +85,7 @@ export default async function CharacterSummaryCard({
 
         <div className="min-w-0">
           <div className="border-b border-neutral-400 px-3 py-2">
-            <h2 className="truncate text-xl font-bold">{name}</h2>
+            <h2 className="break-words text-xl font-bold sm:truncate">{name}</h2>
           </div>
 
           {identity ? (
@@ -142,7 +142,7 @@ export default async function CharacterSummaryCard({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-400 bg-neutral-50 px-3 py-2">
+      <div className="flex flex-col items-stretch gap-3 border-t border-neutral-400 bg-neutral-50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-2">
         <div className="text-xs text-neutral-700">
           <span className="font-semibold">{gameSystemName}</span>
           <span className="mx-2" aria-hidden="true">
@@ -153,10 +153,10 @@ export default async function CharacterSummaryCard({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
           <Link
             href={`/characters/${id}`}
-            className="rounded border border-neutral-600 px-3 py-1.5 text-sm hover:bg-neutral-200"
+            className="rounded border border-neutral-600 px-3 py-2 text-center text-sm hover:bg-neutral-200 sm:py-1.5"
           >
             {translations("open")}
           </Link>

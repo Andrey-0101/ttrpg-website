@@ -89,7 +89,7 @@ export default function CoreSheetPage({
 
   return (
     <A4SheetPage pageNumber={1}>
-      <div className="flex min-h-full flex-col overflow-hidden border border-neutral-400 bg-white">
+      <div className="flex min-h-full min-w-0 flex-col border border-neutral-400 bg-white">
         <CharacterIdentityCard
           isEditing={isEditing}
           name={name}

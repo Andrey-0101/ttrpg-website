@@ -45,12 +45,12 @@ export default function RatingDots({
             disabled={!isEditing}
             aria-label={getButtonLabel(nextValue)}
             aria-pressed={value === rating}
-            className="rounded-full p-0.5 disabled:cursor-default"
+            className="flex h-8 w-8 items-center justify-center rounded-full p-0.5 disabled:cursor-default lg:h-auto lg:w-auto"
           >
             <span
               aria-hidden="true"
               className={[
-                "block h-3 w-3 rounded-full border",
+                "block h-3.5 w-3.5 rounded-full border lg:h-3 lg:w-3",
                 isFilled
                   ? "border-current bg-current"
                   : "border-gray-500 bg-transparent",

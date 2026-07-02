@@ -46,7 +46,7 @@ function TrackerStepper({
             onClick={() => onChange(Math.max(minimum, value - 1))}
             disabled={value <= minimum}
             aria-label={translations("decreaseTracker", { name: label })}
-            className="flex h-5 w-5 items-center justify-center rounded border border-neutral-500 text-xs leading-none disabled:cursor-not-allowed disabled:opacity-35"
+            className="flex h-8 w-8 items-center justify-center rounded border border-neutral-500 text-sm leading-none disabled:cursor-not-allowed disabled:opacity-35 lg:h-5 lg:w-5 lg:text-xs"
           >
             −
           </button>
@@ -55,7 +55,7 @@ function TrackerStepper({
             onClick={() => onChange(Math.min(maximum, value + 1))}
             disabled={value >= maximum}
             aria-label={translations("increaseTracker", { name: label })}
-            className="flex h-5 w-5 items-center justify-center rounded border border-neutral-500 text-xs leading-none disabled:cursor-not-allowed disabled:opacity-35"
+            className="flex h-8 w-8 items-center justify-center rounded border border-neutral-500 text-sm leading-none disabled:cursor-not-allowed disabled:opacity-35 lg:h-5 lg:w-5 lg:text-xs"
           >
             +
           </button>
@@ -130,7 +130,7 @@ export default function TrackersSection({
   }
 
   return (
-    <section className="grid md:grid-cols-[2fr_1fr_2fr]">
+    <section className="grid lg:grid-cols-[2fr_1fr_2fr]">
       <label className="min-w-0 px-2 py-2 sm:px-3">
         <span className="block text-sm font-bold italic leading-none">
           {translations("resonance")}
@@ -146,7 +146,7 @@ export default function TrackersSection({
         />
       </label>
 
-      <div className="flex min-w-0 flex-col items-center justify-center border-y border-neutral-400 px-2 py-2 md:border-x md:border-y-0">
+      <div className="flex min-w-0 flex-col items-center justify-center border-y border-neutral-400 px-2 py-2 lg:border-x lg:border-y-0">
         <h3 className="text-sm font-bold italic leading-none">
           {translations("hunger")}
         </h3>
@@ -174,7 +174,7 @@ export default function TrackersSection({
         </h3>
 
         <div
-          className="max-w-full overflow-x-auto"
+          className="max-w-full"
           role="img"
           aria-label={translations("humanityStainsSummary", {
             humanity: trackers.humanity,

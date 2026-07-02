@@ -64,7 +64,7 @@ export default function CharacterPortraitField({
   }
 
   return (
-    <div className="relative flex min-h-36 h-full flex-col items-center justify-center overflow-hidden border-b border-neutral-400 bg-neutral-100 text-center md:min-h-44 md:border-r md:border-b-0">
+    <div className="relative flex min-h-48 h-full flex-col items-center justify-center overflow-hidden border-b border-neutral-400 bg-neutral-100 text-center lg:min-h-44 lg:border-r lg:border-b-0">
       {portraitUrl ? (
         <img
           src={portraitUrl}
@@ -87,9 +87,9 @@ export default function CharacterPortraitField({
 
       {isEditing && (
         <div className="relative z-10 mt-auto w-full bg-white/90 px-2 py-2 backdrop-blur-sm">
-          <div className="flex flex-wrap justify-center gap-1.5">
+          <div className="grid w-full grid-cols-1 gap-1.5 sm:flex sm:flex-wrap sm:justify-center">
             <label
-              className={`rounded border border-blue-600 bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white ${
+              className={`w-full rounded border border-blue-600 bg-blue-600 px-2 py-2 text-center text-[11px] font-semibold text-white sm:w-auto sm:py-1 ${
                 busy
                   ? "cursor-not-allowed opacity-50"
                   : "cursor-pointer hover:bg-blue-700"
@@ -113,7 +113,7 @@ export default function CharacterPortraitField({
                 type="button"
                 onClick={handleRemove}
                 disabled={busy}
-                className="rounded border border-red-600 bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded border border-red-600 bg-red-600 px-2 py-2 text-[11px] font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:py-1"
               >
                 {translations("removePortrait")}
               </button>

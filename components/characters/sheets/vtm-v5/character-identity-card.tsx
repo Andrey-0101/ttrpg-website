@@ -51,7 +51,7 @@ function IdentityTextField({
 }: IdentityTextFieldProps) {
   return (
     <label
-      className={`${cellClassName} flex items-center gap-1.5 ${className}`}
+      className={`${cellClassName} flex flex-col items-stretch gap-0.5 sm:flex-row sm:items-center sm:gap-1.5 ${className}`}
     >
       <span className={labelClassName}>{label}:</span>
       <input
@@ -88,7 +88,7 @@ export default function CharacterIdentityCard({
 
   return (
     <section className="overflow-hidden border border-neutral-400 bg-white text-neutral-950">
-      <div className="grid md:grid-cols-[27%_73%]">
+      <div className="grid lg:grid-cols-[27%_73%]">
         <CharacterPortraitField
           isEditing={isEditing}
           portraitUrl={portraitUrl}
@@ -99,7 +99,7 @@ export default function CharacterIdentityCard({
         />
 
         <div>
-          <label className="flex min-w-0 items-center gap-2 border-b border-neutral-400 px-3 py-1.5">
+          <label className="flex min-w-0 flex-col items-stretch gap-1 border-b border-neutral-400 px-2 py-2 sm:flex-row sm:items-center sm:gap-2 sm:px-3 sm:py-1.5">
             <span className={labelClassName}>
               {sheetTranslations("name")}:
             </span>
@@ -152,7 +152,7 @@ export default function CharacterIdentityCard({
 
             <div className="min-w-0">
               <label
-                className={`${cellClassName} flex items-center gap-1.5 border-b border-neutral-400`}
+                className={`${cellClassName} flex flex-col items-stretch gap-0.5 border-b border-neutral-400 sm:flex-row sm:items-center sm:gap-1.5`}
               >
                 <span className={labelClassName}>
                   {sheetTranslations("generation")}:
