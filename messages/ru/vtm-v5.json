@@ -115,9 +115,9 @@
     "resonancePlaceholder": "Например: Холерический",
     "hunger": "Голод",
     "humanity": "Человечность",
-    "principlesTitle": "Правила хроники, Опоры, Убеждения и Клановое проклятие",
+    "principlesTitle": "Правила хроники, Камни преткновения, Убеждения и Клановое проклятие",
     "chronicleTenets": "Правила хроники",
-    "touchstones": "Опоры",
+    "touchstones": "«Якоря»",
     "convictions": "Убеждения",
     "clanBane": "Клановое проклятие",
     "clanBanePlaceholder": "Опишите клановое проклятие персонажа",
@@ -162,6 +162,17 @@
     "appearance": "Внешность",
     "distinguishingFeatures": "Отличительные черты",
     "history": "История",
-    "touchstonesAndConvictions": "Опоры и Убеждения"
+    "touchstonesAndConvictions": "Опоры и Убеждения",
+    "stains": "Пятна",
+    "decreaseTracker": "Уменьшить: {name}",
+    "increaseTracker": "Увеличить: {name}",
+    "humanityStainsSummary": "Человечность: {humanity}, Пятна: {stains}",
+    "uploadPortrait": "Загрузить",
+    "replacePortrait": "Заменить",
+    "removePortrait": "Удалить",
+    "portraitHelp": "JPG, PNG или WebP, до 5 МБ.",
+    "portraitInvalidType": "Выберите изображение JPG, PNG или WebP.",
+    "portraitTooLarge": "Размер портрета не должен превышать 5 МБ.",
+    "portraitUploadError": "Не удалось загрузить портрет. Попробуйте ещё раз."
   }
 }

@@ -6,13 +6,19 @@ import type {
   VtmV5Identity,
   VtmV5SheetData,
 } from "@/lib/characters/vtm-v5/schema";
+import CharacterPortraitField from "./character-portrait-field";
 
 type CharacterIdentityCardProps = {
   isEditing: boolean;
   name: string;
   identity: VtmV5SheetData["identity"];
+  portraitUrl: string | null;
+  hasPortrait: boolean;
+  portraitBusy?: boolean;
   onNameChange: (value: string) => void;
   onIdentityChange: (value: VtmV5Identity) => void;
+  onPortraitFileChange?: (file: File) => void;
+  onPortraitRemove?: () => void;
 };
 
 type TextIdentityKey = Exclude<keyof VtmV5Identity, "generation">;
@@ -63,8 +69,13 @@ export default function CharacterIdentityCard({
   isEditing,
   name,
   identity,
+  portraitUrl,
+  hasPortrait,
+  portraitBusy = false,
   onNameChange,
   onIdentityChange,
+  onPortraitFileChange,
+  onPortraitRemove,
 }: CharacterIdentityCardProps) {
   const sheetTranslations = useTranslations("VtmCharacterSheet");
 
@@ -78,19 +89,14 @@ export default function CharacterIdentityCard({
   return (
     <section className="overflow-hidden border border-neutral-400 bg-white text-neutral-950">
       <div className="grid md:grid-cols-[27%_73%]">
-        <div className="flex min-h-36 items-center justify-center border-b border-neutral-400 bg-neutral-100 px-4 text-center md:min-h-44 md:border-r md:border-b-0">
-          <div>
-            <div
-              aria-hidden="true"
-              className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full border border-neutral-400 text-2xl text-neutral-500"
-            >
-              ◇
-            </div>
-            <p className="text-sm font-medium italic text-neutral-600">
-              {sheetTranslations("portrait")}
-            </p>
-          </div>
-        </div>
+        <CharacterPortraitField
+          isEditing={isEditing}
+          portraitUrl={portraitUrl}
+          hasPortrait={hasPortrait}
+          busy={portraitBusy}
+          onFileChange={onPortraitFileChange}
+          onRemove={onPortraitRemove}
+        />
 
         <div>
           <label className="flex min-w-0 items-center gap-2 border-b border-neutral-400 px-3 py-1.5">

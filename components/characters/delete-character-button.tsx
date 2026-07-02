@@ -3,31 +3,32 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+
+import {
+  CHARACTER_PORTRAIT_BUCKET,
+  isCharacterPortraitStoragePath,
+} from "@/lib/characters/portrait";
 import { createClient } from "@/utils/supabase/client";
 
 type DeleteCharacterButtonProps = {
   characterId: string;
   characterName: string;
+  portraitPath?: string | null;
 };
 
 export default function DeleteCharacterButton({
   characterId,
   characterName,
+  portraitPath = null,
 }: DeleteCharacterButtonProps) {
-  const translations =
-    useTranslations("CharacterDelete");
-
+  const translations = useTranslations("CharacterDelete");
   const router = useRouter();
-
   const [deleting, setDeleting] = useState(false);
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      translations("confirm", {
-        name: characterName,
-      })
+      translations("confirm", { name: characterName }),
     );
 
     if (!confirmed) {
@@ -38,7 +39,6 @@ export default function DeleteCharacterButton({
     setErrorMessage("");
 
     const supabase = createClient();
-
     const { error } = await supabase
       .from("characters")
       .delete()
@@ -51,6 +51,16 @@ export default function DeleteCharacterButton({
       return;
     }
 
+    if (isCharacterPortraitStoragePath(portraitPath)) {
+      const { error: portraitError } = await supabase.storage
+        .from(CHARACTER_PORTRAIT_BUCKET)
+        .remove([portraitPath]);
+
+      if (portraitError) {
+        console.error("Failed to remove the character portrait:", portraitError);
+      }
+    }
+
     router.refresh();
   }
 
@@ -60,18 +70,13 @@ export default function DeleteCharacterButton({
         type="button"
         onClick={handleDelete}
         disabled={deleting}
-        className="rounded border border-red-600 px-4 py-2 text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded border border-red-600 bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {deleting
-          ? translations("deleting")
-          : translations("delete")}
+        {deleting ? translations("deleting") : translations("delete")}
       </button>
 
       {errorMessage && (
-        <p
-          className="mt-2 text-sm text-red-600"
-          role="alert"
-        >
+        <p className="mt-1 text-xs text-red-700" role="alert">
           {errorMessage}
         </p>
       )}

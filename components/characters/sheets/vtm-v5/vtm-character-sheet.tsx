@@ -10,8 +10,13 @@ type VtmCharacterSheetProps = {
   isEditing: boolean;
   name: string;
   sheetData: VtmV5SheetData;
+  portraitUrl: string | null;
+  hasPortrait: boolean;
+  portraitBusy?: boolean;
   onNameChange: (value: string) => void;
   onChange: (value: VtmV5SheetData) => void;
+  onPortraitFileChange?: (file: File) => void;
+  onPortraitRemove?: () => void;
   activePage: VtmV5SheetPage;
   onPageChange: (page: VtmV5SheetPage) => void;
 };
@@ -20,8 +25,13 @@ export default function VtmCharacterSheet({
   isEditing,
   name,
   sheetData,
+  portraitUrl,
+  hasPortrait,
+  portraitBusy = false,
   onNameChange,
   onChange,
+  onPortraitFileChange,
+  onPortraitRemove,
   activePage,
   onPageChange,
 }: VtmCharacterSheetProps) {
@@ -34,8 +44,13 @@ export default function VtmCharacterSheet({
           isEditing={isEditing}
           name={name}
           sheetData={sheetData}
+          portraitUrl={portraitUrl}
+          hasPortrait={hasPortrait}
+          portraitBusy={portraitBusy}
           onNameChange={onNameChange}
           onChange={onChange}
+          onPortraitFileChange={onPortraitFileChange}
+          onPortraitRemove={onPortraitRemove}
         />
       ) : (
         <BackgroundSheetPage

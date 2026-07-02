@@ -10,6 +10,12 @@ import {
   normalizeGameSystemId,
 } from "@/lib/characters/game-systems";
 import {
+  CHARACTER_PORTRAIT_BUCKET,
+  CHARACTER_PORTRAIT_SIGNED_URL_TTL,
+  createCharacterPortraitPath,
+  isCharacterPortraitStoragePath,
+} from "@/lib/characters/portrait";
+import {
   getCharacterDraftKey,
   getCharacterPageKey,
   readVtmV5EditorDraft,
@@ -31,8 +37,15 @@ type CharacterRow = Database["public"]["Tables"]["characters"]["Row"];
 
 type CharacterData = Pick<
   CharacterRow,
-  "id" | "name" | "game_system" | "visibility" | "sheet_data"
->;
+  | "id"
+  | "name"
+  | "game_system"
+  | "visibility"
+  | "sheet_data"
+  | "portrait_url"
+> & {
+  portraitSignedUrl: string | null;
+};
 
 type CharacterVisibility = VtmV5DraftVisibility;
 
@@ -43,6 +56,7 @@ export default function CharacterEditor({
 }) {
   const formTranslations = useTranslations("CharacterForm");
   const translations = useTranslations("CharacterEditor");
+  const sheetTranslations = useTranslations("VtmCharacterSheet");
 
   const normalizedSystemId = normalizeGameSystemId(character.game_system);
   const gameSystemName = getGameSystemName(character.game_system);
@@ -71,6 +85,13 @@ export default function CharacterEditor({
   const [activePage, setActivePage] = useState<VtmV5SheetPage>("core");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [portraitPath, setPortraitPath] = useState(character.portrait_url);
+  const [portraitUrl, setPortraitUrl] = useState(character.portraitSignedUrl);
+  const [portraitFile, setPortraitFile] = useState<File | null>(null);
+  const [portraitPreviewUrl, setPortraitPreviewUrl] = useState<string | null>(
+    null,
+  );
+  const [portraitRemoved, setPortraitRemoved] = useState(false);
 
   useEffect(() => {
     if (normalizedSystemId !== "vtm-v5") {
@@ -125,6 +146,26 @@ export default function CharacterEditor({
     vtmSheetData,
   ]);
 
+  useEffect(() => {
+    return () => {
+      if (portraitPreviewUrl) {
+        URL.revokeObjectURL(portraitPreviewUrl);
+      }
+    };
+  }, [portraitPreviewUrl]);
+
+  function handlePortraitFileChange(file: File) {
+    setPortraitFile(file);
+    setPortraitRemoved(false);
+    setPortraitPreviewUrl(URL.createObjectURL(file));
+  }
+
+  function handlePortraitRemove() {
+    setPortraitFile(null);
+    setPortraitPreviewUrl(null);
+    setPortraitRemoved(true);
+  }
+
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -133,28 +174,116 @@ export default function CharacterEditor({
     const supabase = createClient();
     const sheetDataToSave =
       normalizedSystemId === "vtm-v5" ? vtmSheetData : character.sheet_data;
+    let uploadedPortraitPath: string | null = null;
+    let nextPortraitPath = portraitRemoved ? null : portraitPath;
 
-    const { error } = await supabase
-      .from("characters")
-      .update({
-        name,
-        visibility,
-        sheet_data: sheetDataToSave,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", character.id);
+    try {
+      if (portraitFile) {
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
 
-    if (error) {
+        if (userError || !userData.user) {
+          throw new Error("Authenticated user is required for portrait upload.");
+        }
+
+        uploadedPortraitPath = createCharacterPortraitPath(
+          userData.user.id,
+          character.id,
+          portraitFile,
+        );
+
+        const { error: uploadError } = await supabase.storage
+          .from(CHARACTER_PORTRAIT_BUCKET)
+          .upload(uploadedPortraitPath, portraitFile, {
+            cacheControl: "3600",
+            contentType: portraitFile.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(uploadError);
+          setMessage(sheetTranslations("portraitUploadError"));
+          return;
+        }
+
+        nextPortraitPath = uploadedPortraitPath;
+      }
+
+      const { error } = await supabase
+        .from("characters")
+        .update({
+          name,
+          visibility,
+          sheet_data: sheetDataToSave,
+          portrait_url: nextPortraitPath,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", character.id);
+
+      if (error) {
+        console.error(error);
+
+        if (uploadedPortraitPath) {
+          await supabase.storage
+            .from(CHARACTER_PORTRAIT_BUCKET)
+            .remove([uploadedPortraitPath]);
+        }
+
+        setMessage(translations("saveError"));
+        return;
+      }
+
+      if (
+        isCharacterPortraitStoragePath(portraitPath) &&
+        portraitPath !== nextPortraitPath
+      ) {
+        const { error: removalError } = await supabase.storage
+          .from(CHARACTER_PORTRAIT_BUCKET)
+          .remove([portraitPath]);
+
+        if (removalError) {
+          console.error("Failed to remove the old portrait:", removalError);
+        }
+      }
+
+      if (uploadedPortraitPath) {
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from(CHARACTER_PORTRAIT_BUCKET)
+          .createSignedUrl(
+            uploadedPortraitPath,
+            CHARACTER_PORTRAIT_SIGNED_URL_TTL,
+          );
+
+        if (signedError) {
+          console.error(signedError);
+        } else {
+          setPortraitUrl(signedData.signedUrl);
+          setPortraitPreviewUrl(null);
+        }
+      } else if (portraitRemoved) {
+        setPortraitUrl(null);
+        setPortraitPreviewUrl(null);
+      }
+
+      setPortraitPath(nextPortraitPath);
+      setPortraitFile(null);
+      setPortraitRemoved(false);
+      removeVtmV5EditorDraft(draftStorageKey);
+      setMessage(translations("changesSaved"));
+      setIsEditing(false);
+    } catch (error) {
       console.error(error);
-      setMessage(translations("saveError"));
-      setSaving(false);
-      return;
-    }
 
-    removeVtmV5EditorDraft(draftStorageKey);
-    setMessage(translations("changesSaved"));
-    setSaving(false);
-    setIsEditing(false);
+      if (uploadedPortraitPath) {
+        await supabase.storage
+          .from(CHARACTER_PORTRAIT_BUCKET)
+          .remove([uploadedPortraitPath]);
+      }
+
+      setMessage(translations("saveError"));
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleClear() {
@@ -166,6 +295,9 @@ export default function CharacterEditor({
 
     setName("");
     setVisibility("private");
+    setPortraitFile(null);
+    setPortraitPreviewUrl(null);
+    setPortraitRemoved(true);
 
     if (normalizedSystemId === "vtm-v5") {
       setVtmSheetData(createDefaultVtmV5SheetData());
@@ -205,6 +337,12 @@ export default function CharacterEditor({
     "mt-1 w-full rounded border px-2 py-1.5 disabled:bg-gray-100 disabled:text-gray-900";
   const showExternalNameField =
     normalizedSystemId !== "vtm-v5" || activePage === "background";
+  const displayedPortraitUrl = portraitRemoved
+    ? null
+    : portraitPreviewUrl ?? portraitUrl;
+  const hasPortrait = Boolean(
+    !portraitRemoved && (portraitFile || portraitPath || displayedPortraitUrl),
+  );
 
   return (
     <form onSubmit={handleSave} className="mt-6 rounded-lg border p-4">
@@ -268,8 +406,13 @@ export default function CharacterEditor({
             isEditing={isEditing}
             name={name}
             sheetData={vtmSheetData}
+            portraitUrl={displayedPortraitUrl}
+            hasPortrait={hasPortrait}
+            portraitBusy={saving}
             onNameChange={setName}
             onChange={setVtmSheetData}
+            onPortraitFileChange={handlePortraitFileChange}
+            onPortraitRemove={handlePortraitRemove}
             activePage={activePage}
             onPageChange={setActivePage}
           />

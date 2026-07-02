@@ -19,16 +19,26 @@ type CoreSheetPageProps = {
   isEditing: boolean;
   name: string;
   sheetData: VtmV5SheetData;
+  portraitUrl: string | null;
+  hasPortrait: boolean;
+  portraitBusy?: boolean;
   onNameChange: (value: string) => void;
   onChange: (value: VtmV5SheetData) => void;
+  onPortraitFileChange?: (file: File) => void;
+  onPortraitRemove?: () => void;
 };
 
 export default function CoreSheetPage({
   isEditing,
   name,
   sheetData,
+  portraitUrl,
+  hasPortrait,
+  portraitBusy = false,
   onNameChange,
   onChange,
+  onPortraitFileChange,
+  onPortraitRemove,
 }: CoreSheetPageProps) {
   function updateAttribute(key: VtmV5AttributeKey, value: number) {
     onChange({
@@ -84,6 +94,9 @@ export default function CoreSheetPage({
           isEditing={isEditing}
           name={name}
           identity={sheetData.identity}
+          portraitUrl={portraitUrl}
+          hasPortrait={hasPortrait}
+          portraitBusy={portraitBusy}
           onNameChange={onNameChange}
           onIdentityChange={(identity) =>
             onChange({
@@ -91,6 +104,8 @@ export default function CoreSheetPage({
               identity,
             })
           }
+          onPortraitFileChange={onPortraitFileChange}
+          onPortraitRemove={onPortraitRemove}
         />
 
         <SheetSectionDivider />

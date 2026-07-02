@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/utils/supabase/server";
-import { getGameSystemName } from "@/lib/characters/game-systems";
-import DeleteCharacterButton from "@/components/characters/delete-character-button";
+
+import CharacterSummaryCard from "@/components/characters/character-summary-card";
 import { Link, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import {
+  getGameSystemName,
+  normalizeGameSystemId,
+} from "@/lib/characters/game-systems";
+import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
+import { normalizeVtmV5SheetData } from "@/lib/characters/vtm-v5/schema";
+import { createClient } from "@/utils/supabase/server";
 
 type CharactersPageProps = {
   params: Promise<{
@@ -16,7 +22,6 @@ export async function generateMetadata({
   params,
 }: CharactersPageProps): Promise<Metadata> {
   const { locale } = await params;
-
   const translations = await getTranslations({
     locale,
     namespace: "PageMetadata",
@@ -31,12 +36,8 @@ export default async function CharactersPage({
   params,
 }: CharactersPageProps) {
   const { locale } = await params;
-
-  const translations =
-    await getTranslations("Characters");
-
+  const translations = await getTranslations("Characters");
   const supabase = await createClient();
-
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
 
@@ -50,25 +51,40 @@ export default async function CharactersPage({
   const { data: characters, error } = await supabase
     .from("characters")
     .select(
-      "id, name, game_system, description, visibility"
+      "id, name, game_system, visibility, portrait_url, sheet_data",
     )
     .order("created_at", {
       ascending: false,
     });
 
   if (error) {
-    console.error(
-      "Failed to load characters:",
-      error
-    );
+    console.error("Failed to load characters:", error);
   }
 
+  const preparedCharacters = await Promise.all(
+    (characters ?? []).map(async (character) => {
+      const normalizedSystemId = normalizeGameSystemId(character.game_system);
+      const identity =
+        normalizedSystemId === "vtm-v5"
+          ? normalizeVtmV5SheetData(character.sheet_data).identity
+          : null;
+      const portraitUrl = await getCharacterPortraitSignedUrl(
+        supabase,
+        character.portrait_url,
+      );
+
+      return {
+        ...character,
+        identity,
+        portraitUrl,
+      };
+    }),
+  );
+
   return (
-    <main className="mx-auto min-h-screen max-w-5xl p-8">
+    <main className="mx-auto min-h-screen max-w-4xl p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-4xl font-bold">
-          {translations("title")}
-        </h1>
+        <h1 className="text-4xl font-bold">{translations("title")}</h1>
 
         <Link
           href="/characters/new"
@@ -84,63 +100,22 @@ export default async function CharactersPage({
         </p>
       )}
 
-      {!error && characters?.length === 0 && (
-        <p className="mt-8">
-          {translations("empty")}
-        </p>
+      {!error && preparedCharacters.length === 0 && (
+        <p className="mt-8">{translations("empty")}</p>
       )}
 
-      <div className="mt-8 grid gap-4">
-        {characters?.map((character) => (
-          <section
+      <div className="mt-8 grid gap-5">
+        {preparedCharacters.map((character) => (
+          <CharacterSummaryCard
             key={character.id}
-            className="flex min-h-56 flex-col rounded-lg border p-6"
-          >
-            <h2 className="text-2xl font-bold">
-              {character.name}
-            </h2>
-
-            <p className="mt-2">
-              {getGameSystemName(
-                character.game_system
-              )}
-            </p>
-
-            <p className="mt-2 whitespace-pre-line">
-              {character.description ||
-                translations("noDescription")}
-            </p>
-
-            <p className="mt-2 text-sm">
-              {translations("visibility.label")}:{" "}
-              {character.visibility === "public"
-                ? translations(
-                    "visibility.public"
-                  )
-                : character.visibility ===
-                    "campaign"
-                  ? translations(
-                      "visibility.campaign"
-                    )
-                  : translations(
-                      "visibility.private"
-                    )}
-            </p>
-
-            <div className="mt-auto flex items-end justify-between gap-4 pt-6">
-              <Link
-                href={`/characters/${character.id}`}
-                className="rounded border px-4 py-2 hover:bg-gray-100 hover:text-black"
-              >
-                {translations("open")}
-              </Link>
-
-              <DeleteCharacterButton
-                characterId={character.id}
-                characterName={character.name}
-              />
-            </div>
-          </section>
+            id={character.id}
+            name={character.name}
+            gameSystemName={getGameSystemName(character.game_system)}
+            visibility={character.visibility}
+            portraitPath={character.portrait_url}
+            portraitUrl={character.portraitUrl}
+            identity={character.identity}
+          />
         ))}
       </div>
     </main>

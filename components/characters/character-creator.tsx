@@ -8,6 +8,10 @@ import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { GAME_SYSTEMS, type GameSystemId } from "@/lib/characters/game-systems";
 import {
+  CHARACTER_PORTRAIT_BUCKET,
+  createCharacterPortraitPath,
+} from "@/lib/characters/portrait";
+import {
   getNewCharacterDraftKey,
   getNewCharacterPageKey,
   readVtmV5EditorDraft,
@@ -32,6 +36,7 @@ type CharacterVisibility = VtmV5DraftVisibility;
 
 export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
   const translations = useTranslations("CharacterForm");
+  const sheetTranslations = useTranslations("VtmCharacterSheet");
   const router = useRouter();
   const gameSystem = GAME_SYSTEMS[systemId];
 
@@ -53,6 +58,10 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
   const [activePage, setActivePage] = useState<VtmV5SheetPage>("core");
   const [message, setMessage] = useState("");
   const [creating, setCreating] = useState(false);
+  const [portraitFile, setPortraitFile] = useState<File | null>(null);
+  const [portraitPreviewUrl, setPortraitPreviewUrl] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (systemId !== "vtm-v5") {
@@ -105,50 +114,130 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
     vtmSheetData,
   ]);
 
+  useEffect(() => {
+    return () => {
+      if (portraitPreviewUrl) {
+        URL.revokeObjectURL(portraitPreviewUrl);
+      }
+    };
+  }, [portraitPreviewUrl]);
+
+  function handlePortraitFileChange(file: File) {
+    setPortraitFile(file);
+    setPortraitPreviewUrl(URL.createObjectURL(file));
+  }
+
+  function handlePortraitRemove() {
+    setPortraitFile(null);
+    setPortraitPreviewUrl(null);
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setCreating(true);
     setMessage("");
 
     const supabase = createClient();
+    let newCharacterId: string | null = null;
+    let uploadedPortraitPath: string | null = null;
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    try {
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
 
-    if (userError || !userData.user) {
-      setCreating(false);
-      router.push("/login");
-      return;
-    }
+      if (userError || !userData.user) {
+        router.push("/login");
+        return;
+      }
 
-    const sheetData =
-      systemId === "vtm-v5"
-        ? vtmSheetData
-        : {
-            schemaVersion: 1,
-          };
+      const sheetData =
+        systemId === "vtm-v5"
+          ? vtmSheetData
+          : {
+              schemaVersion: 1,
+            };
 
-    const { data: newCharacter, error } = await supabase
-      .from("characters")
-      .insert({
-        owner_id: userData.user.id,
-        name,
-        game_system: systemId,
-        visibility,
-        sheet_data: sheetData,
-      })
-      .select("id")
-      .single();
+      const { data: newCharacter, error } = await supabase
+        .from("characters")
+        .insert({
+          owner_id: userData.user.id,
+          name,
+          game_system: systemId,
+          visibility,
+          sheet_data: sheetData,
+        })
+        .select("id")
+        .single();
 
-    if (error || !newCharacter) {
+      if (error || !newCharacter) {
+        console.error(error);
+        setMessage(translations("createError"));
+        return;
+      }
+
+      newCharacterId = newCharacter.id;
+
+      if (portraitFile) {
+        uploadedPortraitPath = createCharacterPortraitPath(
+          userData.user.id,
+          newCharacter.id,
+          portraitFile,
+        );
+
+        const { error: uploadError } = await supabase.storage
+          .from(CHARACTER_PORTRAIT_BUCKET)
+          .upload(uploadedPortraitPath, portraitFile, {
+            cacheControl: "3600",
+            contentType: portraitFile.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(uploadError);
+          await supabase.from("characters").delete().eq("id", newCharacter.id);
+          setMessage(sheetTranslations("portraitUploadError"));
+          return;
+        }
+
+        const { error: portraitUpdateError } = await supabase
+          .from("characters")
+          .update({
+            portrait_url: uploadedPortraitPath,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", newCharacter.id);
+
+        if (portraitUpdateError) {
+          console.error(portraitUpdateError);
+          await supabase.storage
+            .from(CHARACTER_PORTRAIT_BUCKET)
+            .remove([uploadedPortraitPath]);
+          await supabase.from("characters").delete().eq("id", newCharacter.id);
+          setMessage(translations("createError"));
+          return;
+        }
+      }
+
+      removeVtmV5EditorDraft(draftStorageKey);
+      router.push(`/characters/${newCharacter.id}`);
+      router.refresh();
+    } catch (error) {
       console.error(error);
-      setMessage(translations("createError"));
-      setCreating(false);
-      return;
-    }
 
-    removeVtmV5EditorDraft(draftStorageKey);
-    router.push(`/characters/${newCharacter.id}`);
-    router.refresh();
+      if (uploadedPortraitPath) {
+        await supabase.storage
+          .from(CHARACTER_PORTRAIT_BUCKET)
+          .remove([uploadedPortraitPath]);
+      }
+
+      if (newCharacterId) {
+        await supabase.from("characters").delete().eq("id", newCharacterId);
+      }
+
+      setMessage(translations("createError"));
+    } finally {
+      setCreating(false);
+    }
   }
 
   const fieldStyle = "mt-1 w-full rounded border px-2 py-1.5";
@@ -214,8 +303,13 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
           isEditing={true}
           name={name}
           sheetData={vtmSheetData}
+          portraitUrl={portraitPreviewUrl}
+          hasPortrait={Boolean(portraitFile)}
+          portraitBusy={creating}
           onNameChange={setName}
           onChange={setVtmSheetData}
+          onPortraitFileChange={handlePortraitFileChange}
+          onPortraitRemove={handlePortraitRemove}
           activePage={activePage}
           onPageChange={setActivePage}
         />
