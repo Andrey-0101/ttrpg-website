@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { useTranslations } from "next-intl";
 
@@ -32,16 +27,11 @@ import {
 import VtmCharacterSheet from "./sheets/vtm-v5/vtm-character-sheet";
 import type { Database } from "@/types/database.types";
 
-type CharacterRow =
-  Database["public"]["Tables"]["characters"]["Row"];
+type CharacterRow = Database["public"]["Tables"]["characters"]["Row"];
 
 type CharacterData = Pick<
   CharacterRow,
-  | "id"
-  | "name"
-  | "game_system"
-  | "visibility"
-  | "sheet_data"
+  "id" | "name" | "game_system" | "visibility" | "sheet_data"
 >;
 
 type CharacterVisibility = VtmV5DraftVisibility;
@@ -51,20 +41,13 @@ export default function CharacterEditor({
 }: {
   character: CharacterData;
 }) {
-  const formTranslations =
-    useTranslations("CharacterForm");
-  const translations =
-    useTranslations("CharacterEditor");
+  const formTranslations = useTranslations("CharacterForm");
+  const translations = useTranslations("CharacterEditor");
 
-  const normalizedSystemId = normalizeGameSystemId(
-    character.game_system,
-  );
-  const gameSystemName = getGameSystemName(
-    character.game_system,
-  );
+  const normalizedSystemId = normalizeGameSystemId(character.game_system);
+  const gameSystemName = getGameSystemName(character.game_system);
   const initialVisibility =
-    character.visibility === "campaign" ||
-    character.visibility === "public"
+    character.visibility === "campaign" || character.visibility === "public"
       ? character.visibility
       : "private";
 
@@ -81,14 +64,11 @@ export default function CharacterEditor({
   const [draftReady, setDraftReady] = useState(false);
   const [name, setName] = useState(character.name);
   const [visibility, setVisibility] =
-    useState<CharacterVisibility>(
-      initialVisibility,
-    );
-  const [vtmSheetData, setVtmSheetData] = useState(
-    () => normalizeVtmV5SheetData(character.sheet_data),
+    useState<CharacterVisibility>(initialVisibility);
+  const [vtmSheetData, setVtmSheetData] = useState(() =>
+    normalizeVtmV5SheetData(character.sheet_data),
   );
-  const [activePage, setActivePage] =
-    useState<VtmV5SheetPage>("core");
+  const [activePage, setActivePage] = useState<VtmV5SheetPage>("core");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -98,12 +78,8 @@ export default function CharacterEditor({
       return;
     }
 
-    const storedPage = readVtmV5SheetPage(
-      pageStorageKey,
-    );
-    const draft = readVtmV5EditorDraft(
-      draftStorageKey,
-    );
+    const storedPage = readVtmV5SheetPage(pageStorageKey);
+    const draft = readVtmV5EditorDraft(draftStorageKey);
 
     if (draft) {
       setName(draft.name);
@@ -116,37 +92,18 @@ export default function CharacterEditor({
     }
 
     setDraftReady(true);
-  }, [
-    draftStorageKey,
-    normalizedSystemId,
-    pageStorageKey,
-  ]);
+  }, [draftStorageKey, normalizedSystemId, pageStorageKey]);
 
   useEffect(() => {
-    if (
-      !draftReady ||
-      normalizedSystemId !== "vtm-v5"
-    ) {
+    if (!draftReady || normalizedSystemId !== "vtm-v5") {
       return;
     }
 
-    writeVtmV5SheetPage(
-      pageStorageKey,
-      activePage,
-    );
-  }, [
-    activePage,
-    draftReady,
-    normalizedSystemId,
-    pageStorageKey,
-  ]);
+    writeVtmV5SheetPage(pageStorageKey, activePage);
+  }, [activePage, draftReady, normalizedSystemId, pageStorageKey]);
 
   useEffect(() => {
-    if (
-      !draftReady ||
-      !isEditing ||
-      normalizedSystemId !== "vtm-v5"
-    ) {
+    if (!draftReady || !isEditing || normalizedSystemId !== "vtm-v5") {
       return;
     }
 
@@ -168,18 +125,14 @@ export default function CharacterEditor({
     vtmSheetData,
   ]);
 
-  async function handleSave(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setMessage("");
 
     const supabase = createClient();
     const sheetDataToSave =
-      normalizedSystemId === "vtm-v5"
-        ? vtmSheetData
-        : character.sheet_data;
+      normalizedSystemId === "vtm-v5" ? vtmSheetData : character.sheet_data;
 
     const { error } = await supabase
       .from("characters")
@@ -205,9 +158,7 @@ export default function CharacterEditor({
   }
 
   function handleClear() {
-    const confirmed = window.confirm(
-      translations("clearConfirm"),
-    );
+    const confirmed = window.confirm(translations("clearConfirm"));
 
     if (!confirmed) {
       return;
@@ -244,9 +195,7 @@ export default function CharacterEditor({
           disabled={!isEditing || saving}
           className="rounded border bg-black px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {saving
-            ? translations("saving")
-            : translations("save")}
+          {saving ? translations("saving") : translations("save")}
         </button>
       </div>
     );
@@ -254,66 +203,60 @@ export default function CharacterEditor({
 
   const fieldStyle =
     "mt-1 w-full rounded border px-2 py-1.5 disabled:bg-gray-100 disabled:text-gray-900";
+  const showExternalNameField =
+    normalizedSystemId !== "vtm-v5" || activePage === "background";
 
   return (
-    <form
-      onSubmit={handleSave}
-      className="mt-6 rounded-lg border p-4"
-    >
+    <form onSubmit={handleSave} className="mt-6 rounded-lg border p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-wider text-gray-400">
             {translations("sheetTitle")}
           </p>
-          <h1 className="mt-1 text-2xl font-bold">
-            {gameSystemName}
-          </h1>
+          <h1 className="mt-1 text-2xl font-bold">{gameSystemName}</h1>
         </div>
 
         {renderEditorControls()}
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(12rem,1fr)]">
-        <label>
-          {formTranslations("characterName")}
-          <input
-            value={name}
-            onChange={(event) =>
-              setName(event.target.value)
-            }
-            disabled={!isEditing}
-            className={fieldStyle}
-            required
-          />
-        </label>
+      <div
+        className={`mt-4 grid gap-3 ${
+          showExternalNameField
+            ? "md:grid-cols-[minmax(0,2fr)_minmax(12rem,1fr)]"
+            : "md:grid-cols-[minmax(12rem,1fr)] md:justify-end"
+        }`}
+      >
+        {showExternalNameField && (
+          <label>
+            {formTranslations("characterName")}
+            <input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              disabled={!isEditing}
+              className={fieldStyle}
+              required
+            />
+          </label>
+        )}
 
-        <label>
+        <label className="md:max-w-sm md:justify-self-end md:w-full">
           {formTranslations("visibility")}
           <select
             value={visibility}
             onChange={(event) =>
-              setVisibility(
-                event.target
-                  .value as CharacterVisibility,
-              )
+              setVisibility(event.target.value as CharacterVisibility)
             }
             disabled={!isEditing}
             className={fieldStyle}
           >
             <option value="private">
-              {formTranslations(
-                "visibilityPrivate",
-              )}
+              {formTranslations("visibilityPrivate")}
             </option>
             <option value="campaign">
-              {formTranslations(
-                "visibilityCampaign",
-              )}
+              {formTranslations("visibilityCampaign")}
             </option>
             <option value="public">
-              {formTranslations(
-                "visibilityPublic",
-              )}
+              {formTranslations("visibilityPublic")}
             </option>
           </select>
         </label>
@@ -323,7 +266,9 @@ export default function CharacterEditor({
         draftReady ? (
           <VtmCharacterSheet
             isEditing={isEditing}
+            name={name}
             sheetData={vtmSheetData}
+            onNameChange={setName}
             onChange={setVtmSheetData}
             activePage={activePage}
             onPageChange={setActivePage}
@@ -332,7 +277,6 @@ export default function CharacterEditor({
           <div className="mt-4 min-h-40" />
         )
       ) : (
-
         <section className="mt-4 rounded-lg border p-4">
           <p>{translations("unsupported")}</p>
         </section>

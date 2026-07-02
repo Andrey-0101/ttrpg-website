@@ -6,6 +6,8 @@
       "background": "Page 2 — Background & Advancement"
     },
     "identityTitle": "Identity",
+    "portrait": "Portrait",
+    "name": "Name",
     "clan": "Clan",
     "clanPlaceholder": "For example: Tremere",
     "concept": "Concept",
@@ -159,6 +161,7 @@
     "dateOfDeath": "Date of Death",
     "appearance": "Appearance",
     "distinguishingFeatures": "Distinguishing Features",
-    "history": "History"
+    "history": "History",
+    "touchstonesAndConvictions": "Touchstones & Convictions"
   }
 }

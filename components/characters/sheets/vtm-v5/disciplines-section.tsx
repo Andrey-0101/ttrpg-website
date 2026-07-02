@@ -1,15 +1,9 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import type {
-  VtmV5Discipline,
-} from "@/lib/characters/vtm-v5/schema";
+import type { VtmV5Discipline } from "@/lib/characters/vtm-v5/schema";
 import RatingDots from "./rating-dots";
 
 type DisciplinesSectionProps = {
@@ -40,9 +34,7 @@ function createDisciplineId(): string {
   ].join("-");
 }
 
-function parseCommaSeparated(
-  value: string,
-): string[] {
+function parseCommaSeparated(value: string): string[] {
   return value
     .split(",")
     .map((item) => item.trim())
@@ -55,9 +47,7 @@ function CommaSeparatedInput({
   placeholder,
   onChange,
 }: CommaSeparatedInputProps) {
-  const [text, setText] = useState(
-    value.join(", "),
-  );
+  const [text, setText] = useState(value.join(", "));
   const isFocused = useRef(false);
   const serializedValue = value.join("\u0000");
 
@@ -75,9 +65,7 @@ function CommaSeparatedInput({
       }}
       onBlur={() => {
         isFocused.current = false;
-        setText(
-          parseCommaSeparated(text).join(", "),
-        );
+        setText(parseCommaSeparated(text).join(", "));
       }}
       onChange={(event) => {
         const nextText = event.target.value;
@@ -86,7 +74,7 @@ function CommaSeparatedInput({
       }}
       aria-label={ariaLabel}
       placeholder={placeholder}
-      className="mt-1 w-full rounded border px-1.5 py-1 text-[11px]"
+      className="mt-0.5 w-full border-0 border-b border-neutral-400 bg-transparent px-0 py-0.5 text-[11px] text-neutral-950 outline-none placeholder:text-neutral-400"
     />
   );
 }
@@ -96,8 +84,7 @@ export default function DisciplinesSection({
   disciplines,
   onChange,
 }: DisciplinesSectionProps) {
-  const translations =
-    useTranslations("VtmCharacterSheet");
+  const translations = useTranslations("VtmCharacterSheet");
 
   const visibleDisciplines = isEditing
     ? disciplines
@@ -140,16 +127,14 @@ export default function DisciplinesSection({
 
   function removeDiscipline(id: string) {
     onChange(
-      disciplines.filter(
-        (discipline) => discipline.id !== id,
-      ),
+      disciplines.filter((discipline) => discipline.id !== id),
     );
   }
 
   return (
-    <section className="px-4 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xs font-bold uppercase tracking-wide">
+    <section className="relative flex min-h-72 flex-col px-2 pb-3 pt-1.5 sm:px-3">
+      <div className="relative flex min-h-6 items-center justify-center">
+        <h2 className="text-center text-sm font-bold uppercase leading-none tracking-wide">
           {translations("disciplinesTitle")}
         </h2>
 
@@ -157,7 +142,7 @@ export default function DisciplinesSection({
           <button
             type="button"
             onClick={addDiscipline}
-            className="rounded border border-blue-600 bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-blue-700"
+            className="absolute right-0 rounded border border-blue-600 bg-blue-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-blue-700"
           >
             {translations("addDiscipline")}
           </button>
@@ -165,241 +150,146 @@ export default function DisciplinesSection({
       </div>
 
       {visibleDisciplines.length === 0 ? (
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-4 text-center text-xs italic text-neutral-500">
           {translations("noDisciplines")}
         </p>
       ) : (
-        <div className="mt-3 flex flex-col gap-2">
-          {visibleDisciplines.map(
-            (discipline, index) =>
-              isEditing ? (
-                <article
-                  key={discipline.id}
-                  className="rounded border p-2"
-                >
-                  <div className="grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
-                    <label className="min-w-0 text-[11px]">
-                      {translations(
-                        "disciplineName",
-                      )}
-                      <input
-                        value={discipline.name}
-                        onChange={(event) =>
-                          updateDiscipline(
-                            discipline.id,
-                            {
-                              name: event.target.value,
-                            },
-                          )
-                        }
-                        placeholder={translations(
-                          "disciplineNamePlaceholder",
-                        )}
-                        className="mt-1 w-full rounded border px-1.5 py-1 text-xs"
-                      />
-                    </label>
+        <div className="mt-2 grid flex-1 md:grid-cols-2">
+          {visibleDisciplines.map((discipline, index) => {
+            const displayName =
+              discipline.name ||
+              translations("unnamedDiscipline", {
+                number: index + 1,
+              });
+            const isLeftColumn = index % 2 === 0;
 
-                    <div>
-                      <p className="mb-1 text-[11px] text-gray-500">
-                        {translations(
-                          "disciplineRating",
-                        )}
-                      </p>
-                      <RatingDots
-                        label={
-                          discipline.name ||
-                          translations(
-                            "unnamedDiscipline",
-                            {
-                              number: index + 1,
-                            },
-                          )
-                        }
-                        value={discipline.dots}
-                        minimum={0}
-                        maximum={5}
-                        isEditing={isEditing}
-                        onChange={(dots) =>
-                          updateDiscipline(
-                            discipline.id,
-                            { dots },
-                          )
-                        }
-                        getButtonLabel={(value) =>
-                          translations(
-                            "setDisciplineRating",
-                            {
-                              name:
-                                discipline.name ||
-                                translations(
-                                  "unnamedDiscipline",
-                                  {
-                                    number:
-                                      index + 1,
-                                  },
-                                ),
-                              value,
-                            },
-                          )
-                        }
-                      />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        removeDiscipline(
-                          discipline.id,
-                        )
+            return isEditing ? (
+              <article
+                key={discipline.id}
+                className={[
+                  "min-w-0 border-b border-neutral-300 px-2 py-2 first:pt-0 sm:px-3",
+                  isLeftColumn ? "md:border-r md:border-neutral-400" : "",
+                ].join(" ")}
+              >
+                <div className="flex min-w-0 items-end gap-2">
+                  <label className="min-w-0 flex-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                    {translations("disciplineName")}
+                    <input
+                      value={discipline.name}
+                      onChange={(event) =>
+                        updateDiscipline(discipline.id, {
+                          name: event.target.value,
+                        })
                       }
-                      className="rounded border border-red-600 bg-red-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-red-700"
-                    >
-                      {translations(
-                        "removeDiscipline",
+                      placeholder={translations(
+                        "disciplineNamePlaceholder",
                       )}
-                    </button>
-                  </div>
-
-                  <div className="mt-2 grid gap-2 md:grid-cols-2">
-                    <label className="min-w-0 text-[11px]">
-                      {translations(
-                        "disciplinePowers",
-                      )}
-                      <CommaSeparatedInput
-                        value={discipline.powers}
-                        ariaLabel={translations(
-                          "disciplinePowersLabel",
-                          {
-                            name:
-                              discipline.name ||
-                              translations(
-                                "unnamedDiscipline",
-                                {
-                                  number:
-                                    index + 1,
-                                },
-                              ),
-                          },
-                        )}
-                        placeholder={translations(
-                          "disciplinePowersPlaceholder",
-                        )}
-                        onChange={(powers) =>
-                          updateDiscipline(
-                            discipline.id,
-                            { powers },
-                          )
-                        }
-                      />
-                    </label>
-
-                    <label className="min-w-0 text-[11px]">
-                      {translations(
-                        "disciplineNotes",
-                      )}
-                      <input
-                        value={discipline.notes}
-                        onChange={(event) =>
-                          updateDiscipline(
-                            discipline.id,
-                            {
-                              notes:
-                                event.target.value,
-                            },
-                          )
-                        }
-                        placeholder={translations(
-                          "disciplineNotesPlaceholder",
-                        )}
-                        className="mt-1 w-full rounded border px-1.5 py-1 text-[11px]"
-                      />
-                    </label>
-                  </div>
-                </article>
-              ) : (
-                <article
-                  key={discipline.id}
-                  className="border-b pb-2 last:border-b-0 last:pb-0"
-                >
-                  <div className="flex min-w-0 items-center justify-between gap-2">
-                    <strong className="min-w-0 text-xs">
-                      {discipline.name ||
-                        translations(
-                          "unnamedDiscipline",
-                          {
-                            number: index + 1,
-                          },
-                        )}
-                    </strong>
-
-                    <RatingDots
-                      label={
-                        discipline.name ||
-                        translations(
-                          "unnamedDiscipline",
-                          {
-                            number: index + 1,
-                          },
-                        )
-                      }
-                      value={discipline.dots}
-                      minimum={0}
-                      maximum={5}
-                      isEditing={false}
-                      onChange={() => undefined}
-                      getButtonLabel={(value) =>
-                        translations(
-                          "setDisciplineRating",
-                          {
-                            name:
-                              discipline.name ||
-                              translations(
-                                "unnamedDiscipline",
-                                {
-                                  number:
-                                    index + 1,
-                                },
-                              ),
-                            value,
-                          },
-                        )
-                      }
+                      className="mt-0.5 w-full border-0 border-b border-neutral-500 bg-transparent px-0 py-0.5 text-xs font-semibold normal-case tracking-normal text-neutral-950 outline-none placeholder:font-normal placeholder:text-neutral-400"
                     />
-                  </div>
+                  </label>
 
-                  {discipline.powers.length > 0 && (
-                    <p className="mt-1 text-[11px] text-gray-600">
-                      <span className="font-semibold">
-                        {translations(
-                          "disciplinePowers",
-                        )}
-                        :
-                      </span>{" "}
-                      {discipline.powers.join(", ")}
-                    </p>
-                  )}
+                  <RatingDots
+                    label={displayName}
+                    value={discipline.dots}
+                    minimum={0}
+                    maximum={5}
+                    isEditing={isEditing}
+                    onChange={(dots) =>
+                      updateDiscipline(discipline.id, { dots })
+                    }
+                    getButtonLabel={(value) =>
+                      translations("setDisciplineRating", {
+                        name: displayName,
+                        value,
+                      })
+                    }
+                  />
 
-                  {discipline.notes.trim() && (
-                    <p className="mt-1 text-[11px] text-gray-600">
-                      <span className="font-semibold">
-                        {translations(
-                          "disciplineNotes",
-                        )}
-                        :
-                      </span>{" "}
-                      {discipline.notes}
-                    </p>
-                  )}
-                </article>
-              ),
-          )}
+                  <button
+                    type="button"
+                    onClick={() => removeDiscipline(discipline.id)}
+                    className="rounded border border-red-600 bg-red-600 px-1.5 py-1 text-[10px] font-semibold text-white hover:bg-red-700"
+                  >
+                    {translations("removeDiscipline")}
+                  </button>
+                </div>
+
+                <label className="mt-1 block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                  {translations("disciplinePowers")}
+                  <CommaSeparatedInput
+                    value={discipline.powers}
+                    ariaLabel={translations("disciplinePowersLabel", {
+                      name: displayName,
+                    })}
+                    placeholder={translations(
+                      "disciplinePowersPlaceholder",
+                    )}
+                    onChange={(powers) =>
+                      updateDiscipline(discipline.id, { powers })
+                    }
+                  />
+                </label>
+
+                <label className="mt-1 block text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                  {translations("disciplineNotes")}
+                  <input
+                    value={discipline.notes}
+                    onChange={(event) =>
+                      updateDiscipline(discipline.id, {
+                        notes: event.target.value,
+                      })
+                    }
+                    placeholder={translations(
+                      "disciplineNotesPlaceholder",
+                    )}
+                    className="mt-0.5 w-full border-0 border-b border-neutral-400 bg-transparent px-0 py-0.5 text-[11px] normal-case tracking-normal text-neutral-950 outline-none placeholder:text-neutral-400"
+                  />
+                </label>
+              </article>
+            ) : (
+              <article
+                key={discipline.id}
+                className={[
+                  "min-w-0 border-b border-neutral-300 px-2 py-2 first:pt-0 sm:px-3",
+                  isLeftColumn ? "md:border-r md:border-neutral-400" : "",
+                ].join(" ")}
+              >
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <strong className="min-w-0 text-xs">{displayName}</strong>
+                  <RatingDots
+                    label={displayName}
+                    value={discipline.dots}
+                    minimum={0}
+                    maximum={5}
+                    isEditing={false}
+                    onChange={() => undefined}
+                    getButtonLabel={(value) =>
+                      translations("setDisciplineRating", {
+                        name: displayName,
+                        value,
+                      })
+                    }
+                  />
+                </div>
+
+                {discipline.powers.length > 0 && (
+                  <p className="mt-1 text-[11px] leading-snug">
+                    <span className="font-semibold">
+                      {translations("disciplinePowers")}:
+                    </span>{" "}
+                    {discipline.powers.join(", ")}
+                  </p>
+                )}
+
+                {discipline.notes && (
+                  <p className="mt-1 text-[11px] italic leading-snug text-neutral-600">
+                    {discipline.notes}
+                  </p>
+                )}
+              </article>
+            );
+          })}
         </div>
-      )}
-
-      {isEditing && (
-        <p className="mt-2 text-[11px] text-gray-500">
-          {translations("disciplinesHelp")}
-        </p>
       )}
     </section>
   );

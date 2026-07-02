@@ -32,60 +32,61 @@ export default function AttributesSection({
   attributes,
   onChange,
 }: AttributesSectionProps) {
-  const translations =
-    useTranslations("VtmCharacterSheet");
+  const translations = useTranslations("VtmCharacterSheet");
 
   return (
-    <section className="px-4 py-3">
-      <h2 className="text-xs font-bold uppercase tracking-wide">
+    <section className="px-2 pb-2 pt-1.5 sm:px-3">
+      <h2 className="text-center text-sm font-bold uppercase leading-none tracking-wide">
         {translations("attributesTitle")}
       </h2>
 
-      <div className="mt-3 grid gap-4 lg:grid-cols-3 lg:gap-6">
-        {ATTRIBUTE_GROUP_KEYS.map((groupKey) => (
-          <div key={groupKey} className="min-w-0">
-            <h3 className="border-b pb-1 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-              {translations(
-                `attributeGroups.${groupKey}`,
-              )}
+      <div className="mt-1.5 grid md:grid-cols-3">
+        {ATTRIBUTE_GROUP_KEYS.map((groupKey, groupIndex) => (
+          <div
+            key={groupKey}
+            className={[
+              "min-w-0 px-2 first:pl-0 last:pr-0 sm:px-3",
+              groupIndex < ATTRIBUTE_GROUP_KEYS.length - 1
+                ? "md:border-r md:border-neutral-400"
+                : "",
+            ].join(" ")}
+          >
+            <h3 className="mb-1 text-center text-xs font-semibold italic text-neutral-800">
+              {translations(`attributeGroups.${groupKey}`)}
             </h3>
 
-            <div className="mt-2 flex flex-col gap-2">
-              {VTM_V5_ATTRIBUTE_GROUPS[groupKey].map(
-                (attributeKey) => {
-                  const attributeName = translations(
-                    `attributes.${attributeKey}`,
-                  );
+            <div className="space-y-0.5">
+              {VTM_V5_ATTRIBUTE_GROUPS[groupKey].map((attributeKey) => {
+                const attributeName = translations(
+                  `attributes.${attributeKey}`,
+                );
 
-                  return (
-                    <div
-                      key={attributeKey}
-                      className="flex min-h-5 min-w-0 items-center justify-between gap-2"
-                    >
-                      <span className="min-w-0 text-xs">
-                        {attributeName}
-                      </span>
+                return (
+                  <div
+                    key={attributeKey}
+                    className="flex min-h-5 min-w-0 items-center justify-between gap-2"
+                  >
+                    <span className="min-w-0 text-xs leading-tight">
+                      {attributeName}
+                    </span>
 
-                      <RatingDots
-                        label={attributeName}
-                        value={attributes[attributeKey]}
-                        minimum={1}
-                        maximum={5}
-                        isEditing={isEditing}
-                        onChange={(value) =>
-                          onChange(attributeKey, value)
-                        }
-                        getButtonLabel={(value) =>
-                          translations("setRating", {
-                            name: attributeName,
-                            value,
-                          })
-                        }
-                      />
-                    </div>
-                  );
-                },
-              )}
+                    <RatingDots
+                      label={attributeName}
+                      value={attributes[attributeKey]}
+                      minimum={1}
+                      maximum={5}
+                      isEditing={isEditing}
+                      onChange={(value) => onChange(attributeKey, value)}
+                      getButtonLabel={(value) =>
+                        translations("setRating", {
+                          name: attributeName,
+                          value,
+                        })
+                      }
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}

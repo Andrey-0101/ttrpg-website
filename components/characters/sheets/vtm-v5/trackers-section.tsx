@@ -6,6 +6,7 @@ import type {
   VtmV5SheetData,
   VtmV5Trackers,
 } from "@/lib/characters/vtm-v5/schema";
+import RatingDots from "./rating-dots";
 
 type TrackersSectionProps = {
   isEditing: boolean;
@@ -18,20 +19,11 @@ export default function TrackersSection({
   trackers,
   onChange,
 }: TrackersSectionProps) {
-  const translations =
-    useTranslations("VtmCharacterSheet");
-  const fieldStyle =
-    "mt-1 w-full rounded border px-2 py-1.5 text-xs disabled:bg-gray-100 disabled:text-gray-900";
+  const translations = useTranslations("VtmCharacterSheet");
 
   function updateField<
-    Key extends
-      | "resonance"
-      | "hunger"
-      | "humanity",
-  >(
-    key: Key,
-    value: VtmV5Trackers[Key],
-  ) {
+    Key extends "resonance" | "hunger" | "humanity",
+  >(key: Key, value: VtmV5Trackers[Key]) {
     onChange({
       ...trackers,
       [key]: value,
@@ -39,82 +31,64 @@ export default function TrackersSection({
   }
 
   return (
-    <section className="px-4 py-3">
-      <h2 className="text-xs font-bold uppercase tracking-wide">
-        {translations("trackersTitle")}
-      </h2>
-
-      <div className="mt-3 grid gap-3 md:grid-cols-3">
-        <label>
+    <section className="grid md:grid-cols-[2fr_1fr_2fr]">
+      <label className="min-w-0 px-2 py-2 sm:px-3">
+        <span className="block text-sm font-bold italic leading-none">
           {translations("resonance")}
-          <input
-            value={trackers.resonance}
-            onChange={(event) =>
-              updateField(
-                "resonance",
-                event.target.value,
-              )
-            }
-            disabled={!isEditing}
-            className={fieldStyle}
-            placeholder={translations(
-              "resonancePlaceholder",
-            )}
-          />
-        </label>
+        </span>
+        <input
+          value={trackers.resonance}
+          onChange={(event) =>
+            updateField("resonance", event.target.value)
+          }
+          disabled={!isEditing}
+          className="mt-1 w-full border-0 border-b border-neutral-500 bg-transparent px-0 py-0.5 text-xs text-neutral-950 outline-none placeholder:text-neutral-400 disabled:cursor-default disabled:opacity-100"
+          placeholder={translations("resonancePlaceholder")}
+        />
+      </label>
 
-        <label>
+      <div className="flex min-w-0 flex-col items-center justify-center border-y border-neutral-400 px-2 py-2 md:border-x md:border-y-0">
+        <h3 className="text-sm font-bold italic leading-none">
           {translations("hunger")}
-          <select
+        </h3>
+        <div className="mt-1">
+          <RatingDots
+            label={translations("hunger")}
             value={trackers.hunger}
-            onChange={(event) =>
-              updateField(
-                "hunger",
-                Number(event.target.value),
-              )
+            minimum={0}
+            maximum={5}
+            isEditing={isEditing}
+            onChange={(value) => updateField("hunger", value)}
+            getButtonLabel={(value) =>
+              translations("setRating", {
+                name: translations("hunger"),
+                value,
+              })
             }
-            disabled={!isEditing}
-            className={fieldStyle}
-          >
-            {[0, 1, 2, 3, 4, 5].map(
-              (value) => (
-                <option
-                  key={value}
-                  value={value}
-                >
-                  {value}
-                </option>
-              ),
-            )}
-          </select>
-        </label>
+          />
+        </div>
+      </div>
 
-        <label>
+      <div className="flex min-w-0 flex-col items-center justify-center px-2 py-2 sm:px-3">
+        <h3 className="text-sm font-bold italic leading-none">
           {translations("humanity")}
-          <select
+        </h3>
+        <div className="mt-1 max-w-full overflow-x-auto">
+          <RatingDots
+            label={translations("humanity")}
             value={trackers.humanity}
-            onChange={(event) =>
-              updateField(
-                "humanity",
-                Number(event.target.value),
-              )
+            minimum={0}
+            maximum={10}
+            isEditing={isEditing}
+            onChange={(value) => updateField("humanity", value)}
+            getButtonLabel={(value) =>
+              translations("setRating", {
+                name: translations("humanity"),
+                value,
+              })
             }
-            disabled={!isEditing}
-            className={fieldStyle}
-          >
-            {Array.from(
-              { length: 11 },
-              (_, index) => index,
-            ).map((value) => (
-              <option
-                key={value}
-                value={value}
-              >
-                {value}
-              </option>
-            ))}
-          </select>
-        </label>
+          />
+        </div>
       </div>
     </section>
   );

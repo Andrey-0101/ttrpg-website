@@ -2,10 +2,7 @@
 
 import type { VtmV5DamageTrack } from "@/lib/characters/vtm-v5/schema";
 
-type DamageState =
-  | "empty"
-  | "superficial"
-  | "aggravated";
+type DamageState = "empty" | "superficial" | "aggravated";
 
 type DamageTrackProps = {
   label: string;
@@ -14,10 +11,7 @@ type DamageTrackProps = {
   isEditing: boolean;
   onChange: (value: VtmV5DamageTrack) => void;
   bonusLabel: string;
-  getBoxLabel: (
-    box: number,
-    state: DamageState,
-  ) => string;
+  getBoxLabel: (box: number, state: DamageState) => string;
 };
 
 function getDamageState(
@@ -28,10 +22,7 @@ function getDamageState(
     return "aggravated";
   }
 
-  if (
-    index <
-    value.aggravated + value.superficial
-  ) {
+  if (index < value.aggravated + value.superficial) {
     return "superficial";
   }
 
@@ -47,13 +38,8 @@ export default function DamageTrack({
   bonusLabel,
   getBoxLabel,
 }: DamageTrackProps) {
-  const totalDamage =
-    value.superficial + value.aggravated;
-  const displayedMaximum = Math.max(
-    1,
-    maximum,
-    totalDamage,
-  );
+  const totalDamage = value.superficial + value.aggravated;
+  const displayedMaximum = Math.max(1, maximum, totalDamage);
 
   function cycleBox(state: DamageState) {
     if (!isEditing) {
@@ -75,10 +61,7 @@ export default function DamageTrack({
     if (state === "superficial") {
       onChange({
         ...value,
-        superficial: Math.max(
-          0,
-          value.superficial - 1,
-        ),
+        superficial: Math.max(0, value.superficial - 1),
         aggravated: value.aggravated + 1,
       });
       return;
@@ -86,83 +69,69 @@ export default function DamageTrack({
 
     onChange({
       ...value,
-      aggravated: Math.max(
-        0,
-        value.aggravated - 1,
-      ),
+      aggravated: Math.max(0, value.aggravated - 1),
     });
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide">
-          {label}
-        </h3>
+    <div className="min-w-0 px-2 py-1.5 sm:px-3">
+      <div className="flex min-h-6 items-center justify-center gap-2">
+        <h3 className="text-sm font-bold italic leading-none">{label}</h3>
 
-        <label className="flex items-center gap-2 text-[11px] text-gray-500">
-          {bonusLabel}
-          <input
-            type="number"
-            min={0}
-            max={10}
-            value={value.bonus}
-            onChange={(event) =>
-              onChange({
-                ...value,
-                bonus: Math.min(
-                  10,
-                  Math.max(
-                    0,
-                    Number(event.target.value),
+        {isEditing ? (
+          <label className="flex items-center gap-1 text-[10px] text-neutral-600">
+            <span>{bonusLabel}</span>
+            <input
+              type="number"
+              min={0}
+              max={10}
+              value={value.bonus}
+              onChange={(event) =>
+                onChange({
+                  ...value,
+                  bonus: Math.min(
+                    10,
+                    Math.max(0, Number(event.target.value)),
                   ),
-                ),
-              })
-            }
-            disabled={!isEditing}
-            className="w-14 rounded border px-1.5 py-1 text-center text-xs disabled:bg-gray-100 disabled:text-gray-900"
-          />
-        </label>
+                })
+              }
+              className="w-9 border-b border-neutral-500 bg-transparent px-0.5 text-center text-[11px] text-neutral-950 outline-none"
+            />
+          </label>
+        ) : value.bonus > 0 ? (
+          <span className="text-[10px] text-neutral-600">+{value.bonus}</span>
+        ) : null}
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-1">
-        {Array.from(
-          { length: displayedMaximum },
-          (_, index) => {
-            const state = getDamageState(
-              index,
-              value,
-            );
+      <div className="mt-1 flex flex-wrap justify-center gap-1">
+        {Array.from({ length: displayedMaximum }, (_, index) => {
+          const state = getDamageState(index, value);
 
-            return (
-              <button
-                key={index}
-                type="button"
-                onClick={() => cycleBox(state)}
-                disabled={!isEditing}
-                aria-label={getBoxLabel(
-                  index + 1,
-                  state,
-                )}
-                className={[
-                  "flex h-6 w-6 items-center justify-center rounded-sm border text-sm font-bold leading-none",
-                  "disabled:cursor-default",
-                  state === "aggravated"
-                    ? "border-black bg-black text-white"
-                    : state === "superficial"
-                      ? "border-black bg-white text-black"
-                      : "border-gray-400 bg-white text-transparent",
-                ].join(" ")}
-              >
-                {state === "aggravated"
-                  ? "×"
+          return (
+            <button
+              key={index}
+              type="button"
+              onClick={() => cycleBox(state)}
+              disabled={!isEditing}
+              aria-label={getBoxLabel(index + 1, state)}
+              className={[
+                "flex h-5 w-5 items-center justify-center border text-xs font-bold leading-none",
+                "disabled:cursor-default",
+                state === "aggravated"
+                  ? "border-neutral-950 bg-neutral-950 text-white"
                   : state === "superficial"
-                    ? "/"
-                    : "·"}
-              </button>
-            );
-          },
-        )}
+                    ? "border-neutral-950 bg-white text-neutral-950"
+                    : "border-neutral-500 bg-white text-transparent",
+              ].join(" ")}
+            >
+              {state === "aggravated"
+                ? "×"
+                : state === "superficial"
+                  ? "/"
+                  : "·"}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

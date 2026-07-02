@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -14,17 +10,13 @@ import {
 } from "@/lib/characters/vtm-v5/schema";
 import RatingDots from "./rating-dots";
 
-type SkillGroupKey =
-  keyof typeof VTM_V5_SKILL_GROUPS;
+type SkillGroupKey = keyof typeof VTM_V5_SKILL_GROUPS;
 
 type SkillsSectionProps = {
   isEditing: boolean;
   skills: VtmV5SheetData["skills"];
   specialties: VtmV5SheetData["skillSpecialties"];
-  onSkillChange: (
-    skill: VtmV5SkillKey,
-    value: number,
-  ) => void;
+  onSkillChange: (skill: VtmV5SkillKey, value: number) => void;
   onSpecialtiesChange: (
     skill: VtmV5SkillKey,
     values: string[],
@@ -57,9 +49,7 @@ function SpecialtiesInput({
   ariaLabel,
   onChange,
 }: SpecialtiesInputProps) {
-  const [text, setText] = useState(
-    value.join(", "),
-  );
+  const [text, setText] = useState(value.join(", "));
   const isFocused = useRef(false);
   const serializedValue = value.join("\u0000");
 
@@ -77,9 +67,7 @@ function SpecialtiesInput({
       }}
       onBlur={() => {
         isFocused.current = false;
-        setText(
-          parseSpecialties(text).join(", "),
-        );
+        setText(parseSpecialties(text).join(", "));
       }}
       onChange={(event) => {
         const nextText = event.target.value;
@@ -88,7 +76,7 @@ function SpecialtiesInput({
       }}
       aria-label={ariaLabel}
       placeholder={placeholder}
-      className="mt-1 w-full rounded border px-1.5 py-1 text-[11px]"
+      className="mt-0.5 w-full border-0 border-b border-dotted border-neutral-400 bg-transparent py-0.5 pl-[3ch] pr-0 text-[10px] leading-tight text-neutral-950 outline-none placeholder:text-neutral-400"
     />
   );
 }
@@ -100,118 +88,85 @@ export default function SkillsSection({
   onSkillChange,
   onSpecialtiesChange,
 }: SkillsSectionProps) {
-  const translations =
-    useTranslations("VtmCharacterSheet");
+  const translations = useTranslations("VtmCharacterSheet");
 
   return (
-    <section className="px-4 py-3">
-      <h2 className="text-xs font-bold uppercase tracking-wide">
+    <section className="px-2 pb-2 pt-1.5 sm:px-3">
+      <h2 className="text-center text-sm font-bold uppercase leading-none tracking-wide">
         {translations("skillsTitle")}
       </h2>
 
-      <div className="mt-3 grid gap-4 lg:grid-cols-3 lg:gap-6">
-        {SKILL_GROUP_KEYS.map((groupKey) => (
+      <div className="mt-1.5 grid md:grid-cols-3">
+        {SKILL_GROUP_KEYS.map((groupKey, groupIndex) => (
           <div
             key={groupKey}
-            className="min-w-0"
+            aria-label={translations(`skillGroups.${groupKey}`)}
+            className={[
+              "min-w-0 px-2 first:pl-0 last:pr-0 sm:px-3",
+              groupIndex < SKILL_GROUP_KEYS.length - 1
+                ? "md:border-r md:border-neutral-400"
+                : "",
+            ].join(" ")}
           >
-            <h3 className="border-b pb-1 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-              {translations(
-                `skillGroups.${groupKey}`,
-              )}
-            </h3>
+            <div className="space-y-0.5">
+              {VTM_V5_SKILL_GROUPS[groupKey].map((skillKey) => {
+                const skillName = translations(`skills.${skillKey}`);
+                const skillSpecialties = specialties[skillKey] ?? [];
+                const showSpecialties =
+                  isEditing || skillSpecialties.length > 0;
 
-            <div className="mt-2 flex flex-col gap-2">
-              {VTM_V5_SKILL_GROUPS[groupKey].map(
-                (skillKey) => {
-                  const skillName = translations(
-                    `skills.${skillKey}`,
-                  );
-                  const skillSpecialties =
-                    specialties[skillKey] ?? [];
-                  const showSpecialties =
-                    isEditing ||
-                    skillSpecialties.length > 0;
+                return (
+                  <div key={skillKey} className="min-w-0">
+                    <div className="flex min-h-5 min-w-0 items-center justify-between gap-2">
+                      <span className="min-w-0 text-xs leading-tight">
+                        {skillName}
+                      </span>
 
-                  return (
-                    <div
-                      key={skillKey}
-                      className="min-w-0"
-                    >
-                      <div className="flex min-h-5 min-w-0 items-center justify-between gap-2">
-                        <span className="min-w-0 text-xs">
-                          {skillName}
-                        </span>
+                      <RatingDots
+                        label={skillName}
+                        value={skills[skillKey]}
+                        minimum={0}
+                        maximum={5}
+                        isEditing={isEditing}
+                        onChange={(value) =>
+                          onSkillChange(skillKey, value)
+                        }
+                        getButtonLabel={(value) =>
+                          translations("setSkillRating", {
+                            name: skillName,
+                            value,
+                          })
+                        }
+                      />
+                    </div>
 
-                        <RatingDots
-                          label={skillName}
-                          value={skills[skillKey]}
-                          minimum={0}
-                          maximum={5}
-                          isEditing={isEditing}
-                          onChange={(value) =>
-                            onSkillChange(
-                              skillKey,
-                              value,
-                            )
-                          }
-                          getButtonLabel={(value) =>
-                            translations(
-                              "setSkillRating",
-                              {
-                                name: skillName,
-                                value,
-                              },
-                            )
+                    {showSpecialties &&
+                      (isEditing ? (
+                        <SpecialtiesInput
+                          value={skillSpecialties}
+                          placeholder={translations(
+                            "skillSpecialtiesPlaceholder",
+                          )}
+                          ariaLabel={translations(
+                            "skillSpecialtiesLabel",
+                            { name: skillName },
+                          )}
+                          onChange={(values) =>
+                            onSpecialtiesChange(skillKey, values)
                           }
                         />
-                      </div>
-
-                      {showSpecialties &&
-                        (isEditing ? (
-                          <SpecialtiesInput
-                            value={skillSpecialties}
-                            placeholder={translations(
-                              "skillSpecialtiesPlaceholder",
-                            )}
-                            ariaLabel={translations(
-                              "skillSpecialtiesLabel",
-                              {
-                                name: skillName,
-                              },
-                            )}
-                            onChange={(values) =>
-                              onSpecialtiesChange(
-                                skillKey,
-                                values,
-                              )
-                            }
-                          />
-                        ) : (
-                          <p className="mt-0.5 text-[11px] text-gray-500">
-                            {translations(
-                              "skillSpecialties",
-                            )}
-                            :{" "}
-                            {skillSpecialties.join(
-                              ", ",
-                            )}
-                          </p>
-                        ))}
-                    </div>
-                  );
-                },
-              )}
+                      ) : (
+                        <p className="mt-0.5 pl-[3ch] text-[10px] italic leading-tight text-neutral-600">
+                          {skillSpecialties.join(", ")}
+                        </p>
+                      ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}
       </div>
-
-      {isEditing && (
-        <p className="mt-3 text-[11px] text-gray-500">
-          {translations("skillsHelp")}
-        </p>
-      )}
     </section>
   );
 }

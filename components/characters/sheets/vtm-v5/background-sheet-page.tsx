@@ -4,11 +4,16 @@ import type {
   VtmV5Advantage,
   VtmV5SheetData,
 } from "@/lib/characters/vtm-v5/schema";
+import A4SheetPage from "./a4-sheet-page";
 import AdvantagesSection from "./advantages-section";
 import BackgroundPrinciplesSection from "./background-principles-section";
 import BiographySection from "./biography-section";
 import BloodPotencySection from "./blood-potency-section";
-import ExperienceNotesSection from "./experience-notes-section";
+import {
+  ExperienceSection,
+  NotesSection,
+} from "./experience-notes-section";
+import SheetSectionDivider from "./sheet-section-divider";
 
 type BackgroundSheetPageProps = {
   isEditing: boolean;
@@ -21,9 +26,7 @@ export default function BackgroundSheetPage({
   sheetData,
   onChange,
 }: BackgroundSheetPageProps) {
-  function updateAdvantages(
-    advantages: VtmV5Advantage[],
-  ) {
+  function updateAdvantages(advantages: VtmV5Advantage[]) {
     onChange({
       ...sheetData,
       advantages,
@@ -31,49 +34,61 @@ export default function BackgroundSheetPage({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <BackgroundPrinciplesSection
-        isEditing={isEditing}
-        sheetData={sheetData}
-        onChange={onChange}
-      />
-
-      <div className="grid border-t xl:grid-cols-2">
-        <div className="border-b xl:border-b-0 xl:border-r">
-          <AdvantagesSection
-            isEditing={isEditing}
-            advantages={sheetData.advantages}
-            onChange={updateAdvantages}
-          />
-        </div>
-
-        <BloodPotencySection
+    <A4SheetPage pageNumber={2}>
+      <div className="flex min-h-full flex-col overflow-hidden border-x border-t border-neutral-400 bg-white">
+        <BackgroundPrinciplesSection
           isEditing={isEditing}
           sheetData={sheetData}
           onChange={onChange}
         />
-      </div>
 
-      <div className="grid border-t xl:grid-cols-2">
-        <div className="border-b xl:border-b-0 xl:border-r">
-          <ExperienceNotesSection
-            isEditing={isEditing}
-            sheetData={sheetData}
-            onChange={onChange}
-          />
+        <SheetSectionDivider />
+
+        <div className="grid flex-1 md:min-h-[47rem] md:grid-cols-2">
+          <div className="grid border-b border-neutral-400 md:grid-rows-[minmax(24rem,3fr)_minmax(14rem,2fr)] md:border-r md:border-b-0">
+            <AdvantagesSection
+              isEditing={isEditing}
+              advantages={sheetData.advantages}
+              onChange={updateAdvantages}
+            />
+
+            <NotesSection
+              isEditing={isEditing}
+              sheetData={sheetData}
+              onChange={onChange}
+              className="border-t border-neutral-400"
+            />
+          </div>
+
+          <div className="flex min-h-0 flex-col">
+            <BloodPotencySection
+              isEditing={isEditing}
+              sheetData={sheetData}
+              onChange={onChange}
+            />
+
+            <SheetSectionDivider />
+
+            <ExperienceSection
+              isEditing={isEditing}
+              sheetData={sheetData}
+              onChange={onChange}
+            />
+
+            <BiographySection
+              isEditing={isEditing}
+              biography={sheetData.biography}
+              onChange={(biography) =>
+                onChange({
+                  ...sheetData,
+                  biography,
+                })
+              }
+              className="flex-1"
+            />
+          </div>
         </div>
-
-        <BiographySection
-          isEditing={isEditing}
-          biography={sheetData.biography}
-          onChange={(biography) =>
-            onChange({
-              ...sheetData,
-              biography,
-            })
-          }
-        />
       </div>
-    </div>
+    </A4SheetPage>
   );
 }
