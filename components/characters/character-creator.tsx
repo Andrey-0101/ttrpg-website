@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
+import {
+  requestUnsavedChangesNavigation,
+  useUnsavedChangesGuard,
+} from "@/lib/navigation/unsaved-changes";
 import { createClient } from "@/utils/supabase/client";
 import { GAME_SYSTEMS, type GameSystemId } from "@/lib/characters/game-systems";
 import {
@@ -37,6 +41,7 @@ type CharacterVisibility = VtmV5DraftVisibility;
 export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
   const translations = useTranslations("CharacterForm");
   const sheetTranslations = useTranslations("VtmCharacterSheet");
+  const unsavedTranslations = useTranslations("UnsavedChanges");
   const router = useRouter();
   const gameSystem = GAME_SYSTEMS[systemId];
 
@@ -62,6 +67,32 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
   const [portraitPreviewUrl, setPortraitPreviewUrl] = useState<string | null>(
     null,
   );
+  const cleanFormSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        name: "",
+        visibility: "private",
+        sheetData: createDefaultVtmV5SheetData(),
+      }),
+    [],
+  );
+  const currentFormSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        name,
+        visibility,
+        sheetData: vtmSheetData,
+      }),
+    [name, visibility, vtmSheetData],
+  );
+  const hasUnsavedPortraitChanges = portraitFile !== null;
+  const hasUnsavedChanges =
+    draftReady &&
+    (currentFormSnapshot !== cleanFormSnapshot || hasUnsavedPortraitChanges);
+  const { allowNavigation } = useUnsavedChangesGuard({
+    enabled: hasUnsavedChanges,
+    confirmMessage: unsavedTranslations("leaveConfirm"),
+  });
 
   useEffect(() => {
     if (systemId !== "vtm-v5") {
@@ -146,6 +177,10 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
         await supabase.auth.getUser();
 
       if (userError || !userData.user) {
+        if (!requestUnsavedChangesNavigation()) {
+          return;
+        }
+
         router.push("/login");
         return;
       }
@@ -219,6 +254,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
       }
 
       removeVtmV5EditorDraft(draftStorageKey);
+      allowNavigation();
       router.push(`/characters/${newCharacter.id}`);
       router.refresh();
     } catch (error) {
@@ -313,6 +349,19 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
           activePage={activePage}
           onPageChange={setActivePage}
         />
+      )}
+
+      {hasUnsavedChanges && (
+        <div
+          className="mt-4 rounded border border-amber-500 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+          role="status"
+          aria-live="polite"
+        >
+          <p>{unsavedTranslations("status")}</p>
+          {hasUnsavedPortraitChanges && (
+            <p className="mt-1">{unsavedTranslations("portraitStatus")}</p>
+          )}
+        </div>
       )}
 
       <button

@@ -143,6 +143,11 @@
     "clearNotice": "The form has been cleared. Select Save Changes to save the empty values.",
     "unsupported": "A character sheet for this game is not available yet."
   },
+  "UnsavedChanges": {
+    "status": "You have unsaved changes.",
+    "portraitStatus": "Portrait changes are not stored in the browser draft and will be lost if you leave before saving.",
+    "leaveConfirm": "You have unsaved changes. Leave this page without saving them?"
+  },
   "CharacterDelete": {
     "delete": "Delete",
     "deleting": "Deleting...",

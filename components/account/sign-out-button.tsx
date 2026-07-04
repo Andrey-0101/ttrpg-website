@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { requestUnsavedChangesNavigation } from "@/lib/navigation/unsaved-changes";
 
 type SignOutButtonProps = {
   className?: string;
@@ -16,19 +17,20 @@ export default function SignOutButton({
   redirectTo = "/login",
   onSignedOut,
 }: SignOutButtonProps) {
-  const translations =
-    useTranslations("AccountArea");
+  const translations = useTranslations("AccountArea");
 
   const router = useRouter();
 
-  const [signingOut, setSigningOut] =
-    useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSignOut() {
     if (signingOut) {
+      return;
+    }
+
+    if (!requestUnsavedChangesNavigation()) {
       return;
     }
 
@@ -38,8 +40,7 @@ export default function SignOutButton({
     try {
       const supabase = createClient();
 
-      const { error } =
-        await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
 
       if (error) {
         throw error;
@@ -52,9 +53,7 @@ export default function SignOutButton({
     } catch (error) {
       console.error(error);
 
-      setErrorMessage(
-        translations("signOutError")
-      );
+      setErrorMessage(translations("signOutError"));
     } finally {
       setSigningOut(false);
     }
@@ -71,16 +70,11 @@ export default function SignOutButton({
           "rounded border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
         }
       >
-        {signingOut
-          ? translations("signingOut")
-          : translations("signOut")}
+        {signingOut ? translations("signingOut") : translations("signOut")}
       </button>
 
       {errorMessage && (
-        <p
-          className="mt-2 text-sm text-red-600"
-          role="alert"
-        >
+        <p className="mt-2 text-sm text-red-600" role="alert">
           {errorMessage}
         </p>
       )}
