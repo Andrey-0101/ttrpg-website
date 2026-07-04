@@ -129,6 +129,7 @@
     "visibilityPublic": "Public",
     "create": "Create Character",
     "creating": "Creating...",
+    "creatingStatus": "Creating the character. Please wait.",
     "createError": "Unable to create the character."
   },
   "CharacterEditor": {
@@ -136,6 +137,7 @@
     "edit": "Edit",
     "save": "Save Changes",
     "saving": "Saving...",
+    "savingStatus": "Saving changes. Please wait.",
     "changesSaved": "Changes saved.",
     "saveError": "Unable to save the character.",
     "clear": "Clear Form",

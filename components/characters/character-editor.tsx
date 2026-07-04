@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { useTranslations } from "next-intl";
 
@@ -45,6 +45,11 @@ type CharacterData = Pick<
 
 type CharacterVisibility = VtmV5DraftVisibility;
 
+type MutationMessage = {
+  kind: "status" | "success" | "error" | "info";
+  text: string;
+} | null;
+
 export default function CharacterEditor({
   character,
 }: {
@@ -80,8 +85,9 @@ export default function CharacterEditor({
     normalizeVtmV5SheetData(character.sheet_data),
   );
   const [activePage, setActivePage] = useState<VtmV5SheetPage>("core");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<MutationMessage>(null);
   const [saving, setSaving] = useState(false);
+  const saveLockRef = useRef(false);
   const [portraitPath, setPortraitPath] = useState(character.portrait_url);
   const [portraitUrl, setPortraitUrl] = useState(character.portraitSignedUrl);
   const [portraitFile, setPortraitFile] = useState<File | null>(null);
@@ -196,8 +202,17 @@ export default function CharacterEditor({
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (saveLockRef.current) {
+      return;
+    }
+
+    saveLockRef.current = true;
     setSaving(true);
-    setMessage("");
+    setMessage({
+      kind: "status",
+      text: translations("savingStatus"),
+    });
 
     const supabase = createClient();
     const sheetDataToSave =
@@ -232,7 +247,10 @@ export default function CharacterEditor({
 
         if (uploadError) {
           console.error(uploadError);
-          setMessage(sheetTranslations("portraitUploadError"));
+          setMessage({
+            kind: "error",
+            text: sheetTranslations("portraitUploadError"),
+          });
           return;
         }
 
@@ -259,7 +277,7 @@ export default function CharacterEditor({
             .remove([uploadedPortraitPath]);
         }
 
-        setMessage(translations("saveError"));
+        setMessage({ kind: "error", text: translations("saveError") });
         return;
       }
 
@@ -301,7 +319,7 @@ export default function CharacterEditor({
       setSavedFormSnapshot(currentFormSnapshot);
       setSavedPortraitPath(nextPortraitPath);
       removeVtmV5EditorDraft(draftStorageKey);
-      setMessage(translations("changesSaved"));
+      setMessage({ kind: "success", text: translations("changesSaved") });
       setIsEditing(false);
     } catch (error) {
       console.error(error);
@@ -312,13 +330,18 @@ export default function CharacterEditor({
           .remove([uploadedPortraitPath]);
       }
 
-      setMessage(translations("saveError"));
+      setMessage({ kind: "error", text: translations("saveError") });
     } finally {
+      saveLockRef.current = false;
       setSaving(false);
     }
   }
 
   function handleClear() {
+    if (saveLockRef.current) {
+      return;
+    }
+
     const confirmed = window.confirm(translations("clearConfirm"));
 
     if (!confirmed) {
@@ -336,7 +359,7 @@ export default function CharacterEditor({
       setActivePage("core");
     }
 
-    setMessage(translations("clearNotice"));
+    setMessage({ kind: "info", text: translations("clearNotice") });
   }
 
   function renderEditorControls() {
@@ -345,7 +368,7 @@ export default function CharacterEditor({
         <button
           type="button"
           onClick={() => {
-            setMessage("");
+            setMessage(null);
             setIsEditing(true);
           }}
           disabled={isEditing || saving}
@@ -380,6 +403,7 @@ export default function CharacterEditor({
     <form
       onSubmit={handleSave}
       className="mt-6 min-w-0 rounded-lg border p-2 sm:p-4"
+      aria-busy={saving}
     >
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -418,7 +442,7 @@ export default function CharacterEditor({
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              disabled={!isEditing}
+              disabled={!isEditing || saving}
               className={fieldStyle}
               required
             />
@@ -432,7 +456,7 @@ export default function CharacterEditor({
             onChange={(event) =>
               setVisibility(event.target.value as CharacterVisibility)
             }
-            disabled={!isEditing}
+            disabled={!isEditing || saving}
             className={fieldStyle}
           >
             <option value="private">
@@ -451,7 +475,7 @@ export default function CharacterEditor({
       {normalizedSystemId === "vtm-v5" ? (
         draftReady ? (
           <VtmCharacterSheet
-            isEditing={isEditing}
+            isEditing={isEditing && !saving}
             name={name}
             sheetData={vtmSheetData}
             portraitUrl={displayedPortraitUrl}
@@ -487,9 +511,21 @@ export default function CharacterEditor({
       </div>
 
       {message && (
-        <p className="mt-3 text-sm" role="status">
-          {message}
-        </p>
+        <div
+          className={`mt-3 rounded border px-3 py-2 text-sm ${
+            message.kind === "error"
+              ? "border-red-500 bg-red-50 text-red-900"
+              : message.kind === "success"
+                ? "border-green-600 bg-green-50 text-green-900"
+                : message.kind === "info"
+                  ? "border-amber-500 bg-amber-50 text-amber-950"
+                  : "border-blue-500 bg-blue-50 text-blue-950"
+          }`}
+          role={message.kind === "error" ? "alert" : "status"}
+          aria-live={message.kind === "error" ? "assertive" : "polite"}
+        >
+          {message.text}
+        </div>
       )}
     </form>
   );
