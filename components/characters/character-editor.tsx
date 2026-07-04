@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
 import { createClient } from "@/utils/supabase/client";
+import { useUnsavedChangesGuard } from "@/lib/navigation/unsaved-changes";
 import {
   getGameSystemName,
   normalizeGameSystemId,
@@ -37,12 +38,7 @@ type CharacterRow = Database["public"]["Tables"]["characters"]["Row"];
 
 type CharacterData = Pick<
   CharacterRow,
-  | "id"
-  | "name"
-  | "game_system"
-  | "visibility"
-  | "sheet_data"
-  | "portrait_url"
+  "id" | "name" | "game_system" | "visibility" | "sheet_data" | "portrait_url"
 > & {
   portraitSignedUrl: string | null;
 };
@@ -57,6 +53,7 @@ export default function CharacterEditor({
   const formTranslations = useTranslations("CharacterForm");
   const translations = useTranslations("CharacterEditor");
   const sheetTranslations = useTranslations("VtmCharacterSheet");
+  const unsavedTranslations = useTranslations("UnsavedChanges");
 
   const normalizedSystemId = normalizeGameSystemId(character.game_system);
   const gameSystemName = getGameSystemName(character.game_system);
@@ -92,6 +89,37 @@ export default function CharacterEditor({
     null,
   );
   const [portraitRemoved, setPortraitRemoved] = useState(false);
+  const [savedFormSnapshot, setSavedFormSnapshot] = useState(() =>
+    JSON.stringify({
+      name: character.name,
+      visibility: initialVisibility,
+      sheetData: normalizeVtmV5SheetData(character.sheet_data),
+    }),
+  );
+  const [savedPortraitPath, setSavedPortraitPath] = useState(
+    character.portrait_url,
+  );
+  const currentFormSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        name,
+        visibility,
+        sheetData: vtmSheetData,
+      }),
+    [name, visibility, vtmSheetData],
+  );
+  const currentPortraitPath = portraitRemoved ? null : portraitPath;
+  const hasUnsavedPortraitChanges =
+    portraitFile !== null || currentPortraitPath !== savedPortraitPath;
+  const hasUnsavedChanges =
+    draftReady &&
+    isEditing &&
+    (currentFormSnapshot !== savedFormSnapshot || hasUnsavedPortraitChanges);
+
+  useUnsavedChangesGuard({
+    enabled: hasUnsavedChanges,
+    confirmMessage: unsavedTranslations("leaveConfirm"),
+  });
 
   useEffect(() => {
     if (normalizedSystemId !== "vtm-v5") {
@@ -183,7 +211,9 @@ export default function CharacterEditor({
           await supabase.auth.getUser();
 
         if (userError || !userData.user) {
-          throw new Error("Authenticated user is required for portrait upload.");
+          throw new Error(
+            "Authenticated user is required for portrait upload.",
+          );
         }
 
         uploadedPortraitPath = createCharacterPortraitPath(
@@ -268,6 +298,8 @@ export default function CharacterEditor({
       setPortraitPath(nextPortraitPath);
       setPortraitFile(null);
       setPortraitRemoved(false);
+      setSavedFormSnapshot(currentFormSnapshot);
+      setSavedPortraitPath(nextPortraitPath);
       removeVtmV5EditorDraft(draftStorageKey);
       setMessage(translations("changesSaved"));
       setIsEditing(false);
@@ -339,13 +371,16 @@ export default function CharacterEditor({
     normalizedSystemId !== "vtm-v5" || activePage === "background";
   const displayedPortraitUrl = portraitRemoved
     ? null
-    : portraitPreviewUrl ?? portraitUrl;
+    : (portraitPreviewUrl ?? portraitUrl);
   const hasPortrait = Boolean(
     !portraitRemoved && (portraitFile || portraitPath || displayedPortraitUrl),
   );
 
   return (
-    <form onSubmit={handleSave} className="mt-6 min-w-0 rounded-lg border p-2 sm:p-4">
+    <form
+      onSubmit={handleSave}
+      className="mt-6 min-w-0 rounded-lg border p-2 sm:p-4"
+    >
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wider text-gray-400">
@@ -356,6 +391,19 @@ export default function CharacterEditor({
 
         {renderEditorControls()}
       </div>
+
+      {hasUnsavedChanges && (
+        <div
+          className="mt-4 rounded border border-amber-500 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+          role="status"
+          aria-live="polite"
+        >
+          <p>{unsavedTranslations("status")}</p>
+          {hasUnsavedPortraitChanges && (
+            <p className="mt-1">{unsavedTranslations("portraitStatus")}</p>
+          )}
+        </div>
+      )}
 
       <div
         className={`mt-4 grid gap-3 ${
