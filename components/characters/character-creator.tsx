@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { useTranslations } from "next-intl";
 
@@ -38,6 +38,11 @@ type CharacterCreatorProps = {
 
 type CharacterVisibility = VtmV5DraftVisibility;
 
+type MutationMessage = {
+  kind: "status" | "error";
+  text: string;
+} | null;
+
 export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
   const translations = useTranslations("CharacterForm");
   const sheetTranslations = useTranslations("VtmCharacterSheet");
@@ -61,8 +66,9 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
     createDefaultVtmV5SheetData(),
   );
   const [activePage, setActivePage] = useState<VtmV5SheetPage>("core");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<MutationMessage>(null);
   const [creating, setCreating] = useState(false);
+  const createLockRef = useRef(false);
   const [portraitFile, setPortraitFile] = useState<File | null>(null);
   const [portraitPreviewUrl, setPortraitPreviewUrl] = useState<string | null>(
     null,
@@ -165,12 +171,22 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (createLockRef.current) {
+      return;
+    }
+
+    createLockRef.current = true;
     setCreating(true);
-    setMessage("");
+    setMessage({
+      kind: "status",
+      text: translations("creatingStatus"),
+    });
 
     const supabase = createClient();
     let newCharacterId: string | null = null;
     let uploadedPortraitPath: string | null = null;
+    let releaseCreateLock = true;
 
     try {
       const { data: userData, error: userError } =
@@ -181,6 +197,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
           return;
         }
 
+        releaseCreateLock = false;
         router.push("/login");
         return;
       }
@@ -206,7 +223,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
 
       if (error || !newCharacter) {
         console.error(error);
-        setMessage(translations("createError"));
+        setMessage({ kind: "error", text: translations("createError") });
         return;
       }
 
@@ -230,7 +247,10 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
         if (uploadError) {
           console.error(uploadError);
           await supabase.from("characters").delete().eq("id", newCharacter.id);
-          setMessage(sheetTranslations("portraitUploadError"));
+          setMessage({
+            kind: "error",
+            text: sheetTranslations("portraitUploadError"),
+          });
           return;
         }
 
@@ -248,13 +268,14 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
             .from(CHARACTER_PORTRAIT_BUCKET)
             .remove([uploadedPortraitPath]);
           await supabase.from("characters").delete().eq("id", newCharacter.id);
-          setMessage(translations("createError"));
+          setMessage({ kind: "error", text: translations("createError") });
           return;
         }
       }
 
       removeVtmV5EditorDraft(draftStorageKey);
       allowNavigation();
+      releaseCreateLock = false;
       router.push(`/characters/${newCharacter.id}`);
       router.refresh();
     } catch (error) {
@@ -270,18 +291,22 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
         await supabase.from("characters").delete().eq("id", newCharacterId);
       }
 
-      setMessage(translations("createError"));
+      setMessage({ kind: "error", text: translations("createError") });
     } finally {
-      setCreating(false);
+      if (releaseCreateLock) {
+        createLockRef.current = false;
+        setCreating(false);
+      }
     }
   }
 
-  const fieldStyle = "mt-1 w-full rounded border px-2 py-1.5";
+  const fieldStyle =
+    "mt-1 w-full rounded border px-2 py-1.5 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-900";
   const showExternalNameField =
     systemId !== "vtm-v5" || activePage === "background";
 
   return (
-    <form onSubmit={handleSubmit} className="mt-6">
+    <form onSubmit={handleSubmit} className="mt-6" aria-busy={creating}>
       <section className="min-w-0 rounded-lg border p-2 sm:p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -307,6 +332,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
+                disabled={creating}
                 className={fieldStyle}
                 required
               />
@@ -320,6 +346,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
               onChange={(event) =>
                 setVisibility(event.target.value as CharacterVisibility)
               }
+              disabled={creating}
               className={fieldStyle}
             >
               <option value="private">
@@ -336,7 +363,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
 
       {systemId === "vtm-v5" && draftReady && (
         <VtmCharacterSheet
-          isEditing={true}
+          isEditing={!creating}
           name={name}
           sheetData={vtmSheetData}
           portraitUrl={portraitPreviewUrl}
@@ -373,9 +400,17 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
       </button>
 
       {message && (
-        <p className="mt-3 text-sm" role="alert">
-          {message}
-        </p>
+        <div
+          className={`mt-3 rounded border px-3 py-2 text-sm ${
+            message.kind === "error"
+              ? "border-red-500 bg-red-50 text-red-900"
+              : "border-blue-500 bg-blue-50 text-blue-950"
+          }`}
+          role={message.kind === "error" ? "alert" : "status"}
+          aria-live={message.kind === "error" ? "assertive" : "polite"}
+        >
+          {message.text}
+        </div>
       )}
     </form>
   );
