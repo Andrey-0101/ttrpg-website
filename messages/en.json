@@ -94,8 +94,8 @@
     "visibility": {
       "label": "Visibility",
       "private": "Private",
-      "campaign": "Campaign members",
-      "public": "Public"
+      "campaign": "Campaign — Sharing inactive",
+      "public": "Public — Sharing inactive"
     }
   },
   "CharacterSystemSelection": {
@@ -130,7 +130,13 @@
     "create": "Create Character",
     "creating": "Creating...",
     "creatingStatus": "Creating the character. Please wait.",
-    "createError": "Unable to create the character."
+    "createError": "Unable to create the character.",
+    "visibilityCampaignUnavailable": "Campaign members — Coming later",
+    "visibilityPublicUnavailable": "Public — Coming later",
+    "visibilityCampaignInactive": "Campaign members — Sharing inactive",
+    "visibilityPublicInactive": "Public — Sharing inactive",
+    "visibilityOwnerOnlyHelp": "Character access is currently private. Only you can view this character.",
+    "visibilityInactiveHelp": "This saved visibility value does not currently share the character. Only you can view it. You can keep it or change it to Private."
   },
   "CharacterEditor": {
     "sheetTitle": "Character Sheet",

@@ -94,8 +94,8 @@
     "visibility": {
       "label": "Видимость",
       "private": "Только владелец",
-      "campaign": "Участники кампании",
-      "public": "Публичный"
+      "campaign": "Кампания — доступ неактивен",
+      "public": "Публичный — доступ неактивен"
     }
   },
   "CharacterSystemSelection": {
@@ -130,7 +130,13 @@
     "create": "Создать персонажа",
     "creating": "Создание...",
     "creatingStatus": "Создание персонажа. Пожалуйста, подождите.",
-    "createError": "Не удалось создать персонажа."
+    "createError": "Не удалось создать персонажа.",
+    "visibilityCampaignUnavailable": "Участники кампании — будет доступно позже",
+    "visibilityPublicUnavailable": "Публичный — будет доступно позже",
+    "visibilityCampaignInactive": "Участники кампании — доступ неактивен",
+    "visibilityPublicInactive": "Публичный — доступ неактивен",
+    "visibilityOwnerOnlyHelp": "Сейчас персонаж доступен только вам.",
+    "visibilityInactiveHelp": "Сохранённое значение пока не открывает доступ другим пользователям. Персонаж доступен только вам; значение можно сохранить или изменить на «Только владелец»."
   },
   "CharacterEditor": {
     "sheetTitle": "Лист персонажа",

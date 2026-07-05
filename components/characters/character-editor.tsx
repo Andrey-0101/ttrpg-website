@@ -105,6 +105,8 @@ export default function CharacterEditor({
   const [savedPortraitPath, setSavedPortraitPath] = useState(
     character.portrait_url,
   );
+  const [savedVisibility, setSavedVisibility] =
+    useState<CharacterVisibility>(initialVisibility);
   const currentFormSnapshot = useMemo(
     () =>
       JSON.stringify({
@@ -138,7 +140,11 @@ export default function CharacterEditor({
 
     if (draft) {
       setName(draft.name);
-      setVisibility(draft.visibility);
+      setVisibility(
+        draft.visibility === "private" || draft.visibility === initialVisibility
+          ? draft.visibility
+          : initialVisibility,
+      );
       setVtmSheetData(draft.sheetData);
       setActivePage(draft.activePage);
       setIsEditing(true);
@@ -147,7 +153,7 @@ export default function CharacterEditor({
     }
 
     setDraftReady(true);
-  }, [draftStorageKey, normalizedSystemId, pageStorageKey]);
+  }, [draftStorageKey, initialVisibility, normalizedSystemId, pageStorageKey]);
 
   useEffect(() => {
     if (!draftReady || normalizedSystemId !== "vtm-v5") {
@@ -318,6 +324,7 @@ export default function CharacterEditor({
       setPortraitRemoved(false);
       setSavedFormSnapshot(currentFormSnapshot);
       setSavedPortraitPath(nextPortraitPath);
+      setSavedVisibility(visibility);
       removeVtmV5EditorDraft(draftStorageKey);
       setMessage({ kind: "success", text: translations("changesSaved") });
       setIsEditing(false);
@@ -462,13 +469,31 @@ export default function CharacterEditor({
             <option value="private">
               {formTranslations("visibilityPrivate")}
             </option>
-            <option value="campaign">
-              {formTranslations("visibilityCampaign")}
+            <option
+              value="campaign"
+              disabled={savedVisibility !== "campaign"}
+            >
+              {formTranslations(
+                savedVisibility === "campaign"
+                  ? "visibilityCampaignInactive"
+                  : "visibilityCampaignUnavailable",
+              )}
             </option>
-            <option value="public">
-              {formTranslations("visibilityPublic")}
+            <option value="public" disabled={savedVisibility !== "public"}>
+              {formTranslations(
+                savedVisibility === "public"
+                  ? "visibilityPublicInactive"
+                  : "visibilityPublicUnavailable",
+              )}
             </option>
           </select>
+          <p className="mt-1 text-xs text-amber-700">
+            {formTranslations(
+              visibility === "private"
+                ? "visibilityOwnerOnlyHelp"
+                : "visibilityInactiveHelp",
+            )}
+          </p>
         </label>
       </div>
 
