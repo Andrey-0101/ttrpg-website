@@ -87,8 +87,13 @@
   "Characters": {
     "title": "My Characters",
     "create": "Create Character",
+    "loading": "Loading your characters...",
+    "loadErrorTitle": "Unable to load characters",
     "loadError": "The characters could not be loaded. Please try again.",
+    "retry": "Try again",
     "empty": "You do not have any characters yet.",
+    "emptyTitle": "No characters yet",
+    "emptyDescription": "Create your first character to start building their story.",
     "noDescription": "No short description",
     "open": "Open",
     "visibility": {
@@ -109,7 +114,10 @@
     "title": "Create a {system} Character"
   },
   "CharacterDetails": {
-    "back": "Back to My Characters"
+    "back": "Back to My Characters",
+    "loading": "Loading character...",
+    "unavailableTitle": "Character unavailable",
+    "unavailableDescription": "This character does not exist or you do not have access to it."
   },
   "GameSystems": {
     "vtmV5": {
