@@ -77,6 +77,10 @@ export default async function CharacterPage({
     .eq("id", id)
     .single();
 
+  if (error) {
+    console.error("Failed to load character:", error);
+  }
+
   if (error || !character) {
     notFound();
   }
