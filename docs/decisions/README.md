@@ -33,6 +33,6 @@ Accepted ADRs should not be silently rewritten when the decision changes. Create
 | ADR-004 | A4 desktop and responsive mobile rendering | Accepted |
 | ADR-005 | URL-prefixed localization | Accepted |
 | ADR-006 | `next-intl` and Supabase proxy composition | Accepted |
-| ADR-007 | Campaign foundation before shared realtime tools | Proposed |
+| ADR-007 | Campaign foundation before shared realtime tools | Accepted |
 | ADR-008 | Game-system domain boundaries | Proposed |
 | ADR-009 | Managed video infrastructure | Proposed |

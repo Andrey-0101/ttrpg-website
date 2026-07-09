@@ -1,44 +1,81 @@
 # ADR-007: Campaign Foundation Before Shared Realtime Tools
 
-- Status: Proposed
-- Date: 2026-07-02
+- Status: Accepted
+- Date: 2026-07-09
 
 ## Context
 
-The roadmap includes shared VtM dice rolls and private video rooms. Both require a clear set of authorized users and roles.
+The roadmap includes shared VtM dice rolls and private video rooms. Both require one authoritative set of permitted users before realtime or persisted shared tools are added.
 
-## Proposed decision
+The product owner also approved a deliberately simple role model:
 
-Implement a minimum campaign foundation before shared dice history or video access.
+- exactly one Game Master per campaign;
+- the campaign creator is the Game Master;
+- the Game Master role cannot be transferred;
+- all other campaign members are Players.
 
-Minimum foundation:
+## Decision
+
+Implement the minimum Campaign Foundation before shared campaign dice history or video access.
+
+The minimum foundation contains:
 
 ```text
 campaign
-membership
-role
-invitation
+single immutable Game Master
+Player membership
+single-use expiring invitation
 character assignment
-membership authorization helper
+campaign authorization helpers
+RLS and Storage read policies
 ```
 
-Personal non-shared dice may be implemented independently, but campaign persistence/feed requires campaign access.
+The Game Master is stored directly on the campaign as `game_master_id`.
+
+`campaign_members` contains only Players and therefore does not contain a role column. The Game Master is not duplicated as a membership row.
+
+Direct membership insertion is denied. Player membership is created only through atomic acceptance of a valid, unexpired, unrevoked, unused invitation.
+
+A character remains owned and editable only by its owner. Campaign participants receive read-only access only when the character:
+
+- has `visibility = campaign`;
+- has an active campaign assignment;
+- belongs to a campaign the viewer can access.
+
+Personal, non-shared dice may be implemented independently. Persisted campaign rolls, realtime feeds, and video-room tokens must use the campaign authorization boundary.
 
 ## Consequences
 
 Positive:
 
-- one authorization boundary;
-- shared tools do not invent separate membership systems;
-- removing a member affects dice/video access;
-- role-aware features have a stable base.
+- one authorization boundary for future shared tools;
+- no competing owner, Game Master, and membership-role sources;
+- a second Game Master cannot be created accidentally;
+- removing a Player removes future campaign-derived access;
+- invitation expiry and revocation are part of the foundation;
+- character ownership and campaign visibility remain separate;
+- future dice and video features do not invent independent invite systems.
 
 Costs:
 
-- visible dice/video progress begins after foundational data work;
-- campaign schema and RLS must be designed early.
+- Game Master transfer is unavailable;
+- deleting the Game Master's Auth account cascade-deletes the campaign;
+- campaign schema, functions, RLS, and Storage read policy require multi-user testing;
+- visible dice/video work starts after foundational data work.
 
 ## Alternatives considered
+
+### Multiple Game Masters
+
+Rejected for the initial product because it adds role assignment, demotion, ownership conflict, and transfer rules before they are needed.
+
+### Separate owner and Game Master roles
+
+Rejected because the approved product has one Game Master who is also the campaign creator and lifecycle authority.
+
+### Store Game Master in the membership table
+
+Rejected because it would allow multiple Game Master rows unless additional complexity were added and would duplicate the campaign authority source.
 
 ### Build dice and video first with ad hoc invite codes
 
@@ -46,8 +83,18 @@ Rejected because both tools would later require migration to campaign membership
 
 ### Fully implement all campaign content first
 
-Rejected because handouts/NPCs/sessions can follow after the minimum foundation.
+Rejected because handouts, NPCs, sessions, and notes can follow after the minimum authorization foundation.
 
 ## Follow-up
 
-Accept before creating campaign or shared-tool migrations.
+Before applying the Campaign Foundation migration:
+
+1. review the SQL draft outside `supabase/migrations`;
+2. review the RLS matrix;
+3. convert the approved draft into a new timestamped migration;
+4. apply it to the linked Supabase project;
+5. regenerate `types/database.types.ts`;
+6. run multi-user RLS and Storage tests;
+7. update database documentation from proposed to implemented state.
+
+Accepted ADRs must not be silently reversed. A future decision to support Game Master transfer or multiple Game Masters requires a superseding ADR.

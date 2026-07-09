@@ -19,6 +19,8 @@ Build a useful private tool for a small group first. Use real sessions to refine
 - VtM character summary cards
 - Production deployment
 - Character-card action alignment fix
+- Character Friend Alpha usability and production smoke test
+- Unsaved-change protection, mutation states, visibility clarification, and loading states
 
 ## Milestone 1 — Architecture Baseline
 
@@ -49,6 +51,8 @@ Create a stable project map before adding collaborative features.
 - documents committed on an intentional branch and merged.
 
 ## Milestone 2 — Character Friend Alpha
+
+**Status: Complete**
 
 ### Goal
 
@@ -82,6 +86,8 @@ A new invited user can register, create, fill, save, reopen, and edit a VtM char
 
 ## Milestone 3 — Campaign Foundation
 
+**Status: Active — reviewed schema and authorization design**
+
 ### Goal
 
 Create the shared authorization boundary before shared realtime tools.
@@ -90,9 +96,9 @@ Create the shared authorization boundary before shared realtime tools.
 
 - campaign entity;
 - game-system discriminator;
-- membership;
-- owner/GM/player roles;
-- invitation;
+- Player membership;
+- exactly one immutable Game Master, defined by the campaign creator;
+- single-use Player invitation;
 - revoke/expire;
 - character assignment;
 - My Campaigns;
@@ -101,7 +107,7 @@ Create the shared authorization boundary before shared realtime tools.
 
 ### Exit criteria
 
-An invited member can join one private campaign, see only permitted campaign data, and link an accessible character.
+An invited Player can join a private campaign, see only permitted campaign data, and link an owned eligible character. The campaign creator remains the single non-transferable Game Master.
 
 ## Milestone 4 — VtM Realtime Tools
 

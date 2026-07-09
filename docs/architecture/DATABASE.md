@@ -4,14 +4,20 @@
 
 This document replaces the obsolete statement that no application Storage bucket exists.
 
-The repository-backed database baseline currently consists of:
+The applied repository-backed database baseline currently consists of:
 
 ```text
 supabase/migrations/20260630143000_initial_schema.sql
 supabase/migrations/20260702150000_character_portraits.sql
 ```
 
-Both migrations were verified as present in local and remote migration history during the H003 project stage.
+Both applied migrations were verified as present in local and remote migration history during the H003 project stage.
+
+The following candidate migration is present in the repository review branch but has not yet been applied:
+
+```text
+supabase/migrations/20260709150000_campaign_foundation.sql
+```
 
 Applied migrations must not be edited. Future changes require new migration files.
 
@@ -221,15 +227,56 @@ Known limitation:
 - Do not store image bytes or Base64 in JSONB.
 - Do not edit applied migrations.
 
-## Proposed future schema areas
+## Campaign Foundation candidate migration
+
+Campaign objects are still **not applied to the linked Supabase project** and must not yet be treated as current remote database tables.
+
+The reviewed candidate migration is stored at:
+
+```text
+supabase/migrations/20260709150000_campaign_foundation.sql
+```
+
+The access matrix is stored in:
+
+```text
+docs/architecture/CAMPAIGN_RLS_MATRIX.md
+```
+
+Candidate objects:
+
+```text
+campaigns
+campaign_members
+campaign_invitations
+campaign_characters
+```
+
+Approved role model:
+
+- `campaigns.game_master_id` identifies the single immutable Game Master;
+- the campaign creator is the Game Master;
+- `campaign_members` contains only Players;
+- there is no campaign membership role column;
+- direct membership insertion is denied;
+- invitation acceptance creates Player membership atomically.
+
+The candidate migration also includes:
+
+- campaign authorization helper functions;
+- single-use seven-day invitation functions with row-level serialization;
+- active character-assignment uniqueness;
+- read-only campaign access to eligible linked characters whose owners remain campaign participants and whose game systems match;
+- a campaign-aware portrait Storage SELECT policy that validates both owner and character path segments;
+- automatic unlink/revocation behavior when a campaign is completed, a Player is removed, or a linked character becomes ineligible.
+
+The candidate migration has not been applied. Generated types remain unchanged until application and regeneration are completed.
+
+## Other proposed future schema areas
 
 The following are not implemented and must not be treated as current tables:
 
 ```text
-campaigns
-campaign_memberships
-campaign_invitations
-campaign_characters
 dice_rolls
 video_rooms
 handouts
