@@ -2,82 +2,82 @@
 
 ## Status
 
-Reviewed Campaign Foundation design. Campaigns are not implemented yet.
+**Implemented and verified.**
 
-The approved minimum contract is documented here before any campaign migration is applied.
+Campaign Foundation is complete in the synchronized repository snapshot:
+
+```text
+main
+a1c3a61381a2b7cddab9dd8fb620af56342209a9
+```
+
+It includes the database schema, RLS, invitation lifecycle, membership controls, campaign character sharing, campaign management UI, EN/RU localization, mobile layouts, and multi-user security testing.
 
 ## Purpose
 
 A campaign is the private collaboration and authorization boundary for one Game Master and invited Players.
 
-It will eventually connect:
+The current implementation connects:
 
+- campaign details and lifecycle;
 - members;
-- characters;
+- invitations;
+- characters.
+
+Future milestones will add:
+
 - dice rolls;
 - video access;
 - handouts;
 - NPCs;
 - sessions;
-- notes.
+- shared and GM-private notes.
 
-The first implementation is for a small invited group, not public discovery.
+The application does not support public campaign discovery.
 
-## Ordering decision
-
-The minimum campaign foundation must be implemented before shared dice history and video-room access.
-
-Reason:
-
-- shared tools need one authorization boundary;
-- membership determines who can see campaign resources;
-- membership determines who can receive video tokens;
-- the Game Master boundary determines management actions;
-- invitations require revocation and expiry;
-- removing a Player must remove future shared access.
-
-## Approved role model
+## Role model
 
 A campaign has exactly one Game Master.
 
 Rules:
 
-- the user who creates the campaign becomes its Game Master;
+- the creator becomes the Game Master;
 - the Game Master is stored in `campaigns.game_master_id`;
 - `game_master_id` is immutable;
 - a second Game Master cannot be assigned;
-- Game Master transfer is not supported;
+- ownership transfer is not supported;
 - the Game Master is not duplicated in `campaign_members`;
 - every row in `campaign_members` represents a Player;
-- there is no customizable permission engine in the first version.
+- there is no customizable role or permission engine.
 
 The Game Master can:
 
-- update campaign settings while the campaign is active;
-- create and revoke Player invitations;
+- read the campaign;
+- update active campaign name and description;
+- create and revoke invitations;
 - remove Players;
-- view linked campaign characters;
-- complete or delete the campaign.
+- view linked characters;
+- unlink any active campaign character;
+- complete the campaign;
+- delete the campaign.
 
 A Player can:
 
 - read campaigns they have joined;
-- read the campaign member list;
-- leave the campaign;
+- read the participant list;
+- leave an active campaign;
 - link or unlink their own eligible character;
 - view characters shared with the campaign.
 
-The Game Master cannot leave the campaign. The Game Master may complete or delete it.
+The Game Master cannot leave. They may complete or delete the campaign.
 
-Deleting the Game Master's Auth account deletes the campaign through `ON DELETE CASCADE`. Ownership transfer is not part of the initial model.
+Deleting the Game Master's Auth account deletes the campaign through `ON DELETE CASCADE`.
 
-## Approved core entities
+## Current database objects
 
-These are reviewed design contracts, not current database objects.
+### `public.campaigns`
 
-### Campaign
-
-Candidate fields:
+Important fields:
 
 ```text
 id
@@ -90,7 +90,7 @@ created_at
 updated_at
 ```
 
-Approved statuses:
+Statuses:
 
 ```text
 active
@@ -99,17 +99,15 @@ completed
 
 Rules:
 
-- a campaign belongs to one game system;
-- `game_master_id` is the single source of truth for the Game Master;
-- `game_master_id` cannot be changed;
-- common campaign columns remain system-neutral;
-- VtM-specific settings must not become generic campaign columns;
-- completed campaigns are read-only in the first version;
-- completing a campaign revokes unused invitations and ends active character assignments.
+- campaign names contain 1–120 trimmed characters;
+- descriptions are optional and limited to 4,000 characters;
+- the game system and Game Master cannot be changed;
+- completed campaigns are read-only;
+- completion revokes open invitations and closes active character assignments.
 
-### Campaign membership
+### `public.campaign_members`
 
-Candidate fields:
+Important fields:
 
 ```text
 campaign_id
@@ -119,17 +117,16 @@ joined_at
 
 Rules:
 
-- every row represents a Player;
-- there is no `role` column;
-- the Game Master must not also exist as a Player row;
-- a Player can leave;
-- the Game Master can remove a Player;
-- direct membership insertion is not allowed;
-- membership is created only by accepting a valid invitation.
+- every row is a Player;
+- the Game Master cannot also be a Player;
+- direct client insertion is denied;
+- membership is created by accepting a valid invitation;
+- a Player can delete their own membership while the campaign is active;
+- the Game Master can remove a Player while the campaign is active.
 
-### Invitation
+### `public.campaign_invitations`
 
-Candidate fields:
+Important fields:
 
 ```text
 id
@@ -143,197 +140,275 @@ revoked_at
 created_at
 ```
 
-Approved behavior:
+Behavior:
 
-- invitations add a user only as a Player;
-- an invitation is single-use;
-- an invitation expires after seven days;
-- the Game Master can revoke an unused invitation;
-- only a token hash is stored;
-- the raw token is returned only when the invitation is created;
-- acceptance is validated atomically on the server/database boundary;
-- campaign and invitation row locks serialize acceptance, revocation, and campaign completion;
-- expired, revoked, accepted, and unknown tokens return the same safe application-level failure;
-- a leaked old link must not grant permanent access.
+- invitations add only Players;
+- each invitation is single-use;
+- each invitation expires after seven days;
+- the Game Master may revoke an unused invitation;
+- only the token hash is stored;
+- the raw token is returned only at creation time;
+- accepted, revoked, expired, and unknown tokens fail safely;
+- acceptance is atomic and serialized against revocation and completion;
+- an existing campaign participant cannot spend another invitation.
 
-`created_by` must equal the campaign's `game_master_id`.
+### `public.campaign_characters`
 
-### Character assignment
-
-Reviewed initial table:
+Important fields:
 
 ```text
-campaign_characters
+id
+campaign_id
+character_id
+linked_by
+linked_at
+unlinked_at
 ```
 
-Approved behavior:
+Behavior:
 
 - a character can have only one active campaign assignment;
-- historical unlinked assignments may remain for audit and future archive work;
-- a user can link only their own character;
+- historical unlinked rows may remain;
+- the character owner creates the assignment;
 - the character must use `visibility = campaign`;
-- the character and campaign must use the same game system;
-- linking does not transfer character ownership;
-- only the character owner can edit or delete the character;
-- campaign participants receive read-only access while the assignment is active;
-- unlinking does not delete the character;
-- removing a Player ends active assignments for that Player's characters;
-- changing a character away from `campaign` visibility ends its active assignment;
-- changing the game system of a linked character ends its active assignment;
-- completing a campaign ends active assignments.
+- character and campaign game systems must match;
+- the owner must still participate in the campaign;
+- linking does not transfer ownership;
+- only the owner can edit or delete the character;
+- campaign participants receive read-only access while the assignment remains active;
+- the owner or Game Master can unlink;
+- unlinking never deletes the character;
+- removal of a Player closes assignments for that Player's characters;
+- changing a linked character away from Campaign visibility closes its assignment;
+- changing the linked character's game system closes its assignment;
+- campaign completion closes all active assignments.
 
 ## Character access
 
-Character ownership remains unchanged.
-
-| Actor | Linked campaign character |
+| Actor | Active linked campaign character |
 |---|---|
-| Character owner | Read, update, delete through existing owner policies |
-| Campaign Game Master | Read only |
-| Campaign Player | Read only |
-| Removed Player | No campaign-derived access |
+| Character owner | Read, update, and delete through owner policies |
+| Campaign Game Master | Read only through campaign access |
+| Active campaign Player | Read only through campaign access |
+| Removed or departed Player | No campaign-derived access |
 | Unrelated authenticated user | No access |
 | Anonymous user | No access |
 
-Campaign read access applies only when:
+Campaign-derived access requires all of the following:
 
-- the character has `visibility = campaign`;
-- the character and campaign use the same game system;
-- the character has an active campaign assignment;
+- `visibility = campaign`;
+- character and campaign game systems match;
+- an active assignment exists;
+- the campaign is active;
 - the character owner is still the Game Master or an active Player;
-- the viewer is the campaign Game Master or an active Player.
+- the viewer is the Game Master or an active Player.
 
-Private portrait access must follow the same campaign read boundary through an additional Storage SELECT policy. The policy must validate both the owner ID and character ID encoded in the Storage path. Existing owner-folder upload, update, and delete policies remain unchanged.
+Private portrait access follows the same campaign boundary. The Storage policy validates the owner ID and character ID encoded in the object path.
 
-## Minimum campaign UI
+`public` visibility still has no public route or public RLS policy.
+
+## Current routes
+
+```text
+/[locale]/campaigns
+/[locale]/campaigns/loading
+/[locale]/campaigns/new
+/[locale]/campaigns/new/loading
+/[locale]/campaigns/join/[token]
+/[locale]/campaigns/join/[token]/loading
+/[locale]/campaigns/[id]
+/[locale]/campaigns/[id]/loading
+/[locale]/campaigns/[id]/not-found
+/[locale]/campaigns/[id]/characters/[characterId]
+/[locale]/campaigns/[id]/characters/[characterId]/loading
+/[locale]/campaigns/[id]/characters/[characterId]/not-found
+```
+
+The route list above describes route files conceptually. `loading` and `not-found` are framework route-state files rather than URLs users type directly.
+
+## Current UI
 
 ### My Campaigns
 
-- list campaigns where the user is Game Master or Player;
-- create campaign;
-- join by invitation;
-- show game system and the user's position as Game Master or Player.
+- lists campaigns where the current user is Game Master or Player;
+- shows game system, status, and user position;
+- provides Create Campaign;
+- includes loading, empty, retry, and error states.
 
 ### Create Campaign
 
-- name;
+- campaign name;
 - game system;
 - optional description;
 - creator becomes the immutable Game Master;
-- optional Player invitation creation after the campaign row exists.
+- duplicate-submit protection;
+- unsaved-change warning;
+- success redirect to Campaign Overview.
 
-### Campaign Overview
+Only game systems marked available in the game-system registry may be selected.
 
-- name and description;
-- game system;
-- status;
-- Game Master;
-- Players;
-- linked characters;
-- links only to features that are actually implemented.
+### Invitation flow
+
+- Game Master creates an invitation from Campaign Overview;
+- the full link is shown only when created;
+- invitation metadata remains listed;
+- active invitations may be revoked;
+- signed-out users return to the invitation after login;
+- the user explicitly accepts before becoming a Player;
+- accepted and revoked links cannot be reused.
 
 ### Members
 
-- show the single Game Master;
-- list Players;
-- create Player invitation;
-- revoke unused invitation;
-- remove Player;
-- allow a Player to leave.
-
-There is no global Invitations section in the first version.
+- the Game Master is displayed separately;
+- Players are listed with join date;
+- a Player may leave;
+- the Game Master may remove a Player;
+- membership actions are disabled after completion.
 
 ### Characters
 
-- link an owned eligible character;
-- list linked characters;
-- provide campaign participants read-only access;
-- preserve owner-only editing and deletion;
-- unlink without deleting the character.
+- campaign-compatible owned characters are shown;
+- Private characters are not linkable;
+- characters already active in another campaign are not linkable;
+- linked characters are visible to current participants;
+- shared sheets use a campaign route and are read-only;
+- owner editing remains under My Characters;
+- owner or Game Master may unlink while active.
 
-## Campaign lifecycle
+### Campaign management
+
+The Game Master can:
+
+- edit name and description;
+- Save or Reset;
+- receive unsaved-change protection;
+- complete an active campaign after confirmation;
+- delete a campaign after confirmation.
+
+Lifecycle actions are disabled while campaign details have unsaved changes.
+
+Players do not see management controls.
+
+## Lifecycle
 
 ### Active
 
-- Game Master can update campaign settings;
+- Game Master can edit details;
 - invitations can be created and revoked;
-- Players can join or leave;
-- Players can link eligible characters;
-- campaign participants can read shared campaign characters.
+- Players can join, leave, or be removed;
+- eligible characters can be linked and unlinked;
+- participants can read active linked characters.
 
 ### Completed
 
-- campaign settings are read-only;
-- unused invitations are revoked;
-- active character assignments end;
-- the Game Master can still delete the campaign;
-- fuller archive behavior is deferred.
+- campaign details are read-only;
+- open invitations are revoked;
+- active character assignments are closed;
+- membership changes are disabled;
+- new linking and unlinking are disabled;
+- the campaign remains visible to existing participants;
+- the Game Master may delete it;
+- reactivation is not supported.
 
-Reactivation is not part of the first version.
+### Deleted
 
-## Authorization principles
+Deletion cascades campaign-owned records:
 
-Every campaign-owned resource must derive access from the campaign boundary.
+- memberships;
+- invitations;
+- assignment records.
 
-Minimum requirements:
+Player-owned character rows and portrait objects are not campaign-owned and remain intact.
 
-- only the Game Master and active Players can read campaign data;
-- only the Game Master can modify active campaign settings;
-- only the Game Master can create/revoke invitations or remove Players;
-- a Player can remove only their own membership;
-- excluded Players immediately lose campaign-derived access;
-- invitation validity is checked atomically;
-- direct membership insertion is denied;
-- RLS remains authoritative;
-- UI checks are not authorization;
-- video tokens and shared dice access will later use the same campaign boundary.
+## Authorization
 
-The reviewed access matrix is maintained in:
+RLS and database functions are authoritative.
+
+The UI may hide or disable controls, but it does not grant access.
+
+The implementation includes:
+
+- campaign participant SELECT policies;
+- creator-as-GM INSERT policy;
+- GM-only active UPDATE;
+- GM-only DELETE;
+- participant membership SELECT;
+- GM-or-self membership DELETE;
+- GM invitation visibility and secure RPC functions;
+- participant assignment visibility;
+- owner linking;
+- GM-or-owner unlinking;
+- campaign-derived character SELECT;
+- campaign-derived portrait SELECT.
+
+See:
 
 ```text
 docs/architecture/CAMPAIGN_RLS_MATRIX.md
+docs/architecture/DATABASE.md
 ```
 
-## Game-system boundaries
+## Verification
 
-Campaigns are common platform objects.
+The Campaign Foundation security script tested:
 
-System adapters may later add:
+- GM creation;
+- prevention of delegated or second GM creation;
+- immutable `game_master_id`;
+- Outsider denial;
+- invitation creation, revocation, and one-time acceptance;
+- direct membership insertion denial;
+- Player join and leave;
+- GM removal;
+- character linking;
+- owner-only editing;
+- GM and Player read-only access;
+- Outsider denial;
+- automatic unlinking;
+- completed campaign read-only behavior.
 
-- campaign labels;
-- default sections;
-- dice behavior;
-- NPC presentation;
+The test ended with `ROLLBACK`, so test records were not retained.
+
+## Game-system boundary
+
+Campaigns are platform objects.
+
+Common campaign tables must not contain VtM-specific rules.
+
+Game systems own:
+
+- sheet schema;
+- dice rules;
+- terminology;
 - theme;
-- game-specific settings.
+- game-specific campaign settings where later approved.
 
-VtM rules must not become fixed columns on generic campaign tables.
+ADR-008 defines the accepted boundary.
 
 ## Deferred campaign content
 
-The following are outside the Campaign Foundation migration:
+Outside the completed Campaign Foundation:
 
-- shared dice history;
+- personal and shared dice tools;
+- realtime dice history;
 - video rooms;
 - handouts;
 - NPCs;
 - sessions;
 - shared notes;
-- Game Master private notes;
+- GM-private notes;
 - campaign discovery;
 - ownership transfer;
 - multiple Game Masters;
-- customizable roles;
-- character editing by the Game Master;
+- custom roles;
+- Game Master editing of Player characters;
 - public campaign pages.
 
 ## Open questions for later milestones
 
 - Can a Player have multiple active characters in one campaign?
-- What information is retained in a completed campaign archive?
-- How are session time zones handled?
+- What information is retained in a richer completed-campaign archive?
+- How are session time zones represented?
 - What handout file types and quotas are allowed?
 - Which campaign events appear in activity history?
-- Should account deletion offer an export before a Game Master's campaign is cascade-deleted?
-
-These questions do not block the minimum Campaign Foundation schema.
+- Should account deletion offer an export before a Game Master's campaigns are cascade-deleted?

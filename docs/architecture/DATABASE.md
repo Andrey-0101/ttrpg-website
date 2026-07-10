@@ -2,24 +2,26 @@
 
 ## Status
 
-This document replaces the obsolete statement that no application Storage bucket exists.
+Current applied repository-backed database state for the synchronized snapshot:
 
-The applied repository-backed database baseline currently consists of:
+```text
+main
+a1c3a61381a2b7cddab9dd8fb620af56342209a9
+```
+
+Applied migrations:
 
 ```text
 supabase/migrations/20260630143000_initial_schema.sql
 supabase/migrations/20260702150000_character_portraits.sql
-```
-
-Both applied migrations were verified as present in local and remote migration history during the H003 project stage.
-
-The following candidate migration is present in the repository review branch but has not yet been applied:
-
-```text
 supabase/migrations/20260709150000_campaign_foundation.sql
+supabase/migrations/20260709163000_fix_campaign_select_policy.sql
+supabase/migrations/20260709170000_fix_campaign_character_trigger_security.sql
 ```
 
-Applied migrations must not be edited. Future changes require new migration files.
+Local and linked remote migration histories were verified as synchronized after the Campaign Foundation work.
+
+Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
 ## Generated types
 
@@ -33,15 +35,18 @@ Do not edit generated types manually.
 
 After an intentional schema change:
 
-1. apply and verify the migration in the correct environment;
-2. regenerate database types;
-3. review the type diff;
-4. update Supabase client/query code;
-5. update this document.
+1. create and review a new migration;
+2. run migration preflight;
+3. apply and verify the migration in the intended environment;
+4. regenerate database types from the linked schema;
+5. review the type diff;
+6. update Supabase client/query code;
+7. run build and security checks;
+8. update this document.
 
-The current browser and server Supabase clients use the generated `Database` generic. Any new client factory must also use the generated type.
+Browser and server Supabase clients use the generated `Database` generic.
 
-## Tables
+## Current tables
 
 ### `public.profiles`
 
@@ -54,7 +59,7 @@ The current browser and server Supabase clients use the generated `Database` gen
 | `avatar_url` | nullable text |
 | `created_at` | non-null timestamptz; default `now()` |
 
-A trigger creates a profile row when a new Auth user is created.
+A trigger creates a profile row for a new Auth user.
 
 ### `public.characters`
 
@@ -65,13 +70,13 @@ A trigger creates a profile row when a new Auth user is created.
 | `name` | non-null text |
 | `game_system` | non-null text |
 | `description` | nullable text |
-| `portrait_url` | nullable text; new portraits store a private Storage path |
+| `portrait_url` | nullable text; current private portraits store a Storage path |
 | `visibility` | non-null text; default `private` |
 | `sheet_data` | non-null JSONB; default `{}` |
 | `created_at` | non-null timestamptz; default `now()` |
 | `updated_at` | non-null timestamptz; default `now()` |
 
-Visibility check values:
+Visibility values:
 
 ```text
 private
@@ -79,58 +84,201 @@ campaign
 public
 ```
 
-Important: these values do not currently create shared access. Current character RLS is owner-only.
+Actual access depends on RLS and active assignment state, not only on the stored visibility value.
 
-## Constraints and indexes
+### `public.campaigns`
 
-Verified:
+| Column | State |
+|---|---|
+| `id` | UUID primary key |
+| `game_master_id` | non-null Auth user; cascade delete |
+| `game_system` | non-null text; immutable after creation |
+| `name` | non-null trimmed text; 1–120 characters |
+| `description` | nullable text; maximum 4,000 characters |
+| `status` | `active` or `completed` |
+| `created_at` | non-null timestamptz |
+| `updated_at` | non-null timestamptz |
 
-- primary key on `profiles.id`;
-- unique constraint on `profiles.username`;
-- primary key on `characters.id`;
-- foreign key from `profiles.id` to `auth.users.id`;
-- foreign key from `characters.owner_id` to `auth.users.id`;
-- visibility check on `characters.visibility`.
+Rules:
 
-No explicit index on `characters.owner_id` was verified in the baseline migration.
+- creator must be the Game Master;
+- `game_master_id` is immutable;
+- there is exactly one Game Master;
+- completed campaigns are read-only except deletion by the Game Master;
+- completion revokes open invitations and closes active character assignments.
 
-No database trigger currently guarantees automatic maintenance of `characters.updated_at`.
+### `public.campaign_members`
 
-These are future performance/consistency considerations, not current blockers.
+| Column | State |
+|---|---|
+| `campaign_id` | part of composite primary key; cascade delete |
+| `user_id` | part of composite primary key; cascade delete |
+| `joined_at` | non-null timestamptz |
+
+Every row is a Player.
+
+The Game Master is never duplicated in this table.
+
+Direct client insertion is not allowed. Membership is created by secure invitation acceptance.
+
+### `public.campaign_invitations`
+
+| Column | State |
+|---|---|
+| `id` | UUID primary key |
+| `campaign_id` | non-null; cascade delete |
+| `created_by` | non-null Auth user |
+| `token_hash` | non-null unique text |
+| `expires_at` | non-null timestamptz |
+| `accepted_at` | nullable timestamptz |
+| `accepted_by` | nullable Auth user |
+| `revoked_at` | nullable timestamptz |
+| `created_at` | non-null timestamptz |
+
+Only a token hash is stored. The raw token is returned only at creation.
+
+Terminal-state constraints prevent an invitation from being both accepted and revoked.
+
+### `public.campaign_characters`
+
+| Column | State |
+|---|---|
+| `id` | UUID primary key |
+| `campaign_id` | non-null; cascade delete |
+| `character_id` | non-null; cascade delete |
+| `linked_by` | non-null Auth user |
+| `linked_at` | non-null timestamptz |
+| `unlinked_at` | nullable timestamptz |
+
+A partial unique index allows only one active campaign assignment per character.
+
+Historical unlinked rows may remain.
+
+## Indexes and consistency rules
+
+Campaign Foundation includes indexes for:
+
+- campaigns by Game Master;
+- memberships by user;
+- invitations by campaign;
+- open invitations by campaign and expiry;
+- assignments by campaign;
+- assignments by character;
+- one active assignment per character.
+
+Database triggers and functions enforce:
+
+- immutable campaign identity, Game Master, game system, and creation time;
+- active-to-completed lifecycle rules;
+- no GM membership row;
+- invitation creator and immutable invitation identity;
+- valid campaign/character linking;
+- owner participation;
+- campaign visibility;
+- game-system match;
+- automatic invitation revocation on completion;
+- automatic assignment unlinking on completion or member removal;
+- automatic assignment unlinking when a character becomes ineligible.
+
+`characters.updated_at` is still maintained by application writes rather than a dedicated generic trigger.
 
 ## Row Level Security
 
+RLS is enabled on:
+
+```text
+profiles
+characters
+campaigns
+campaign_members
+campaign_invitations
+campaign_characters
+```
+
 ### Profiles
 
-RLS is enabled.
-
-Current policy behavior:
-
-- authenticated users can select profiles;
-- a user can update only the profile whose `id` equals `auth.uid()`.
+- authenticated users may read profiles;
+- a user may update only their own profile.
 
 ### Characters
 
-RLS is enabled.
+Owner policies permit the owner to:
 
-Current policy behavior:
+- insert;
+- select;
+- update;
+- delete.
 
-- a user can insert only a row owned by that user;
-- a user can select only their own rows;
-- a user can update only their own rows;
-- a user can delete only their own rows.
+A campaign-aware SELECT policy additionally permits read-only access when `current_user_can_view_campaign_character(id)` returns true.
 
-Application queries still depend on RLS. UI checks are not an authorization boundary.
+No campaign policy grants update or delete access to a Game Master or another Player.
+
+No public policy currently exists for `visibility = public`.
+
+### Campaigns
+
+- participants may select;
+- an authenticated user may create a campaign only with themselves as Game Master;
+- only the Game Master may update an active campaign;
+- only the Game Master may delete.
+
+The corrective migration `20260709163000_fix_campaign_select_policy.sql` makes the creating Game Master visible through `INSERT ... RETURNING` by checking the current row directly.
+
+### Memberships
+
+- campaign participants may read the Player list;
+- the Game Master may remove a Player;
+- a Player may remove only their own membership;
+- direct insertion is denied.
+
+### Invitations
+
+- only the Game Master may list invitation metadata;
+- secure functions create, accept, and revoke invitations;
+- raw token hashes are not exposed to ordinary authenticated clients.
+
+### Character assignments
+
+- campaign participants may read active and historical assignment rows permitted by policy;
+- an eligible owner may link their own character;
+- the owner or Game Master may close an active assignment;
+- ordinary clients cannot reopen a closed assignment.
+
+## Campaign authorization helpers
+
+Current functions include helpers for:
+
+```text
+current_user_is_campaign_game_master(uuid)
+current_user_is_campaign_player(uuid)
+current_user_can_access_campaign(uuid)
+current_user_can_view_campaign_character(uuid)
+current_user_can_view_campaign_portrait(text)
+```
+
+Invitation RPCs:
+
+```text
+create_campaign_invitation(uuid)
+accept_campaign_invitation(text)
+revoke_campaign_invitation(uuid)
+```
+
+Integrity and lifecycle functions support campaign updates, invitations, memberships, assignments, completion, member removal, and character eligibility changes.
+
+The campaign-character integrity function is `SECURITY DEFINER` with an empty search path and fully qualified objects so it can lock protected rows while still applying explicit integrity checks. This was added by `20260709170000_fix_campaign_character_trigger_security.sql`.
 
 ## Current sharing semantics
 
-| Visibility value | Actual current access |
+| Visibility | Actual access |
 |---|---|
 | `private` | owner only |
-| `campaign` | owner only; campaign sharing not implemented |
-| `public` | owner only; public route/policy not implemented |
+| `campaign` | owner; plus active campaign participants when every assignment and eligibility rule passes |
+| `public` | owner only; no public route or policy is implemented |
 
-Until campaign and public access are implemented, UI copy must not imply that these values already share a character.
+Campaign visibility alone does not grant access.
+
+A character must have an active assignment to an active campaign, matching game system, continued owner participation, and an authorized viewer.
 
 ## Storage
 
@@ -150,33 +298,31 @@ Configuration:
 
 ### Object path
 
-New paths follow:
-
 ```text
 USER_ID/CHARACTER_ID/UNIQUE_FILE_NAME
 ```
 
-The first path segment is the authenticated user ID.
+### Policies
 
-### Storage policies
-
-Authenticated users receive owner-folder policies for:
+Owner-folder policies permit authenticated owners to:
 
 - SELECT;
 - INSERT;
 - UPDATE;
 - DELETE.
 
-The policy condition requires:
+Campaign participants receive additional SELECT access only when:
 
-```text
-bucket_id = character-portraits
-first folder segment = auth.uid()
-```
+- the bucket is `character-portraits`;
+- path owner ID matches the character owner;
+- path character ID matches the character;
+- the campaign-aware character helper authorizes the viewer.
+
+Upload, replacement, and deletion remain owner-only.
 
 ### Display
 
-Private portraits are displayed using signed URLs.
+Private portraits are displayed through signed URLs.
 
 Current signed URL lifetime:
 
@@ -184,97 +330,66 @@ Current signed URL lifetime:
 3600 seconds
 ```
 
-The application treats `http://` and `https://` values in `portrait_url` as legacy external URLs. Other values are treated as private Storage paths.
+Legacy `http://` and `https://` values in `portrait_url` are treated as external URLs. Other values are treated as private Storage paths.
 
 ## Portrait lifecycle
 
 ### Creation
 
-1. create the character row and obtain the character ID;
-2. upload the object under the owner/character path;
-3. update `portrait_url` with the path;
+1. create the character row;
+2. upload under the owner/character path;
+3. update `portrait_url`;
 4. attempt rollback if a later step fails.
 
 ### Replacement
 
-1. keep the current portrait;
-2. upload the new object;
-3. update the row;
-4. remove the old object only after the new reference is saved;
-5. retain best-effort cleanup if removal fails.
+1. retain the current portrait;
+2. upload the replacement;
+3. save the new path;
+4. remove the old object after the row update;
+5. keep best-effort cleanup if removal fails.
 
-### Removal
+### Removal and character deletion
 
-The row is updated to remove the portrait reference, then object cleanup is attempted.
-
-### Character deletion
-
-The character row is deleted and portrait cleanup is attempted.
+The database reference is removed or the character row is deleted, then Storage cleanup is attempted.
 
 Known limitation:
 
 - cleanup is best-effort;
-- a failure can leave an orphan object;
-- no scheduled orphan-maintenance process exists.
+- an orphan object may remain;
+- no scheduled orphan cleanup exists.
+
+## Verification evidence
+
+Campaign Foundation verification recorded:
+
+- five synchronized local/remote migration versions;
+- four campaign tables with RLS enabled;
+- fifteen expected campaign functions;
+- seven expected campaign triggers;
+- twelve expected campaign-related policies;
+- a full GM/Player/Outsider transaction test;
+- all test data rolled back.
+
+The security test exposed two issues that were corrected through new migrations rather than editing the applied foundation migration:
+
+1. campaign `INSERT ... RETURNING` visibility for the creating GM;
+2. campaign-character trigger access to protected rows.
 
 ## Data-contract rules
 
-- Common character data stays in columns.
-- System-specific data stays in `sheet_data`.
-- Each system schema must be versioned.
-- Persisted VtM data must pass through the VtM normalizer.
-- Unknown VtM top-level fields must be preserved where possible.
-- Do not store image bytes or Base64 in JSONB.
-- Do not edit applied migrations.
+- common character data stays in ordinary columns;
+- system-specific character data stays in `sheet_data`;
+- each system schema is versioned;
+- persisted VtM data passes through the VtM normalizer;
+- unknown VtM top-level fields are preserved where possible;
+- image bytes and Base64 do not belong in JSONB;
+- campaign tables remain game-system neutral;
+- applied migrations are immutable.
 
-## Campaign Foundation candidate migration
+## Future schema areas
 
-Campaign objects are still **not applied to the linked Supabase project** and must not yet be treated as current remote database tables.
-
-The reviewed candidate migration is stored at:
-
-```text
-supabase/migrations/20260709150000_campaign_foundation.sql
-```
-
-The access matrix is stored in:
-
-```text
-docs/architecture/CAMPAIGN_RLS_MATRIX.md
-```
-
-Candidate objects:
-
-```text
-campaigns
-campaign_members
-campaign_invitations
-campaign_characters
-```
-
-Approved role model:
-
-- `campaigns.game_master_id` identifies the single immutable Game Master;
-- the campaign creator is the Game Master;
-- `campaign_members` contains only Players;
-- there is no campaign membership role column;
-- direct membership insertion is denied;
-- invitation acceptance creates Player membership atomically.
-
-The candidate migration also includes:
-
-- campaign authorization helper functions;
-- single-use seven-day invitation functions with row-level serialization;
-- active character-assignment uniqueness;
-- read-only campaign access to eligible linked characters whose owners remain campaign participants and whose game systems match;
-- a campaign-aware portrait Storage SELECT policy that validates both owner and character path segments;
-- automatic unlink/revocation behavior when a campaign is completed, a Player is removed, or a linked character becomes ineligible.
-
-The candidate migration has not been applied. Generated types remain unchanged until application and regeneration are completed.
-
-## Other proposed future schema areas
-
-The following are not implemented and must not be treated as current tables:
+Not implemented:
 
 ```text
 dice_rolls
@@ -287,26 +402,28 @@ campaign_notes
 
 Each future domain requires:
 
-- a reviewed schema;
-- a new migration;
-- generated type updates;
+- reviewed product and security contract;
+- new migration;
+- generated type update;
 - RLS;
-- a two-user or multi-user access test;
-- documentation updates.
+- direct-ID and multi-user tests;
+- documentation update.
 
 ## Verification checklist after database changes
 
 ```bash
-npx supabase migration list
+npx supabase migration list --linked
+npx supabase db push --linked --dry-run
 npm run build
 git diff --check
 ```
 
-Additionally verify:
+Also verify:
 
-- owner/member access;
+- intended actor access;
 - denied cross-user access;
 - direct URL behavior;
-- Storage access;
+- Storage behavior;
 - generated types;
-- rollback and cleanup behavior.
+- lifecycle cleanup;
+- rollback or forward-fix strategy.

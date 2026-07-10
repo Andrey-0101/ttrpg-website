@@ -2,13 +2,24 @@
 
 ## Status
 
-Proposed architecture. No dice-roll engine or database table is implemented.
+**Active design and next implementation target.**
 
-Initial implementation target:
+No dice engine or `dice_rolls` table is implemented in the synchronized repository snapshot.
+
+Initial system:
 
 ```text
 Vampire: The Masquerade Fifth Edition
 ```
+
+Implementation order:
+
+1. define and review the VtM result contract;
+2. implement a pure deterministic evaluator;
+3. add random generation and personal roller UI;
+4. verify EN/RU and mobile;
+5. design persisted campaign rolls;
+6. add server-authoritative execution and Realtime feed.
 
 ## Product goals
 
@@ -17,88 +28,168 @@ The first dice tool should be fast, understandable, and useful during actual pla
 It should support:
 
 - personal VtM rolls;
-- rolls initiated from a character;
-- later campaign-shared rolls;
-- a readable result;
-- detailed individual dice;
+- ordinary and Hunger dice;
 - optional Difficulty;
-- Hunger dice;
-- repeat roll.
+- a readable result;
+- individual dice;
+- repeat roll;
+- optional label;
+- later character-assisted defaults;
+- later campaign-shared history.
 
-It does not need 3D physics or elaborate animation.
+It does not need 3D physics, elaborate animation, or a universal expression language.
 
-## Architectural boundary
+## Accepted architectural boundary
 
-Use a small common contract with a VtM implementation.
+ADR-008 is Accepted.
 
-Conceptual shape:
+The platform owns:
+
+- authentication;
+- campaign membership;
+- persistence;
+- server execution boundary;
+- Realtime delivery;
+- common timestamps and actor identity.
+
+The VtM system owns:
+
+- pool validation rules;
+- Hunger behavior;
+- die classification;
+- success counting;
+- critical interpretation;
+- messy critical;
+- bestial failure;
+- readable VtM result terminology.
+
+## Phase 1 request contract
+
+Recommended personal VtM request:
 
 ```text
-Dice request
-Dice result
-Display summary
-Detailed dice
-Game system
-User
-Character
-Campaign
-Timestamp
-Visibility
-```
-
-Do not create a universal expression language for every TTRPG in the first implementation.
-
-## VtM V5 input
-
-Candidate input:
-
-```text
-normalDice
+pool
 hungerDice
-difficulty
-label
-characterId
-campaignId
-visibility
+difficulty?
+label?
 ```
 
-Potential future character-assisted input:
+Constraints to review before code:
+
+- pool minimum and maximum;
+- Hunger minimum and maximum;
+- `hungerDice <= pool`;
+- Difficulty minimum and maximum;
+- label length;
+- whether zero-die pools are allowed in UI or only evaluator tests.
+
+Potential later character-assisted input:
 
 ```text
+characterId
 attribute
 skill
 specialty
 modifier
 ```
 
-The exact VtM result interpretation must be defined and reviewed against the intended rules before implementation.
+The roller must not mutate the character sheet.
 
-## Execution modes
+## Phase 1 result contract
 
-### Personal local roll
+The deterministic evaluator should accept concrete die results and return structured data.
 
-Use case:
+Recommended shape:
 
-- user opens the roller outside a campaign;
-- no shared history is required.
+```text
+gameSystem
+pool
+hungerDice
+difficulty
+normalDice[]
+hungerDiceResults[]
+successes
+criticalPairCount
+isCritical
+isMessyCritical
+isBestialFailure
+isTotalFailure
+meetsDifficulty
+margin
+summaryKey
+detailFlags
+```
 
-A client-generated result may be acceptable for this limited mode.
+The final field names should be reviewed before implementation.
 
-### Persisted campaign roll
+Important design rule:
 
-Use case:
+> Random generation and result interpretation are separate.
 
-- all campaign members must see the same result;
-- result appears in a shared feed.
+Tests should supply fixed die arrays so the same input always produces the same interpretation.
 
-Recommended behavior:
+## VtM interpretation cases to cover
 
-- authorization and random result are produced through trusted server-side execution;
-- result is persisted;
-- the feed uses realtime delivery;
-- the original detailed result cannot be silently replaced by the client.
+At minimum:
 
-## Proposed persisted record
+- ordinary success;
+- failure with some successes below Difficulty;
+- total failure;
+- ordinary critical;
+- messy critical;
+- bestial failure;
+- critical without Difficulty;
+- exact Difficulty;
+- positive and negative margin;
+- Hunger dice that roll 1 without a failed test;
+- multiple tens and critical pairing;
+- invalid pool/Hunger combinations.
+
+The exact intended VtM V5 interpretation must be approved before code is treated as authoritative.
+
+## Personal roller route
+
+Recommended:
+
+```text
+/[locale]/games/vampire-the-masquerade/tools/dice
+```
+
+First slice:
+
+- authenticated or public access decision reviewed explicitly;
+- local random generation;
+- no database row;
+- no campaign required;
+- no Realtime subscription;
+- mobile-friendly controls;
+- EN/RU result text;
+- repeat roll.
+
+A client-generated result is acceptable only for this non-shared, non-persisted mode.
+
+## Persisted campaign roll phase
+
+Recommended route:
+
+```text
+/[locale]/campaigns/[id]/dice
+```
+
+Requirements:
+
+- active campaign participant;
+- server-authoritative random generation;
+- server-authoritative VtM interpretation;
+- structured request and result persistence;
+- authenticated actor derived server-side;
+- optional character association only when accessible;
+- immutable ordinary history;
+- Realtime feed scoped to the campaign;
+- removed Player access loss;
+- safe limits and errors.
+
+## Candidate persisted record
 
 Not implemented.
 
@@ -126,50 +217,77 @@ game_master_only
 roller_only
 ```
 
-Do not add visibility modes until their RLS behavior is clearly defined.
+Do not add visibility modes until their RLS behavior is fully specified.
 
 ## Campaign feed
 
 Friend-alpha feed should show:
 
-- player;
-- character;
-- roll label;
-- dice pool;
+- Player;
+- character when selected;
+- label;
+- pool;
 - Hunger dice;
 - individual dice;
 - interpreted outcome;
-- Difficulty result when supplied;
+- Difficulty result;
 - timestamp.
 
-Potential filters:
+Potential later filters:
 
 - session;
 - character;
-- player;
+- Player;
 - visibility.
-
-## Integration with character sheets
-
-A VtM character sheet may open the roller with:
-
-- current character selected;
-- current Hunger suggested;
-- selected Attribute and Skill suggested.
-
-The roller must not silently mutate the character sheet.
 
 ## Security and integrity
 
 For persisted rolls:
 
 - require campaign membership;
-- confirm the selected character is accessible to the user;
-- do not trust client-provided user identity;
-- validate pool limits;
-- rate-limit before public release;
-- store structured request/result data;
-- do not allow ordinary clients to rewrite historical outcomes.
+- derive user identity from the authenticated request;
+- verify selected character access;
+- validate bounds;
+- do not accept client-authored result interpretation;
+- do not let ordinary clients rewrite history;
+- scope Realtime subscriptions;
+- add rate limiting before public exposure.
+
+See `docs/architecture/SECURITY.md`.
+
+## Testing strategy
+
+### Unit tests
+
+Use fixed die arrays for:
+
+- all interpretation cases;
+- invalid input;
+- critical pairing;
+- Hunger-specific outcomes;
+- Difficulty and margin.
+
+### UI tests
+
+- keyboard;
+- mobile;
+- EN/RU;
+- repeated submission;
+- readable individual dice;
+- omitted Difficulty;
+- invalid input messaging.
+
+### Campaign integration tests
+
+- GM;
+- Player;
+- removed Player;
+- Outsider;
+- selected own character;
+- selected shared character where policy permits;
+- inaccessible character;
+- Realtime consistency;
+- immutable persisted result.
 
 ## Deferred work
 
@@ -178,19 +296,27 @@ For persisted rolls:
 - physics simulation;
 - macros;
 - saved formulas;
-- full automation of Discipline powers;
+- Discipline automation;
 - arbitrary multi-system expressions;
-- moderation and anti-abuse tooling;
+- moderation tooling;
 - export and advanced analytics.
 
-## Completion criteria for the first VtM roller
+## Completion criteria
 
-1. Personal roll works without a campaign.
-2. Hunger dice are visually distinct.
-3. Difficulty can be omitted or supplied.
-4. The result is understandable without rule-engine debugging output.
-5. A character can open the tool with useful defaults.
-6. Campaign mode checks membership.
-7. All campaign viewers receive the same persisted result.
-8. EN/RU labels work.
-9. Mobile controls are usable.
+### Personal roller
+
+1. Pure evaluator is tested with fixed outcomes.
+2. Hunger dice are distinct.
+3. Difficulty is optional.
+4. Result text is understandable.
+5. EN/RU works.
+6. Mobile controls work.
+7. No persistence is implied.
+
+### Shared campaign dice
+
+1. Campaign membership is enforced.
+2. Server produces and persists the result.
+3. All authorized viewers receive the same result.
+4. History cannot be silently changed.
+5. Removed Players and Outsiders are denied.

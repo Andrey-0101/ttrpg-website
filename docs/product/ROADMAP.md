@@ -4,51 +4,104 @@
 
 Build a useful private tool for a small group first. Use real sessions to refine workflows. Complete the visual identity after the core friend-alpha experience works. Perform public-readiness hardening before inviting unrestricted users. Add new game systems after the VtM platform architecture is proven.
 
-## Current completed foundation
+## Idea intake
 
-- EN/RU application localization
-- Auth and profiles
-- Owner-only character management
-- Repository-backed Supabase migrations
-- Generated database types
-- Complete VtM V5 `schemaVersion: 3`
-- Two-page character sheet
-- Private portraits
-- A4-oriented desktop rendering
-- Mobile/tablet responsive rendering
-- VtM character summary cards
-- Production deployment
-- Character-card action alignment fix
-- Character Friend Alpha usability and production smoke test
-- Unsaved-change protection, mutation states, visibility clarification, and loading states
+New ideas are captured in `IDEAS_BACKLOG.md`.
+They enter this roadmap only after review and acceptance.
+
+## Current status
+
+Completed:
+
+- Milestone 1 — Architecture Baseline;
+- Milestone 2 — Character Friend Alpha;
+- Milestone 3 — Campaign Foundation.
+
+Active:
+
+- Milestone 4 — VtM Realtime Tools.
+
+Next implementation slice:
+
+- VtM dice result contract;
+- pure personal dice engine;
+- personal VtM roller;
+- no persisted campaign history in the first dice slice.
+
+Current synchronized snapshot:
+
+```text
+main
+a1c3a61381a2b7cddab9dd8fb620af56342209a9
+```
+
+## Completed foundation
+
+### Platform
+
+- EN/RU locale-prefixed routes;
+- Supabase authentication and profiles;
+- personal Dashboard;
+- repository-backed migrations;
+- generated public-schema database types;
+- Vercel deployment workflow;
+- safe localized loading, empty, retry, unavailable, and mutation states.
+
+### Characters
+
+- VtM V5 `schemaVersion: 3`;
+- complete two-page character sheet;
+- explicit create, save, edit, clear, and delete flows;
+- unsaved-change and duplicate-submit protection;
+- private portrait Storage;
+- A4-oriented desktop rendering;
+- responsive mobile/tablet rendering;
+- summary cards;
+- Private and Campaign visibility;
+- owner-only editing and deletion;
+- campaign-derived read-only sharing.
+
+### Campaigns
+
+- one immutable Game Master per campaign;
+- active and completed lifecycle;
+- Player memberships;
+- single-use seven-day invitations;
+- invitation revocation;
+- Player join, leave, and GM removal;
+- character assignment and unlinking;
+- shared read-only character sheets and portraits;
+- campaign editing, completion, and deletion;
+- multi-user GM, Player, and Outsider RLS verification.
+
+---
 
 ## Milestone 1 — Architecture Baseline
+
+**Status: Complete**
 
 ### Goal
 
 Create a stable project map before adding collaborative features.
 
-### Deliverables
+### Delivered
 
-- project context;
-- architecture;
+- project architecture;
 - current database/RLS/Storage documentation;
 - I18N documentation;
 - character-sheet specification;
-- campaign, dice, video, and game-hub proposals;
+- campaign, dice, video, and game-hub plans;
 - security/public-readiness plan;
-- minimal design contract;
+- design contract;
 - ADR set;
-- updated repository README;
-- current handoff.
+- repository README;
+- project handoffs.
 
-### Exit criteria
+### Exit result
 
-- documents reviewed by the project owner;
-- implemented and proposed states clearly separated;
-- domain boundaries accepted;
-- roadmap order accepted;
-- documents committed on an intentional branch and merged.
+The permanent documentation set, architecture sequence, and initial ADRs were reviewed and merged.
+
+---
 
 ## Milestone 2 — Character Friend Alpha
 
@@ -56,89 +109,199 @@ Create a stable project map before adding collaborative features.
 
 ### Goal
 
-Make the existing VtM character workflow comfortable and difficult to misuse for a small private group.
+Make the VtM character workflow comfortable and difficult to misuse for a small private group.
 
-### In scope
+### Delivered
 
-- unsaved-change warning;
-- Saving/Saved/Save failed state;
+- unsaved-change protection;
+- Saving/Saved/Save failed states;
 - duplicate-submit protection;
-- unsaved portrait warning;
-- clear navigation between both pages;
-- loading and empty states;
-- long-value usability;
-- mobile-device verification;
-- explain or temporarily restrict `campaign` and `public` visibility;
-- friend-group feedback.
+- portrait creation, replacement, and removal;
+- clear two-page navigation;
+- loading, empty, unavailable, and retry states;
+- long-value handling;
+- responsive mobile verification;
+- Private/Campaign/Public visibility clarification;
+- production smoke test.
 
 ### Deferred
 
 - print/PDF;
 - final decorative design;
-- crop/reposition;
-- large automated test program;
-- public-readiness hardening;
-- complex autosave.
+- portrait crop/reposition;
+- complex autosave;
+- public sharing;
+- large automated test program.
 
-### Exit criteria
+### Exit result
 
-A new invited user can register, create, fill, save, reopen, and edit a VtM character on desktop and mobile without project-owner assistance or accidental data loss.
+A user can register, create, fill, save, reopen, and edit a VtM character on desktop and mobile without accidental data loss.
+
+---
 
 ## Milestone 3 — Campaign Foundation
 
-**Status: Active — reviewed schema and authorization design**
+**Status: Complete**
 
 ### Goal
 
 Create the shared authorization boundary before shared realtime tools.
 
-### In scope
+### Delivered
 
-- campaign entity;
-- game-system discriminator;
-- Player membership;
-- exactly one immutable Game Master, defined by the campaign creator;
-- single-use Player invitation;
-- revoke/expire;
-- character assignment;
+- campaign entity with game-system discriminator;
+- exactly one immutable Game Master defined by the creator;
+- Player memberships;
+- single-use Player invitations;
+- invitation expiry and revocation;
 - My Campaigns;
-- minimal Campaign Overview;
-- RLS and membership tests.
+- Create Campaign;
+- Campaign Overview;
+- member listing and removal;
+- Player departure;
+- campaign character assignment;
+- shared read-only character sheets;
+- campaign editing;
+- campaign completion;
+- campaign deletion;
+- completed-campaign read-only UI;
+- applied migrations, generated types, RLS, triggers, helper functions, and Storage policy;
+- multi-user GM/Player/Outsider security tests.
 
-### Exit criteria
+### Exit result
 
-An invited Player can join a private campaign, see only permitted campaign data, and link an owned eligible character. The campaign creator remains the single non-transferable Game Master.
+An invited Player can join a private campaign, see only permitted campaign data, and link an owned eligible character. The creator remains the single non-transferable Game Master.
+
+---
 
 ## Milestone 4 — VtM Realtime Tools
 
-### Dice phase
+**Status: Active**
 
-- personal VtM roller;
+### Phase 4A — VtM dice contract and personal roller
+
+#### Goal
+
+Provide a trustworthy VtM V5 dice engine before adding persistence or realtime synchronization.
+
+#### In scope
+
+- ordinary dice;
 - Hunger dice;
-- Difficulty;
-- character defaults;
-- structured result;
-- server-authoritative persisted campaign rolls;
-- realtime campaign feed.
+- optional Difficulty;
+- successes;
+- criticals;
+- messy criticals;
+- bestial failures;
+- total failures;
+- individual die results;
+- readable EN/RU interpretation;
+- pure deterministic result evaluation separated from random generation;
+- personal roller UI;
+- mobile controls;
+- optional label;
+- repeat roll;
+- character-assisted defaults where useful.
 
-### Video phase
+#### Not in the first slice
 
-- managed-provider technical spike;
-- device controls;
-- two-to-three-user test;
-- campaign membership token gate;
+- database persistence;
+- campaign dice feed;
+- Realtime subscription;
+- macros;
+- 3D physics;
+- universal multi-system expression language.
+
+#### Exit criteria
+
+The same supplied die results always produce the same VtM interpretation, and a user can make a personal roll on desktop and mobile.
+
+### Phase 4B — Shared campaign dice
+
+#### Goal
+
+Persist campaign rolls authoritatively and show the same feed to all permitted campaign participants.
+
+#### In scope
+
+- reviewed `dice_rolls` schema;
+- server-authoritative random execution;
+- campaign membership authorization;
+- optional accessible character association;
+- full structured request and result persistence;
+- immutable ordinary history;
+- Supabase Realtime feed;
+- campaign dice UI;
+- removed-member and Outsider tests;
+- EN/RU and mobile.
+
+#### Exit criteria
+
+Campaign members can make shared VtM rolls and see the same trusted realtime results.
+
+### Phase 4C — Managed-video provider comparison and spike
+
+#### Goal
+
+Select a managed WebRTC provider using evidence rather than committing directly to an SDK.
+
+#### In scope
+
+- provider comparison;
+- SDK and browser support;
+- mobile behavior;
+- token model;
+- participant limits;
 - reconnect behavior;
-- minimal room UI.
+- cost;
+- privacy/data-region review;
+- screen-sharing capability;
+- provider exit strategy;
+- disposable two-to-three-user spike;
+- denied-permission and weak-network tests.
 
-### Exit criteria
+#### Decision gate
+
+ADR-009 remains Proposed until the comparison and spike are complete.
+
+### Phase 4D — Minimal campaign video room
+
+#### In scope
+
+- campaign membership authorization;
+- server-only provider secret;
+- short-lived room tokens;
+- Join/Leave;
+- microphone and camera controls;
+- participant list;
+- display name and optional character name;
+- GM indicator;
+- connecting/reconnecting states;
+- denied-permission and provider-unavailable states;
+- removed-member token denial;
+- EN/RU and mobile.
+
+#### Deferred
+
+- recording;
+- transcription;
+- breakout rooms;
+- virtual backgrounds;
+- in-video chat.
+
+### Milestone 4 exit criteria
 
 Campaign members can make shared VtM rolls and join a private campaign video room.
 
+---
+
 ## Milestone 5 — Friend Campaign Alpha
+
+**Status: Planned**
 
 ### Goal
 
-Assemble a practical private play workspace.
+Assemble a practical private play workspace and use it in a real friend-group session.
 
 ### Areas
 
@@ -149,13 +312,19 @@ Assemble a practical private play workspace.
 5. Video
 6. Handouts
 7. NPCs
-8. Sessions and Notes
+8. Sessions/Chronicle
+9. Shared and GM-private Notes
+10. Campaign Settings
 
 ### Exit criteria
 
-The friend group can prepare and run a real session primarily through the campaign workspace.
+The friend group can prepare and run a real session primarily through the campaign workspace, then provide workflow feedback for targeted fixes.
+
+---
 
 ## Milestone 6 — Visual Identity
+
+**Status: Planned**
 
 ### Goal
 
@@ -179,7 +348,11 @@ Apply a coherent platform design after real workflows stabilize.
 
 The platform has a coherent VtM-facing identity without coupling decoration to persisted data or authorization.
 
+---
+
 ## Milestone 7 — VtM Game Hub
+
+**Status: Planned**
 
 ### Goal
 
@@ -196,11 +369,17 @@ Create the complete VtM information and tool-entry area.
 - EN/RU content;
 - legal/content review.
 
+Long-form content should use a reviewed content model such as Markdown/MDX rather than large translation JSON blocks.
+
 ### Exit criteria
 
 A new user can understand the available VtM workflow and reach the correct character, campaign, and dice tools.
 
+---
+
 ## Milestone 8 — Public Readiness
+
+**Status: Planned**
 
 ### Goal
 
@@ -213,21 +392,27 @@ Prepare for users outside the known private group.
 - automated tests and CI;
 - rate limiting;
 - monitoring;
-- backups and restore;
+- backups and restore testing;
 - staging;
 - privacy and terms;
 - account deletion;
+- data export;
 - support/contact;
 - accessibility;
 - performance;
 - browser matrix;
-- public beta process.
+- public beta process;
+- incident response.
 
 ### Exit criteria
 
-The public launch gate in `SECURITY.md` passes and operational ownership is defined.
+The public launch gate in `docs/architecture/SECURITY.md` passes and operational ownership is defined.
+
+---
 
 ## Milestone 9 — Call of Cthulhu 7e
+
+**Status: Planned**
 
 ### Goal
 
@@ -235,18 +420,20 @@ Prove the platform with a second game system.
 
 ### In scope
 
-- extract real system adapter boundaries;
+- refine real adapter boundaries;
 - CoC 7e sheet schema and normalizer;
-- CoC renderer and summary cards;
+- renderer and summary cards;
 - CoC dice engine;
 - CoC theme;
-- CoC game hub;
+- CoC Game Hub;
 - campaign integration;
 - EN/RU content.
 
 ### Exit criteria
 
-VtM and CoC coexist without system-specific logic leaking into shared campaign/core domains.
+VtM and CoC coexist without system-specific logic leaking into shared campaign and core domains.
+
+---
 
 ## Deferred backlog
 

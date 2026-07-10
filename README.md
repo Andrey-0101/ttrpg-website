@@ -1,8 +1,8 @@
 # TTRPG Hub
 
-TTRPG Hub is a bilingual web application for managing tabletop role-playing game characters and, in later milestones, running private campaigns with integrated game tools.
+TTRPG Hub is a bilingual web application for managing tabletop role-playing game characters and private campaigns.
 
-The current production version focuses on **Vampire: The Masquerade Fifth Edition (VtM V5)**. It provides authenticated character management, a complete two-page character sheet, private portraits, English and Russian interfaces, and responsive desktop, tablet, and mobile layouts.
+The current production scope is focused on **Vampire: The Masquerade Fifth Edition (VtM V5)**. It includes authenticated character management, a complete responsive character sheet, private portraits, a private campaign workspace, invitations, membership controls, campaign character sharing, and English/Russian interfaces.
 
 > Project status: private friend-alpha development. The repository is not yet prepared for unrestricted public use.
 
@@ -10,43 +10,49 @@ The current production version focuses on **Vampire: The Masquerade Fifth Editio
 
 Implemented:
 
-- English and Russian locale-prefixed routes
-- Supabase authentication and user profiles
-- Owner-only character storage
-- Complete VtM V5 character sheet with `schemaVersion: 3`
-- View and edit modes with explicit saving
-- Desktop A4-oriented and mobile responsive layouts
-- Private character portraits in Supabase Storage
-- Character summary cards
-- Local draft and active-page restoration within the browser tab
-- Vercel production deployment
+- English and Russian locale-prefixed routes;
+- Supabase authentication and user profiles;
+- personal Dashboard;
+- complete VtM V5 character sheet with `schemaVersion: 3`;
+- explicit create, save, edit, clear, delete, and unsaved-change protection;
+- desktop A4-oriented and mobile-responsive character layouts;
+- private character portraits in Supabase Storage;
+- Private and Campaign character visibility;
+- My Campaigns and campaign creation;
+- exactly one immutable Game Master per campaign;
+- single-use, seven-day Player invitations with revocation;
+- campaign member listing, Player departure, and GM removal;
+- campaign character linking and shared read-only sheets;
+- campaign editing, completion, and deletion;
+- loading, empty, retry, unavailable, and mutation states;
+- Vercel production deployment.
 
 Not yet implemented:
 
-- Campaigns, memberships, roles, or invitations
-- Shared dice-roll history
-- Video rooms
-- Handouts, NPCs, or session records
-- Independent character-sheet language
-- Print/PDF export
-- Public character sharing
-- Call of Cthulhu 7e support
-- Public-readiness security, monitoring, legal, and operational work
+- personal or shared dice tools;
+- persisted campaign dice history or realtime dice feed;
+- video rooms;
+- handouts, NPCs, sessions, or campaign notes;
+- independent character-sheet language;
+- print/PDF export;
+- public character sharing;
+- Call of Cthulhu 7e support;
+- public-readiness security, monitoring, legal, and operational work.
 
 ## Technology
 
-- Next.js 16.2.9 App Router
-- React 19.2.4
-- TypeScript
-- Tailwind CSS 4
-- `next-intl`
-- Supabase PostgreSQL, Auth, Row Level Security, and Storage
-- Vercel
-- GitHub
+- Next.js 16.2.9 App Router;
+- React 19.2.4;
+- TypeScript;
+- Tailwind CSS 4;
+- `next-intl`;
+- Supabase PostgreSQL, Auth, Row Level Security, Realtime-ready database infrastructure, and Storage;
+- Vercel;
+- GitHub.
 
 ## Repository instructions
 
-Before changing Next.js code, read `AGENTS.md`. The project uses Next.js 16 and requires consulting the relevant local framework documentation under `node_modules/next/dist/docs/`.
+Before changing Next.js code, read `AGENTS.md`. This project uses Next.js 16 and requires consulting the relevant local framework documentation under `node_modules/next/dist/docs/`.
 
 Do not:
 
@@ -55,15 +61,17 @@ Do not:
 - invent database objects that are not represented by migrations and generated types;
 - edit an already applied migration;
 - change persisted VtM data without passing it through the current normalizer;
-- assume that `campaign` or `public` visibility currently grants shared access.
+- treat UI checks as an authorization boundary;
+- assume `public` character visibility grants public access;
+- assume `campaign` visibility alone grants shared access without an active campaign assignment and campaign membership.
 
 ## Local development
 
 Requirements:
 
-- Node.js and npm
-- A Supabase project configured for this application
-- Required environment variables in `.env.local`
+- Node.js and npm;
+- a Supabase project configured for this application;
+- required environment variables in `.env.local`.
 
 Environment variable names used by the application:
 
@@ -83,46 +91,53 @@ Production verification:
 
 ```bash
 npm run build
-npm run lint
 git diff --check
 ```
+
+Use the repository's actual scripts from `package.json`; do not assume an unavailable lint or test command exists.
 
 ## Documentation
 
 Start with:
 
-- [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
-- [`docs/README.md`](docs/README.md)
-- [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
-- [`docs/architecture/DATABASE.md`](docs/architecture/DATABASE.md)
-- [`docs/architecture/CHARACTER_SHEETS.md`](docs/architecture/CHARACTER_SHEETS.md)
-- [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md)
-- [`docs/product/SITE_MAP.md`](docs/product/SITE_MAP.md)
-- [`docs/decisions/`](docs/decisions/)
+- [`docs/README.md`](docs/README.md);
+- [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md);
+- [`docs/architecture/DATABASE.md`](docs/architecture/DATABASE.md);
+- [`docs/architecture/SECURITY.md`](docs/architecture/SECURITY.md);
+- [`docs/architecture/CHARACTER_SHEETS.md`](docs/architecture/CHARACTER_SHEETS.md);
+- [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md);
+- [`docs/product/CAMPAIGNS.md`](docs/product/CAMPAIGNS.md);
+- [`docs/product/SITE_STRUCTURE_CURRENT.md`](docs/product/SITE_STRUCTURE_CURRENT.md);
+- [`docs/decisions/`](docs/decisions/);
+- [`docs/handoffs/H005_CURRENT_HANDOFF.md`](docs/handoffs/H005_CURRENT_HANDOFF.md).
 
 ## Current snapshot
 
-The initial architecture-baseline document set was prepared against:
+This documentation synchronization was prepared against:
 
 ```text
 main
-e2a412bd74af0971cea7bfdf28e42cfa6100e7a2
+a1c3a61381a2b7cddab9dd8fb620af56342209a9
 ```
 
-Update `PROJECT_CONTEXT.md` and the current handoff whenever the documented repository snapshot changes materially.
+This commit includes PR #13, `Add campaign management`.
+
+If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 
 ## Project direction
 
 The agreed delivery strategy is:
 
-1. establish the architecture and documentation baseline;
-2. make the VtM character experience usable by a small private group;
-3. establish the minimum campaign foundation;
-4. add VtM dice tools and campaign-gated video rooms;
-5. assemble a friend-only campaign workspace;
-6. complete the visual identity;
-7. build the VtM game hub;
-8. complete public-readiness security and operational work;
-9. expand to Call of Cthulhu 7e.
+1. maintain the architecture and documentation baseline;
+2. keep the VtM character and campaign workflows stable;
+3. build the VtM dice rules contract and personal roller;
+4. add server-authoritative persisted campaign rolls and a realtime feed;
+5. run a managed-video provider comparison and technical spike;
+6. add the minimal private campaign video room;
+7. assemble the remaining friend-only campaign workspace;
+8. complete the visual identity;
+9. build the VtM Game Hub;
+10. complete public-readiness work;
+11. expand to Call of Cthulhu 7e.
 
 This is an unofficial fan-made software project and is not presented as an official product of any tabletop game publisher.

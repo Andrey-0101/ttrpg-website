@@ -345,19 +345,44 @@ The schema must allow empty Clan, Sire, Predator Type, and Disciplines.
 
 ## Visibility
 
-The data values exist, but current access remains owner-only.
+Current values:
 
-The character UI must not promise real campaign/public sharing until routes and RLS implement it.
+```text
+private
+campaign
+public
+```
+
+Current behavior:
+
+| Value | Access |
+|---|---|
+| `private` | owner only |
+| `campaign` | owner; plus active campaign participants when an active eligible assignment exists |
+| `public` | owner only; no public route or public RLS policy exists |
+
+Campaign visibility alone does not share a character.
+
+Campaign-derived read access also requires:
+
+- an active campaign;
+- an active `campaign_characters` assignment;
+- matching character and campaign game systems;
+- continued participation by the character owner;
+- current participation by the viewer.
+
+Campaign participants receive read-only access through the campaign character route. Only the owner can edit or delete the character.
+
+The owner or campaign Game Master may unlink an active assignment. Unlinking never deletes the character.
 
 ## Deferred work
 
 - independent sheet language;
 - print/PDF;
 - portrait crop/focal point;
-- autosave;
+- complex autosave;
 - history/versioning;
 - public read-only renderer;
-- campaign permissions;
 - final decorative frame;
 - CoC character sheet.
 
