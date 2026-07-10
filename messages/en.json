@@ -104,7 +104,7 @@
     "visibility": {
       "label": "Visibility",
       "private": "Private",
-      "campaign": "Campaign — Sharing inactive",
+      "campaign": "Campaign members",
       "public": "Public — Sharing inactive"
     }
   },
@@ -144,12 +144,14 @@
     "creating": "Creating...",
     "creatingStatus": "Creating the character. Please wait.",
     "createError": "Unable to create the character.",
-    "visibilityCampaignUnavailable": "Campaign members — Coming later",
+    "visibilityCampaignUnavailable": "Campaign members",
     "visibilityPublicUnavailable": "Public — Coming later",
-    "visibilityCampaignInactive": "Campaign members — Sharing inactive",
+    "visibilityCampaignInactive": "Campaign members",
     "visibilityPublicInactive": "Public — Sharing inactive",
     "visibilityOwnerOnlyHelp": "Character access is currently private. Only you can view this character.",
-    "visibilityInactiveHelp": "This saved visibility value does not currently share the character. Only you can view it. You can keep it or change it to Private."
+    "visibilityInactiveHelp": "This saved visibility value does not currently share the character. Only you can view it. You can keep it or change it to Private.",
+    "visibilityCampaignHelp": "Campaign members can view this character only while it is linked to one of your active campaigns.",
+    "visibilityReadOnlyHelp": "Only the character owner can change visibility."
   },
   "CharacterEditor": {
     "sheetTitle": "Character Sheet",
@@ -162,7 +164,8 @@
     "clear": "Clear Form",
     "clearConfirm": "Clear all character fields? The changes will not be saved until you select Save Changes.",
     "clearNotice": "The form has been cleared. Select Save Changes to save the empty values.",
-    "unsupported": "A character sheet for this game is not available yet."
+    "unsupported": "A character sheet for this game is not available yet.",
+    "readOnlyNotice": "You are viewing a shared campaign character. Only the owner can edit this sheet."
   },
   "UnsavedChanges": {
     "status": "You have unsaved changes.",
@@ -283,7 +286,7 @@
     "linkedCharacters": "Linked characters",
     "linkedCharactersHelp": "Characters currently linked to this campaign.",
     "nextTitle": "Campaign characters",
-    "nextDescription": "Character linking and campaign character management will be added in the next development step.",
+    "nextDescription": "Link compatible characters and manage campaign sharing here.",
     "completedHelp": "This campaign is completed and read-only. Existing participants remain visible, while invitations and membership changes are disabled.",
     "role": {
       "gameMaster": "Game Master",
@@ -292,7 +295,8 @@
     "status": {
       "active": "Active",
       "completed": "Completed"
-    }
+    },
+    "characterOwnerFallback": "Campaign participant"
   },
   "CampaignInvitations": {
     "title": "Invitations",
@@ -363,5 +367,44 @@
     "joinedStatus": "Invitation accepted. Opening the campaign...",
     "joinError": "This invitation is invalid, expired, revoked, already used, or unavailable to your account.",
     "cancel": "Cancel"
+  },
+  "CampaignCharacters": {
+    "title": "Campaign characters",
+    "description": "Link one of your compatible characters to share it with the campaign. Linked sheets are read-only for other participants.",
+    "completedDescription": "This campaign is completed. Existing linked characters remain available to participants, but linking and unlinking are disabled.",
+    "createCharacter": "Create character",
+    "linkedTitle": "Linked characters",
+    "linkedEmpty": "No characters are currently linked to this campaign.",
+    "owner": "Owner: {name}",
+    "open": "Open sheet",
+    "unlink": "Unlink",
+    "unlinking": "Unlinking...",
+    "unlinkConfirm": "Unlink {name} from this campaign? The character will not be deleted.",
+    "unlinkingStatus": "Unlinking {name}. Please wait.",
+    "unlinkError": "Unable to unlink the character.",
+    "unlinkedStatus": "{name} was unlinked from the campaign.",
+    "yourCharactersTitle": "Your compatible characters",
+    "yourCharactersDescription": "A character must use this campaign's game system, have Campaign visibility, and not be linked to another campaign.",
+    "availableEmpty": "You have no other compatible characters available for this campaign.",
+    "linkedElsewhere": "Already linked to another campaign",
+    "needsCampaignVisibility": "Change visibility to Campaign before linking",
+    "readyToLink": "Ready to link",
+    "editVisibility": "Change visibility",
+    "openOwned": "Open character",
+    "link": "Link",
+    "linking": "Linking...",
+    "linkingStatus": "Linking {name}. Please wait.",
+    "linkError": "Unable to link the character. Check its visibility and existing campaign links.",
+    "linkedStatus": "{name} was linked to the campaign.",
+    "loadError": "Unable to load campaign characters.",
+    "retry": "Retry"
+  },
+  "CampaignCharacterDetails": {
+    "back": "Back to {campaign}",
+    "editOwned": "Edit your character",
+    "loading": "Loading campaign character...",
+    "unavailableTitle": "Shared character unavailable",
+    "unavailableDescription": "This character is not actively linked to this campaign or you do not have access to it.",
+    "backToCampaigns": "Back to My Campaigns"
   }
 }

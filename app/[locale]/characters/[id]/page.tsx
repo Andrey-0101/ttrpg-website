@@ -47,9 +47,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function CharacterPage({
-  params,
-}: CharacterPageProps) {
+export default async function CharacterPage({ params }: CharacterPageProps) {
   const { locale: requestedLocale, id } = await params;
   const locale = hasLocale(routing.locales, requestedLocale)
     ? requestedLocale
@@ -62,7 +60,9 @@ export default async function CharacterPage({
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
 
-  if (claimsError || !claimsData?.claims) {
+  const userId = claimsData?.claims?.sub ?? "";
+
+  if (claimsError || !userId) {
     redirect({
       href: "/login",
       locale,
@@ -72,7 +72,7 @@ export default async function CharacterPage({
   const { data: character, error } = await supabase
     .from("characters")
     .select(
-      "id, name, game_system, visibility, sheet_data, portrait_url",
+      "id, name, owner_id, game_system, visibility, sheet_data, portrait_url",
     )
     .eq("id", id)
     .single();
@@ -101,6 +101,7 @@ export default async function CharacterPage({
           ...character,
           portraitSignedUrl,
         }}
+        readOnly={character.owner_id !== userId}
       />
     </main>
   );
