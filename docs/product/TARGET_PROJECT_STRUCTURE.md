@@ -1,4 +1,3 @@
-
 # TTRPG Hub — Target Project Folder Structure
 
 > This is the recommended target repository structure.
@@ -17,18 +16,13 @@
 
 ## Recommended target repository tree
 
+Status markers are directional. The exact implemented route tree is maintained in `SITE_STRUCTURE_CURRENT.md`.
+
 ## Target navigation decision
 
-The target structure does **not** include a Dashboard section.
+The Dashboard is an accepted target section.
 
-The current repository may still contain `/[locale]/dashboard`. When the target navigation is implemented, that route should be reviewed and either:
-
-- removed;
-- redirected to `/[locale]/characters`;
-- redirected to `/[locale]/campaigns` for registered users;
-- or repurposed only after a separate product decision.
-
-It should not be treated as part of the approved target site map.
+`/[locale]/dashboard` is the personal cross-domain overview. It should aggregate existing resources such as Campaigns, Characters, recent activity, and later sessions or tools. It should not duplicate their management interfaces.
 
 ```text
 ttrpg-website/
@@ -95,28 +89,38 @@ ttrpg-website/
 │   │   │
 │   │   ├── characters/
 │   │   │   ├── page.tsx                           [CURRENT]
-│   │   │   ├── loading.tsx                        [NEXT]
+│   │   │   ├── loading.tsx                        [CURRENT]
 │   │   │   ├── new/
 │   │   │   │   ├── page.tsx                       [CURRENT]
 │   │   │   │   └── [system]/
 │   │   │   │       └── page.tsx                   [CURRENT]
 │   │   │   └── [id]/
-│   │   │       └── page.tsx                       [CURRENT]
+│   │   │       ├── page.tsx                       [CURRENT]
+│   │   │       ├── loading.tsx                    [CURRENT]
+│   │   │       └── not-found.tsx                  [CURRENT]
 │   │   │
 │   │   ├── campaigns/
-│   │   │   ├── page.tsx                           [NEXT]
+│   │   │   ├── page.tsx                           [CURRENT]
+│   │   │   ├── loading.tsx                        [CURRENT]
 │   │   │   ├── new/
-│   │   │   │   └── page.tsx                       [NEXT]
-│   │   │   ├── completed/
-│   │   │   │   └── page.tsx                       [PLANNED]
-│   │   │   └── [campaignId]/
-│   │   │       ├── layout.tsx                     [NEXT]
-│   │   │       ├── page.tsx                       [NEXT]
-│   │   │       ├── game-room/
-│   │   │       │   └── page.tsx                   [PLANNED]
-│   │   │       ├── members/
-│   │   │       │   └── page.tsx                   [NEXT]
+│   │   │   │   ├── page.tsx                       [CURRENT]
+│   │   │   │   └── loading.tsx                    [CURRENT]
+│   │   │   ├── join/
+│   │   │   │   └── [token]/
+│   │   │   │       ├── page.tsx                   [CURRENT]
+│   │   │   │       └── loading.tsx                [CURRENT]
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx                       [CURRENT]
+│   │   │       ├── loading.tsx                    [CURRENT]
+│   │   │       ├── not-found.tsx                  [CURRENT]
 │   │   │       ├── characters/
+│   │   │       │   └── [characterId]/
+│   │   │       │       ├── page.tsx               [CURRENT]
+│   │   │       │       ├── loading.tsx            [CURRENT]
+│   │   │       │       └── not-found.tsx          [CURRENT]
+│   │   │       ├── dice/
+│   │   │       │   └── page.tsx                   [NEXT]
+│   │   │       ├── video/
 │   │   │       │   └── page.tsx                   [NEXT]
 │   │   │       ├── handouts/
 │   │   │       │   ├── page.tsx                   [PLANNED]
@@ -126,20 +130,12 @@ ttrpg-website/
 │   │   │       │   ├── page.tsx                   [PLANNED]
 │   │   │       │   └── [npcId]/
 │   │   │       │       └── page.tsx               [PLANNED]
-│   │   │       ├── chronicle/
+│   │   │       ├── sessions/
 │   │   │       │   ├── page.tsx                   [PLANNED]
 │   │   │       │   └── [sessionId]/
 │   │   │       │       └── page.tsx               [PLANNED]
-│   │   │       ├── notes/
-│   │   │       │   └── page.tsx                   [PLANNED]
-│   │   │       └── settings/
+│   │   │       └── notes/
 │   │   │           └── page.tsx                   [PLANNED]
-│   │   │
-│   │   ├── dice/
-│   │   │   └── page.tsx                           [PLANNED]
-│   │   │
-│   │   ├── video-rooms/
-│   │   │   └── page.tsx                           [PLANNED]
 │   │   │
 │   │   ├── login/
 │   │   │   └── page.tsx                           [CURRENT]
@@ -263,14 +259,16 @@ ttrpg-website/
 │   │           └── background-section.tsx          [COC]
 │   │
 │   ├── campaigns/
-│   │   ├── campaign-card.tsx                       [NEXT]
-│   │   ├── campaign-list.tsx                       [NEXT]
-│   │   ├── campaign-create-form.tsx                [NEXT]
-│   │   ├── campaign-overview.tsx                   [NEXT]
-│   │   ├── campaign-members.tsx                    [NEXT]
-│   │   ├── campaign-characters.tsx                 [NEXT]
-│   │   ├── campaign-settings.tsx                   [PLANNED]
-│   │   ├── completed-campaign-card.tsx             [PLANNED]
+│   │   ├── campaign-creator.tsx                    [CURRENT]
+│   │   ├── campaign-summary-card.tsx               [CURRENT]
+│   │   ├── retry-campaigns-button.tsx              [CURRENT]
+│   │   ├── campaign-invitation-joiner.tsx          [CURRENT]
+│   │   ├── campaign-invitation-manager.tsx         [CURRENT]
+│   │   ├── campaign-members-panel.tsx              [CURRENT]
+│   │   ├── campaign-characters-panel.tsx           [CURRENT]
+│   │   ├── campaign-management-panel.tsx           [CURRENT]
+│   │   ├── campaign-dice-panel.tsx                 [NEXT]
+│   │   ├── campaign-video-room.tsx                 [NEXT]
 │   │   ├── handouts/
 │   │   │   ├── handout-list.tsx                    [PLANNED]
 │   │   │   ├── handout-card.tsx                    [PLANNED]
@@ -359,41 +357,41 @@ ttrpg-website/
 │               └── resources.mdx                   [COC]
 │
 ├── docs/
-│   ├── README.md                                   [NEXT]
+│   ├── README.md                                   [CURRENT]
 │   ├── README.ru.md                                [NEXT]
 │   │
 │   ├── architecture/
-│   │   ├── ARCHITECTURE.md                         [NEXT]
+│   │   ├── ARCHITECTURE.md                         [CURRENT]
 │   │   ├── ARCHITECTURE.ru.md                      [NEXT]
-│   │   ├── DATABASE.md                             [NEXT]
+│   │   ├── DATABASE.md                             [CURRENT]
 │   │   ├── DATABASE.ru.md                          [NEXT]
-│   │   ├── I18N.md                                 [NEXT]
+│   │   ├── I18N.md                                 [CURRENT]
 │   │   ├── I18N.ru.md                              [NEXT]
-│   │   ├── CHARACTER_SHEETS.md                     [NEXT]
+│   │   ├── CHARACTER_SHEETS.md                     [CURRENT]
 │   │   ├── CHARACTER_SHEETS.ru.md                  [NEXT]
-│   │   ├── DESIGN_SYSTEM.md                        [NEXT]
+│   │   ├── DESIGN_SYSTEM.md                        [CURRENT]
 │   │   ├── DESIGN_SYSTEM.ru.md                     [NEXT]
-│   │   ├── SECURITY.md                             [NEXT]
+│   │   ├── SECURITY.md                             [CURRENT]
 │   │   └── SECURITY.ru.md                          [NEXT]
 │   │
 │   ├── product/
-│   │   ├── ROADMAP.md                              [NEXT]
+│   │   ├── ROADMAP.md                              [CURRENT]
 │   │   ├── ROADMAP.ru.md                           [NEXT]
-│   │   ├── CAMPAIGNS.md                            [NEXT]
+│   │   ├── CAMPAIGNS.md                            [CURRENT]
 │   │   ├── CAMPAIGNS.ru.md                         [NEXT]
-│   │   ├── DICE_ROLLS.md                           [NEXT]
+│   │   ├── DICE_ROLLS.md                           [CURRENT]
 │   │   ├── DICE_ROLLS.ru.md                        [NEXT]
-│   │   ├── VIDEO_ROOMS.md                          [NEXT]
+│   │   ├── VIDEO_ROOMS.md                          [CURRENT]
 │   │   ├── VIDEO_ROOMS.ru.md                       [NEXT]
-│   │   ├── GAME_HUB.md                             [NEXT]
+│   │   ├── GAME_HUB.md                             [CURRENT]
 │   │   ├── GAME_HUB.ru.md                          [NEXT]
-│   │   ├── SITE_STRUCTURE_CURRENT.md               [NEXT]
+│   │   ├── SITE_STRUCTURE_CURRENT.md               [CURRENT]
 │   │   ├── SITE_STRUCTURE_CURRENT.ru.md            [NEXT]
-│   │   ├── SITE_STRUCTURE_TARGET.md                [NEXT]
+│   │   ├── SITE_STRUCTURE_TARGET.md                [CURRENT]
 │   │   ├── SITE_STRUCTURE_TARGET.ru.md             [NEXT]
-│   │   ├── SITE_STRUCTURE_COMPARISON.md            [NEXT]
+│   │   ├── SITE_STRUCTURE_COMPARISON.md            [CURRENT]
 │   │   ├── SITE_STRUCTURE_COMPARISON.ru.md         [NEXT]
-│   │   ├── SITE_MAP.md                             [NEXT]
+│   │   ├── SITE_MAP.md                             [CURRENT]
 │   │   └── SITE_MAP.ru.md                          [NEXT]
 │   │
 │   ├── decisions/

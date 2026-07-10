@@ -2,9 +2,11 @@
 
 ## Status
 
-Reviewed authorization design. The Campaign Foundation migration is not applied.
+Implemented and verified.
 
-This matrix describes the intended minimum access boundary for:
+The Campaign Foundation migrations are applied to the linked Supabase project, generated types are current for the synchronized snapshot, and the matrix was exercised through a GM/Player/Outsider transaction test.
+
+This matrix describes the current minimum access boundary for:
 
 ```text
 campaigns
@@ -210,3 +212,25 @@ Verify:
 18. A completes the campaign; open invitations are revoked and active assignments end.
 19. Completed campaign settings cannot be updated.
 20. A can delete the campaign.
+
+
+## Verification record
+
+The recorded Campaign Foundation security test verified the expected allow/deny behavior for:
+
+- Game Master;
+- Player;
+- authenticated Outsider.
+
+The script also tested invitation lifecycle, immutable Game Master rules, direct membership denial, character sharing, automatic unlinking, and completed campaign behavior.
+
+All test data was removed with `ROLLBACK`.
+
+Two issues discovered by the test were corrected through forward migrations:
+
+```text
+20260709163000_fix_campaign_select_policy.sql
+20260709170000_fix_campaign_character_trigger_security.sql
+```
+
+The matrix remains the authorization reference for future campaign dice, video, handout, session, and note policies.

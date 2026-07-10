@@ -6,26 +6,35 @@
 |---|---|
 | Project | TTRPG Hub |
 | Document type | Target information architecture |
-| Status | Proposed initial version for review |
-| Target scope | Friend-alpha through public-ready multi-system platform |
+| Status | Accepted direction; updated after Campaign Foundation |
+| Current scope | Private friend-alpha |
 | First complete game system | Vampire: The Masquerade Fifth Edition |
 | Later game system | Call of Cthulhu Seventh Edition |
 | Route model | Locale prefix required for application routes |
 
 ## Purpose
 
-This document defines the proposed target structure of the website. It is an information-architecture target, not a statement that all listed routes already exist.
+This document defines the accepted target information architecture.
 
-The structure supports the agreed sequence:
+It distinguishes:
 
-1. Character Friend Alpha
-2. Campaign Foundation
-3. VtM Realtime Tools
-4. Friend Campaign Alpha
-5. Visual Identity
-6. VtM Game Hub
-7. Public Readiness
-8. Call of Cthulhu 7e
+- implemented current routes;
+- the next Realtime Tools routes;
+- later Friend Campaign Alpha and Public Readiness routes.
+
+It does not claim that every target route already exists.
+
+## Delivery sequence
+
+1. Architecture Baseline — complete
+2. Character Friend Alpha — complete
+3. Campaign Foundation — complete
+4. VtM Realtime Tools — active
+5. Friend Campaign Alpha
+6. Visual Identity
+7. VtM Game Hub
+8. Public Readiness
+9. Call of Cthulhu 7e
 
 ## Target top-level structure
 
@@ -33,20 +42,53 @@ The structure supports the agreed sequence:
 - Games
   - Vampire: The Masquerade
   - Call of Cthulhu
+- Dashboard
 - Characters
 - Campaigns
-- Personal Dashboard
 - Profile and Account
 - Help and Legal
 - Technical routes
 
-The main architectural distinction is:
+The Dashboard is an accepted part of the target structure. It is the personal cross-domain overview and should aggregate existing resources rather than duplicate their management interfaces.
 
-- **Game Hub**: general information and system-specific tools;
-- **Campaign Workspace**: private collaboration space for a specific gaming group;
-- **Personal Dashboard**: the user's own overview across characters and campaigns.
+## Architectural distinctions
 
-## Proposed primary navigation
+### Game Hub
+
+General information and system-specific tools:
+
+- getting started;
+- character guide;
+- rules references;
+- resources;
+- personal dice tools.
+
+### Campaign Workspace
+
+Private collaboration for one campaign:
+
+- overview;
+- members;
+- characters;
+- shared dice;
+- video;
+- handouts;
+- NPCs;
+- sessions;
+- notes;
+- settings.
+
+### Dashboard
+
+The user's own overview across:
+
+- characters;
+- campaigns;
+- recent activity;
+- relevant tools;
+- later sessions and notifications.
+
+## Primary navigation
 
 ### Public user
 
@@ -60,16 +102,18 @@ The main architectural distinction is:
 
 - Home
 - Games
-- Characters
-- Campaigns
 - Dashboard
+- Campaigns
+- Characters
 - Profile/Account
 - Language
 - Log out
 
-### Campaign context navigation
+### Campaign context
 
-When a user is inside a campaign:
+Only implemented areas should be visible.
+
+Target campaign navigation:
 
 - Overview
 - Members
@@ -82,394 +126,310 @@ When a user is inside a campaign:
 - Notes
 - Settings
 
-Only sections implemented for the current milestone should be visible.
+The current Campaign Foundation keeps Members, Characters, Invitations, and Settings controls integrated into Campaign Overview. Separate routes should be introduced only when the workspace becomes too large or the next feature requires them.
 
 ## Target route tree
 
-### 1. Core public routes
+### Core public routes
 
-- `/[locale]`
-  - Home
-- `/[locale]/games`
-  - Game catalogue
-- `/[locale]/help`
-  - Help centre
-- `/[locale]/about`
-  - Project information and unofficial fan-project notice
-- `/[locale]/contact`
-  - Contact and support
-- `/[locale]/privacy`
-  - Privacy policy
-- `/[locale]/terms`
-  - Terms of use
+```text
+/[locale]
+/[locale]/games
+/[locale]/help
+/[locale]/about
+/[locale]/contact
+/[locale]/privacy
+/[locale]/terms
+```
 
-Help and legal routes belong to the Public Readiness milestone and do not need to exist during early friend-alpha.
+Help and legal routes belong to Public Readiness.
 
-### 2. Authentication routes
+### Authentication
 
-- `/[locale]/login`
-- `/[locale]/register`
-- `/[locale]/account`
-- `/[locale]/account/security`
-- `/[locale]/account/privacy`
-- `/[locale]/account/data`
-- `/auth/confirm`
+Current:
 
-Possible future technical routes:
+```text
+/[locale]/login
+/[locale]/register
+/auth/confirm
+```
 
-- `/auth/reset-password`
-- `/auth/update-password`
+Later:
 
-Account security, privacy, export, and deletion are public-readiness targets.
+```text
+/[locale]/account/security
+/[locale]/account/privacy
+/[locale]/account/data
+/auth/reset-password
+/auth/update-password
+```
 
-### 3. Personal dashboard
+### Dashboard
 
-- `/[locale]/dashboard`
+```text
+/[locale]/dashboard
+```
 
-Target dashboard sections:
+Target sections:
 
 - quick actions;
 - recent characters;
 - active campaigns;
-- upcoming or recent sessions;
-- recent activity;
-- relevant game tools;
-- incomplete profile or setup notices.
+- relevant tools;
+- later recent sessions and activity;
+- setup notices.
 
-The dashboard should aggregate existing resources rather than duplicate their management interfaces.
+### Characters
 
-### 4. Characters
+Current route family retained:
 
-Keep the existing route family to avoid unnecessary migration:
+```text
+/[locale]/characters
+/[locale]/characters/new
+/[locale]/characters/new/[system]
+/[locale]/characters/[id]
+```
 
-- `/[locale]/characters`
-  - My Characters
-- `/[locale]/characters/new`
-  - Select game system
-- `/[locale]/characters/new/[system]`
-  - Create character
-- `/[locale]/characters/[id]`
-  - View/edit character
+Current campaign shared route:
 
-Potential public-ready additions:
+```text
+/[locale]/campaigns/[id]/characters/[characterId]
+```
 
-- `/[locale]/characters/[id]/settings`
-  - Character settings, language, visibility, campaign assignment
-- `/[locale]/shared/characters/[shareId]`
-  - Public or explicitly shared read-only character
+Potential Public Readiness additions:
 
-Public sharing remains optional and must not be implemented until its access model is approved.
+```text
+/[locale]/characters/[id]/settings
+/[locale]/shared/characters/[shareId]
+```
 
-### 5. Games catalogue
+Public sharing remains deferred until its access model is approved.
 
-- `/[locale]/games`
-  - All supported games
-- `/[locale]/games/vampire-the-masquerade`
-  - VtM Game Hub
-- `/[locale]/games/call-of-cthulhu-7e`
-  - CoC Game Hub
+### Games catalogue
 
-Each system hub follows a common structure while allowing system-specific content.
+```text
+/[locale]/games
+/[locale]/games/vampire-the-masquerade
+/[locale]/games/call-of-cthulhu-7e
+```
 
-### 6. VtM Game Hub
+The CoC route family is planned for Milestone 9.
 
-Recommended routes:
+### VtM Game Hub
 
-- `/[locale]/games/vampire-the-masquerade`
-  - Overview
-- `/[locale]/games/vampire-the-masquerade/getting-started`
-  - Getting Started
-- `/[locale]/games/vampire-the-masquerade/character-creation`
-  - Character Creation Guide
-- `/[locale]/games/vampire-the-masquerade/quick-reference`
-  - Quick Reference
-- `/[locale]/games/vampire-the-masquerade/resources`
-  - Official and reviewed external resources
-- `/[locale]/games/vampire-the-masquerade/tools`
-  - Available VtM tools
-- `/[locale]/games/vampire-the-masquerade/tools/dice`
-  - Personal VtM dice roller
+Recommended target:
 
-The hub should link to Characters and Campaigns, but it should not contain private campaign data.
+```text
+/[locale]/games/vampire-the-masquerade
+/[locale]/games/vampire-the-masquerade/getting-started
+/[locale]/games/vampire-the-masquerade/character-creation
+/[locale]/games/vampire-the-masquerade/quick-reference
+/[locale]/games/vampire-the-masquerade/resources
+/[locale]/games/vampire-the-masquerade/tools
+/[locale]/games/vampire-the-masquerade/tools/dice
+```
 
-### 7. Call of Cthulhu Game Hub
+The personal VtM dice route is the recommended next feature route.
 
-Later target:
+### Campaigns
 
-- `/[locale]/games/call-of-cthulhu-7e`
-- `/[locale]/games/call-of-cthulhu-7e/getting-started`
-- `/[locale]/games/call-of-cthulhu-7e/character-creation`
-- `/[locale]/games/call-of-cthulhu-7e/quick-reference`
-- `/[locale]/games/call-of-cthulhu-7e/resources`
-- `/[locale]/games/call-of-cthulhu-7e/tools`
-- `/[locale]/games/call-of-cthulhu-7e/tools/dice`
+Current:
 
-Only the structure is proposed. Content, character schema, dice rules, and theme are deferred until the CoC milestone.
+```text
+/[locale]/campaigns
+/[locale]/campaigns/new
+/[locale]/campaigns/join/[token]
+/[locale]/campaigns/[id]
+/[locale]/campaigns/[id]/characters/[characterId]
+```
 
-### 8. Campaigns
+Next Realtime Tools routes:
 
-#### Campaign list and entry
+```text
+/[locale]/campaigns/[id]/dice
+/[locale]/campaigns/[id]/video
+```
 
-- `/[locale]/campaigns`
-  - My Campaigns
-- `/[locale]/campaigns/new`
-  - Create campaign
-- `/[locale]/campaigns/join`
-  - Enter or process an invitation
-- `/[locale]/campaigns/join/[token]`
-  - Invitation acceptance
+Later campaign-content routes:
 
-#### Campaign workspace
+```text
+/[locale]/campaigns/[id]/handouts
+/[locale]/campaigns/[id]/handouts/[handoutId]
+/[locale]/campaigns/[id]/npcs
+/[locale]/campaigns/[id]/npcs/[npcId]
+/[locale]/campaigns/[id]/sessions
+/[locale]/campaigns/[id]/sessions/[sessionId]
+/[locale]/campaigns/[id]/notes
+```
 
-- `/[locale]/campaigns/[campaignId]`
-  - Overview
-- `/[locale]/campaigns/[campaignId]/members`
-  - Members and roles
-- `/[locale]/campaigns/[campaignId]/characters`
-  - Player characters and campaign assignments
-- `/[locale]/campaigns/[campaignId]/dice`
-  - Shared campaign dice roller and feed
-- `/[locale]/campaigns/[campaignId]/video`
-  - Campaign video room
-- `/[locale]/campaigns/[campaignId]/handouts`
-  - Handout library
-- `/[locale]/campaigns/[campaignId]/handouts/[handoutId]`
-  - Handout detail
-- `/[locale]/campaigns/[campaignId]/npcs`
-  - NPC list
-- `/[locale]/campaigns/[campaignId]/npcs/[npcId]`
-  - NPC detail
-- `/[locale]/campaigns/[campaignId]/sessions`
-  - Session list
-- `/[locale]/campaigns/[campaignId]/sessions/[sessionId]`
-  - Session detail
-- `/[locale]/campaigns/[campaignId]/notes`
-  - Shared and GM-private notes
-- `/[locale]/campaigns/[campaignId]/settings`
-  - Campaign settings, invitations, lifecycle, and permissions
+Optional later separation:
 
-### 9. Session-specific structure
+```text
+/[locale]/campaigns/[id]/members
+/[locale]/campaigns/[id]/characters
+/[locale]/campaigns/[id]/settings
+```
 
-Sessions should become first-class campaign records.
+Do not create separate routes only to mirror a conceptual navigation section. Create them when the workflow benefits.
 
-A session detail may aggregate:
+## Realtime route direction
+
+### Personal dice
+
+```text
+/[locale]/games/vampire-the-masquerade/tools/dice
+```
+
+- no campaign required;
+- system-specific VtM rules;
+- local result in the first slice;
+- no database persistence initially.
+
+### Campaign dice
+
+```text
+/[locale]/campaigns/[id]/dice
+```
+
+- campaign membership required;
+- server-authoritative execution;
+- persisted history;
+- Realtime feed;
+- optional accessible character context.
+
+### Campaign video
+
+```text
+/[locale]/campaigns/[id]/video
+```
+
+- campaign membership required;
+- server-issued short-lived provider token;
+- managed WebRTC provider;
+- no permanent public room URL.
+
+## Session structure
+
+Sessions become first-class campaign records later.
+
+A session may aggregate:
 
 - date and time;
 - participants;
-- agenda or preparation;
-- shared summary;
-- GM-private notes;
-- related handouts;
-- related NPCs;
-- related dice-roll history;
-- video-room entry.
+- preparation;
+- summary;
+- related dice history;
+- handouts;
+- NPCs;
+- notes;
+- optional video room/session mapping.
 
-Possible later nested routes:
+Campaign-level dice and video should be implemented first. Session filtering can be added later.
 
-- `/[locale]/campaigns/[campaignId]/sessions/[sessionId]/dice`
-- `/[locale]/campaigns/[campaignId]/sessions/[sessionId]/video`
+## Domain ownership
 
-For friend-alpha, campaign-level Dice and Video routes can be implemented first, with optional session filtering.
-
-### 10. Profile and account
-
-- `/[locale]/profile`
-  - Public-facing profile information visible according to policy
-- `/[locale]/profile/edit`
-  - Edit profile
-- `/[locale]/account`
-  - Account overview
-- `/[locale]/account/security`
-  - Authentication and session settings
-- `/[locale]/account/privacy`
-  - Privacy preferences
-- `/[locale]/account/data`
-  - Data export and account deletion
-
-The distinction should be:
-
-- **Profile**: identity presented inside the platform;
-- **Account**: credentials, privacy, and account lifecycle.
-
-## Target functional hierarchy
-
-### Platform layer
+### Platform
 
 - Auth
 - Profiles
 - Localization
 - Dashboard
-- Help and legal
-- Shared UI and navigation
-
-### Character layer
-
-- Common character lifecycle
-- Portraits
-- Game-system selection
-- System-specific character sheets
-- Character settings
-- Campaign assignment
-- Optional sharing
-
-### Game-system layer
-
-For each game:
-
-- Game Hub
-- Character schema and renderer
-- Summary cards
-- Dice engine
-- Theme
-- Quick reference
-- Resources
-- Campaign-specific system settings
-
-### Campaign layer
-
-- Campaign
-- Membership
-- Roles
+- Characters lifecycle
+- Campaigns
+- Memberships
 - Invitations
-- Character assignment
-- Access control
-- Workspace navigation
+- Storage access
+- Common navigation
 
-### Realtime tools layer
+### Game system
 
-- Dice execution
-- Shared roll feed
-- Presence
-- Video-room access
-- Reconnection states
+- sheet schema;
+- normalizer;
+- renderer;
+- summary card;
+- dice rules;
+- terminology;
+- theme;
+- Game Hub content.
 
-### Campaign content layer
+### Campaign content
 
-- Handouts
-- NPCs
-- Sessions
-- Shared notes
-- GM-private notes
+- handouts;
+- NPCs;
+- sessions;
+- shared notes;
+- GM-private notes.
 
-## Target access model
+## Permission direction
 
-| Area | Target access |
+| Area | Intended access |
 |---|---|
-| Home and game hubs | Public |
-| Personal dice roller | Authenticated user, or public only if explicitly approved |
-| Dashboard | Authenticated user |
-| Character list | Owner |
-| Character detail | Owner and later explicitly permitted campaign roles |
-| Campaign list | Campaign member |
-| Campaign workspace | Campaign member |
-| Campaign settings | Owner or authorised GM |
-| GM-private notes | Authorised GM only |
-| Campaign dice feed | Members according to roll visibility |
-| Campaign video token | Active campaign member |
-| Public shared character | Anonymous or authenticated reader only through approved share policy |
+| Dashboard | authenticated user |
+| Character list | owner |
+| Character edit/delete | owner |
+| Campaign shared character | current campaign participant, read only |
+| Campaign list | campaign participant |
+| Campaign workspace | campaign participant |
+| Campaign invitations | Game Master |
+| Campaign settings/lifecycle | Game Master |
+| Campaign dice feed | campaign participant according to approved roll policy |
+| Campaign video token | active campaign participant |
+| GM-private notes | Game Master only |
+| Public shared character | only after separate approved policy |
 
-Access must be enforced by RLS and server-side checks, not only by navigation visibility.
+RLS, server-side checks, and Storage policies remain authoritative.
 
 ## Target structure by milestone
 
-### Character Friend Alpha
-
-Adds no major top-level area. It improves:
-
-- Characters;
-- save state;
-- unsaved-change protection;
-- loading and error states;
-- visibility messaging.
-
-### Campaign Foundation
-
-Adds:
+### Completed Campaign Foundation
 
 - Campaigns;
-- campaign creation;
-- joining by invitation;
-- members;
-- roles;
-- character assignment;
-- minimal overview.
+- creation;
+- invitations;
+- membership;
+- campaign character sharing;
+- management;
+- completion;
+- deletion.
 
-### VtM Realtime Tools
+### Active VtM Realtime Tools
 
-Adds:
-
-- personal VtM dice roller in the VtM Game Hub;
-- campaign Dice;
-- campaign Video.
+- personal VtM dice;
+- campaign dice;
+- Realtime feed;
+- managed-video spike;
+- minimal campaign video room.
 
 ### Friend Campaign Alpha
 
-Adds:
-
-- Handouts;
+- handouts;
 - NPCs;
-- Sessions;
-- Notes;
-- complete friend-group Campaign Workspace.
-
-### Visual Identity
-
-Changes presentation, not the route hierarchy.
-
-### VtM Game Hub
-
-Expands the VtM routes into:
-
-- Getting Started;
-- Character Creation;
-- Quick Reference;
-- Resources;
-- Tools.
+- sessions;
+- notes;
+- real friend-group session.
 
 ### Public Readiness
 
-Adds:
-
-- Help;
-- About;
-- Contact;
-- Privacy;
-- Terms;
-- account security/privacy/data pages;
-- optional approved public-sharing routes.
+- help/legal;
+- account security/privacy/data;
+- monitoring;
+- rate limiting;
+- automated tests;
+- public beta controls.
 
 ### Call of Cthulhu 7e
 
-Adds the second system hub, character sheet, dice tool, content, theme, and campaign integration.
+- CoC Game Hub;
+- sheet;
+- dice;
+- campaign integration.
 
-## Navigation principles
+## Navigation rule
 
-1. Keep primary navigation short.
-2. Do not show unavailable sections as working tools.
-3. Use contextual campaign navigation inside campaign routes.
-4. Keep Games informational and system-specific.
-5. Keep Dashboard personal and cross-system.
-6. Keep Characters as a reusable cross-system resource area.
-7. Keep Campaigns as the private collaboration boundary.
-8. Keep Profile separate from Account.
-9. Preserve locale in every user-facing route.
-10. Do not expose GM-private resources through shared navigation.
+Never expose a navigation item merely because it exists in the target map.
 
-## Route naming principles
+Navigation should show only:
 
-- Use plural nouns for resource collections.
-- Use stable English route segments for both locales.
-- Localise page labels, not route slugs.
-- Keep existing character routes unless a concrete problem requires migration.
-- Use readable game slugs.
-- Use IDs for private resources.
-- Use revocable non-sequential share identifiers for any future public-sharing route.
-- Avoid placing campaign-private content under public game-hub routes.
-
-## Target structure summary
-
-The target site is best described as:
-
-> A bilingual multi-system TTRPG hub combining private character management, campaign workspaces, system-specific dice tools, managed video rooms, campaign content, and curated game hubs.
-
-The first practical target is not the complete public platform. It is a friend-only VtM workspace built in stages on top of the existing character manager.
+- implemented destinations;
+- routes the current user is authorized to use;
+- features appropriate to the current milestone.

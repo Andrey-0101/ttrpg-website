@@ -87,14 +87,21 @@ Rejected because handouts, NPCs, sessions, and notes can follow after the minimu
 
 ## Follow-up
 
-Before applying the Campaign Foundation migration:
+Completed:
 
-1. review the SQL draft outside `supabase/migrations`;
-2. review the RLS matrix;
-3. convert the approved draft into a new timestamped migration;
-4. apply it to the linked Supabase project;
-5. regenerate `types/database.types.ts`;
-6. run multi-user RLS and Storage tests;
-7. update database documentation from proposed to implemented state.
+1. SQL draft reviewed outside `supabase/migrations`;
+2. RLS matrix reviewed;
+3. foundation and corrective migrations created;
+4. migrations applied to the linked Supabase project;
+5. `types/database.types.ts` regenerated;
+6. GM/Player/Outsider RLS and Storage behavior tested;
+7. Campaign Foundation UI completed;
+8. permanent database and campaign documentation synchronized.
+
+Next:
+
+- personal dice may remain outside campaign persistence;
+- persisted campaign dice, realtime feeds, and video tokens must reuse the implemented campaign authorization boundary;
+- future campaign-owned tables require equivalent multi-user tests.
 
 Accepted ADRs must not be silently reversed. A future decision to support Game Master transfer or multiple Game Masters requires a superseding ADR.

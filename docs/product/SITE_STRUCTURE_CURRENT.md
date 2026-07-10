@@ -5,229 +5,334 @@
 | Field | Value |
 |---|---|
 | Project | TTRPG Hub |
-| Document type | Current-state information architecture |
-| Status | Initial version for review |
-| Snapshot date | 2026-07-03 |
-| Repository snapshot | `main` at `e2a412bd74af0971cea7bfdf28e42cfa6100e7a2` |
-| Supported locales | `en`, `ru` |
-| Route model | Locale prefix required for application routes |
+| Document type | Current information architecture |
+| Status | Implemented snapshot |
+| Repository snapshot | `main` at `a1c3a61381a2b7cddab9dd8fb620af56342209a9` |
+| Current milestone | Milestone 4 — VtM Realtime Tools |
+| Completed milestones | Architecture Baseline, Character Friend Alpha, Campaign Foundation |
 
 ## Purpose
 
-This document records the structure that currently exists in the website. It describes implemented user-facing areas and routes. It does not include planned campaign, dice, video, handout, NPC, session, or Call of Cthulhu functionality.
+This document records the implemented user-facing route and navigation structure.
 
-## Current high-level structure
+It does not describe unimplemented dice, video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu routes as current.
 
-- Home
-- Games
-  - Vampire: The Masquerade
-- Authentication
-  - Log in
-  - Register
-  - Email confirmation callback
-- Dashboard
-- Characters
-  - My Characters
-  - Select a game system
-  - Create a character for a selected system
-  - View and edit a character
-- Profile and account
-  - Profile
-  - Edit profile
-  - Account
-- System pages
-  - Localized not found
-  - Localized catch-all route
+## Current primary navigation
+
+Authenticated navigation includes:
+
+- Home;
+- Games;
+- Dashboard;
+- Campaigns;
+- Characters;
+- account area;
+- language switcher.
+
+The Dashboard is an accepted implemented personal overview route. It currently links to Campaigns and Characters and may expand later.
 
 ## Current route tree
 
-All user-facing application routes are available under both `/en` and `/ru`.
+```text
+/
+├── [locale]
+│   ├── page.tsx
+│   ├── not-found.tsx
+│   ├── [...rest]
+│   │   └── page.tsx
+│   ├── account
+│   │   └── page.tsx
+│   ├── dashboard
+│   │   └── page.tsx
+│   ├── games
+│   │   ├── page.tsx
+│   │   └── vampire-the-masquerade
+│   │       └── page.tsx
+│   ├── login
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── register
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── profile
+│   │   ├── page.tsx
+│   │   └── edit
+│   │       ├── layout.tsx
+│   │       └── page.tsx
+│   ├── characters
+│   │   ├── page.tsx
+│   │   ├── loading.tsx
+│   │   ├── new
+│   │   │   ├── page.tsx
+│   │   │   └── [system]
+│   │   │       └── page.tsx
+│   │   └── [id]
+│   │       ├── page.tsx
+│   │       ├── loading.tsx
+│   │       └── not-found.tsx
+│   └── campaigns
+│       ├── page.tsx
+│       ├── loading.tsx
+│       ├── new
+│       │   ├── page.tsx
+│       │   └── loading.tsx
+│       ├── join
+│       │   └── [token]
+│       │       ├── page.tsx
+│       │       └── loading.tsx
+│       └── [id]
+│           ├── page.tsx
+│           ├── loading.tsx
+│           ├── not-found.tsx
+│           └── characters
+│               └── [characterId]
+│                   ├── page.tsx
+│                   ├── loading.tsx
+│                   └── not-found.tsx
+└── auth
+    └── confirm
+        └── route.ts
+```
 
-- `/[locale]`
-  - Home
-- `/[locale]/games`
-  - Games index
-- `/[locale]/games/vampire-the-masquerade`
-  - Current VtM game page
-- `/[locale]/login`
-  - Log in
-- `/[locale]/register`
-  - Registration
-- `/[locale]/dashboard`
-  - Authenticated dashboard
-- `/[locale]/characters`
-  - My Characters
-- `/[locale]/characters/new`
-  - Game-system selection for character creation
-- `/[locale]/characters/new/[system]`
-  - Character creation for a selected system
-- `/[locale]/characters/[id]`
-  - Character view and edit
-- `/[locale]/profile`
-  - User profile
-- `/[locale]/profile/edit`
-  - Edit profile
-- `/[locale]/account`
-  - Account page
-- `/[locale]/[...rest]`
-  - Localized catch-all and not-found handling
-- `/auth/confirm`
-  - Technical email-confirmation route outside locale-prefixed application routes
+`loading.tsx` and `not-found.tsx` are framework route-state files, not literal URL segments.
 
-## Current functional areas
+## Public and authentication areas
 
-### 1. Public and entry pages
+### Home
 
-#### Home
+```text
+/[locale]
+```
 
-Current entry point for the localized website.
+Current localized landing page.
 
-#### Games
+### Games
 
-Current game catalogue area. It contains the Vampire: The Masquerade entry.
+```text
+/[locale]/games
+/[locale]/games/vampire-the-masquerade
+```
 
-#### Vampire: The Masquerade page
+The Games catalogue and basic VtM area exist.
 
-Current game-specific landing page. It is not yet the complete VtM Game Hub defined in the target structure.
+The full VtM Game Hub remains planned.
 
-#### Authentication
+### Authentication
+
+```text
+/[locale]/login
+/[locale]/register
+/auth/confirm
+```
+
+The login flow supports return to a pending campaign invitation.
+
+### Profile and Account
+
+```text
+/[locale]/profile
+/[locale]/profile/edit
+/[locale]/account
+```
+
+Profile view and edit exist. Public-readiness security/privacy/data controls are not yet implemented.
+
+## Dashboard
+
+```text
+/[locale]/dashboard
+```
+
+Current content:
+
+- authenticated user identification;
+- Campaigns card and link;
+- Characters card and link.
+
+The route is retained as the personal cross-domain overview.
+
+## Characters
+
+### My Characters
+
+```text
+/[locale]/characters
+```
 
 Implemented:
 
-- registration;
-- log in;
-- email confirmation;
-- session persistence;
-- log out through the authenticated application interface.
-
-### 2. Authenticated user area
-
-#### Dashboard
-
-Current authenticated landing area.
-
-The target structure will expand this into a personal overview that links recent characters, campaigns, activity, and relevant tools.
-
-#### Profile
-
-Implemented:
-
-- profile view;
-- profile editing.
-
-#### Account
-
-Current account page.
-
-The public-ready target structure may later add security, privacy, data export, and account deletion under this area.
-
-### 3. Characters
-
-#### My Characters
-
-Implemented:
-
-- owner-only character listing;
+- owner list;
 - summary cards;
-- private portraits;
-- open and delete actions.
+- private portrait display;
+- Open and Delete actions;
+- loading, empty, retry, and safe error states.
 
-#### Character creation
+### Create Character
 
-Implemented flow:
+```text
+/[locale]/characters/new
+/[locale]/characters/new/[system]
+```
 
-1. open character creation;
-2. select a game system;
-3. open the selected system form;
-4. create the character;
-5. upload an optional private portrait.
+Implemented:
 
-Current fully implemented system:
-
-- `vtm-v5`.
+- system selection;
+- VtM V5 creation;
+- explicit create status;
+- duplicate-submit protection;
+- unsaved-change protection;
+- optional portrait;
+- Private or Campaign visibility.
 
 Registered but unavailable:
 
-- `call-of-cthulhu-7e`.
+```text
+call-of-cthulhu-7e
+```
 
-#### Character page
+### Character detail
+
+```text
+/[locale]/characters/[id]
+```
 
 Implemented:
 
-- view mode;
-- edit mode;
-- explicit save;
+- owner view and edit;
 - two logical VtM pages;
-- desktop A4-oriented layout;
-- responsive mobile and tablet layout;
-- private portrait display;
-- local tab draft and page restoration.
+- explicit Save;
+- local draft restoration;
+- portrait replacement/removal;
+- Private or Campaign visibility;
+- unavailable direct-route state;
+- campaign-sharing indication when applicable.
 
-### 4. Technical and localization structure
+### Shared campaign character
 
-#### Locale handling
+```text
+/[locale]/campaigns/[id]/characters/[characterId]
+```
 
-Application routes use an explicit locale prefix:
+Implemented:
 
-- `/en/...`
-- `/ru/...`
+- read-only normalized sheet;
+- signed portrait;
+- campaign participant access;
+- safe unavailable state;
+- return navigation to Campaign Overview.
 
-#### Confirmation callback
+Only the owner can edit through My Characters.
 
-`/auth/confirm` remains outside the localized route group and redirects to the intended localized page after processing.
+## Campaigns
 
-#### Not-found handling
+### My Campaigns
 
-The localized layout includes both a not-found page and a catch-all route.
+```text
+/[locale]/campaigns
+```
 
-## Current access model
+Implemented:
+
+- campaigns where the user is GM or Player;
+- active/completed status;
+- role display;
+- creation action;
+- loading, empty, retry, and error states.
+
+### Create Campaign
+
+```text
+/[locale]/campaigns/new
+```
+
+Implemented:
+
+- name;
+- game system;
+- description;
+- creator as immutable GM;
+- duplicate-submit protection;
+- unsaved-change protection;
+- success redirect.
+
+### Invitation acceptance
+
+```text
+/[locale]/campaigns/join/[token]
+```
+
+Implemented:
+
+- signed-out redirect to Login;
+- return to invitation after authentication;
+- explicit acceptance;
+- safe unavailable-token behavior;
+- loading state.
+
+### Campaign Overview
+
+```text
+/[locale]/campaigns/[id]
+```
+
+Current integrated workspace sections:
+
+- campaign identity, status, system, GM, creation date;
+- campaign management for GM;
+- invitations for GM;
+- Game Master and Player list;
+- Player leave and GM removal;
+- linked characters;
+- owned eligible character linking;
+- campaign counts and navigation;
+- completion and deletion;
+- loading and unavailable states.
+
+The current foundation intentionally keeps these controls on the overview route rather than creating separate Members, Characters, or Settings routes.
+
+## Current authorization shape
 
 | Area | Current access |
 |---|---|
-| Home | Public |
-| Games index | Public |
-| VtM game page | Public |
-| Login and registration | Public |
-| Dashboard | Authenticated user |
-| Profile and account | Authenticated user |
-| Character list | Character owner |
-| Character detail | Character owner |
-| Character portrait | Character owner through private Storage and signed URL |
+| Dashboard | authenticated user |
+| My Characters | authenticated owner |
+| Character edit/delete | owner only |
+| Campaign shared character | active campaign GM or Player; read only |
+| My Campaigns | authenticated participant |
+| Campaign Overview | campaign GM or active Player |
+| Invitation management | GM only |
+| Accept invitation | authenticated valid token holder |
+| Remove Player | GM only |
+| Leave campaign | current Player |
+| Campaign edit/complete/delete | GM only |
+| Profile edit | self only |
 
-The character visibility values `campaign` and `public` exist in the data model, but current Row Level Security still provides owner-only access.
+RLS and Storage policies remain authoritative.
 
-## Current navigation model
+## Current limitations
 
-The current structure is primarily organised around:
+Not implemented:
 
-- public entry and game pages;
-- authenticated dashboard;
-- characters;
-- user profile/account;
-- locale switching;
-- authentication state.
+- personal dice roller;
+- shared campaign dice;
+- persisted roll history;
+- realtime dice feed;
+- video rooms;
+- handouts;
+- NPCs;
+- sessions/Chronicle;
+- campaign notes;
+- public character pages;
+- Public Readiness routes;
+- Call of Cthulhu character support.
 
-Campaign navigation, shared tools, and game-system content navigation do not yet exist.
+## Current structural conclusion
 
-## Current structure limitations
+The site is now a bilingual private VtM character and campaign manager.
 
-1. The Games area contains only a basic VtM entry rather than a complete game hub.
-2. Dashboard is not yet the central personal workspace.
-3. Characters are independent owner-only resources and cannot yet belong to a campaign.
-4. There is no Campaigns area.
-5. There is no VtM dice tool.
-6. There is no shared dice feed.
-7. There is no video room.
-8. There are no handouts, NPCs, sessions, or campaign notes.
-9. `campaign` and `public` character visibility values do not yet change access.
-10. Call of Cthulhu is registered but not available.
-11. Help, legal, privacy, support, and public-readiness pages are not yet part of the site structure.
-12. Independent character-sheet language is not yet part of the user-facing structure.
+It has a working shared authorization boundary and is ready for the next sequence:
 
-## Current structure summary
-
-The current site is best described as:
-
-> A bilingual authenticated VtM character manager with a small public game catalogue and basic user account area.
-
-It is already usable for creating and maintaining private VtM characters, but it is not yet a campaign-management or online-session platform.
+1. personal VtM dice engine and roller;
+2. persisted shared campaign dice;
+3. managed-video spike and minimal campaign video room;
+4. remaining friend campaign workspace.
