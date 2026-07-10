@@ -111,7 +111,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
 
     if (draft) {
       setName(draft.name);
-      setVisibility("private");
+      setVisibility(draft.visibility === "campaign" ? "campaign" : "private");
       setVtmSheetData(draft.sheetData);
       setActivePage(draft.activePage);
     } else if (storedPage) {
@@ -215,7 +215,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
           owner_id: userData.user.id,
           name,
           game_system: systemId,
-          visibility: "private",
+          visibility,
           sheet_data: sheetData,
         })
         .select("id")
@@ -352,15 +352,19 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
               <option value="private">
                 {translations("visibilityPrivate")}
               </option>
-              <option value="campaign" disabled>
-                {translations("visibilityCampaignUnavailable")}
+              <option value="campaign">
+                {translations("visibilityCampaign")}
               </option>
               <option value="public" disabled>
                 {translations("visibilityPublicUnavailable")}
               </option>
             </select>
             <p className="mt-1 text-xs text-amber-700">
-              {translations("visibilityOwnerOnlyHelp")}
+              {translations(
+                visibility === "campaign"
+                  ? "visibilityCampaignHelp"
+                  : "visibilityOwnerOnlyHelp",
+              )}
             </p>
           </label>
         </div>

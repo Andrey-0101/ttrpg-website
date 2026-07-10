@@ -52,8 +52,10 @@ type MutationMessage = {
 
 export default function CharacterEditor({
   character,
+  readOnly = false,
 }: {
   character: CharacterData;
+  readOnly?: boolean;
 }) {
   const formTranslations = useTranslations("CharacterForm");
   const translations = useTranslations("CharacterEditor");
@@ -77,7 +79,7 @@ export default function CharacterEditor({
   );
 
   const [isEditing, setIsEditing] = useState(false);
-  const [draftReady, setDraftReady] = useState(false);
+  const [draftReady, setDraftReady] = useState(readOnly);
   const [name, setName] = useState(character.name);
   const [visibility, setVisibility] =
     useState<CharacterVisibility>(initialVisibility);
@@ -120,6 +122,7 @@ export default function CharacterEditor({
   const hasUnsavedPortraitChanges =
     portraitFile !== null || currentPortraitPath !== savedPortraitPath;
   const hasUnsavedChanges =
+    !readOnly &&
     draftReady &&
     isEditing &&
     (currentFormSnapshot !== savedFormSnapshot || hasUnsavedPortraitChanges);
@@ -130,6 +133,11 @@ export default function CharacterEditor({
   });
 
   useEffect(() => {
+    if (readOnly) {
+      setDraftReady(true);
+      return;
+    }
+
     if (normalizedSystemId !== "vtm-v5") {
       setDraftReady(true);
       return;
@@ -141,9 +149,9 @@ export default function CharacterEditor({
     if (draft) {
       setName(draft.name);
       setVisibility(
-        draft.visibility === "private" || draft.visibility === initialVisibility
-          ? draft.visibility
-          : initialVisibility,
+        draft.visibility === "public" && initialVisibility !== "public"
+          ? initialVisibility
+          : draft.visibility,
       );
       setVtmSheetData(draft.sheetData);
       setActivePage(draft.activePage);
@@ -153,18 +161,29 @@ export default function CharacterEditor({
     }
 
     setDraftReady(true);
-  }, [draftStorageKey, initialVisibility, normalizedSystemId, pageStorageKey]);
+  }, [
+    draftStorageKey,
+    initialVisibility,
+    normalizedSystemId,
+    pageStorageKey,
+    readOnly,
+  ]);
 
   useEffect(() => {
-    if (!draftReady || normalizedSystemId !== "vtm-v5") {
+    if (readOnly || !draftReady || normalizedSystemId !== "vtm-v5") {
       return;
     }
 
     writeVtmV5SheetPage(pageStorageKey, activePage);
-  }, [activePage, draftReady, normalizedSystemId, pageStorageKey]);
+  }, [activePage, draftReady, normalizedSystemId, pageStorageKey, readOnly]);
 
   useEffect(() => {
-    if (!draftReady || !isEditing || normalizedSystemId !== "vtm-v5") {
+    if (
+      readOnly ||
+      !draftReady ||
+      !isEditing ||
+      normalizedSystemId !== "vtm-v5"
+    ) {
       return;
     }
 
@@ -182,6 +201,7 @@ export default function CharacterEditor({
     isEditing,
     name,
     normalizedSystemId,
+    readOnly,
     visibility,
     vtmSheetData,
   ]);
@@ -195,12 +215,20 @@ export default function CharacterEditor({
   }, [portraitPreviewUrl]);
 
   function handlePortraitFileChange(file: File) {
+    if (readOnly) {
+      return;
+    }
+
     setPortraitFile(file);
     setPortraitRemoved(false);
     setPortraitPreviewUrl(URL.createObjectURL(file));
   }
 
   function handlePortraitRemove() {
+    if (readOnly) {
+      return;
+    }
+
     setPortraitFile(null);
     setPortraitPreviewUrl(null);
     setPortraitRemoved(true);
@@ -209,7 +237,7 @@ export default function CharacterEditor({
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (saveLockRef.current) {
+    if (readOnly || saveLockRef.current) {
       return;
     }
 
@@ -345,7 +373,7 @@ export default function CharacterEditor({
   }
 
   function handleClear() {
-    if (saveLockRef.current) {
+    if (readOnly || saveLockRef.current) {
       return;
     }
 
@@ -370,6 +398,10 @@ export default function CharacterEditor({
   }
 
   function renderEditorControls() {
+    if (readOnly) {
+      return null;
+    }
+
     return (
       <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
         <button
@@ -386,7 +418,7 @@ export default function CharacterEditor({
 
         <button
           type="submit"
-          disabled={!isEditing || saving}
+          disabled={readOnly || !isEditing || saving}
           className="w-full rounded border bg-black px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
           {saving ? translations("saving") : translations("save")}
@@ -423,6 +455,15 @@ export default function CharacterEditor({
         {renderEditorControls()}
       </div>
 
+      {readOnly && (
+        <div
+          className="mt-4 rounded border border-blue-300 bg-blue-50 px-3 py-2 text-sm text-blue-950"
+          role="status"
+        >
+          {translations("readOnlyNotice")}
+        </div>
+      )}
+
       {hasUnsavedChanges && (
         <div
           className="mt-4 rounded border border-amber-500 bg-amber-50 px-3 py-2 text-sm text-amber-950"
@@ -449,7 +490,7 @@ export default function CharacterEditor({
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              disabled={!isEditing || saving}
+              disabled={readOnly || !isEditing || saving}
               className={fieldStyle}
               required
             />
@@ -463,21 +504,14 @@ export default function CharacterEditor({
             onChange={(event) =>
               setVisibility(event.target.value as CharacterVisibility)
             }
-            disabled={!isEditing || saving}
+            disabled={readOnly || !isEditing || saving}
             className={fieldStyle}
           >
             <option value="private">
               {formTranslations("visibilityPrivate")}
             </option>
-            <option
-              value="campaign"
-              disabled={savedVisibility !== "campaign"}
-            >
-              {formTranslations(
-                savedVisibility === "campaign"
-                  ? "visibilityCampaignInactive"
-                  : "visibilityCampaignUnavailable",
-              )}
+            <option value="campaign">
+              {formTranslations("visibilityCampaign")}
             </option>
             <option value="public" disabled={savedVisibility !== "public"}>
               {formTranslations(
@@ -489,9 +523,13 @@ export default function CharacterEditor({
           </select>
           <p className="mt-1 text-xs text-amber-700">
             {formTranslations(
-              visibility === "private"
-                ? "visibilityOwnerOnlyHelp"
-                : "visibilityInactiveHelp",
+              readOnly
+                ? "visibilityReadOnlyHelp"
+                : visibility === "private"
+                  ? "visibilityOwnerOnlyHelp"
+                  : visibility === "campaign"
+                    ? "visibilityCampaignHelp"
+                    : "visibilityInactiveHelp",
             )}
           </p>
         </label>
@@ -500,7 +538,7 @@ export default function CharacterEditor({
       {normalizedSystemId === "vtm-v5" ? (
         draftReady ? (
           <VtmCharacterSheet
-            isEditing={isEditing && !saving}
+            isEditing={!readOnly && isEditing && !saving}
             name={name}
             sheetData={vtmSheetData}
             portraitUrl={displayedPortraitUrl}
@@ -522,18 +560,20 @@ export default function CharacterEditor({
         </section>
       )}
 
-      <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {renderEditorControls()}
+      {!readOnly && (
+        <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {renderEditorControls()}
 
-        <button
-          type="button"
-          onClick={handleClear}
-          disabled={!isEditing || saving}
-          className="w-full rounded border border-orange-600 px-4 py-2 text-sm text-orange-600 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-        >
-          {translations("clear")}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={handleClear}
+            disabled={!isEditing || saving}
+            className="w-full rounded border border-orange-600 px-4 py-2 text-sm text-orange-600 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+          >
+            {translations("clear")}
+          </button>
+        </div>
+      )}
 
       {message && (
         <div

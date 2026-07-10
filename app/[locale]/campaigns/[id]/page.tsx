@@ -3,11 +3,16 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import CampaignCharactersPanel from "@/components/campaigns/campaign-characters-panel";
 import CampaignInvitationManager from "@/components/campaigns/campaign-invitation-manager";
 import CampaignMembersPanel from "@/components/campaigns/campaign-members-panel";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { getGameSystemName } from "@/lib/characters/game-systems";
+import {
+  getGameSystemName,
+  normalizeGameSystemId,
+} from "@/lib/characters/game-systems";
+import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignPageProps = {
@@ -48,9 +53,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function CampaignPage({
-  params,
-}: CampaignPageProps) {
+export default async function CampaignPage({ params }: CampaignPageProps) {
   const { locale: requestedLocale, id } = await params;
   const locale = hasLocale(routing.locales, requestedLocale)
     ? requestedLocale
@@ -88,37 +91,81 @@ export default async function CampaignPage({
   }
 
   const isGameMaster = campaign.game_master_id === userId;
-  const [membersResult, characterCountResult] = await Promise.all([
-    supabase
-      .from("campaign_members")
-      .select("user_id, joined_at")
-      .eq("campaign_id", campaign.id)
-      .order("joined_at", {
-        ascending: true,
-      }),
-    supabase
-      .from("campaign_characters")
-      .select("*", { count: "exact", head: true })
-      .eq("campaign_id", campaign.id)
-      .is("unlinked_at", null),
-  ]);
+  const [membersResult, assignmentsResult, ownCharactersResult] =
+    await Promise.all([
+      supabase
+        .from("campaign_members")
+        .select("user_id, joined_at")
+        .eq("campaign_id", campaign.id)
+        .order("joined_at", {
+          ascending: true,
+        }),
+      supabase
+        .from("campaign_characters")
+        .select("id, character_id, linked_by, linked_at")
+        .eq("campaign_id", campaign.id)
+        .is("unlinked_at", null)
+        .order("linked_at", {
+          ascending: true,
+        }),
+      supabase
+        .from("characters")
+        .select("id, name, game_system, visibility, portrait_url")
+        .eq("owner_id", userId)
+        .eq("game_system", campaign.game_system)
+        .order("created_at", {
+          ascending: false,
+        }),
+    ]);
 
   if (membersResult.error) {
     console.error("Failed to load campaign Players:", membersResult.error);
   }
 
-  if (characterCountResult.error) {
+  if (assignmentsResult.error) {
     console.error(
-      "Failed to load campaign character count:",
-      characterCountResult.error,
+      "Failed to load campaign character assignments:",
+      assignmentsResult.error,
+    );
+  }
+
+  if (ownCharactersResult.error) {
+    console.error(
+      "Failed to load owned campaign-compatible characters:",
+      ownCharactersResult.error,
     );
   }
 
   const membershipRows = membersResult.data ?? [];
+  const assignmentRows = assignmentsResult.data ?? [];
+  const linkedCharacterIds = assignmentRows.map(
+    (assignment) => assignment.character_id,
+  );
+  const linkedCharactersResult =
+    linkedCharacterIds.length > 0
+      ? await supabase
+          .from("characters")
+          .select("id, name, owner_id, game_system, visibility, portrait_url")
+          .in("id", linkedCharacterIds)
+      : {
+          data: [],
+          error: null,
+        };
+
+  if (linkedCharactersResult.error) {
+    console.error(
+      "Failed to load linked campaign characters:",
+      linkedCharactersResult.error,
+    );
+  }
+
   const profileIds = Array.from(
     new Set([
       campaign.game_master_id,
       ...membershipRows.map((member) => member.user_id),
+      ...(linkedCharactersResult.data ?? []).map(
+        (character) => character.owner_id,
+      ),
     ]),
   );
   const profilesResult =
@@ -159,6 +206,92 @@ export default async function CampaignPage({
     };
   });
 
+  const linkedCharacterById = new Map(
+    (linkedCharactersResult.data ?? []).map((character) => [
+      character.id,
+      character,
+    ]),
+  );
+  const linkedCharacters = await Promise.all(
+    assignmentRows.flatMap((assignment) => {
+      const character = linkedCharacterById.get(assignment.character_id);
+
+      if (!character) {
+        return [];
+      }
+
+      const ownerProfile = profileById.get(character.owner_id);
+      const ownerName =
+        character.owner_id === userId
+          ? translations("you")
+          : ownerProfile?.display_name ||
+            ownerProfile?.username ||
+            translations("characterOwnerFallback");
+
+      return [
+        (async () => ({
+          assignmentId: assignment.id,
+          characterId: character.id,
+          name: character.name,
+          ownerId: character.owner_id,
+          ownerName,
+          portraitUrl: await getCharacterPortraitSignedUrl(
+            supabase,
+            character.portrait_url,
+          ),
+          linkedAt: assignment.linked_at,
+        }))(),
+      ];
+    }),
+  );
+
+  const ownCharacters = ownCharactersResult.data ?? [];
+  const ownCharacterIds = ownCharacters.map((character) => character.id);
+  const ownActiveAssignmentsResult =
+    ownCharacterIds.length > 0
+      ? await supabase
+          .from("campaign_characters")
+          .select("character_id, campaign_id")
+          .in("character_id", ownCharacterIds)
+          .is("unlinked_at", null)
+      : {
+          data: [],
+          error: null,
+        };
+
+  if (ownActiveAssignmentsResult.error) {
+    console.error(
+      "Failed to check existing character assignments:",
+      ownActiveAssignmentsResult.error,
+    );
+  }
+
+  const activeCampaignByCharacterId = new Map(
+    (ownActiveAssignmentsResult.data ?? []).map((assignment) => [
+      assignment.character_id,
+      assignment.campaign_id,
+    ]),
+  );
+  const linkedToCurrentCampaign = new Set(
+    assignmentRows.map((assignment) => assignment.character_id),
+  );
+  const availableCharacters = await Promise.all(
+    ownCharacters
+      .filter((character) => !linkedToCurrentCampaign.has(character.id))
+      .map(async (character) => ({
+        id: character.id,
+        name: character.name,
+        visibility: character.visibility,
+        portraitUrl: await getCharacterPortraitSignedUrl(
+          supabase,
+          character.portrait_url,
+        ),
+        linkedElsewhere:
+          activeCampaignByCharacterId.has(character.id) &&
+          activeCampaignByCharacterId.get(character.id) !== campaign.id,
+      })),
+  );
+
   let invitationLoadError = false;
   let invitations: {
     id: string;
@@ -193,6 +326,18 @@ export default async function CampaignPage({
       }));
     }
   }
+
+  const normalizedGameSystemId = normalizeGameSystemId(campaign.game_system);
+  const createCharacterHref = normalizedGameSystemId
+    ? `/characters/new/${normalizedGameSystemId}`
+    : "/characters/new";
+  const characterLoadError = Boolean(
+    assignmentsResult.error ||
+      linkedCharactersResult.error ||
+      ownCharactersResult.error ||
+      ownActiveAssignmentsResult.error ||
+      profilesResult.error,
+  );
 
   const statusLabel =
     campaign.status === "completed"
@@ -281,9 +426,7 @@ export default async function CampaignPage({
           <p className="text-sm font-semibold uppercase tracking-wide text-white/65">
             {translations("linkedCharacters")}
           </p>
-          <p className="mt-2 text-4xl font-bold">
-            {characterCountResult.count ?? 0}
-          </p>
+          <p className="mt-2 text-4xl font-bold">{linkedCharacters.length}</p>
           <p className="mt-2 text-sm text-white/75">
             {translations("linkedCharactersHelp")}
           </p>
@@ -313,14 +456,16 @@ export default async function CampaignPage({
           loadError={Boolean(membersResult.error)}
         />
 
-        <section className="rounded-lg border border-white/25 bg-black/20 p-5 sm:p-6">
-          <h2 className="text-2xl font-bold">{translations("nextTitle")}</h2>
-          <p className="mt-2 max-w-3xl text-white/80">
-            {campaign.status === "completed"
-              ? translations("completedHelp")
-              : translations("nextDescription")}
-          </p>
-        </section>
+        <CampaignCharactersPanel
+          campaignId={campaign.id}
+          campaignStatus={campaign.status}
+          currentUserId={userId}
+          isGameMaster={isGameMaster}
+          createCharacterHref={createCharacterHref}
+          initialLinkedCharacters={linkedCharacters}
+          availableCharacters={availableCharacters}
+          loadError={characterLoadError}
+        />
       </div>
     </main>
   );
