@@ -14,6 +14,25 @@ import SignOutButton from "@/components/account/sign-out-button";
 import { getAuthErrorKey } from "@/lib/auth/get-auth-error-key";
 import { createClient } from "@/utils/supabase/client";
 
+function getSafeNextPath(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const nextPath = new URLSearchParams(window.location.search).get("next");
+
+  if (
+    !nextPath ||
+    !nextPath.startsWith("/") ||
+    nextPath.startsWith("//") ||
+    nextPath.includes("\\")
+  ) {
+    return null;
+  }
+
+  return nextPath;
+}
+
 export default function LoginPage() {
   const translations = useTranslations("Login");
   const authErrors = useTranslations("AuthErrors");
@@ -45,6 +64,14 @@ export default function LoginPage() {
         }
 
         if (!error && data.user) {
+          const nextPath = getSafeNextPath();
+
+          if (nextPath) {
+            router.replace(nextPath);
+            router.refresh();
+            return;
+          }
+
           setIsSignedIn(true);
           setSignedInEmail(
             data.user.email ?? ""
@@ -67,7 +94,7 @@ export default function LoginPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [router]);
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -100,7 +127,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/");
+      router.replace(getSafeNextPath() ?? "/");
       router.refresh();
     } catch (error) {
       console.error("Login failed:", error);
