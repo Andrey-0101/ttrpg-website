@@ -3,6 +3,8 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import CampaignInvitationManager from "@/components/campaigns/campaign-invitation-manager";
+import CampaignMembersPanel from "@/components/campaigns/campaign-members-panel";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { getGameSystemName } from "@/lib/characters/game-systems";
@@ -60,9 +62,9 @@ export default async function CampaignPage({
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
+  const userId = claimsData?.claims?.sub ?? "";
 
-  if (claimsError || typeof userId !== "string") {
+  if (claimsError || !userId) {
     redirect({
       href: "/login",
       locale,
@@ -85,33 +87,24 @@ export default async function CampaignPage({
     notFound();
   }
 
-  const [gameMasterProfileResult, playerCountResult, characterCountResult] =
-    await Promise.all([
-      supabase
-        .from("profiles")
-        .select("display_name, username")
-        .eq("id", campaign.game_master_id)
-        .maybeSingle(),
-      supabase
-        .from("campaign_members")
-        .select("*", { count: "exact", head: true })
-        .eq("campaign_id", campaign.id),
-      supabase
-        .from("campaign_characters")
-        .select("*", { count: "exact", head: true })
-        .eq("campaign_id", campaign.id)
-        .is("unlinked_at", null),
-    ]);
+  const isGameMaster = campaign.game_master_id === userId;
+  const [membersResult, characterCountResult] = await Promise.all([
+    supabase
+      .from("campaign_members")
+      .select("user_id, joined_at")
+      .eq("campaign_id", campaign.id)
+      .order("joined_at", {
+        ascending: true,
+      }),
+    supabase
+      .from("campaign_characters")
+      .select("*", { count: "exact", head: true })
+      .eq("campaign_id", campaign.id)
+      .is("unlinked_at", null),
+  ]);
 
-  if (gameMasterProfileResult.error) {
-    console.error(
-      "Failed to load campaign Game Master profile:",
-      gameMasterProfileResult.error,
-    );
-  }
-
-  if (playerCountResult.error) {
-    console.error("Failed to load campaign Player count:", playerCountResult.error);
+  if (membersResult.error) {
+    console.error("Failed to load campaign Players:", membersResult.error);
   }
 
   if (characterCountResult.error) {
@@ -121,13 +114,86 @@ export default async function CampaignPage({
     );
   }
 
-  const isGameMaster = campaign.game_master_id === userId;
-  const gameMasterProfile = gameMasterProfileResult.data;
+  const membershipRows = membersResult.data ?? [];
+  const profileIds = Array.from(
+    new Set([
+      campaign.game_master_id,
+      ...membershipRows.map((member) => member.user_id),
+    ]),
+  );
+  const profilesResult =
+    profileIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("id, display_name, username")
+          .in("id", profileIds)
+      : {
+          data: [],
+          error: null,
+        };
+
+  if (profilesResult.error) {
+    console.error(
+      "Failed to load campaign participant profiles:",
+      profilesResult.error,
+    );
+  }
+
+  const profileById = new Map(
+    (profilesResult.data ?? []).map((profile) => [profile.id, profile]),
+  );
+  const gameMasterProfile = profileById.get(campaign.game_master_id);
   const gameMasterName = isGameMaster
     ? translations("you")
     : gameMasterProfile?.display_name ||
       gameMasterProfile?.username ||
       translations("gameMasterFallback");
+  const members = membershipRows.map((member) => {
+    const profile = profileById.get(member.user_id);
+
+    return {
+      userId: member.user_id,
+      displayName: profile?.display_name ?? null,
+      username: profile?.username ?? null,
+      joinedAt: member.joined_at,
+    };
+  });
+
+  let invitationLoadError = false;
+  let invitations: {
+    id: string;
+    createdAt: string;
+    expiresAt: string;
+    acceptedAt: string | null;
+    revokedAt: string | null;
+  }[] = [];
+
+  if (isGameMaster) {
+    const invitationsResult = await supabase
+      .from("campaign_invitations")
+      .select("id, created_at, expires_at, accepted_at, revoked_at")
+      .eq("campaign_id", campaign.id)
+      .order("created_at", {
+        ascending: false,
+      });
+
+    if (invitationsResult.error) {
+      invitationLoadError = true;
+      console.error(
+        "Failed to load campaign invitations:",
+        invitationsResult.error,
+      );
+    } else {
+      invitations = (invitationsResult.data ?? []).map((invitation) => ({
+        id: invitation.id,
+        createdAt: invitation.created_at,
+        expiresAt: invitation.expires_at,
+        acceptedAt: invitation.accepted_at,
+        revokedAt: invitation.revoked_at,
+      }));
+    }
+  }
+
   const statusLabel =
     campaign.status === "completed"
       ? translations("status.completed")
@@ -205,9 +271,7 @@ export default async function CampaignPage({
           <p className="text-sm font-semibold uppercase tracking-wide text-white/65">
             {translations("players")}
           </p>
-          <p className="mt-2 text-4xl font-bold">
-            {playerCountResult.count ?? 0}
-          </p>
+          <p className="mt-2 text-4xl font-bold">{members.length}</p>
           <p className="mt-2 text-sm text-white/75">
             {translations("playersHelp")}
           </p>
@@ -226,14 +290,38 @@ export default async function CampaignPage({
         </article>
       </section>
 
-      <section className="mt-6 rounded-lg border border-white/25 bg-black/20 p-5 sm:p-6">
-        <h2 className="text-2xl font-bold">{translations("nextTitle")}</h2>
-        <p className="mt-2 max-w-3xl text-white/80">
-          {campaign.status === "completed"
-            ? translations("completedHelp")
-            : translations("nextDescription")}
-        </p>
-      </section>
+      <div className="mt-6 grid gap-6">
+        {isGameMaster && (
+          <CampaignInvitationManager
+            campaignId={campaign.id}
+            locale={locale}
+            campaignStatus={campaign.status}
+            currentTimestamp={Date.now()}
+            initialInvitations={invitations}
+            loadError={invitationLoadError}
+          />
+        )}
+
+        <CampaignMembersPanel
+          campaignId={campaign.id}
+          campaignStatus={campaign.status}
+          currentUserId={userId}
+          gameMasterName={gameMasterName}
+          isGameMaster={isGameMaster}
+          locale={locale}
+          initialMembers={members}
+          loadError={Boolean(membersResult.error)}
+        />
+
+        <section className="rounded-lg border border-white/25 bg-black/20 p-5 sm:p-6">
+          <h2 className="text-2xl font-bold">{translations("nextTitle")}</h2>
+          <p className="mt-2 max-w-3xl text-white/80">
+            {campaign.status === "completed"
+              ? translations("completedHelp")
+              : translations("nextDescription")}
+          </p>
+        </section>
+      </div>
     </main>
   );
 }
