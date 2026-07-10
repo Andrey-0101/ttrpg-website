@@ -34,6 +34,7 @@ export default async function CampaignLoading() {
       </div>
 
       <div className="mt-6 grid gap-6" aria-hidden="true">
+        <div className="h-[34rem] animate-pulse rounded-lg bg-white/10" />
         <div className="h-64 animate-pulse rounded-lg bg-white/10" />
         <div className="h-72 animate-pulse rounded-lg bg-white/10" />
         <div className="h-96 animate-pulse rounded-lg bg-white/10" />

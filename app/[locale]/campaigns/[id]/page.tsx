@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import CampaignCharactersPanel from "@/components/campaigns/campaign-characters-panel";
 import CampaignInvitationManager from "@/components/campaigns/campaign-invitation-manager";
+import CampaignManagementPanel from "@/components/campaigns/campaign-management-panel";
 import CampaignMembersPanel from "@/components/campaigns/campaign-members-panel";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -333,10 +334,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     : "/characters/new";
   const characterLoadError = Boolean(
     assignmentsResult.error ||
-      linkedCharactersResult.error ||
-      ownCharactersResult.error ||
-      ownActiveAssignmentsResult.error ||
-      profilesResult.error,
+    linkedCharactersResult.error ||
+    ownCharactersResult.error ||
+    ownActiveAssignmentsResult.error ||
+    profilesResult.error,
   );
 
   const statusLabel =
@@ -434,6 +435,15 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       </section>
 
       <div className="mt-6 grid gap-6">
+        {isGameMaster && (
+          <CampaignManagementPanel
+            campaignId={campaign.id}
+            initialName={campaign.name}
+            initialDescription={campaign.description}
+            initialStatus={campaign.status}
+          />
+        )}
+
         {isGameMaster && (
           <CampaignInvitationManager
             campaignId={campaign.id}
