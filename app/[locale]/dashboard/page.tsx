@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
+
+import { Link, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { createClient } from "@/utils/supabase/server";
 
@@ -29,14 +30,9 @@ export default async function DashboardPage({
   params,
 }: DashboardPageProps) {
   const { locale } = await params;
-
-  const translations =
-    await getTranslations("Dashboard");
-
+  const translations = await getTranslations("Dashboard");
   const supabase = await createClient();
-
-  const { data, error } =
-    await supabase.auth.getClaims();
+  const { data, error } = await supabase.auth.getClaims();
 
   if (error || !data?.claims) {
     return redirect({
@@ -51,35 +47,46 @@ export default async function DashboardPage({
       : translations("signedInUser");
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-8">
-      <h1 className="text-4xl font-bold">
+    <main className="mx-auto min-h-screen w-full max-w-6xl px-3 py-6 sm:px-6 lg:p-8">
+      <h1 className="text-3xl font-bold sm:text-4xl">
         {translations("title")}
       </h1>
 
-      <p className="mt-4">
-        {translations("loggedInAs")}{" "}
-        <strong>{email}</strong>
+      <p className="mt-4 break-words">
+        {translations("loggedInAs")} <strong>{email}</strong>
       </p>
 
-      <section className="mt-8 rounded-lg border p-6">
-        <h2 className="text-2xl font-bold">
-          {translations("campaignsTitle")}
-        </h2>
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        <section className="flex flex-col rounded-lg border p-6">
+          <h2 className="text-2xl font-bold">
+            {translations("campaignsTitle")}
+          </h2>
+          <p className="mt-2 flex-1 text-white/80">
+            {translations("campaignsDescription")}
+          </p>
+          <Link
+            href="/campaigns"
+            className="mt-6 rounded bg-white px-5 py-3 text-center font-medium text-black"
+          >
+            {translations("openCampaigns")}
+          </Link>
+        </section>
 
-        <p className="mt-2">
-          {translations("noCampaigns")}
-        </p>
-      </section>
-
-      <section className="mt-6 rounded-lg border p-6">
-        <h2 className="text-2xl font-bold">
-          {translations("charactersTitle")}
-        </h2>
-
-        <p className="mt-2">
-          {translations("noCharacters")}
-        </p>
-      </section>
+        <section className="flex flex-col rounded-lg border p-6">
+          <h2 className="text-2xl font-bold">
+            {translations("charactersTitle")}
+          </h2>
+          <p className="mt-2 flex-1 text-white/80">
+            {translations("charactersDescription")}
+          </p>
+          <Link
+            href="/characters"
+            className="mt-6 rounded bg-white px-5 py-3 text-center font-medium text-black"
+          >
+            {translations("openCharacters")}
+          </Link>
+        </section>
+      </div>
     </main>
   );
 }
