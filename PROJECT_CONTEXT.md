@@ -6,11 +6,11 @@
 |---|---|
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
-| Document status | Initial architecture baseline |
-| Last reviewed | 2026-07-02 |
-| Repository snapshot | `main` at `e2a412bd74af0971cea7bfdf28e42cfa6100e7a2` |
+| Document status | Current synchronized project context |
+| Last reviewed | 2026-07-13 |
+| Source repository snapshot | `main` at `cb378c18fc3f07ad6072f27508918ac53784e1b5` |
 | Production alias | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Architecture Baseline |
+| Current delivery stage | Milestone 4A — VtM dice contract and personal roller |
 | Current audience | Small invited group of friends |
 
 ## Purpose
@@ -95,7 +95,7 @@ Implemented:
 - VtM V5 summary cards;
 - responsive layouts.
 
-Current character access is owner-only through RLS. The values `campaign` and `public` exist in the data model but do not currently grant shared or anonymous access.
+Character owners remain the only users who can edit or delete their characters. Active campaign participants can additionally receive read-only access to eligible characters with `campaign` visibility and an active campaign assignment. No anonymous or public read policy exists for `public` visibility.
 
 ### VtM V5 character sheet
 
@@ -149,16 +149,23 @@ Repository migrations:
 ```text
 supabase/migrations/20260630143000_initial_schema.sql
 supabase/migrations/20260702150000_character_portraits.sql
+supabase/migrations/20260709150000_campaign_foundation.sql
+supabase/migrations/20260709163000_fix_campaign_select_policy.sql
+supabase/migrations/20260709170000_fix_campaign_character_trigger_security.sql
 ```
 
-Current application tables represented by the baseline:
+Current public tables:
 
 ```text
 public.profiles
 public.characters
+public.campaigns
+public.campaign_members
+public.campaign_invitations
+public.campaign_characters
 ```
 
-No campaign, membership, invitation, dice-roll, video-room, handout, NPC, or session table is currently implemented.
+No dice-roll, video-room, handout, NPC, session, or campaign-notes table is currently implemented.
 
 Generated types:
 
@@ -217,23 +224,23 @@ call-of-cthulhu-7e
 
 ### Campaigns
 
-Planned, not implemented.
+Implemented.
 
-Will own:
+Owns:
 
 - campaigns;
-- memberships;
-- roles;
-- invitations;
+- one immutable Game Master and Player memberships;
+- single-use invitations;
 - character assignment;
 - campaign navigation;
-- access checks.
+- campaign lifecycle;
+- RLS-backed access checks and read-only character sharing.
 
 ### Realtime tools
 
-Planned, not implemented.
+Milestone 4A is active. No dice engine, dice route, persisted dice history, Realtime dice feed, or video room is implemented yet.
 
-Will own:
+This domain will own:
 
 - VtM dice execution and roll feed;
 - presence;
@@ -272,15 +279,10 @@ Public or generally accessible game-system information must remain separate from
 - Keep code comments and code-block text in English.
 - Do not over-generalize for future systems before a second system exposes real shared requirements.
 
-## Immediate next milestone
+## Current milestone and next task
 
-Character Friend Alpha:
+Character Friend Alpha and Campaign Foundation are complete.
 
-- unsaved-change protection;
-- clear saving/saved/error state;
-- protection from duplicate submissions;
-- explicit warning for unsaved portrait selection;
-- clear explanation or temporary restriction of unimplemented sharing visibility;
-- practical use by the private group.
+Milestone 4A — VtM dice contract and personal roller — is active. The exact next task is to define the typed VtM V5 personal dice request/result contract and implement a pure deterministic evaluator using fixed die arrays.
 
-Print/PDF, final decoration, broad automated testing, and public-readiness hardening are intentionally deferred.
+The first evaluator slice excludes UI, random generation, database persistence, migrations, Realtime, campaign integration, and video. Print/PDF, final decoration, broad automated testing, and public-readiness hardening remain deferred.

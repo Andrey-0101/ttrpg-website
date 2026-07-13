@@ -23,16 +23,15 @@ Active:
 
 Next implementation slice:
 
-- VtM dice result contract;
-- pure personal dice engine;
-- personal VtM roller;
-- no persisted campaign history in the first dice slice.
+- typed VtM V5 personal dice request/result contract;
+- pure deterministic evaluator with fixed die arrays;
+- no UI, random generation, database persistence, migrations, Realtime, campaign integration, or video in this first sub-slice.
 
 Current synchronized snapshot:
 
 ```text
 main
-a1c3a61381a2b7cddab9dd8fb620af56342209a9
+cb378c18fc3f07ad6072f27508918ac53784e1b5
 ```
 
 ## Completed foundation
