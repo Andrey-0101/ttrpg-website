@@ -109,7 +109,7 @@ Start with:
 - [`docs/product/CAMPAIGNS.md`](docs/product/CAMPAIGNS.md);
 - [`docs/product/SITE_STRUCTURE_CURRENT.md`](docs/product/SITE_STRUCTURE_CURRENT.md);
 - [`docs/decisions/`](docs/decisions/);
-- [`docs/handoffs/H005_CURRENT_HANDOFF.md`](docs/handoffs/H005_CURRENT_HANDOFF.md).
+- [`docs/handoffs/H006_CURRENT_HANDOFF.md`](docs/handoffs/H006_CURRENT_HANDOFF.md).
 
 ## Current snapshot
 
@@ -117,10 +117,12 @@ This documentation synchronization was prepared against:
 
 ```text
 main
-a1c3a61381a2b7cddab9dd8fb620af56342209a9
+cb378c18fc3f07ad6072f27508918ac53784e1b5
 ```
 
-This commit includes PR #13, `Add campaign management`.
+`cb378c1` includes PR #13, `Add campaign management`, and the earlier documentation synchronization merged by PR #14. The current H006 follow-up is prepared against that commit and is not part of it.
+
+Character Friend Alpha and Campaign Foundation are complete. Milestone 4A is active, beginning with the typed VtM V5 personal dice request/result contract and pure deterministic evaluator.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 
@@ -130,7 +132,7 @@ The agreed delivery strategy is:
 
 1. maintain the architecture and documentation baseline;
 2. keep the VtM character and campaign workflows stable;
-3. build the VtM dice rules contract and personal roller;
+3. implement the typed VtM V5 personal dice request/result contract and pure deterministic evaluator, then build the personal roller;
 4. add server-authoritative persisted campaign rolls and a realtime feed;
 5. run a managed-video provider comparison and technical spike;
 6. add the minimal private campaign video room;
@@ -139,5 +141,7 @@ The agreed delivery strategy is:
 9. build the VtM Game Hub;
 10. complete public-readiness work;
 11. expand to Call of Cthulhu 7e.
+
+The first evaluator sub-slice excludes UI, random generation, database persistence, migrations, Realtime, campaign integration, and video.
 
 This is an unofficial fan-made software project and is not presented as an official product of any tabletop game publisher.

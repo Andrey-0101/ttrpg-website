@@ -13,13 +13,15 @@ Completed:
 Active:
 
 - Milestone 4 — VtM Realtime Tools;
-- first implementation slice: VtM dice rules contract and personal dice engine.
+- first implementation slice: typed VtM V5 personal dice request/result contract and pure deterministic evaluator.
+
+This evaluator sub-slice excludes UI, random generation, database persistence, migrations, Realtime, campaign integration, and video.
 
 Current synchronized repository snapshot:
 
 ```text
 main
-a1c3a61381a2b7cddab9dd8fb620af56342209a9
+cb378c18fc3f07ad6072f27508918ac53784e1b5
 ```
 
 ## Architecture
@@ -67,14 +69,15 @@ Current decision status relevant to the next milestone:
 
 Current handoff:
 
-[`handoffs/H005_CURRENT_HANDOFF.md`](handoffs/H005_CURRENT_HANDOFF.md)
+[`handoffs/H006_CURRENT_HANDOFF.md`](handoffs/H006_CURRENT_HANDOFF.md)
 
 Historical handoffs remain available and must not be rewritten as current state:
 
 - `H001_CURRENT_HANDOFF.md`;
 - `H002_CURRENT_HANDOFF.md`;
 - `H003_CURRENT_HANDOFF.md`;
-- `H004_CURRENT_HANDOFF.md`.
+- `H004_CURRENT_HANDOFF.md`;
+- `H005_CURRENT_HANDOFF.md`.
 
 ## Status vocabulary
 
