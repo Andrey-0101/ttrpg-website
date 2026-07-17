@@ -2,9 +2,9 @@
 
 ## Status
 
-**Active implementation.**
+**Personal roller implemented; shared campaign dice planned.**
 
-The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. Personal roller UI, random generation, and the `dice_rolls` table are not implemented.
+The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`, and the localized personal roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`. The `dice_rolls` table and shared campaign dice are not implemented.
 
 Initial system:
 
@@ -195,16 +195,16 @@ Invalid fixed cases cover an out-of-range pool, Hunger above its range or pool, 
 
 ## Personal roller route
 
-Recommended:
+Implemented:
 
 ```text
 /[locale]/games/vampire-the-masquerade/tools/dice
 ```
 
-First slice:
+Personal slice:
 
-- authenticated or public access decision reviewed explicitly;
-- local random generation;
+- public access consistent with the existing VtM game landing page;
+- local `crypto.getRandomValues` generation with rejection sampling;
 - no database row;
 - no campaign required;
 - no Realtime subscription;

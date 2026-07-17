@@ -81,6 +81,7 @@ Current user-facing route families:
 /[locale]/dashboard
 /[locale]/games
 /[locale]/games/vampire-the-masquerade
+/[locale]/games/vampire-the-masquerade/tools/dice
 /[locale]/login
 /[locale]/profile
 /[locale]/profile/edit
@@ -216,7 +217,15 @@ lib/game-systems/vtm-v5/dice-engine.ts
 
 It owns the typed request/result contract, strict input validation, and deterministic interpretation of supplied normal and Hunger d10 results. It accepts unknown input at its public boundary and returns typed validation failures for expected invalid data. It does not generate random values, render UI, access character sheets, or depend on persistence, campaigns, Supabase, or Realtime.
 
-The same pure evaluator can later be called by personal client-side generation and server-authoritative campaign execution. Those execution layers remain responsible for randomness, authorization, transport, and persistence.
+The personal random-generation boundary is located at:
+
+```text
+lib/game-systems/vtm-v5/dice-roller.ts
+```
+
+It produces unbiased d10 values with `crypto.getRandomValues`, accepts an injectable random source for deterministic tests, and passes the generated arrays unchanged to the pure evaluator. The localized client UI at `/[locale]/games/vampire-the-masquerade/tools/dice` is public, non-persisted, and has no campaign or Realtime dependency.
+
+The same pure evaluator can later be called by server-authoritative campaign execution. That execution layer remains responsible for randomness, authorization, transport, and persistence.
 
 ### Campaign domain
 

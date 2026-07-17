@@ -179,6 +179,8 @@ An invited Player can join a private campaign, see only permitted campaign data,
 
 ### Phase 4A — VtM dice contract and personal roller
 
+**Status: Implemented**
+
 #### Goal
 
 Provide a trustworthy VtM V5 dice engine before adding persistence or realtime synchronization.

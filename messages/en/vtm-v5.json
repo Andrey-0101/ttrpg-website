@@ -174,5 +174,98 @@
     "portraitInvalidType": "Choose a JPG, PNG or WebP image.",
     "portraitTooLarge": "The portrait must be 5 MB or smaller.",
     "portraitUploadError": "The portrait could not be uploaded. Please try again."
+  },
+  "VtmDiceRoller": {
+    "metadataTitle": "Personal VtM V5 Dice Roller",
+    "metadataDescription": "Make a private, local Vampire: The Masquerade Fifth Edition dice roll.",
+    "back": "Back to Vampire: The Masquerade",
+    "eyebrow": "Vampire: The Masquerade Fifth Edition",
+    "title": "Personal Dice Roller",
+    "description": "Roll ordinary and Hunger dice locally. Nothing is saved or shared, and a roll is interpreted only when you press Roll.",
+    "entryTitle": "Personal Dice Roller",
+    "entryDescription": "Make a private VtM V5 roll with optional Difficulty and a clear Hunger-dice result.",
+    "entryAction": "Open Dice Roller",
+    "pool": "Dice Pool",
+    "hungerDice": "Hunger Dice",
+    "difficultyOptional": "Difficulty (optional)",
+    "difficultyHelp": "Leave blank to count successes without resolving success or failure.",
+    "labelOptional": "Roll Label (optional)",
+    "labelPlaceholder": "For example: Track the courier",
+    "roll": "Roll",
+    "resultEyebrow": "Latest roll",
+    "unlabelledRoll": "Unlabelled roll",
+    "rolledPool": "Pool {pool}, including {hunger} Hunger dice",
+    "totalSuccesses": "Total successes",
+    "normalDice": "Normal dice",
+    "normalDieKind": "normal die",
+    "hungerDieKind": "Hunger die",
+    "dieAria": "{kind} {number}: {value}",
+    "noNormalDice": "No normal dice were rolled.",
+    "noHungerDice": "No Hunger dice were rolled.",
+    "difficultyTitle": "Difficulty resolution",
+    "difficulty": "Difficulty",
+    "difficultyResult": "Result",
+    "margin": "Margin",
+    "difficultyOmitted": "No Difficulty was set. Successes are counted, but success or failure remains unresolved.",
+    "criticalPairBelowDifficulty": "A critical pair added its bonus successes, but the roll still did not meet the Difficulty.",
+    "unpairedTen": "One ten remained outside a critical pair.",
+    "difficultyResults": {
+      "not-set": "Unresolved",
+      "success": "Success",
+      "failure": "Failure"
+    },
+    "outcomes": {
+      "success": {
+        "title": "Success",
+        "description": "The roll meets the Difficulty without a critical outcome."
+      },
+      "failure": {
+        "title": "Failure",
+        "description": "The roll does not meet the Difficulty and has no overriding Hunger failure."
+      },
+      "total-failure": {
+        "title": "Total failure",
+        "description": "The roll has zero successes and does not meet the Difficulty."
+      },
+      "bestial-failure": {
+        "title": "Bestial failure",
+        "description": "The roll fails and at least one Hunger die shows 1."
+      },
+      "ordinary-critical": {
+        "title": "Critical success",
+        "description": "The roll succeeds with a critical pair and no Hunger ten in that outcome."
+      },
+      "messy-critical": {
+        "title": "Messy critical",
+        "description": "The roll succeeds with a critical pair that includes a Hunger ten."
+      },
+      "successes-counted": {
+        "title": "Successes counted",
+        "description": "No Difficulty was set, so the final success or failure is unresolved."
+      },
+      "critical-pair-unresolved": {
+        "title": "Critical pair counted",
+        "description": "The critical pair adds successes, but without Difficulty no critical outcome is resolved."
+      },
+      "no-successes-unresolved": {
+        "title": "No successes counted",
+        "description": "No Difficulty was set, so even a zero-success roll remains unresolved."
+      }
+    },
+    "validation": {
+      "poolRequired": "Enter a Dice Pool.",
+      "poolInteger": "Dice Pool must be a whole number.",
+      "poolRange": "Dice Pool must be from {minimum} through {maximum}.",
+      "hungerDiceRequired": "Enter the number of Hunger Dice.",
+      "hungerDiceInteger": "Hunger Dice must be a whole number.",
+      "hungerDiceRange": "Hunger Dice must be from {minimum} through {maximum}.",
+      "hungerExceedsPool": "Hunger Dice cannot exceed the Dice Pool.",
+      "difficultyRequired": "Enter a Difficulty or leave the field blank.",
+      "difficultyInteger": "Difficulty must be a whole number.",
+      "difficultyRange": "Difficulty must be from {minimum} through {maximum}.",
+      "labelTooLong": "Roll Label cannot exceed {maximum} characters.",
+      "unexpected": "The roll could not be validated. Check the inputs and try again.",
+      "randomUnavailable": "Secure local randomness is unavailable in this browser."
+    }
   }
 }
