@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
@@ -63,10 +64,13 @@ export default async function CharacterSummaryCard({
       <div className="grid lg:grid-cols-[27%_73%]">
         <div className="relative flex min-h-52 items-center justify-center overflow-hidden border-b border-neutral-400 bg-neutral-100 lg:min-h-48 lg:border-r lg:border-b-0">
           {portraitUrl ? (
-            <img
+            <Image
               src={portraitUrl}
               alt={name}
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              unoptimized
+              sizes="(min-width: 1024px) 27vw, 100vw"
+              className="object-cover"
             />
           ) : (
             <div className="px-4 text-center">

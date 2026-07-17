@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 import CampaignCharactersPanel from "@/components/campaigns/campaign-characters-panel";
 import CampaignInvitationManager from "@/components/campaigns/campaign-invitation-manager";
@@ -22,6 +23,11 @@ type CampaignPageProps = {
     id: string;
   }>;
 };
+
+async function getRequestTimestamp() {
+  await connection();
+  return Date.now();
+}
 
 export async function generateMetadata({
   params,
@@ -350,6 +356,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   const createdDate = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
   }).format(new Date(campaign.created_at));
+  const currentTimestamp = await getRequestTimestamp();
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-3 py-6 sm:px-6 lg:p-8">
@@ -449,7 +456,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
             campaignId={campaign.id}
             locale={locale}
             campaignStatus={campaign.status}
-            currentTimestamp={Date.now()}
+            currentTimestamp={currentTimestamp}
             initialInvitations={invitations}
             loadError={invitationLoadError}
           />
