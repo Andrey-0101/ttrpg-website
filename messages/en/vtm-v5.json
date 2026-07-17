@@ -208,11 +208,11 @@
       "numbers": "Numbers"
     },
     "symbolCategories": {
-      "failure": "failure symbol",
-      "success": "success symbol",
-      "critical": "critical symbol",
-      "bestial-failure": "bestial-failure symbol",
-      "messy-critical": "messy-critical symbol"
+      "failure": "failure",
+      "success": "success",
+      "critical": "critical",
+      "bestial-failure": "bestial failure",
+      "messy-critical": "messy critical"
     },
     "noNormalDice": "No normal dice were rolled.",
     "noHungerDice": "No Hunger dice were rolled.",
@@ -222,7 +222,7 @@
     "margin": "Margin",
     "difficultyOmitted": "No Difficulty was set. Successes are counted, but success or failure remains unresolved.",
     "criticalPairBelowDifficulty": "A critical pair added its bonus successes, but the roll still did not meet the Difficulty.",
-    "unpairedTen": "One ten remained outside a critical pair.",
+    "unpairedTen": "One critical result (10) did not form a pair.",
     "difficultyResults": {
       "not-set": "Unresolved",
       "success": "Success",

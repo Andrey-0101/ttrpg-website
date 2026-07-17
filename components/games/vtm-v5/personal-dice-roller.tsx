@@ -11,6 +11,7 @@ import {
 import { rollVtmV5Dice } from "@/lib/game-systems/vtm-v5/dice-roller";
 import {
   getVtmV5DiePresentation,
+  getVtmV5DieSymbol,
   type VtmV5DiceDisplayMode,
   type VtmV5DieKind,
 } from "@/lib/game-systems/vtm-v5/dice-symbols";
@@ -108,18 +109,19 @@ function DieFace({
   const kindLabel = translations(
     kind === "normal" ? "normalDieKind" : "hungerDieKind",
   );
+  const category =
+    presentation.symbol?.category ?? getVtmV5DieSymbol(kind, value).category;
+  const accessibleName = translations("dieSymbolAria", {
+    kind: kindLabel,
+    number: index + 1,
+    value,
+    category: translations(`symbolCategories.${category}`),
+  });
 
   if (presentation.symbol) {
     return (
       <li
-        aria-label={translations("dieSymbolAria", {
-          kind: kindLabel,
-          number: index + 1,
-          value,
-          category: translations(
-            `symbolCategories.${presentation.symbol.category}`,
-          ),
-        })}
+        aria-label={accessibleName}
         className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black/20"
       >
         <Image
@@ -136,18 +138,24 @@ function DieFace({
 
   return (
     <li
-      aria-label={translations("dieAria", {
-        kind: kindLabel,
-        number: index + 1,
-        value,
-      })}
-      className={
-        kind === "normal"
-          ? "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-neutral-300 bg-white text-lg font-bold text-neutral-950 shadow-sm"
-          : "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-red-200 bg-red-800 text-lg font-bold text-white shadow-sm"
-      }
+      aria-label={accessibleName}
+      className="relative flex h-14 w-14 shrink-0 items-center justify-center"
     >
-      {value}
+      <span
+        aria-hidden="true"
+        className={`absolute inset-0 [clip-path:polygon(50%_2%,94%_34%,79%_88%,50%_100%,21%_88%,6%_34%)] ${
+          kind === "normal" ? "bg-neutral-300" : "bg-red-200"
+        }`}
+      />
+      <span
+        aria-hidden="true"
+        className={`absolute inset-[2px] [clip-path:polygon(50%_2%,94%_34%,79%_88%,50%_100%,21%_88%,6%_34%)] ${
+          kind === "normal" ? "bg-neutral-900" : "bg-red-900"
+        }`}
+      />
+      <span className="relative z-10 text-xl font-black leading-none text-white tabular-nums">
+        {value}
+      </span>
     </li>
   );
 }
