@@ -2,9 +2,9 @@
 
 ## Status
 
-**Active design and next implementation target.**
+**Active implementation.**
 
-No dice engine or `dice_rolls` table is implemented in the synchronized repository snapshot.
+The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. Personal roller UI, random generation, and the `dice_rolls` table are not implemented.
 
 Initial system:
 
@@ -65,23 +65,37 @@ The VtM system owns:
 
 ## Phase 1 request contract
 
-Recommended personal VtM request:
+The authoritative deterministic evaluator entry point is:
 
-```text
-pool
-hungerDice
-difficulty?
-label?
+```ts
+evaluateVtmV5Dice(input: unknown): VtmV5DiceEvaluation
 ```
 
-Constraints to review before code:
+Accepted input:
 
-- pool minimum and maximum;
-- Hunger minimum and maximum;
-- `hungerDice <= pool`;
-- Difficulty minimum and maximum;
-- label length;
-- whether zero-die pools are allowed in UI or only evaluator tests.
+```text
+request:
+  pool
+  hungerDice
+  difficulty?
+  label?
+normalDice[]
+hungerDiceResults[]
+```
+
+Validation rules:
+
+- `pool` is an integer from 1 through 50;
+- `hungerDice` is an integer from 0 through 5 and cannot exceed `pool`;
+- optional `difficulty` is an integer from 1 through 20;
+- optional `label` is trimmed, internal whitespace is collapsed, and an empty normalized label becomes `null`;
+- a normalized label cannot exceed 120 Unicode code points;
+- `normalDice.length` equals `pool - hungerDice`;
+- `hungerDiceResults.length` equals `hungerDice`;
+- every die is a finite integer from 1 through 10;
+- unknown fields are rejected;
+- numbers are never coerced, truncated, rounded, or clamped;
+- expected invalid input returns typed validation errors and does not throw.
 
 Potential later character-assisted input:
 
@@ -97,30 +111,36 @@ The roller must not mutate the character sheet.
 
 ## Phase 1 result contract
 
-The deterministic evaluator should accept concrete die results and return structured data.
-
-Recommended shape:
+The deterministic evaluator accepts concrete die results and returns a discriminated success or validation-error result. Successful evaluation contains:
 
 ```text
 gameSystem
-pool
-hungerDice
-difficulty
+request:
+  pool
+  hungerDice
+  difficulty
+  label
 normalDice[]
 hungerDiceResults[]
-successes
+nonTenSuccessCount
+tenCount
 criticalPairCount
-isCritical
+totalSuccesses
+hasCriticalPair
+isSuccess
+isOrdinaryCritical
 isMessyCritical
-isBestialFailure
 isTotalFailure
-meetsDifficulty
+isBestialFailure
+difficultyResult
 margin
 summaryKey
 detailFlags
 ```
 
-The final field names should be reviewed before implementation.
+Validation errors contain a stable code, field path, and optional non-localized details. They do not contain display text or localization keys.
+
+The returned dice arrays are copies. Mutating caller-owned arrays after evaluation cannot alter a result.
 
 Important design rule:
 
@@ -128,24 +148,50 @@ Important design rule:
 
 Tests should supply fixed die arrays so the same input always produces the same interpretation.
 
-## VtM interpretation cases to cover
+## VtM interpretation
 
-At minimum:
+- Results 1 through 5 produce no success.
+- Results 6 through 9 each produce one non-ten success.
+- Every 10 produces one base success.
+- All tens are paired across normal and Hunger dice.
+- `criticalPairCount = floor(tenCount / 2)`.
+- Each critical pair adds two bonus successes.
+- `totalSuccesses = nonTenSuccessCount + tenCount + 2 * criticalPairCount`.
+- An odd extra ten remains one success and sets `hasUnpairedTen`.
+- Exact Difficulty succeeds with margin zero.
+- Margin is `totalSuccesses - difficulty` and is not clamped.
+- Bestial failure requires a determined failed test and a Hunger die showing 1.
+- Total failure requires a determined failed test with zero successes.
+- Total and bestial failure can both be true; bestial failure has summary precedence.
+- A Hunger 1 on a successful test is detail only.
+- Ordinary critical requires a successful determined test, a critical pair, and no Hunger 10.
+- Messy critical requires a successful determined test, a critical pair, and at least one Hunger 10.
+- A critical pair below Difficulty contributes bonus successes but is not a critical outcome.
+- With omitted Difficulty, success and failure outcomes remain unresolved: `difficultyResult` is `not-set`, `isSuccess` and `margin` are `null`, and critical/failure outcome flags remain false.
 
-- ordinary success;
-- failure with some successes below Difficulty;
-- total failure;
-- ordinary critical;
-- messy critical;
-- bestial failure;
-- critical without Difficulty;
-- exact Difficulty;
-- positive and negative margin;
-- Hunger dice that roll 1 without a failed test;
-- multiple tens and critical pairing;
-- invalid pool/Hunger combinations.
+Summary precedence for determined tests is bestial failure, messy critical, ordinary critical, total failure, success, then failure.
 
-The exact intended VtM V5 interpretation must be approved before code is treated as authoritative.
+### Fixed evaluator examples
+
+| Case | Pool / Hunger / Difficulty | Normal dice | Hunger dice | Expected |
+|---|---|---|---|---|
+| Ordinary success | `3 / 1 / 1` | `6, 4` | `7` | 2 successes; margin 1 |
+| Exact Difficulty | `2 / 0 / 1` | `6, 2` | none | success; margin 0 |
+| Below Difficulty | `3 / 1 / 3` | `6, 2` | `7` | failure; margin -1 |
+| Total failure | `3 / 0 / 1` | `2, 3, 5` | none | zero successes; total failure |
+| Ordinary critical | `4 / 1 / 4` | `10, 10, 2` | `6` | 5 successes; ordinary critical |
+| Messy critical | `4 / 1 / 4` | `10, 2, 3` | `10` | 4 successes; messy critical |
+| Multiple pairs | `5 / 1 / 8` | `10, 10, 10, 2` | `10` | 2 pairs; 8 successes; messy critical |
+| Unpaired ten | `4 / 0 / 5` | `10, 10, 10, 2` | none | 1 pair; 5 successes; unpaired-ten detail |
+| Bestial with successes | `4 / 1 / 3` | `6, 7, 2` | `1` | 2 successes; bestial failure |
+| Total and bestial | `3 / 1 / 1` | `2, 3` | `1` | both flags; bestial summary |
+| Hunger 1 on success | `3 / 1 / 1` | `6, 2` | `1` | success; Hunger-one detail only |
+| Pair below Difficulty | `3 / 1 / 5` | `10, 10` | `2` | 4 successes; failure; no critical outcome |
+| Omitted Difficulty | `3 / 1 / omitted` | `10, 6` | `10` | 5 successes; pair recorded; outcome unresolved |
+| Zero Hunger | `2 / 0 / 1` | `6, 2` | none | success |
+| Full-pool Hunger | `3 / 3 / 2` | none | `10, 10, 1` | 4 successes; messy critical |
+
+Invalid fixed cases cover an out-of-range pool, Hunger above its range or pool, invalid die values, missing dice, and extra dice. Additional validation tests cover non-finite and non-integer numbers, numeric strings, unexpected fields, label normalization and length, multiple simultaneous errors, stable error ordering, and defensive array copies.
 
 ## Personal roller route
 
