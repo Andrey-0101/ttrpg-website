@@ -18,6 +18,8 @@ flowchart TD
 
     ROOT --> GAMES["/[locale]/games — Games"]
     GAMES --> VTM["/[locale]/games/vampire-the-masquerade — VtM"]
+    ROOT --> DICE_ROLLERS["/[locale]/dice-rollers — Dice Rollers"]
+    DICE_ROLLERS --> PERSONAL_DICE["/[locale]/games/vampire-the-masquerade/tools/dice — VtM V5 Roller"]
 
     ROOT --> DASHBOARD["/[locale]/dashboard — Dashboard"]
     DASHBOARD --> CAMPAIGNS["/[locale]/campaigns — My Campaigns"]
@@ -100,11 +102,12 @@ flowchart LR
     PLAYER -. no edit unless owner .-> EDIT
 ```
 
-## 4. Next-stage VtM dice map
+## 4. VtM dice map
 
-Recommended personal route:
+Implemented public routes:
 
 ```text
+/[locale]/dice-rollers
 /[locale]/games/vampire-the-masquerade/tools/dice
 ```
 
@@ -116,7 +119,9 @@ Recommended shared campaign route:
 
 ```mermaid
 flowchart TD
-    VTM["VtM Game Area"] --> PERSONAL_DICE["Personal VtM Dice"]
+    HUB["Dice Rollers Hub"] --> PERSONAL_DICE["Personal VtM Dice"]
+    VTM["VtM Game Area"] --> PERSONAL_DICE
+    HUB --> CUSTOM["Custom Dice Pool — Planned, No Link"]
     CAMPAIGN["Campaign Overview"] --> CAMPAIGN_DICE["Shared Campaign Dice"]
 
     PERSONAL_DICE --> LOCAL_RESULT["Structured Local Result"]
@@ -126,7 +131,7 @@ flowchart TD
     DATABASE --> REALTIME["Campaign Realtime Feed"]
 ```
 
-Personal dice should be implemented first without persistence.
+Personal VtM dice are implemented without persistence. The Custom Dice Pool, saved presets, and personal history remain planned.
 
 The same deterministic VtM evaluator should later be reused by the server-authoritative campaign roll path.
 
@@ -181,6 +186,8 @@ Implemented now:
 - Profile and Account;
 - Characters;
 - Campaigns;
+- Dice Rollers hub;
+- personal VtM dice;
 - invitation acceptance;
 - membership controls;
 - character sharing;
@@ -188,7 +195,8 @@ Implemented now:
 
 Planned next:
 
-- personal VtM dice;
+- Custom Dice Pool;
+- saved presets and personal history after persistence review;
 - shared campaign dice;
 - realtime campaign dice feed;
 - campaign video.

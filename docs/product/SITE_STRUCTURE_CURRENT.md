@@ -15,17 +15,18 @@
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented dice, video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu routes as current.
+It does not describe unimplemented custom dice, persisted dice, video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu routes as current.
 
 ## Current primary navigation
 
-Authenticated navigation includes:
+Primary navigation for guests and authenticated users includes:
 
 - Home;
 - Games;
 - Dashboard;
 - Campaigns;
 - Characters;
+- Dice Rollers;
 - account area;
 - language switcher.
 
@@ -44,10 +45,15 @@ The Dashboard is an accepted implemented personal overview route. It currently l
 │   │   └── page.tsx
 │   ├── dashboard
 │   │   └── page.tsx
+│   ├── dice-rollers
+│   │   └── page.tsx
 │   ├── games
 │   │   ├── page.tsx
 │   │   └── vampire-the-masquerade
-│   │       └── page.tsx
+│   │       ├── page.tsx
+│   │       └── tools
+│   │           └── dice
+│   │               └── page.tsx
 │   ├── login
 │   │   ├── layout.tsx
 │   │   └── page.tsx
@@ -116,6 +122,15 @@ Current localized landing page.
 The Games catalogue and basic VtM area exist.
 
 The full VtM Game Hub remains planned.
+
+### Dice Rollers
+
+```text
+/[locale]/dice-rollers
+/[locale]/games/vampire-the-masquerade/tools/dice
+```
+
+The public hub lists VtM V5 as available and marks the future Custom Dice Pool as planned without linking to an unfinished route. Guest rolls are local and non-persistent.
 
 ### Authentication
 
@@ -313,7 +328,8 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- personal dice roller;
+- Custom Dice Pool;
+- saved presets and personal roll history;
 - shared campaign dice;
 - persisted roll history;
 - realtime dice feed;
@@ -328,11 +344,11 @@ Not implemented:
 
 ## Current structural conclusion
 
-The site is now a bilingual private VtM character and campaign manager.
+The site is now a bilingual VtM character and campaign manager with a public personal dice tool.
 
 It has a working shared authorization boundary and is ready for the next sequence:
 
-1. personal VtM dice engine and roller;
+1. Custom Dice Pool and reviewed personal persistence;
 2. persisted shared campaign dice;
 3. managed-video spike and minimal campaign video room;
 4. remaining friend campaign workspace.

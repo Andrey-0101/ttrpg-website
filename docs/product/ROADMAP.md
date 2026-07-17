@@ -179,6 +179,8 @@ An invited Player can join a private campaign, see only permitted campaign data,
 
 ### Phase 4A — VtM dice contract and personal roller
 
+**Status: Implemented**
+
 #### Goal
 
 Provide a trustworthy VtM V5 dice engine before adding persistence or realtime synchronization.
@@ -214,6 +216,43 @@ Provide a trustworthy VtM V5 dice engine before adding persistence or realtime s
 #### Exit criteria
 
 The same supplied die results always produce the same VtM interpretation, and a user can make a personal roll on desktop and mobile.
+
+#### Delivered public-tool extension
+
+- public `/[locale]/dice-rollers` hub and main navigation entry;
+- VtM V5 listed as the only available system roller;
+- Custom Dice Pool clearly marked as planned;
+- official symbolic VtM dice with a non-persistent Numbers display option;
+- Dark Pack logo, legal notice, and EN/RU unofficial-material notice.
+
+#### Approved later personal-tool requirements
+
+- public Custom Dice Pool for guests and registered users;
+- up to 5 saved custom dice presets for registered users;
+- personal history containing the current roll plus 10 previous rolls for registered users;
+- non-persistent guest rolls;
+- strict separation between personal and campaign roll history.
+
+These later requirements do not add persistence, migrations, RLS, saved presets, or history in Phase 4A.2.
+
+#### Approved later placeholder-system stage
+
+After the Custom Dice Pool and saved-preset/personal-history stages, extend the Dice Rollers hub catalogue in this display order:
+
+1. Vampire: The Masquerade V5
+2. Alien
+3. Black Powder and Brimstone
+4. Call of Cthulhu
+5. Coriolis
+6. Cyberpunk RED
+7. Delta Green
+8. Forbidden Lands
+9. Ironsworn
+10. Mothership
+11. Paranoia
+12. Traveller — Mongoose Publishing edition
+
+Only Vampire: The Masquerade V5 is currently implemented. The remaining systems are planned placeholders and must not link to active rollers until their implementations are delivered and reviewed.
 
 ### Phase 4B — Shared campaign dice
 

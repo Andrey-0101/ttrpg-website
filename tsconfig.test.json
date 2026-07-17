@@ -15,7 +15,11 @@
   },
   "include": [
     "lib/game-systems/vtm-v5/dice-engine.ts",
-    "tests/dice/vtm-v5-dice-engine.test.ts"
+    "lib/game-systems/vtm-v5/dice-roller.ts",
+    "lib/game-systems/vtm-v5/dice-symbols.ts",
+    "tests/dice/vtm-v5-dice-engine.test.ts",
+    "tests/dice/vtm-v5-dice-roller.test.ts",
+    "tests/dice/vtm-v5-dice-symbols.test.ts"
   ],
   "exclude": []
 }

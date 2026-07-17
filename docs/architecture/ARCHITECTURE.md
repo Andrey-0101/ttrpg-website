@@ -79,8 +79,10 @@ Current user-facing route families:
 /[locale]/characters/new
 /[locale]/characters/new/[system]
 /[locale]/dashboard
+/[locale]/dice-rollers
 /[locale]/games
 /[locale]/games/vampire-the-masquerade
+/[locale]/games/vampire-the-masquerade/tools/dice
 /[locale]/login
 /[locale]/profile
 /[locale]/profile/edit
@@ -216,7 +218,19 @@ lib/game-systems/vtm-v5/dice-engine.ts
 
 It owns the typed request/result contract, strict input validation, and deterministic interpretation of supplied normal and Hunger d10 results. It accepts unknown input at its public boundary and returns typed validation failures for expected invalid data. It does not generate random values, render UI, access character sheets, or depend on persistence, campaigns, Supabase, or Realtime.
 
-The same pure evaluator can later be called by personal client-side generation and server-authoritative campaign execution. Those execution layers remain responsible for randomness, authorization, transport, and persistence.
+The personal random-generation boundary is located at:
+
+```text
+lib/game-systems/vtm-v5/dice-roller.ts
+```
+
+It produces unbiased d10 values with `crypto.getRandomValues`, accepts an injectable random source for deterministic tests, and passes the generated arrays unchanged to the pure evaluator. The localized client UI at `/[locale]/games/vampire-the-masquerade/tools/dice` is public, non-persisted, and has no campaign or Realtime dependency.
+
+The public `/[locale]/dice-rollers` hub is a platform navigation surface. It lists only implemented system rollers and may advertise a planned Custom Dice Pool only as inactive future functionality. Official VtM dice presentation is isolated in `lib/game-systems/vtm-v5/dice-symbols.ts`; it maps numeric results to documented official assets without interpreting or changing the roll.
+
+Future registered-user presets and personal history require a separate persistence review. Personal history must remain a distinct domain from server-authoritative campaign roll history. Guest system and custom rolls remain non-persistent.
+
+The same pure evaluator can later be called by server-authoritative campaign execution. That execution layer remains responsible for randomness, authorization, transport, and persistence.
 
 ### Campaign domain
 
