@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/navigation";
@@ -51,10 +52,13 @@ function CharacterPortrait({
   return (
     <div className="relative flex h-28 w-full shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/20 bg-black/25 sm:h-24 sm:w-24">
       {portraitUrl ? (
-        <img
+        <Image
           src={portraitUrl}
           alt={name}
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          unoptimized
+          sizes="(min-width: 640px) 6rem, 100vw"
+          className="object-cover"
         />
       ) : (
         <span className="text-3xl text-white/45" aria-hidden="true">

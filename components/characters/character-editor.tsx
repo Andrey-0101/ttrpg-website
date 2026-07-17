@@ -134,33 +134,48 @@ export default function CharacterEditor({
 
   useEffect(() => {
     if (readOnly) {
-      setDraftReady(true);
       return;
     }
 
-    if (normalizedSystemId !== "vtm-v5") {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) {
+        return;
+      }
+
+      if (normalizedSystemId !== "vtm-v5") {
+        setDraftReady(true);
+        return;
+      }
+
+      try {
+        const storedPage = readVtmV5SheetPage(pageStorageKey);
+        const draft = readVtmV5EditorDraft(draftStorageKey);
+
+        if (draft) {
+          setName(draft.name);
+          setVisibility(
+            draft.visibility === "public" && initialVisibility !== "public"
+              ? initialVisibility
+              : draft.visibility,
+          );
+          setVtmSheetData(draft.sheetData);
+          setActivePage(draft.activePage);
+          setIsEditing(true);
+        } else if (storedPage) {
+          setActivePage(storedPage);
+        }
+      } catch {
+        // Draft restoration is optional when browser storage is unavailable.
+      }
+
       setDraftReady(true);
-      return;
-    }
+    });
 
-    const storedPage = readVtmV5SheetPage(pageStorageKey);
-    const draft = readVtmV5EditorDraft(draftStorageKey);
-
-    if (draft) {
-      setName(draft.name);
-      setVisibility(
-        draft.visibility === "public" && initialVisibility !== "public"
-          ? initialVisibility
-          : draft.visibility,
-      );
-      setVtmSheetData(draft.sheetData);
-      setActivePage(draft.activePage);
-      setIsEditing(true);
-    } else if (storedPage) {
-      setActivePage(storedPage);
-    }
-
-    setDraftReady(true);
+    return () => {
+      cancelled = true;
+    };
   }, [
     draftStorageKey,
     initialVisibility,

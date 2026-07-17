@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, type ChangeEvent } from "react";
 import { useTranslations } from "next-intl";
 
@@ -66,10 +67,13 @@ export default function CharacterPortraitField({
   return (
     <div className="relative flex min-h-48 h-full flex-col items-center justify-center overflow-hidden border-b border-neutral-400 bg-neutral-100 text-center lg:min-h-44 lg:border-r lg:border-b-0">
       {portraitUrl ? (
-        <img
+        <Image
           src={portraitUrl}
           alt={translations("portrait")}
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          unoptimized
+          sizes="(min-width: 1024px) 27vw, 100vw"
+          className="object-cover"
         />
       ) : (
         <div className="px-4">

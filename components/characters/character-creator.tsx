@@ -101,24 +101,42 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
   });
 
   useEffect(() => {
-    if (systemId !== "vtm-v5") {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) {
+        return;
+      }
+
+      if (systemId !== "vtm-v5") {
+        setDraftReady(true);
+        return;
+      }
+
+      try {
+        const storedPage = readVtmV5SheetPage(pageStorageKey);
+        const draft = readVtmV5EditorDraft(draftStorageKey);
+
+        if (draft) {
+          setName(draft.name);
+          setVisibility(
+            draft.visibility === "campaign" ? "campaign" : "private",
+          );
+          setVtmSheetData(draft.sheetData);
+          setActivePage(draft.activePage);
+        } else if (storedPage) {
+          setActivePage(storedPage);
+        }
+      } catch {
+        // Draft restoration is optional when browser storage is unavailable.
+      }
+
       setDraftReady(true);
-      return;
-    }
+    });
 
-    const storedPage = readVtmV5SheetPage(pageStorageKey);
-    const draft = readVtmV5EditorDraft(draftStorageKey);
-
-    if (draft) {
-      setName(draft.name);
-      setVisibility(draft.visibility === "campaign" ? "campaign" : "private");
-      setVtmSheetData(draft.sheetData);
-      setActivePage(draft.activePage);
-    } else if (storedPage) {
-      setActivePage(storedPage);
-    }
-
-    setDraftReady(true);
+    return () => {
+      cancelled = true;
+    };
   }, [draftStorageKey, pageStorageKey, systemId]);
 
   useEffect(() => {
