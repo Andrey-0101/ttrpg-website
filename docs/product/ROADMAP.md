@@ -220,24 +220,26 @@ The same supplied die results always produce the same VtM interpretation, and a 
 #### Delivered public-tool extension
 
 - public `/[locale]/dice-rollers` hub and main navigation entry;
-- VtM V5 listed as the only available system roller;
-- Custom Dice Pool clearly marked as planned;
+- VtM V5 system roller and public Custom Dice Pool available from the hub;
+- Custom Dice Pool supports Coin (d2), d4, d6, d8, d10, d12, d20, and d100 with unbiased local generation and a 100-item total limit;
+- guest and authenticated custom rolls remain non-persistent;
 - official symbolic VtM dice with a non-persistent Numbers display option;
 - Dark Pack logo, legal notice, and EN/RU unofficial-material notice.
 
 #### Approved later personal-tool requirements
 
-- public Custom Dice Pool for guests and registered users;
+- public Custom Dice Pool for guests and registered users (delivered);
 - up to 5 saved custom dice presets for registered users;
+- saved custom presets preserve the selected Coin quantity and all numeric dice quantities;
 - personal history containing the current roll plus 10 previous rolls for registered users;
 - non-persistent guest rolls;
 - strict separation between personal and campaign roll history.
 
-These later requirements do not add persistence, migrations, RLS, saved presets, or history in Phase 4A.2.
+The delivered Custom Dice Pool does not add persistence, migrations, RLS, saved presets, or history. Those capabilities remain later reviewed stages.
 
 #### Approved later placeholder-system stage
 
-After the Custom Dice Pool and saved-preset/personal-history stages, extend the Dice Rollers hub catalogue in this display order:
+After the delivered Custom Dice Pool and the later saved-preset/personal-history stages, extend the Dice Rollers hub catalogue in this display order:
 
 1. Vampire: The Masquerade V5
 2. Alien

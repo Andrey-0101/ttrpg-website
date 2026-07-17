@@ -191,7 +191,7 @@
   },
   "DiceRollersPage": {
     "metadataTitle": "Dice Rollers",
-    "metadataDescription": "Open public system dice rollers and see the next planned dice tools.",
+    "metadataDescription": "Open public system dice rollers and build a custom dice pool.",
     "eyebrow": "Public tools",
     "title": "Dice Rollers",
     "description": "Roll locally without joining a campaign. Guest rolls are not saved or shared.",
@@ -201,9 +201,44 @@
     "vtmDescription": "Roll normal and Hunger dice for Vampire: The Masquerade Fifth Edition with optional Difficulty.",
     "openVtmRoller": "Open VtM V5 Roller",
     "customPoolTitle": "Custom Dice Pool",
-    "comingNext": "Coming next",
     "customPoolCardTitle": "Build a custom pool",
-    "customPoolDescription": "A public custom dice-pool builder is planned. It is not available yet, so this card does not link to an unfinished tool."
+    "customPoolDescription": "Combine a Coin (d2), d4, d6, d8, d10, d12, d20, and d100 in one local, non-persistent roll.",
+    "openCustomPool": "Open Custom Dice Pool"
+  },
+  "CustomDicePool": {
+    "metadataTitle": "Custom Dice Pool",
+    "metadataDescription": "Build and roll a custom pool of common tabletop dice in your browser.",
+    "back": "Back to Dice Rollers",
+    "eyebrow": "Public local tool",
+    "title": "Custom Dice Pool",
+    "description": "Choose how many coins and numeric dice to roll, then see every result grouped by item type.",
+    "privacyNote": "This roll is generated in your browser. It is not saved, shared, or connected to a campaign.",
+    "poolTitle": "Build your pool",
+    "poolHelp": "Choose at least one coin or die. A pool can contain up to {maximum} rolled items in total.",
+    "coinLabel": "Coin (d2)",
+    "decrease": "Remove one {item}",
+    "increase": "Add one {item}",
+    "configuredTotal": "Configured items: {count} of {maximum}",
+    "roll": "Roll dice",
+    "clear": "Clear",
+    "resultTitle": "Roll result",
+    "totalItems": "Total rolled items",
+    "numericDiceTotal": "Numeric dice total",
+    "coinGroupTitle": "{item} results ({count})",
+    "coinOutcomes": {
+      "heads": "Heads",
+      "tails": "Tails"
+    },
+    "coinResultAria": "{item} toss {number}: {outcome}",
+    "groupTitle": "{die} results ({count})",
+    "resultDieAria": "{die} die {number}: result {value}",
+    "errors": {
+      "invalidQuantity": "Enter a whole number from 0 through {maximum}.",
+      "emptyPool": "Add at least one die before rolling.",
+      "poolTooLarge": "Reduce the pool to {maximum} dice or fewer.",
+      "invalidRequest": "Check the dice quantities and try again.",
+      "randomUnavailable": "Secure random generation is unavailable. No dice were rolled."
+    }
   },
   "VampireGamePage": {
     "back": "Back to Games",

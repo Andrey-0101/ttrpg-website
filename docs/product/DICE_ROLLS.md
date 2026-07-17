@@ -2,9 +2,9 @@
 
 ## Status
 
-**Personal roller implemented; shared campaign dice planned.**
+**Personal VtM roller and Custom Dice Pool implemented; shared campaign dice planned.**
 
-The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The public hub is available at `/[locale]/dice-rollers`, and the localized personal roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`. The `dice_rolls` table and shared campaign dice are not implemented.
+The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. The `dice_rolls` table and shared campaign dice are not implemented.
 
 Initial system:
 
@@ -201,12 +201,13 @@ Public hub:
 /[locale]/dice-rollers
 ```
 
-The hub lists only implemented system rollers. VtM V5 is currently available, while the future Custom Dice Pool is visibly planned without an active link.
+The hub links to the implemented VtM V5 roller and Custom Dice Pool.
 
 Implemented:
 
 ```text
 /[locale]/games/vampire-the-masquerade/tools/dice
+/[locale]/dice-rollers/custom
 ```
 
 Personal slice:
@@ -225,13 +226,31 @@ A client-generated result is acceptable only for this non-shared, non-persisted 
 
 The official symbol provenance and numeric display mapping are recorded in `docs/architecture/WORLD_OF_DARKNESS_ASSETS.md`. Display selection never changes the evaluator result or reruns random generation.
 
+## Custom Dice Pool
+
+The public Custom Dice Pool supports Coin (`d2`), `d4`, `d6`, `d8`, `d10`, `d12`, `d20`, and `d100`, in that display order. Every quantity may be zero, but a roll must contain at least one coin or numeric die. A pool is limited to 100 rolled items in total; this is large enough for practical tabletop pools while bounding browser work and the amount of rendered result UI.
+
+Each item is generated independently in the browser with `crypto.getRandomValues`, using the same injectable random source for deterministic tests. Coin outcomes use the typed values `heads` and `tails`, mapped to two exactly equal halves of the uint32 sample space. Numeric dice use rejection sampling to remove modulo bias for every supported die size. The generator validates the complete request before consuming randomness and returns copied quantities and result arrays.
+
+The UI:
+
+- is public to guests and authenticated users;
+- groups Coin outcomes separately from numeric dice and reports Heads/Tails counts;
+- reports total rolled items and a numeric-dice total that excludes coins and is hidden for coin-only pools;
+- supports direct numeric input and keyboard-accessible increment/decrement controls;
+- keeps the most recent result as a snapshot when form quantities change;
+- replaces the result only after another valid Roll action;
+- clears configuration and results explicitly;
+- has no persistence, Supabase, campaign, Realtime, authentication, or named-game interpretation dependency.
+
 ## Approved personal-tool follow-up
 
 Not implemented in this phase:
 
-- all guests may use public system rollers and the future Custom Dice Pool;
-- guest rolls remain non-persistent;
+- guest and authenticated access to public system rollers and the Custom Dice Pool is already implemented;
+- guest and authenticated custom rolls remain non-persistent;
 - registered users may eventually save up to 5 custom dice presets;
+- saved custom presets will preserve the selected Coin quantity as well as every numeric dice quantity;
 - registered-user personal history retains the current roll plus 10 previous rolls;
 - personal roll history remains separate from future campaign roll history;
 - persistence requires a separate reviewed schema, migration, RLS, and UI phase.
