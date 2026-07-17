@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "allowJs": false,
+    "noEmit": false,
+    "outDir": "node_modules/.cache/vtm-v5-dice-tests",
+    "rootDir": ".",
+    "incremental": false,
+    "isolatedModules": false,
+    "plugins": [],
+    "types": ["node"]
+  },
+  "include": [
+    "lib/game-systems/vtm-v5/dice-engine.ts",
+    "tests/dice/vtm-v5-dice-engine.test.ts"
+  ],
+  "exclude": []
+}

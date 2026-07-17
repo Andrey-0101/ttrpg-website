@@ -208,6 +208,16 @@ call-of-cthulhu-7e
 
 ADR-008 is Accepted. The project must not create a complete universal rules engine before CoC exposes real shared interfaces.
 
+The pure VtM V5 dice rules module is located at:
+
+```text
+lib/game-systems/vtm-v5/dice-engine.ts
+```
+
+It owns the typed request/result contract, strict input validation, and deterministic interpretation of supplied normal and Hunger d10 results. It accepts unknown input at its public boundary and returns typed validation failures for expected invalid data. It does not generate random values, render UI, access character sheets, or depend on persistence, campaigns, Supabase, or Realtime.
+
+The same pure evaluator can later be called by personal client-side generation and server-authoritative campaign execution. Those execution layers remain responsible for randomness, authorization, transport, and persistence.
+
 ### Campaign domain
 
 Implemented platform-level responsibilities:
