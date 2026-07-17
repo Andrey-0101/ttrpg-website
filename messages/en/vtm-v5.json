@@ -200,6 +200,20 @@
     "normalDieKind": "normal die",
     "hungerDieKind": "Hunger die",
     "dieAria": "{kind} {number}: {value}",
+    "dieSymbolAria": "{kind} {number}: result {value}, {category}",
+    "displayMode": {
+      "label": "Dice display",
+      "help": "Changing the display does not reroll or reinterpret the result.",
+      "symbols": "Symbols",
+      "numbers": "Numbers"
+    },
+    "symbolCategories": {
+      "failure": "failure symbol",
+      "success": "success symbol",
+      "critical": "critical symbol",
+      "bestial-failure": "bestial-failure symbol",
+      "messy-critical": "messy-critical symbol"
+    },
     "noNormalDice": "No normal dice were rolled.",
     "noHungerDice": "No Hunger dice were rolled.",
     "difficultyTitle": "Difficulty resolution",
@@ -251,6 +265,11 @@
         "title": "No successes counted",
         "description": "No Difficulty was set, so even a zero-success roll remains unresolved."
       }
+    },
+    "darkPack": {
+      "title": "Dark Pack notice",
+      "logoAlt": "Dark Pack logo",
+      "unofficial": "This is unofficial World of Darkness fan material and is not endorsed by Paradox Interactive."
     },
     "validation": {
       "poolRequired": "Enter a Dice Pool.",

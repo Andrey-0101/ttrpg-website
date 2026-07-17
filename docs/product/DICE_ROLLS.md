@@ -4,7 +4,7 @@
 
 **Personal roller implemented; shared campaign dice planned.**
 
-The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`, and the localized personal roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`. The `dice_rolls` table and shared campaign dice are not implemented.
+The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The public hub is available at `/[locale]/dice-rollers`, and the localized personal roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`. The `dice_rolls` table and shared campaign dice are not implemented.
 
 Initial system:
 
@@ -195,6 +195,14 @@ Invalid fixed cases cover an out-of-range pool, Hunger above its range or pool, 
 
 ## Personal roller route
 
+Public hub:
+
+```text
+/[locale]/dice-rollers
+```
+
+The hub lists only implemented system rollers. VtM V5 is currently available, while the future Custom Dice Pool is visibly planned without an active link.
+
 Implemented:
 
 ```text
@@ -210,9 +218,23 @@ Personal slice:
 - no Realtime subscription;
 - mobile-friendly controls;
 - EN/RU result text;
+- official symbolic dice display by default with a page-lifetime Numbers option;
 - repeat roll.
 
 A client-generated result is acceptable only for this non-shared, non-persisted mode.
+
+The official symbol provenance and numeric display mapping are recorded in `docs/architecture/WORLD_OF_DARKNESS_ASSETS.md`. Display selection never changes the evaluator result or reruns random generation.
+
+## Approved personal-tool follow-up
+
+Not implemented in this phase:
+
+- all guests may use public system rollers and the future Custom Dice Pool;
+- guest rolls remain non-persistent;
+- registered users may eventually save up to 5 custom dice presets;
+- registered-user personal history retains the current roll plus 10 previous rolls;
+- personal roll history remains separate from future campaign roll history;
+- persistence requires a separate reviewed schema, migration, RLS, and UI phase.
 
 ## Persisted campaign roll phase
 

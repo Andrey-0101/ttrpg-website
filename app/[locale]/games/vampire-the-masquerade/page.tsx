@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import DarkPackNotice from "@/components/games/vtm-v5/dark-pack-notice";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -58,6 +59,8 @@ export default async function VampirePage() {
           {diceTranslations("entryAction")}
         </Link>
       </section>
+
+      <DarkPackNotice />
     </main>
   );
 }

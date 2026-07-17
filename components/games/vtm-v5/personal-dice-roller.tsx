@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
@@ -8,6 +9,11 @@ import {
   type VtmV5DiceResult,
 } from "@/lib/game-systems/vtm-v5/dice-engine";
 import { rollVtmV5Dice } from "@/lib/game-systems/vtm-v5/dice-roller";
+import {
+  getVtmV5DiePresentation,
+  type VtmV5DiceDisplayMode,
+  type VtmV5DieKind,
+} from "@/lib/game-systems/vtm-v5/dice-symbols";
 
 type FieldName = "pool" | "hungerDice" | "difficulty" | "label";
 
@@ -43,7 +49,116 @@ function formatMargin(margin: number): string {
   return margin > 0 ? `+${margin}` : String(margin);
 }
 
-function DiceResult({ result }: { result: VtmV5DiceResult }) {
+function DisplayModeControl({
+  mode,
+  onChange,
+}: {
+  mode: VtmV5DiceDisplayMode;
+  onChange: (mode: VtmV5DiceDisplayMode) => void;
+}) {
+  const translations = useTranslations("VtmDiceRoller");
+
+  return (
+    <div className="mt-8 min-w-0">
+      <p id="dice-display-mode-label" className="font-semibold">
+        {translations("displayMode.label")}
+      </p>
+      <p id="dice-display-mode-help" className="mt-1 text-sm text-white/70">
+        {translations("displayMode.help")}
+      </p>
+      <div
+        className="mt-3 inline-flex max-w-full rounded-lg border border-white/25 bg-black/20 p-1"
+        role="group"
+        aria-labelledby="dice-display-mode-label"
+        aria-describedby="dice-display-mode-help"
+      >
+        {(["symbols", "numbers"] as const).map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={mode === option}
+            onClick={() => onChange(option)}
+            className={`min-w-0 rounded-md px-4 py-2 text-center font-semibold outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 ${
+              mode === option
+                ? "bg-white text-neutral-950"
+                : "text-white/75"
+            }`}
+          >
+            {translations(`displayMode.${option}`)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DieFace({
+  kind,
+  value,
+  index,
+  displayMode,
+}: {
+  kind: VtmV5DieKind;
+  value: number;
+  index: number;
+  displayMode: VtmV5DiceDisplayMode;
+}) {
+  const translations = useTranslations("VtmDiceRoller");
+  const presentation = getVtmV5DiePresentation(kind, value, displayMode);
+  const kindLabel = translations(
+    kind === "normal" ? "normalDieKind" : "hungerDieKind",
+  );
+
+  if (presentation.symbol) {
+    return (
+      <li
+        aria-label={translations("dieSymbolAria", {
+          kind: kindLabel,
+          number: index + 1,
+          value,
+          category: translations(
+            `symbolCategories.${presentation.symbol.category}`,
+          ),
+        })}
+        className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-black/20"
+      >
+        <Image
+          src={presentation.symbol.src}
+          alt=""
+          aria-hidden="true"
+          width={309}
+          height={339}
+          className="h-12 w-auto object-contain"
+        />
+      </li>
+    );
+  }
+
+  return (
+    <li
+      aria-label={translations("dieAria", {
+        kind: kindLabel,
+        number: index + 1,
+        value,
+      })}
+      className={
+        kind === "normal"
+          ? "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-neutral-300 bg-white text-lg font-bold text-neutral-950 shadow-sm"
+          : "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-red-200 bg-red-800 text-lg font-bold text-white shadow-sm"
+      }
+    >
+      {value}
+    </li>
+  );
+}
+
+function DiceResult({
+  result,
+  displayMode,
+}: {
+  result: VtmV5DiceResult;
+  displayMode: VtmV5DiceDisplayMode;
+}) {
   const translations = useTranslations("VtmDiceRoller");
   const outcomeTitle = translations(`outcomes.${result.summaryKey}.title`);
   const outcomeDescription = translations(
@@ -52,7 +167,7 @@ function DiceResult({ result }: { result: VtmV5DiceResult }) {
 
   return (
     <section
-      className="mt-8 min-w-0 rounded-xl border border-white/25 bg-black/25 p-4 shadow-lg sm:p-6"
+      className="mt-4 min-w-0 rounded-xl border border-white/25 bg-black/25 p-4 shadow-lg sm:p-6"
       aria-labelledby="dice-result-title"
       aria-live="polite"
     >
@@ -89,17 +204,13 @@ function DiceResult({ result }: { result: VtmV5DiceResult }) {
           {result.normalDice.length > 0 ? (
             <ol className="mt-3 flex min-w-0 flex-wrap gap-2">
               {result.normalDice.map((die, index) => (
-                <li
+                <DieFace
                   key={`normal-${index}`}
-                  aria-label={translations("dieAria", {
-                    kind: translations("normalDieKind"),
-                    number: index + 1,
-                    value: die,
-                  })}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-neutral-300 bg-white text-lg font-bold text-neutral-950 shadow-sm"
-                >
-                  {die}
-                </li>
+                  kind="normal"
+                  value={die}
+                  index={index}
+                  displayMode={displayMode}
+                />
               ))}
             </ol>
           ) : (
@@ -116,17 +227,13 @@ function DiceResult({ result }: { result: VtmV5DiceResult }) {
           {result.hungerDiceResults.length > 0 ? (
             <ol className="mt-3 flex min-w-0 flex-wrap gap-2">
               {result.hungerDiceResults.map((die, index) => (
-                <li
+                <DieFace
                   key={`hunger-${index}`}
-                  aria-label={translations("dieAria", {
-                    kind: translations("hungerDieKind"),
-                    number: index + 1,
-                    value: die,
-                  })}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-red-200 bg-red-800 text-lg font-bold text-white shadow-sm"
-                >
-                  {die}
-                </li>
+                  kind="hunger"
+                  value={die}
+                  index={index}
+                  displayMode={displayMode}
+                />
               ))}
             </ol>
           ) : (
@@ -193,6 +300,8 @@ export default function PersonalDiceRoller() {
   const [label, setLabel] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [result, setResult] = useState<VtmV5DiceResult | null>(null);
+  const [displayMode, setDisplayMode] =
+    useState<VtmV5DiceDisplayMode>("symbols");
 
   function clearFieldError(field: FieldName) {
     setErrors((current) => ({
@@ -457,7 +566,12 @@ export default function PersonalDiceRoller() {
         </button>
       </form>
 
-      {result && <DiceResult result={result} />}
+      {result && (
+        <>
+          <DisplayModeControl mode={displayMode} onChange={setDisplayMode} />
+          <DiceResult result={result} displayMode={displayMode} />
+        </>
+      )}
     </>
   );
 }

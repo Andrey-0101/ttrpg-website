@@ -20,6 +20,7 @@
     "profile": "Profile",
     "dashboard": "Dashboard",
     "characters": "Characters",
+    "diceRollers": "Dice Rollers",
     "login": "Log in",
     "register": "Register",
     "campaigns": "Campaigns"
@@ -187,6 +188,22 @@
     "title": "Games",
     "description": "Choose a tabletop role-playing game.",
     "vampireDescription": "Personal horror, political intrigue, and the struggle to retain humanity."
+  },
+  "DiceRollersPage": {
+    "metadataTitle": "Dice Rollers",
+    "metadataDescription": "Open public system dice rollers and see the next planned dice tools.",
+    "eyebrow": "Public tools",
+    "title": "Dice Rollers",
+    "description": "Roll locally without joining a campaign. Guest rolls are not saved or shared.",
+    "systemRollersTitle": "System Rollers",
+    "systemRollersDescription": "Use a roller built for the rules and terminology of its game system.",
+    "available": "Available",
+    "vtmDescription": "Roll normal and Hunger dice for Vampire: The Masquerade Fifth Edition with optional Difficulty.",
+    "openVtmRoller": "Open VtM V5 Roller",
+    "customPoolTitle": "Custom Dice Pool",
+    "comingNext": "Coming next",
+    "customPoolCardTitle": "Build a custom pool",
+    "customPoolDescription": "A public custom dice-pool builder is planned. It is not available yet, so this card does not link to an unfinished tool."
   },
   "VampireGamePage": {
     "back": "Back to Games",

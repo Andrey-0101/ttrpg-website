@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import DarkPackNotice from "@/components/games/vtm-v5/dark-pack-notice";
 import PersonalDiceRoller from "@/components/games/vtm-v5/personal-dice-roller";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -52,6 +53,7 @@ export default async function DicePage() {
       </header>
 
       <PersonalDiceRoller />
+      <DarkPackNotice />
     </main>
   );
 }

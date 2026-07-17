@@ -22,6 +22,8 @@ export default async function SiteHeader() {
           <Link href="/campaigns">{navigation("campaigns")}</Link>
 
           <Link href="/characters">{navigation("characters")}</Link>
+
+          <Link href="/dice-rollers">{navigation("diceRollers")}</Link>
         </nav>
 
         <AccountArea />

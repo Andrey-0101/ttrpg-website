@@ -200,6 +200,20 @@
     "normalDieKind": "обычный кубик",
     "hungerDieKind": "Кубик Голода",
     "dieAria": "{kind} {number}: {value}",
+    "dieSymbolAria": "{kind} {number}: результат {value}, {category}",
+    "displayMode": {
+      "label": "Отображение кубиков",
+      "help": "Смена отображения не перебрасывает кубики и не меняет трактовку результата.",
+      "symbols": "Символы",
+      "numbers": "Цифры"
+    },
+    "symbolCategories": {
+      "failure": "символ неудачи",
+      "success": "символ успеха",
+      "critical": "символ критического успеха",
+      "bestial-failure": "символ звериного провала",
+      "messy-critical": "символ грязного критического успеха"
+    },
     "noNormalDice": "Обычные кубики не бросались.",
     "noHungerDice": "Кубики Голода не бросались.",
     "difficultyTitle": "Проверка Сложности",
@@ -251,6 +265,11 @@
         "title": "Успехов нет",
         "description": "Сложность не задана, поэтому даже бросок без успехов остаётся неразрешённым."
       }
+    },
+    "darkPack": {
+      "title": "Уведомление Dark Pack",
+      "logoAlt": "Логотип Dark Pack",
+      "unofficial": "Это неофициальный фанатский материал по World of Darkness, не одобренный Paradox Interactive."
     },
     "validation": {
       "poolRequired": "Укажите Пул кубиков.",
