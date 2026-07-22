@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:dice": "node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\" && tsc --project tsconfig.test.json && node node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-engine.test.js && node node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-roller.test.js && node node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-symbols.test.js && node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\""
+    "test:dice": "node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\" && tsc --project tsconfig.test.json && node node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-engine.test.js && node node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-roller.test.js && node node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-symbols.test.js && node node_modules/.cache/vtm-v5-dice-tests/tests/dice/custom-dice-pool.test.js && node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\""
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

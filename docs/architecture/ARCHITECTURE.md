@@ -226,9 +226,17 @@ lib/game-systems/vtm-v5/dice-roller.ts
 
 It produces unbiased d10 values with `crypto.getRandomValues`, accepts an injectable random source for deterministic tests, and passes the generated arrays unchanged to the pure evaluator. The localized client UI at `/[locale]/games/vampire-the-masquerade/tools/dice` is public, non-persisted, and has no campaign or Realtime dependency.
 
-The public `/[locale]/dice-rollers` hub is a platform navigation surface. It lists only implemented system rollers and may advertise a planned Custom Dice Pool only as inactive future functionality. Official VtM dice presentation is isolated in `lib/game-systems/vtm-v5/dice-symbols.ts`; it maps numeric results to documented official assets without interpreting or changing the roll.
+The public `/[locale]/dice-rollers` hub is a platform navigation surface. It links to implemented system rollers and the generic Custom Dice Pool at `/[locale]/dice-rollers/custom`. Official VtM dice presentation is isolated in `lib/game-systems/vtm-v5/dice-symbols.ts`; it maps numeric results to documented official assets without interpreting or changing the roll.
 
-Future registered-user presets and personal history require a separate persistence review. Personal history must remain a distinct domain from server-authoritative campaign roll history. Guest system and custom rolls remain non-persistent.
+The generic custom dice boundary is located at:
+
+```text
+lib/dice/custom-dice-pool.ts
+```
+
+It is platform-owned rather than game-system-owned. It validates quantities for Coin (d2), d4, d6, d8, d10, d12, d20, and d100, and enforces a 100-item total limit. It generates each result independently with `crypto.getRandomValues` and one injectable random source. Coin results use the stable typed outcomes `heads` and `tails`, selected from equal halves of the uint32 range; numeric dice use rejection sampling. Returned quantities, Coin outcomes, and numeric result arrays are copied snapshots. Coins count as rolled items but never receive numeric scores or contribute to the numeric-dice total. The module does not interpret named-game rules, access authentication, persist data, or depend on Supabase, campaigns, or Realtime.
+
+Future registered-user presets and personal history require a separate persistence review. Registered users may later save up to 5 custom presets; each preset must preserve the selected Coin quantity and all numeric dice quantities. Personal history may retain the current roll plus 10 previous rolls. Personal history must remain a distinct domain from server-authoritative campaign roll history. Guest and current authenticated system/custom rolls remain non-persistent.
 
 The same pure evaluator can later be called by server-authoritative campaign execution. That execution layer remains responsible for randomness, authorization, transport, and persistence.
 

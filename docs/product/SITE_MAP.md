@@ -20,6 +20,7 @@ flowchart TD
     GAMES --> VTM["/[locale]/games/vampire-the-masquerade — VtM"]
     ROOT --> DICE_ROLLERS["/[locale]/dice-rollers — Dice Rollers"]
     DICE_ROLLERS --> PERSONAL_DICE["/[locale]/games/vampire-the-masquerade/tools/dice — VtM V5 Roller"]
+    DICE_ROLLERS --> CUSTOM_DICE["/[locale]/dice-rollers/custom — Custom Dice Pool"]
 
     ROOT --> DASHBOARD["/[locale]/dashboard — Dashboard"]
     DASHBOARD --> CAMPAIGNS["/[locale]/campaigns — My Campaigns"]
@@ -108,6 +109,7 @@ Implemented public routes:
 
 ```text
 /[locale]/dice-rollers
+/[locale]/dice-rollers/custom
 /[locale]/games/vampire-the-masquerade/tools/dice
 ```
 
@@ -121,17 +123,18 @@ Recommended shared campaign route:
 flowchart TD
     HUB["Dice Rollers Hub"] --> PERSONAL_DICE["Personal VtM Dice"]
     VTM["VtM Game Area"] --> PERSONAL_DICE
-    HUB --> CUSTOM["Custom Dice Pool — Planned, No Link"]
+    HUB --> CUSTOM["Custom Dice Pool"]
     CAMPAIGN["Campaign Overview"] --> CAMPAIGN_DICE["Shared Campaign Dice"]
 
     PERSONAL_DICE --> LOCAL_RESULT["Structured Local Result"]
+    CUSTOM --> CUSTOM_RESULT["Grouped Local Results"]
 
     CAMPAIGN_DICE --> SERVER_ROLL["Server-Authoritative Roll"]
     SERVER_ROLL --> DATABASE["Persisted dice_rolls"]
     DATABASE --> REALTIME["Campaign Realtime Feed"]
 ```
 
-Personal VtM dice are implemented without persistence. The Custom Dice Pool, saved presets, and personal history remain planned.
+Personal VtM dice and the Custom Dice Pool are implemented without persistence. The custom pool includes Coin (d2), d4, d6, d8, d10, d12, d20, and d100. Saved presets remain planned and will preserve Coin and numeric dice quantities; personal history remains planned and must stay separate from future campaign history.
 
 The same deterministic VtM evaluator should later be reused by the server-authoritative campaign roll path.
 
@@ -188,6 +191,7 @@ Implemented now:
 - Campaigns;
 - Dice Rollers hub;
 - personal VtM dice;
+- public Custom Dice Pool;
 - invitation acceptance;
 - membership controls;
 - character sharing;
@@ -195,7 +199,6 @@ Implemented now:
 
 Planned next:
 
-- Custom Dice Pool;
 - saved presets and personal history after persistence review;
 - shared campaign dice;
 - realtime campaign dice feed;

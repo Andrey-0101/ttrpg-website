@@ -75,9 +75,9 @@ export default async function DiceRollersPage() {
         <h2 id="custom-pool-title" className="text-2xl font-bold">
           {translations("customPoolTitle")}
         </h2>
-        <article className="mt-5 max-w-2xl rounded-xl border border-dashed border-white/25 bg-white/5 p-5 sm:p-6">
-          <span className="inline-flex rounded-full border border-white/20 px-3 py-1 text-sm font-semibold text-white/80">
-            {translations("comingNext")}
+        <article className="mt-5 max-w-2xl rounded-xl border border-white/25 bg-black/20 p-5 sm:p-6">
+          <span className="inline-flex rounded-full border border-green-300/40 bg-green-950/40 px-3 py-1 text-sm font-semibold text-green-100">
+            {translations("available")}
           </span>
           <h3 className="mt-4 break-words text-xl font-bold">
             {translations("customPoolCardTitle")}
@@ -85,6 +85,12 @@ export default async function DiceRollersPage() {
           <p className="mt-3 break-words text-white/75">
             {translations("customPoolDescription")}
           </p>
+          <Link
+            href="/dice-rollers/custom"
+            className="mt-5 inline-flex rounded-lg bg-white px-5 py-3 font-bold text-neutral-950 outline-none hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+          >
+            {translations("openCustomPool")}
+          </Link>
         </article>
       </section>
     </main>
