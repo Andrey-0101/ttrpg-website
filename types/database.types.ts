@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -198,6 +218,93 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_dice_presets: {
+        Row: {
+          coin_quantity: number
+          created_at: string
+          d10_quantity: number
+          d100_quantity: number
+          d12_quantity: number
+          d20_quantity: number
+          d4_quantity: number
+          d6_quantity: number
+          d8_quantity: number
+          id: string
+          name: string
+          owner_id: string
+          slot: number
+          updated_at: string
+        }
+        Insert: {
+          coin_quantity?: number
+          created_at?: string
+          d10_quantity?: number
+          d100_quantity?: number
+          d12_quantity?: number
+          d20_quantity?: number
+          d4_quantity?: number
+          d6_quantity?: number
+          d8_quantity?: number
+          id?: string
+          name: string
+          owner_id: string
+          slot: number
+          updated_at?: string
+        }
+        Update: {
+          coin_quantity?: number
+          created_at?: string
+          d10_quantity?: number
+          d100_quantity?: number
+          d12_quantity?: number
+          d20_quantity?: number
+          d4_quantity?: number
+          d6_quantity?: number
+          d8_quantity?: number
+          id?: string
+          name?: string
+          owner_id?: string
+          slot?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      personal_roll_history: {
+        Row: {
+          client_roll_id: string
+          created_at: string
+          id: string
+          owner_id: string
+          request_data: Json
+          result_data: Json
+          roller_kind: string
+          schema_version: number
+          sequence_number: number
+        }
+        Insert: {
+          client_roll_id: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          request_data: Json
+          result_data: Json
+          roller_kind: string
+          schema_version: number
+          sequence_number?: never
+        }
+        Update: {
+          client_roll_id?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          request_data?: Json
+          result_data?: Json
+          roller_kind?: string
+          schema_version?: number
+          sequence_number?: never
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -234,6 +341,7 @@ export type Database = {
         Args: { raw_token: string }
         Returns: string
       }
+      clear_personal_roll_history: { Args: never; Returns: number }
       create_campaign_invitation: {
         Args: { target_campaign_id: string }
         Returns: {
@@ -241,6 +349,41 @@ export type Database = {
           invitation_id: string
           token: string
         }[]
+      }
+      create_custom_dice_preset: {
+        Args: {
+          p_coin_quantity: number
+          p_d10_quantity: number
+          p_d100_quantity: number
+          p_d12_quantity: number
+          p_d20_quantity: number
+          p_d4_quantity: number
+          p_d6_quantity: number
+          p_d8_quantity: number
+          p_name: string
+        }
+        Returns: {
+          coin_quantity: number
+          created_at: string
+          d10_quantity: number
+          d100_quantity: number
+          d12_quantity: number
+          d20_quantity: number
+          d4_quantity: number
+          d6_quantity: number
+          d8_quantity: number
+          id: string
+          name: string
+          owner_id: string
+          slot: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "custom_dice_presets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       current_user_can_access_campaign: {
         Args: { target_campaign_id: string }
@@ -262,9 +405,76 @@ export type Database = {
         Args: { target_campaign_id: string }
         Returns: boolean
       }
+      delete_custom_dice_preset: {
+        Args: { p_preset_id: string }
+        Returns: boolean
+      }
+      delete_personal_roll: { Args: { p_roll_id: string }; Returns: boolean }
+      record_personal_roll: {
+        Args: {
+          p_client_roll_id: string
+          p_request_data: Json
+          p_result_data: Json
+          p_roller_kind: string
+          p_schema_version: number
+        }
+        Returns: {
+          client_roll_id: string
+          created_at: string
+          id: string
+          owner_id: string
+          request_data: Json
+          result_data: Json
+          roller_kind: string
+          schema_version: number
+          sequence_number: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "personal_roll_history"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       revoke_campaign_invitation: {
         Args: { target_invitation_id: string }
         Returns: undefined
+      }
+      update_custom_dice_preset: {
+        Args: {
+          p_coin_quantity: number
+          p_d10_quantity: number
+          p_d100_quantity: number
+          p_d12_quantity: number
+          p_d20_quantity: number
+          p_d4_quantity: number
+          p_d6_quantity: number
+          p_d8_quantity: number
+          p_name: string
+          p_preset_id: string
+        }
+        Returns: {
+          coin_quantity: number
+          created_at: string
+          d10_quantity: number
+          d100_quantity: number
+          d12_quantity: number
+          d20_quantity: number
+          d4_quantity: number
+          d6_quantity: number
+          d8_quantity: number
+          id: string
+          name: string
+          owner_id: string
+          slot: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "custom_dice_presets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
@@ -394,6 +604,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
