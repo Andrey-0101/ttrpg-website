@@ -4,6 +4,9 @@ import { getTranslations } from "next-intl/server";
 import CustomDicePool from "@/components/dice-rollers/custom-dice-pool";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { listSavedCustomDicePresets } from "@/lib/dice/personal-dice-persistence.server";
+import type { SavedPresetAccess } from "@/lib/dice/saved-custom-dice-presets-ui";
+import { createClient } from "@/utils/supabase/server";
 
 type CustomDicePoolPageProps = {
   params: Promise<{ locale: Locale }>;
@@ -26,6 +29,41 @@ export async function generateMetadata({
 
 export default async function CustomDicePoolPage() {
   const translations = await getTranslations("CustomDicePool");
+  let presetAccess: SavedPresetAccess = { authenticated: false };
+  try {
+    const supabase = await createClient();
+    const { data: claimsData, error: claimsError } =
+      await supabase.auth.getClaims();
+
+    if (!claimsError && claimsData?.claims) {
+      const presetResult = await listSavedCustomDicePresets();
+      presetAccess = presetResult.ok
+        ? {
+            authenticated: true,
+            presets: presetResult.data,
+            loadError: null,
+          }
+        : {
+            authenticated: true,
+            presets: [],
+            loadError:
+              presetResult.error.code === "authentication_required" ||
+              presetResult.error.code === "persistence_unavailable"
+                ? presetResult.error.code
+                : "unexpected_error",
+          };
+    } else if (claimsError) {
+      presetAccess = {
+        authenticated: null,
+        loadError: "persistence_unavailable",
+      };
+    }
+  } catch {
+    presetAccess = {
+      authenticated: null,
+      loadError: "persistence_unavailable",
+    };
+  }
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -51,7 +89,7 @@ export default async function CustomDicePoolPage() {
         </p>
       </header>
 
-      <CustomDicePool />
+      <CustomDicePool presetAccess={presetAccess} />
     </main>
   );
 }

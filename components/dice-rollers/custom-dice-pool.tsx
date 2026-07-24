@@ -3,18 +3,23 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
+import SavedCustomDicePresets from "@/components/dice-rollers/saved-custom-dice-presets";
 import {
   CUSTOM_DICE_POOL_LIMITS,
   CUSTOM_POOL_ITEM_KEYS,
   rollCustomDicePool,
   type CustomCoinOutcome,
   type CustomDicePoolResult,
-  type CustomDiceQuantities,
   type CustomDieSides,
   type CustomPoolItemKey,
 } from "@/lib/dice/custom-dice-pool";
+import {
+  parseCustomDiceQuantityFields,
+  type CustomDiceQuantityFields,
+  type SavedPresetAccess,
+} from "@/lib/dice/saved-custom-dice-presets-ui";
 
-type QuantityFields = Record<CustomPoolItemKey, string>;
+type QuantityFields = CustomDiceQuantityFields;
 type FieldErrors = Partial<Record<CustomPoolItemKey, string>>;
 
 const INITIAL_QUANTITIES: QuantityFields = {
@@ -47,15 +52,6 @@ const DIE_COLORS: Record<CustomDieSides, string> = {
   20: "bg-rose-900",
   100: "bg-neutral-900",
 };
-
-function parseQuantities(fields: QuantityFields): CustomDiceQuantities {
-  return Object.fromEntries(
-    CUSTOM_POOL_ITEM_KEYS.map((item) => {
-      const value = fields[item].trim();
-      return [item, value === "" ? Number.NaN : Number(value)];
-    }),
-  ) as CustomDiceQuantities;
-}
 
 function CoinFace({
   outcome,
@@ -216,7 +212,13 @@ function RollResult({ result }: { result: CustomDicePoolResult }) {
   );
 }
 
-export default function CustomDicePool() {
+type CustomDicePoolProps = {
+  presetAccess: SavedPresetAccess;
+};
+
+export default function CustomDicePool({
+  presetAccess,
+}: CustomDicePoolProps) {
   const translations = useTranslations("CustomDicePool");
   const [quantities, setQuantities] =
     useState<QuantityFields>(INITIAL_QUANTITIES);
@@ -250,7 +252,9 @@ export default function CustomDicePool() {
 
   function handleRoll(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const evaluationRequest = { quantities: parseQuantities(quantities) };
+    const evaluationRequest = {
+      quantities: parseCustomDiceQuantityFields(quantities),
+    };
 
     try {
       const evaluation = rollCustomDicePool(evaluationRequest);
@@ -305,6 +309,16 @@ export default function CustomDicePool() {
 
   return (
     <>
+      <SavedCustomDicePresets
+        access={presetAccess}
+        quantityFields={quantities}
+        onLoad={(nextQuantities) => {
+          setQuantities({ ...nextQuantities });
+          setFieldErrors({});
+          setFormError(null);
+        }}
+      />
+
       <form
         className="mt-8 min-w-0 rounded-xl border border-white/25 bg-black/20 p-4 shadow-lg sm:p-6"
         onSubmit={handleRoll}

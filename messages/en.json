@@ -238,6 +238,52 @@
       "poolTooLarge": "Reduce the pool to {maximum} dice or fewer.",
       "invalidRequest": "Check the dice quantities and try again.",
       "randomUnavailable": "Secure random generation is unavailable. No dice were rolled."
+    },
+    "presets": {
+      "title": "Saved presets",
+      "explanation": "Save up to five pool configurations for your personal account. Rolls and results are not stored.",
+      "guestExplanation": "Sign in to save and manage up to five personal dice-pool presets. The roller remains fully available without an account.",
+      "signIn": "Sign in",
+      "empty": "No presets saved yet. Configure the pool below, then save it with a name.",
+      "slot": "Preset {slot} of {maximum}",
+      "loaded": "Loaded",
+      "quantitySummaryItem": "{item} ×{count}",
+      "quantitySummarySeparator": " · ",
+      "createTitle": "Save current pool",
+      "createHelp": "Only the current Coin and dice quantities are saved. Rolling is not triggered.",
+      "nameLabel": "Preset name",
+      "save": "Save preset",
+      "saving": "Saving…",
+      "load": "Load",
+      "edit": "Edit",
+      "update": "Update with current dice",
+      "updating": "Updating…",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete “{name}”? The current dice configuration will not change.",
+      "confirmDeleteAction": "Confirm delete",
+      "limit": "You have reached the limit of {maximum} saved presets. Delete a preset before saving another.",
+      "success": {
+        "created": "Preset saved successfully.",
+        "updated": "Preset updated successfully.",
+        "deleted": "Preset deleted successfully.",
+        "loaded": "Preset loaded. Press Roll dice when you are ready."
+      },
+      "errors": {
+        "nameRequired": "Enter a preset name.",
+        "nameTooLong": "Keep the preset name to {maximum} characters or fewer.",
+        "invalidQuantity": "Enter whole-number quantities within the allowed range before saving.",
+        "poolEmpty": "Add at least one Coin or die before saving a preset.",
+        "poolTooLarge": "Reduce the pool to {maximum} items or fewer before saving.",
+        "validationFailed": "Check the preset name and dice quantities, then try again.",
+        "authenticationRequired": "Your session may have expired. The roller state was preserved; sign in to continue managing presets.",
+        "limitReached": "The account already has the maximum of {maximum} presets. This may have changed in another tab.",
+        "notFound": "This preset is no longer available. It may have been changed in another tab.",
+        "nameConflict": "A preset with this name already exists. Choose another name.",
+        "persistenceUnavailable": "Saved presets are temporarily unavailable. The dice roller still works normally.",
+        "unexpected": "The preset could not be changed. The dice roller state was preserved."
+      }
     }
   },
   "VampireGamePage": {
