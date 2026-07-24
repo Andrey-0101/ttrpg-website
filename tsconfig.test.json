@@ -15,11 +15,13 @@
   },
   "include": [
     "lib/dice/custom-dice-pool.ts",
+    "lib/dice/personal-dice-persistence.ts",
     "lib/game-systems/vtm-v5/dice-engine.ts",
     "lib/game-systems/vtm-v5/dice-roller.ts",
     "lib/game-systems/vtm-v5/dice-symbols.ts",
     "tests/database/personal-dice-concurrency.test.ts",
     "tests/dice/custom-dice-pool.test.ts",
+    "tests/dice/personal-dice-persistence.test.ts",
     "tests/dice/vtm-v5-dice-engine.test.ts",
     "tests/dice/vtm-v5-dice-roller.test.ts",
     "tests/dice/vtm-v5-dice-symbols.test.ts"
