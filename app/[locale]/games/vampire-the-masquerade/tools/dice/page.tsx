@@ -5,6 +5,7 @@ import DarkPackNotice from "@/components/games/vtm-v5/dark-pack-notice";
 import PersonalDiceRoller from "@/components/games/vtm-v5/personal-dice-roller";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { createClient } from "@/utils/supabase/server";
 
 type DicePageProps = {
   params: Promise<{
@@ -29,6 +30,17 @@ export async function generateMetadata({
 
 export default async function DicePage() {
   const translations = await getTranslations("VtmDiceRoller");
+  let authenticated = false;
+
+  try {
+    const supabase = await createClient();
+    const { data: claimsData, error: claimsError } =
+      await supabase.auth.getClaims();
+
+    authenticated = !claimsError && Boolean(claimsData?.claims);
+  } catch {
+    authenticated = false;
+  }
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-3 py-6 sm:px-6 lg:p-8">
@@ -48,11 +60,15 @@ export default async function DicePage() {
           {translations("title")}
         </h1>
         <p className="mt-4 break-words text-base text-white/80 sm:text-lg">
-          {translations("description")}
+          {translations(
+            authenticated
+              ? "descriptionAuthenticated"
+              : "descriptionGuest",
+          )}
         </p>
       </header>
 
-      <PersonalDiceRoller />
+      <PersonalDiceRoller authenticated={authenticated} />
       <DarkPackNotice />
     </main>
   );
