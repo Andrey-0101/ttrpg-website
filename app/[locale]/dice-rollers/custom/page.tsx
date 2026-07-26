@@ -64,6 +64,12 @@ export default async function CustomDicePoolPage() {
       loadError: "persistence_unavailable",
     };
   }
+  const privacyNoteKey =
+    presetAccess.authenticated === true
+      ? "privacyNoteAuthenticated"
+      : presetAccess.authenticated === false
+        ? "privacyNoteGuest"
+        : "privacyNoteUnavailable";
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -85,7 +91,7 @@ export default async function CustomDicePoolPage() {
           {translations("description")}
         </p>
         <p className="mt-3 rounded-lg border border-white/15 bg-white/5 p-3 text-sm text-white/75">
-          {translations("privacyNote")}
+          {translations(privacyNoteKey)}
         </p>
       </header>
 

@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
+import { recordPersonalRollAction } from "@/app/[locale]/dice-rollers/actions";
+import { recordVtmV5RollBestEffort } from "@/lib/dice/personal-roll-recording";
 import {
   VTM_V5_DICE_LIMITS,
   type VtmV5DiceResult,
@@ -300,7 +302,11 @@ function DiceResult({
   );
 }
 
-export default function PersonalDiceRoller() {
+export default function PersonalDiceRoller({
+  authenticated,
+}: {
+  authenticated: boolean;
+}) {
   const translations = useTranslations("VtmDiceRoller");
   const [pool, setPool] = useState("1");
   const [hungerDice, setHungerDice] = useState("0");
@@ -427,8 +433,16 @@ export default function PersonalDiceRoller() {
         return;
       }
 
+      const snapshot = evaluation.result;
+
       setErrors({});
-      setResult(evaluation.result);
+      setResult(snapshot);
+
+      void recordVtmV5RollBestEffort({
+        authenticated,
+        snapshot,
+        recordAction: recordPersonalRollAction,
+      });
     } catch {
       setErrors({ general: translations("validation.randomUnavailable") });
     }

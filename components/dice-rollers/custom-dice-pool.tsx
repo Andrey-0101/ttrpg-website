@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
+import { recordPersonalRollAction } from "@/app/[locale]/dice-rollers/actions";
 import SavedCustomDicePresets from "@/components/dice-rollers/saved-custom-dice-presets";
 import {
   CUSTOM_DICE_POOL_LIMITS,
@@ -13,6 +14,7 @@ import {
   type CustomDieSides,
   type CustomPoolItemKey,
 } from "@/lib/dice/custom-dice-pool";
+import { recordCustomRollBestEffort } from "@/lib/dice/personal-roll-recording";
 import {
   parseCustomDiceQuantityFields,
   type CustomDiceQuantityFields,
@@ -291,9 +293,17 @@ export default function CustomDicePool({
         return;
       }
 
+      const snapshot = evaluation.result;
+
       setFieldErrors({});
       setFormError(null);
-      setResult(evaluation.result);
+      setResult(snapshot);
+
+      void recordCustomRollBestEffort({
+        authenticated: presetAccess.authenticated === true,
+        snapshot,
+        recordAction: recordPersonalRollAction,
+      });
     } catch {
       setFieldErrors({});
       setFormError(translations("errors.randomUnavailable"));
