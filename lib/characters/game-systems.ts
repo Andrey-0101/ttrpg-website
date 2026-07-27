@@ -16,8 +16,10 @@ export function getGameSystem(systemId: string) {
 export function normalizeGameSystemId(
   value: string
 ): GameSystemId | null {
-  if (value in GAME_SYSTEMS) {
-    return value as GameSystemId;
+  const catalogueSystem = getGameSystemCatalogueEntry(value);
+
+  if (catalogueSystem) {
+    return catalogueSystem.id;
   }
 
   const matchedSystem = GAME_SYSTEM_CATALOGUE.find((system) =>

@@ -12,6 +12,7 @@ import {
 import {
   GAME_SYSTEM_CAPABILITIES,
   GAME_SYSTEM_CATALOGUE,
+  getGameSystemCatalogueEntry,
   type GameSystemCapabilityState,
 } from "../../lib/game-systems/catalogue";
 
@@ -37,6 +38,14 @@ const EXPECTED_ACTION_KEYS = [
   "openDiceRoller",
 ] as const;
 
+const PROTOTYPE_DERIVED_SYSTEM_IDS = [
+  "toString",
+  "constructor",
+  "hasOwnProperty",
+  "__proto__",
+  "**proto**",
+] as const;
+
 test("game-system catalogue uses the approved canonical order", () => {
   assert.deepEqual(
     GAME_SYSTEM_CATALOGUE.map((system) => system.id),
@@ -52,6 +61,16 @@ test("game-system IDs and translation keys are unique", () => {
 
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(new Set(translationKeys).size, translationKeys.length);
+});
+
+test("catalogue lookup rejects inherited prototype keys", () => {
+  for (const systemId of PROTOTYPE_DERIVED_SYSTEM_IDS) {
+    assert.equal(getGameSystemCatalogueEntry(systemId), null);
+    assert.equal(normalizeGameSystemId(systemId), null);
+  }
+
+  assert.equal(getGameSystemCatalogueEntry("vtm-v5")?.id, "vtm-v5");
+  assert.equal(normalizeGameSystemId("vtm-v5"), "vtm-v5");
 });
 
 test("English and Russian catalogue metadata is complete and aligned", () => {

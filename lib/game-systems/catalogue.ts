@@ -160,7 +160,11 @@ export const GAME_SYSTEMS_BY_ID = Object.fromEntries(
 export function getGameSystemCatalogueEntry(
   systemId: string,
 ): GameSystemCatalogueEntry | null {
-  return GAME_SYSTEMS_BY_ID[systemId as GameSystemId] ?? null;
+  if (!Object.hasOwn(GAME_SYSTEMS_BY_ID, systemId)) {
+    return null;
+  }
+
+  return GAME_SYSTEMS_BY_ID[systemId as GameSystemId];
 }
 
 export function hasAvailableGameSystemCapability<
