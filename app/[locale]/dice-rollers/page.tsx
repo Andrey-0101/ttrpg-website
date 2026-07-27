@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import SystemCard from "@/components/game-systems/system-card";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { GAME_SYSTEM_CATALOGUE } from "@/lib/game-systems/catalogue";
 
 type DiceRollersPageProps = {
   params: Promise<{
@@ -27,6 +29,7 @@ export async function generateMetadata({
 
 export default async function DiceRollersPage() {
   const translations = await getTranslations("DiceRollersPage");
+  const catalogueTranslations = await getTranslations("GameSystemCatalogue");
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -50,25 +53,37 @@ export default async function DiceRollersPage() {
           {translations("systemRollersDescription")}
         </p>
 
-        <article className="mt-5 max-w-2xl rounded-xl border border-white/25 bg-black/20 p-5 sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <h3 className="min-w-0 break-words text-xl font-bold">
-              Vampire: The Masquerade V5
-            </h3>
-            <span className="rounded-full border border-green-300/40 bg-green-950/40 px-3 py-1 text-sm font-semibold text-green-100">
-              {translations("available")}
-            </span>
-          </div>
-          <p className="mt-3 text-white/75">
-            {translations("vtmDescription")}
-          </p>
-          <Link
-            href="/games/vampire-the-masquerade/tools/dice"
-            className="mt-5 inline-flex rounded-lg bg-white px-5 py-3 font-bold text-neutral-950 outline-none hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-          >
-            {translations("openVtmRoller")}
-          </Link>
-        </article>
+        <div className="mt-5 grid gap-5 md:grid-cols-2">
+          {GAME_SYSTEM_CATALOGUE.map((system) => {
+            const capability = system.capabilities.diceRoller;
+
+            return (
+              <SystemCard
+                key={system.id}
+                name={catalogueTranslations(
+                  `systems.${system.translationKey}.name`,
+                )}
+                description={catalogueTranslations(
+                  `systems.${system.translationKey}.description`,
+                )}
+                status={capability.status}
+                availableLabel={catalogueTranslations("available")}
+                plannedLabel={catalogueTranslations("planned")}
+                headingLevel={3}
+                action={
+                  capability.status === "available"
+                    ? {
+                        href: capability.route,
+                        label: catalogueTranslations(
+                          "actions.openDiceRoller",
+                        ),
+                      }
+                    : undefined
+                }
+              />
+            );
+          })}
+        </div>
       </section>
 
       <section className="mt-10" aria-labelledby="custom-pool-title">
@@ -77,7 +92,7 @@ export default async function DiceRollersPage() {
         </h2>
         <article className="mt-5 max-w-2xl rounded-xl border border-white/25 bg-black/20 p-5 sm:p-6">
           <span className="inline-flex rounded-full border border-green-300/40 bg-green-950/40 px-3 py-1 text-sm font-semibold text-green-100">
-            {translations("available")}
+            {catalogueTranslations("available")}
           </span>
           <h3 className="mt-4 break-words text-xl font-bold">
             {translations("customPoolCardTitle")}

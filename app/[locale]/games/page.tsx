@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+
+import SystemCard from "@/components/game-systems/system-card";
 import type { Locale } from "@/i18n/routing";
+import { GAME_SYSTEM_CATALOGUE } from "@/lib/game-systems/catalogue";
 
 type GamesPageProps = {
   params: Promise<{
@@ -25,8 +27,8 @@ export async function generateMetadata({
 }
 
 export default async function GamesPage() {
-  const translations =
-    await getTranslations("GamesPage");
+  const translations = await getTranslations("GamesPage");
+  const catalogueTranslations = await getTranslations("GameSystemCatalogue");
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl p-8">
@@ -38,19 +40,33 @@ export default async function GamesPage() {
         {translations("description")}
       </p>
 
-      <div className="mt-8">
-        <Link
-          href="/games/vampire-the-masquerade"
-          className="block max-w-md rounded-lg border p-6 hover:bg-gray-100 hover:text-black"
-        >
-          <h2 className="text-2xl font-bold">
-            Vampire: The Masquerade
-          </h2>
+      <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {GAME_SYSTEM_CATALOGUE.map((system) => {
+          const capability = system.capabilities.gameArea;
 
-          <p className="mt-2">
-            {translations("vampireDescription")}
-          </p>
-        </Link>
+          return (
+            <SystemCard
+              key={system.id}
+              name={catalogueTranslations(
+                `systems.${system.translationKey}.name`,
+              )}
+              description={catalogueTranslations(
+                `systems.${system.translationKey}.description`,
+              )}
+              status={capability.status}
+              availableLabel={catalogueTranslations("available")}
+              plannedLabel={catalogueTranslations("planned")}
+              action={
+                capability.status === "available"
+                  ? {
+                      href: capability.route,
+                      label: catalogueTranslations("actions.openGameArea"),
+                    }
+                  : undefined
+              }
+            />
+          );
+        })}
       </div>
     </main>
   );

@@ -111,9 +111,7 @@
   },
   "CharacterSystemSelection": {
     "title": "Choose a Game System",
-    "description": "Select the game system for your new character.",
-    "create": "Create Character",
-    "comingSoon": "Coming Soon"
+    "description": "Select the game system for your new character."
   },
   "CharacterNew": {
     "back": "Back to Game Systems",
@@ -125,12 +123,64 @@
     "unavailableTitle": "Character unavailable",
     "unavailableDescription": "This character does not exist or you do not have access to it."
   },
-  "GameSystems": {
-    "vtmV5": {
-      "description": "A game of personal horror, political intrigue, and struggling with the Beast."
+  "GameSystemCatalogue": {
+    "available": "Available",
+    "planned": "Planned",
+    "actions": {
+      "openGameArea": "Open Game",
+      "createCharacter": "Create Character",
+      "selectForCampaign": "Select for Campaign",
+      "openDiceRoller": "Open Dice Roller"
     },
-    "callOfCthulhu7e": {
-      "description": "An investigative horror game about mysteries, dangerous knowledge, and the Cthulhu Mythos."
+    "systems": {
+      "vtmV5": {
+        "name": "Vampire: The Masquerade V5",
+        "description": "A game of personal horror, political intrigue, and struggling with the Beast."
+      },
+      "alien": {
+        "name": "Alien",
+        "description": "A cinematic science-fiction horror game about survival against deadly threats in deep space."
+      },
+      "blackPowderAndBrimstone": {
+        "name": "Black Powder and Brimstone",
+        "description": "A grim fantasy game of gunpowder, occult danger, and desperate adventure."
+      },
+      "callOfCthulhu": {
+        "name": "Call of Cthulhu",
+        "description": "An investigative horror game about mysteries, dangerous knowledge, and the Cthulhu Mythos."
+      },
+      "coriolis": {
+        "name": "Coriolis",
+        "description": "A science-fiction adventure game of exploration, intrigue, and ancient mysteries among the stars."
+      },
+      "cyberpunkRed": {
+        "name": "Cyberpunk RED",
+        "description": "A game of dangerous jobs, powerful corporations, and survival on the streets of the Dark Future."
+      },
+      "deltaGreen": {
+        "name": "Delta Green",
+        "description": "A conspiracy-horror game about agents confronting unnatural threats at terrible personal cost."
+      },
+      "forbiddenLands": {
+        "name": "Forbidden Lands",
+        "description": "A survival fantasy game about dangerous journeys, lost strongholds, and legends waiting to be claimed."
+      },
+      "ironsworn": {
+        "name": "Ironsworn",
+        "description": "A quest-driven fantasy game about perilous vows in a harsh and untamed land."
+      },
+      "mothership": {
+        "name": "Mothership",
+        "description": "A science-fiction horror game about crews facing isolation, panic, and unknown terrors."
+      },
+      "paranoia": {
+        "name": "Paranoia",
+        "description": "A darkly comic game of troubleshooters, treachery, and mandatory happiness under Friend Computer."
+      },
+      "travellerMongoose": {
+        "name": "Traveller (Mongoose Publishing)",
+        "description": "A science-fiction game of interstellar travel, trade, exploration, and adventure."
+      }
     }
   },
   "CharacterForm": {
@@ -186,8 +236,7 @@
   },
   "GamesPage": {
     "title": "Games",
-    "description": "Choose a tabletop role-playing game.",
-    "vampireDescription": "Personal horror, political intrigue, and the struggle to retain humanity."
+    "description": "Choose a tabletop role-playing game."
   },
   "DiceRollersPage": {
     "metadataTitle": "Dice Rollers",
@@ -197,9 +246,6 @@
     "description": "Roll locally without joining a campaign. Guest rolls are not saved or shared.",
     "systemRollersTitle": "System Rollers",
     "systemRollersDescription": "Use a roller built for the rules and terminology of its game system.",
-    "available": "Available",
-    "vtmDescription": "Roll normal and Hunger dice for Vampire: The Masquerade Fifth Edition with optional Difficulty.",
-    "openVtmRoller": "Open VtM V5 Roller",
     "customPoolTitle": "Custom Dice Pool",
     "customPoolCardTitle": "Build a custom pool",
     "customPoolDescription": "Combine a Coin (d2), d4, d6, d8, d10, d12, d20, and d100 in one local, non-persistent roll.",
@@ -367,7 +413,8 @@
     "creating": "Creating...",
     "creatingStatus": "Creating the campaign. Please wait.",
     "createError": "Unable to create the campaign.",
-    "nameRequired": "Enter a campaign name."
+    "nameRequired": "Enter a campaign name.",
+    "gameSystemRequired": "Select an available game system."
   },
   "CampaignDetails": {
     "back": "Back to My Campaigns",

@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import CampaignCreator from "@/components/campaigns/campaign-creator";
 import { Link, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { GAME_SYSTEMS } from "@/lib/characters/game-systems";
+import { GAME_SYSTEM_CATALOGUE } from "@/lib/game-systems/catalogue";
 import { createClient } from "@/utils/supabase/server";
 
 type NewCampaignPageProps = {
@@ -32,6 +32,7 @@ export default async function NewCampaignPage({
 }: NewCampaignPageProps) {
   const { locale } = await params;
   const translations = await getTranslations("CampaignCreate");
+  const catalogueTranslations = await getTranslations("GameSystemCatalogue");
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
@@ -43,11 +44,13 @@ export default async function NewCampaignPage({
     });
   }
 
-  const gameSystems = Object.values(GAME_SYSTEMS)
-    .filter((system) => system.available)
-    .map((system) => ({
+  const gameSystems = GAME_SYSTEM_CATALOGUE.map((system) => ({
       id: system.id,
-      name: system.name,
+      name: catalogueTranslations(`systems.${system.translationKey}.name`),
+      description: catalogueTranslations(
+        `systems.${system.translationKey}.description`,
+      ),
+      status: system.capabilities.campaignCreation.status,
     }));
 
   return (

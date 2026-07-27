@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+
+import SystemCard from "@/components/game-systems/system-card";
 import { routing } from "@/i18n/routing";
-import { GAME_SYSTEMS } from "@/lib/characters/game-systems";
+import { GAME_SYSTEM_CATALOGUE } from "@/lib/game-systems/catalogue";
 
 type SelectGameSystemPageProps = {
   params: Promise<{
@@ -50,13 +51,10 @@ export default async function SelectGameSystemPage({
     namespace: "CharacterSystemSelection",
   });
 
-  const gameSystemsTranslations =
-    await getTranslations({
-      locale,
-      namespace: "GameSystems",
-    });
-
-  const gameSystems = Object.values(GAME_SYSTEMS);
+  const catalogueTranslations = await getTranslations({
+    locale,
+    namespace: "GameSystemCatalogue",
+  });
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl px-3 py-6 sm:px-6 lg:p-8">
@@ -69,39 +67,34 @@ export default async function SelectGameSystemPage({
       </p>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
-        {gameSystems.map((system) => (
-          <section
-            key={system.id}
-            className="flex flex-col rounded-lg border p-6"
-          >
-            <h2 className="text-2xl font-bold">
-              {system.name}
-            </h2>
+        {GAME_SYSTEM_CATALOGUE.map((system) => {
+          const capability = system.capabilities.characterCreation;
 
-            <p className="mt-3 flex-1">
-              {system.id === "vtm-v5"
-                ? gameSystemsTranslations(
-                    "vtmV5.description"
-                  )
-                : gameSystemsTranslations(
-                    "callOfCthulhu7e.description"
-                  )}
-            </p>
-
-            {system.available ? (
-              <Link
-                href={`/characters/new/${system.id}`}
-                className="mt-6 rounded bg-black px-5 py-3 text-center text-white"
-              >
-                {translations("create")}
-              </Link>
-            ) : (
-              <span className="mt-6 rounded bg-gray-200 px-5 py-3 text-center text-gray-600">
-                {translations("comingSoon")}
-              </span>
-            )}
-          </section>
-        ))}
+          return (
+            <SystemCard
+              key={system.id}
+              name={catalogueTranslations(
+                `systems.${system.translationKey}.name`,
+              )}
+              description={catalogueTranslations(
+                `systems.${system.translationKey}.description`,
+              )}
+              status={capability.status}
+              availableLabel={catalogueTranslations("available")}
+              plannedLabel={catalogueTranslations("planned")}
+              action={
+                capability.status === "available"
+                  ? {
+                      href: capability.route,
+                      label: catalogueTranslations(
+                        "actions.createCharacter",
+                      ),
+                    }
+                  : undefined
+              }
+            />
+          );
+        })}
       </div>
     </main>
   );

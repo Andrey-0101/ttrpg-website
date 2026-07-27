@@ -9,11 +9,19 @@ import {
   requestUnsavedChangesNavigation,
   useUnsavedChangesGuard,
 } from "@/lib/navigation/unsaved-changes";
+import {
+  getGameSystemCatalogueEntry,
+  hasAvailableGameSystemCapability,
+  isGameSystemCapabilityAvailable,
+  type GameSystemId,
+} from "@/lib/game-systems/catalogue";
 import { createClient } from "@/utils/supabase/client";
 
 type CampaignSystemOption = {
-  id: string;
+  id: GameSystemId;
   name: string;
+  description: string;
+  status: "available" | "planned";
 };
 
 type CampaignCreatorProps = {
@@ -31,9 +39,11 @@ export default function CampaignCreator({
   gameSystems,
 }: CampaignCreatorProps) {
   const translations = useTranslations("CampaignCreate");
+  const catalogueTranslations = useTranslations("GameSystemCatalogue");
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const router = useRouter();
-  const defaultGameSystem = gameSystems[0]?.id ?? "";
+  const defaultGameSystem =
+    gameSystems.find((system) => system.status === "available")?.id ?? "";
 
   const [name, setName] = useState("");
   const [gameSystem, setGameSystem] = useState(defaultGameSystem);
@@ -76,7 +86,18 @@ export default function CampaignCreator({
       return;
     }
 
-    if (createLockRef.current || !gameSystem) {
+    if (createLockRef.current) {
+      return;
+    }
+
+    if (
+      !gameSystem ||
+      !isGameSystemCapabilityAvailable(gameSystem, "campaignCreation")
+    ) {
+      setMessage({
+        kind: "error",
+        text: translations("gameSystemRequired"),
+      });
       return;
     }
 
@@ -105,11 +126,28 @@ export default function CampaignCreator({
       }
 
       const trimmedDescription = description.trim();
+      const validatedGameSystem = getGameSystemCatalogueEntry(gameSystem);
+
+      if (
+        !validatedGameSystem ||
+        !hasAvailableGameSystemCapability(
+          validatedGameSystem,
+          "campaignCreation",
+        )
+      ) {
+        setMessage({
+          kind: "error",
+          text: translations("gameSystemRequired"),
+        });
+        return;
+      }
+      const validatedGameSystemId = validatedGameSystem.id;
+
       const { data: campaign, error } = await supabase
         .from("campaigns")
         .insert({
           game_master_id: userData.user.id,
-          game_system: gameSystem,
+          game_system: validatedGameSystemId,
           name: trimmedName,
           description: trimmedDescription || null,
         })
@@ -160,22 +198,75 @@ export default function CampaignCreator({
           />
         </label>
 
-        <label className="font-medium">
-          {translations("gameSystem")}
-          <select
-            value={gameSystem}
-            onChange={(event) => setGameSystem(event.target.value)}
-            disabled={creating || gameSystems.length === 0}
-            className={fieldStyle}
-            required
-          >
-            {gameSystems.map((system) => (
-              <option key={system.id} value={system.id}>
-                {system.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <fieldset disabled={creating}>
+          <legend className="font-medium">{translations("gameSystem")}</legend>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            {gameSystems.map((system) => {
+              const isAvailable = system.status === "available";
+              const inputId = `campaign-system-${system.id}`;
+              const headingId = `${inputId}-heading`;
+              const actionId = `${inputId}-action`;
+
+              return (
+                <article
+                  key={system.id}
+                  className={`min-w-0 rounded-lg border p-4 ${
+                    isAvailable
+                      ? "border-neutral-500 bg-white"
+                      : "border-neutral-300 bg-neutral-100"
+                  }`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <h2
+                      id={headingId}
+                      className="min-w-0 break-words text-base font-bold"
+                    >
+                      {system.name}
+                    </h2>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        isAvailable
+                          ? "bg-emerald-100 text-emerald-900"
+                          : "bg-amber-100 text-amber-900"
+                      }`}
+                    >
+                      {catalogueTranslations(
+                        isAvailable ? "available" : "planned",
+                      )}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-neutral-700">
+                    {system.description}
+                  </p>
+
+                  {isAvailable && (
+                    <label
+                      htmlFor={inputId}
+                      className="mt-4 flex cursor-pointer items-center gap-2 rounded border border-neutral-400 px-3 py-2 font-medium outline-none hover:bg-neutral-100"
+                    >
+                      <input
+                        id={inputId}
+                        type="radio"
+                        name="gameSystem"
+                        value={system.id}
+                        checked={gameSystem === system.id}
+                        onChange={() => setGameSystem(system.id)}
+                        aria-labelledby={`${headingId} ${actionId}`}
+                        required
+                        className="h-4 w-4 accent-neutral-950 outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
+                      />
+                      <span id={actionId}>
+                        {catalogueTranslations(
+                          "actions.selectForCampaign",
+                        )}
+                      </span>
+                    </label>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <label className="font-medium">
           {translations("description")}
@@ -217,7 +308,11 @@ export default function CampaignCreator({
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="submit"
-          disabled={creating || !gameSystem}
+          disabled={
+            creating ||
+            !gameSystem ||
+            !isGameSystemCapabilityAvailable(gameSystem, "campaignCreation")
+          }
           className="rounded bg-neutral-950 px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {creating ? translations("creating") : translations("create")}

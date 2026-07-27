@@ -11,7 +11,7 @@ import CampaignMembersPanel from "@/components/campaigns/campaign-members-panel"
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import {
-  getGameSystemName,
+  getGameSystemTranslationKey,
   normalizeGameSystemId,
 } from "@/lib/characters/game-systems";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
@@ -335,6 +335,13 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   }
 
   const normalizedGameSystemId = normalizeGameSystemId(campaign.game_system);
+  const catalogueTranslations = await getTranslations("GameSystemCatalogue");
+  const gameSystemTranslationKey = getGameSystemTranslationKey(
+    campaign.game_system,
+  );
+  const gameSystemName = gameSystemTranslationKey
+    ? catalogueTranslations(`systems.${gameSystemTranslationKey}.name`)
+    : campaign.game_system;
   const createCharacterHref = normalizedGameSystemId
     ? `/characters/new/${normalizedGameSystemId}`
     : "/characters/new";
@@ -392,7 +399,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
               {translations("gameSystem")}
             </dt>
             <dd className="mt-1 break-words font-medium">
-              {getGameSystemName(campaign.game_system)}
+              {gameSystemName}
             </dd>
           </div>
 
