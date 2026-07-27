@@ -6,7 +6,7 @@ import CharacterSummaryCard from "@/components/characters/character-summary-card
 import { Link, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import {
-  getGameSystemName,
+  getGameSystemTranslationKey,
   normalizeGameSystemId,
 } from "@/lib/characters/game-systems";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
@@ -38,6 +38,7 @@ export default async function CharactersPage({
 }: CharactersPageProps) {
   const { locale } = await params;
   const translations = await getTranslations("Characters");
+  const catalogueTranslations = await getTranslations("GameSystemCatalogue");
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
@@ -78,10 +79,17 @@ export default async function CharactersPage({
             character.portrait_url,
           );
 
+          const translationKey = getGameSystemTranslationKey(
+            character.game_system,
+          );
+
           return {
             ...character,
             identity,
             portraitUrl,
+            gameSystemName: translationKey
+              ? catalogueTranslations(`systems.${translationKey}.name`)
+              : character.game_system,
           };
         }),
       );
@@ -132,7 +140,7 @@ export default async function CharactersPage({
               key={character.id}
               id={character.id}
               name={character.name}
-              gameSystemName={getGameSystemName(character.game_system)}
+              gameSystemName={character.gameSystemName}
               visibility={character.visibility}
               portraitPath={character.portrait_url}
               portraitUrl={character.portraitUrl}

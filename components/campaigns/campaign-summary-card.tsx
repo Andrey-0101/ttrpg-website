@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
-import { getGameSystemName } from "@/lib/characters/game-systems";
+import { getGameSystemTranslationKey } from "@/lib/characters/game-systems";
 
 type CampaignSummaryCardProps = {
   id: string;
@@ -21,6 +21,11 @@ export default async function CampaignSummaryCard({
   isGameMaster,
 }: CampaignSummaryCardProps) {
   const translations = await getTranslations("Campaigns");
+  const catalogueTranslations = await getTranslations("GameSystemCatalogue");
+  const gameSystemTranslationKey = getGameSystemTranslationKey(gameSystem);
+  const gameSystemName = gameSystemTranslationKey
+    ? catalogueTranslations(`systems.${gameSystemTranslationKey}.name`)
+    : gameSystem;
   const statusLabel =
     status === "completed"
       ? translations("status.completed")
@@ -56,7 +61,7 @@ export default async function CampaignSummaryCard({
             {translations("gameSystemLabel")}
           </p>
           <p className="mt-1 break-words font-medium">
-            {getGameSystemName(gameSystem)}
+            {gameSystemName}
           </p>
         </div>
 

@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/utils/supabase/client";
 import { useUnsavedChangesGuard } from "@/lib/navigation/unsaved-changes";
 import {
-  getGameSystemName,
+  getGameSystemTranslationKey,
   normalizeGameSystemId,
 } from "@/lib/characters/game-systems";
 import {
@@ -61,9 +61,15 @@ export default function CharacterEditor({
   const translations = useTranslations("CharacterEditor");
   const sheetTranslations = useTranslations("VtmCharacterSheet");
   const unsavedTranslations = useTranslations("UnsavedChanges");
+  const catalogueTranslations = useTranslations("GameSystemCatalogue");
 
   const normalizedSystemId = normalizeGameSystemId(character.game_system);
-  const gameSystemName = getGameSystemName(character.game_system);
+  const gameSystemTranslationKey = getGameSystemTranslationKey(
+    character.game_system,
+  );
+  const gameSystemName = gameSystemTranslationKey
+    ? catalogueTranslations(`systems.${gameSystemTranslationKey}.name`)
+    : character.game_system;
   const initialVisibility =
     character.visibility === "campaign" || character.visibility === "public"
       ? character.visibility

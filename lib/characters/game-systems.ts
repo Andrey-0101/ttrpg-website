@@ -1,35 +1,16 @@
-export const GAME_SYSTEMS = {
-  "vtm-v5": {
-    id: "vtm-v5",
-    name: "Vampire: The Masquerade (v5)",
-    description:
-      "A game of personal horror, political intrigue, and struggling with the Beast.",
-    available: true,
-    legacyValues: ["Vampire: The Masquerade V5"],
-    defaultSheetData: {
-      schemaVersion: 1,
-      clan: "",
-      hunger: 1,
-    },
-  },
+import {
+  GAME_SYSTEM_CATALOGUE,
+  GAME_SYSTEMS_BY_ID,
+  getGameSystemCatalogueEntry,
+  type GameSystemId,
+  type GameSystemTranslationKey,
+} from "../game-systems/catalogue";
 
-  "call-of-cthulhu-7e": {
-    id: "call-of-cthulhu-7e",
-    name: "Call of Cthulhu 7th Edition",
-    description:
-      "An investigative horror game about mysteries, dangerous knowledge, and the Cthulhu Mythos.",
-    available: false,
-    legacyValues: ["Call of Cthulhu"],
-    defaultSheetData: {
-      schemaVersion: 1,
-    },
-  },
-} as const;
-
-export type GameSystemId = keyof typeof GAME_SYSTEMS;
+export const GAME_SYSTEMS = GAME_SYSTEMS_BY_ID;
+export type { GameSystemId };
 
 export function getGameSystem(systemId: string) {
-  return GAME_SYSTEMS[systemId as GameSystemId] ?? null;
+  return getGameSystemCatalogueEntry(systemId);
 }
 
 export function normalizeGameSystemId(
@@ -39,13 +20,40 @@ export function normalizeGameSystemId(
     return value as GameSystemId;
   }
 
-  const matchedSystem = Object.values(GAME_SYSTEMS).find((system) =>
+  const matchedSystem = GAME_SYSTEM_CATALOGUE.find((system) =>
     system.legacyValues.some((legacyValue) => legacyValue === value)
   );
 
   return matchedSystem?.id ?? null;
 }
 
+export function getGameSystemTranslationKey(
+  value: string,
+): GameSystemTranslationKey | null {
+  const normalizedId = normalizeGameSystemId(value);
+
+  return normalizedId ? GAME_SYSTEMS[normalizedId].translationKey : null;
+}
+
+const LEGACY_FALLBACK_NAMES: Record<GameSystemId, string> = {
+  "vtm-v5": "Vampire: The Masquerade V5",
+  alien: "Alien",
+  "black-powder-and-brimstone": "Black Powder and Brimstone",
+  "call-of-cthulhu-7e": "Call of Cthulhu",
+  coriolis: "Coriolis",
+  "cyberpunk-red": "Cyberpunk RED",
+  "delta-green": "Delta Green",
+  "forbidden-lands": "Forbidden Lands",
+  ironsworn: "Ironsworn",
+  mothership: "Mothership",
+  paranoia: "Paranoia",
+  "traveller-mongoose": "Traveller (Mongoose Publishing)",
+};
+
+/**
+ * Non-localized compatibility helper. User interfaces should prefer
+ * getGameSystemTranslationKey with the GameSystemCatalogue messages.
+ */
 export function getGameSystemName(value: string) {
   const normalizedId = normalizeGameSystemId(value);
 
@@ -53,5 +61,5 @@ export function getGameSystemName(value: string) {
     return value;
   }
 
-  return GAME_SYSTEMS[normalizedId].name;
+  return LEGACY_FALLBACK_NAMES[normalizedId];
 }

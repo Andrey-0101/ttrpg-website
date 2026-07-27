@@ -10,7 +10,7 @@ import {
   useUnsavedChangesGuard,
 } from "@/lib/navigation/unsaved-changes";
 import { createClient } from "@/utils/supabase/client";
-import { GAME_SYSTEMS, type GameSystemId } from "@/lib/characters/game-systems";
+import type { AvailableCharacterCreationSystemId } from "@/lib/game-systems/catalogue";
 import {
   CHARACTER_PORTRAIT_BUCKET,
   createCharacterPortraitPath,
@@ -33,7 +33,8 @@ import {
 import VtmCharacterSheet from "./sheets/vtm-v5/vtm-character-sheet";
 
 type CharacterCreatorProps = {
-  systemId: GameSystemId;
+  systemId: AvailableCharacterCreationSystemId;
+  systemName: string;
 };
 
 type CharacterVisibility = VtmV5DraftVisibility;
@@ -43,12 +44,14 @@ type MutationMessage = {
   text: string;
 } | null;
 
-export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
+export default function CharacterCreator({
+  systemId,
+  systemName,
+}: CharacterCreatorProps) {
   const translations = useTranslations("CharacterForm");
   const sheetTranslations = useTranslations("VtmCharacterSheet");
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const router = useRouter();
-  const gameSystem = GAME_SYSTEMS[systemId];
 
   const draftStorageKey = useMemo(
     () => getNewCharacterDraftKey(systemId),
@@ -220,21 +223,20 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
         return;
       }
 
-      const sheetData =
-        systemId === "vtm-v5"
-          ? vtmSheetData
-          : {
-              schemaVersion: 1,
-            };
+      if (systemId !== "vtm-v5") {
+        setMessage({ kind: "error", text: translations("createError") });
+        return;
+      }
+      const validatedSystemId: AvailableCharacterCreationSystemId = systemId;
 
       const { data: newCharacter, error } = await supabase
         .from("characters")
         .insert({
           owner_id: userData.user.id,
           name,
-          game_system: systemId,
+          game_system: validatedSystemId,
           visibility,
-          sheet_data: sheetData,
+          sheet_data: vtmSheetData,
         })
         .select("id")
         .single();
@@ -332,7 +334,7 @@ export default function CharacterCreator({ systemId }: CharacterCreatorProps) {
               {translations("generalInformation")}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              {translations("gameSystem")}: <strong>{gameSystem.name}</strong>
+              {translations("gameSystem")}: <strong>{systemName}</strong>
             </p>
           </div>
         </div>

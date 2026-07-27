@@ -5,10 +5,8 @@ import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import CharacterCreator from "@/components/characters/character-creator";
-import {
-  getGameSystem,
-  type GameSystemId,
-} from "@/lib/characters/game-systems";
+import { getGameSystem } from "@/lib/characters/game-systems";
+import { hasAvailableGameSystemCapability } from "@/lib/game-systems/catalogue";
 
 type NewCharacterPageProps = {
   params: Promise<{
@@ -36,10 +34,17 @@ export async function generateMetadata({
     locale,
     namespace: "PageMetadata",
   });
+  const catalogueTranslations = await getTranslations({
+    locale,
+    namespace: "GameSystemCatalogue",
+  });
 
   const gameSystem = getGameSystem(systemId);
 
-  if (!gameSystem || !gameSystem.available) {
+  if (
+    !gameSystem ||
+    !hasAvailableGameSystemCapability(gameSystem, "characterCreation")
+  ) {
     return {
       title: translations("characterCreate"),
     };
@@ -49,7 +54,9 @@ export async function generateMetadata({
     title: translations(
       "characterCreateForSystem",
       {
-        system: gameSystem.name,
+        system: catalogueTranslations(
+          `systems.${gameSystem.translationKey}.name`,
+        ),
       }
     ),
   };
@@ -74,12 +81,22 @@ export default async function NewCharacterPage({
     locale,
     namespace: "CharacterNew",
   });
+  const catalogueTranslations = await getTranslations({
+    locale,
+    namespace: "GameSystemCatalogue",
+  });
 
   const gameSystem = getGameSystem(systemId);
 
-  if (!gameSystem || !gameSystem.available) {
+  if (
+    !gameSystem ||
+    !hasAvailableGameSystemCapability(gameSystem, "characterCreation")
+  ) {
     notFound();
   }
+  const gameSystemName = catalogueTranslations(
+    `systems.${gameSystem.translationKey}.name`,
+  );
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl px-3 py-6 sm:px-6 lg:p-8">
@@ -92,12 +109,13 @@ export default async function NewCharacterPage({
 
       <h1 className="mt-8 text-4xl font-bold">
         {translations("title", {
-          system: gameSystem.name,
+          system: gameSystemName,
         })}
       </h1>
 
       <CharacterCreator
-        systemId={systemId as GameSystemId}
+        systemId={gameSystem.id}
+        systemName={gameSystemName}
       />
     </main>
   );
