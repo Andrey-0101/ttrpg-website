@@ -10,7 +10,7 @@ Synchronized snapshot:
 
 ```text
 main
-a1c3a61381a2b7cddab9dd8fb620af56342209a9
+cb6a07f11669916c8af68d0f0c93033438c901ea
 ```
 
 ## Strategy
@@ -160,7 +160,7 @@ Two defects found during testing were fixed through separate migrations:
 - no staging environment;
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
-- no dice security model implemented yet;
+- no shared campaign dice security model implemented yet;
 - no video provider or token implementation yet.
 
 ## Level A requirements for Milestone 4
@@ -175,7 +175,7 @@ Even without persistence:
 - cover messy critical, bestial failure, critical, and failure cases;
 - use safe bounds to prevent accidental UI or performance abuse.
 
-### Shared campaign dice
+### Shared campaign dice — Phase 4D
 
 Required before persistence:
 
@@ -192,19 +192,37 @@ Required before persistence:
 - safe Realtime subscription scope;
 - rate-limit plan before external exposure.
 
-### Video
+### Standalone Video Rooms — Phase 4B
 
-Required before production video:
+Required before production standalone video:
 
-- managed-provider comparison and spike;
-- provider secret server-only;
-- server-issued short-lived token;
-- campaign membership check immediately before token issuance;
-- no permanent public room URL;
+- authenticated user;
+- context-specific standalone application access validation;
+- application authorization completed before provider token issuance;
+- managed-provider comparison and disposable two-to-three-user spike;
+- provider secrets server-only;
+- server-issued short-lived provider tokens;
+- no permanent anonymous room URL as an authorization mechanism;
 - token values excluded from logs;
-- removed Players cannot obtain new tokens;
-- reconnect and expiry behavior tested;
+- safe application errors without provider or secret leakage;
+- reconnect, expiry, denied-permission, provider-failure, desktop, mobile, and multi-user behavior tested;
 - provider privacy and data-processing review.
+
+The exact room schema, RLS, ownership, invitation, membership, expiry, retention, deletion, quota, and participant model remain open and must not be inferred from these requirements.
+
+### Campaign-integrated Video Rooms — Phase 4E
+
+Required in addition to the reusable video-core controls:
+
+- active campaign authorization immediately before token issuance;
+- campaign-derived access kept separate from standalone authorization;
+- removed or revoked participants cannot obtain new campaign-room tokens;
+- token lifetime limits continued access after authorization loss;
+- campaign completion, deletion, and any reopening behavior follow the approved Campaign Collaboration Contract;
+- GM, Player, removed Player, and Outsider tests;
+- no reuse of standalone invitations unless separately approved.
+
+Campaign room cardinality and completed-campaign video behavior remain unresolved.
 
 ## Level A requirements for later campaign content
 

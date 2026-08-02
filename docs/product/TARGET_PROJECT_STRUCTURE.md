@@ -1,7 +1,7 @@
 # TTRPG Hub — Target Project Folder Structure
 
 > This is the recommended target repository structure.
-> It combines the current application, the approved documentation set, the target site map, Campaigns, Game Room, Dice Roller, Video Rooms, and the future Call of Cthulhu 7e extension.
+> It combines the current application, the approved documentation set, the target site map, standalone Video Rooms, later Campaign Game Room integration, Dice Roller, and the future Call of Cthulhu 7e extension.
 >
 > Not every listed folder or file exists yet. Planned and deferred areas should be created only when their milestone begins.
 
@@ -9,6 +9,9 @@
 
 - `[CURRENT]` — already exists or has an implemented equivalent.
 - `[NEXT]` — expected in the next one or two milestones.
+- `[PHASE 4B]` — planned standalone Video Rooms work; not currently implemented.
+- `[PHASE 4D]` — planned shared campaign dice work.
+- `[PHASE 4E]` — planned campaign video integration work.
 - `[PLANNED]` — part of the approved target architecture.
 - `[PUBLIC]` — required mainly for Public Readiness.
 - `[COC]` — introduced during the Call of Cthulhu 7e milestone.
@@ -17,6 +20,8 @@
 ## Recommended target repository tree
 
 Status markers are directional. The exact implemented route tree is maintained in `SITE_STRUCTURE_CURRENT.md`.
+
+The approved standalone top-level target route is `/[locale]/video-rooms`. Likely supporting routes `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` are provisional; none is implemented. The target module areas are a reusable video core, a practical provider boundary, standalone authorization, and a separate later campaign-authorization adapter. Those are boundaries rather than prescribed exact filenames, schemas, or RLS policies.
 
 ## Target navigation decision
 
@@ -99,6 +104,13 @@ ttrpg-website/
 │   │   │       ├── loading.tsx                    [CURRENT]
 │   │   │       └── not-found.tsx                  [CURRENT]
 │   │   │
+│   │   ├── video-rooms/                            [PHASE 4B]
+│   │   │   ├── page.tsx                           [PHASE 4B]
+│   │   │   ├── new/                               [PHASE 4B, PROVISIONAL]
+│   │   │   │   └── page.tsx                       [PHASE 4B, PROVISIONAL]
+│   │   │   └── [id]/                              [PHASE 4B, PROVISIONAL]
+│   │   │       └── page.tsx                       [PHASE 4B, PROVISIONAL]
+│   │   │
 │   │   ├── campaigns/
 │   │   │   ├── page.tsx                           [CURRENT]
 │   │   │   ├── loading.tsx                        [CURRENT]
@@ -119,9 +131,9 @@ ttrpg-website/
 │   │   │       │       ├── loading.tsx            [CURRENT]
 │   │   │       │       └── not-found.tsx          [CURRENT]
 │   │   │       ├── dice/
-│   │   │       │   └── page.tsx                   [NEXT]
+│   │   │       │   └── page.tsx                   [PHASE 4D]
 │   │   │       ├── video/
-│   │   │       │   └── page.tsx                   [NEXT]
+│   │   │       │   └── page.tsx                   [PHASE 4E]
 │   │   │       ├── handouts/
 │   │   │       │   ├── page.tsx                   [PLANNED]
 │   │   │       │   └── [handoutId]/
@@ -177,9 +189,8 @@ ttrpg-website/
 │   │   ├── dice/
 │   │   │   └── roll/
 │   │   │       └── route.ts                       [PLANNED]
-│   │   ├── video/
-│   │   │   └── token/
-│   │   │       └── route.ts                       [PLANNED]
+│   │   ├── server-side provider-token issuance    [PHASE 4B, CONCEPTUAL]
+│   │   │                                           exact route and filename unresolved
 │   │   └── uploads/
 │   │       └── handouts/
 │   │           └── route.ts                       [OPTIONAL]
@@ -267,8 +278,8 @@ ttrpg-website/
 │   │   ├── campaign-members-panel.tsx              [CURRENT]
 │   │   ├── campaign-characters-panel.tsx           [CURRENT]
 │   │   ├── campaign-management-panel.tsx           [CURRENT]
-│   │   ├── campaign-dice-panel.tsx                 [NEXT]
-│   │   ├── campaign-video-room.tsx                 [NEXT]
+│   │   ├── campaign-dice-panel.tsx                 [PHASE 4D]
+│   │   ├── campaign-video-room.tsx                 [PHASE 4E]
 │   │   ├── handouts/
 │   │   │   ├── handout-list.tsx                    [PLANNED]
 │   │   │   ├── handout-card.tsx                    [PLANNED]
@@ -305,11 +316,11 @@ ttrpg-website/
 │   │   └── coc-7e-dice-roller.tsx                 [COC]
 │   │
 │   ├── video/
-│   │   ├── video-room.tsx                          [PLANNED]
-│   │   ├── video-controls.tsx                      [PLANNED]
-│   │   ├── participant-tile.tsx                    [PLANNED]
-│   │   ├── device-selector.tsx                     [PLANNED]
-│   │   └── connection-state.tsx                    [PLANNED]
+│   │   ├── video-room.tsx                          [PHASE 4B]
+│   │   ├── video-controls.tsx                      [PHASE 4B]
+│   │   ├── participant-tile.tsx                    [PHASE 4B]
+│   │   ├── device-selector.tsx                     [PHASE 4B]
+│   │   └── connection-state.tsx                    [PHASE 4B]
 │   │
 │   └── games/
 │       ├── game-card.tsx                           [CURRENT OR NEXT]
@@ -476,16 +487,16 @@ ttrpg-website/
 │   │   └── validation.ts                           [NEXT]
 │   │
 │   ├── dice/
-│   │   ├── types.ts                                [PLANNED]
-│   │   ├── random.ts                               [PLANNED]
-│   │   ├── execute-roll.ts                         [PLANNED]
-│   │   └── persistence.ts                          [PLANNED]
+│   │   ├── types.ts                                [PHASE 4D]
+│   │   ├── random.ts                               [PHASE 4D]
+│   │   ├── execute-roll.ts                         [PHASE 4D]
+│   │   └── persistence.ts                          [PHASE 4D]
 │   │
 │   ├── video/
-│   │   ├── provider.ts                             [PLANNED]
-│   │   ├── token.ts                                [PLANNED]
-│   │   ├── permissions.ts                          [PLANNED]
-│   │   └── room-mapping.ts                         [PLANNED]
+│   │   ├── provider boundary                       [PHASE 4B]
+│   │   ├── reusable video core                     [PHASE 4B]
+│   │   ├── standalone authorization                [PHASE 4B]
+│   │   └── campaign authorization                  [PHASE 4E]
 │   │
 │   ├── handouts/
 │   │   ├── storage.ts                              [PLANNED]
@@ -643,11 +654,11 @@ The documents already prepared should be placed as follows:
 
 Russian versions use the same location with `.ru.md`.
 
-## Recommended immediate repository scope
+## Recommended current repository scope
 
-Do not create the complete target tree now.
+Do not create the complete target tree now. Phase 4B may introduce only the standalone Video Rooms areas justified by the approved architecture, provider evidence, and implementation plan. Phase 4D campaign dice and Phase 4E campaign video remain later work.
 
-For the Architecture Baseline pull request, add only:
+The following initial Architecture Baseline documentation inventory is retained as historical placement context. It is not the current implementation scope:
 
 ```text
 README.md
@@ -703,7 +714,7 @@ docs/
     └── H004_CURRENT_HANDOFF.ru.md
 ```
 
-The application, Campaign, Dice, Video, Content, Tests, and Public Readiness folders should be introduced only as their corresponding milestones begin.
+Application, Campaign, Dice, Video, Content, Tests, and Public Readiness folders should be introduced only as their corresponding milestones begin. Do not create exact room persistence or authorization files until the open schema, RLS, ownership, invitation, retention, provider, and campaign-integration decisions are resolved.
 
 ## Important implementation rule
 

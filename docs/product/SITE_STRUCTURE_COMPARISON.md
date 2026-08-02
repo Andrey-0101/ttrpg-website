@@ -2,18 +2,18 @@
 
 ## Summary
 
-The current site is a bilingual private VtM character and campaign manager.
+The current site is a bilingual private VtM character and campaign manager with implemented public personal dice tools, saved Custom Dice Pool presets, private personal roll history, and a planned multi-system catalogue.
 
-The target site is a bilingual multi-system TTRPG hub with trusted dice tools, private video rooms, campaign content, complete game hubs, and later public-readiness support.
+The target site is a bilingual multi-system TTRPG hub with standalone Video Rooms, trusted campaign dice, later campaign-integrated video, private campaign content, complete game hubs, and public-readiness support.
 
 ## Structural comparison
 
 | Area | Current | Target |
 |---|---|---|
 | Home | Implemented localized landing | Expanded entry point and relevant calls to action |
-| Games catalogue | Basic | Multi-system catalogue |
-| VtM area | Basic game page | Complete Game Hub |
-| CoC area | Registered only | Complete later Game Hub and tools |
+| Games catalogue | Twelve-system catalogue; VtM V5 available, others planned | Multi-system catalogue with additional implemented systems over time |
+| VtM area | Basic game page and implemented personal roller | Complete Game Hub |
+| CoC area | Planned catalogue entry only | Complete later Game Hub and tools |
 | Authentication | Implemented | Recovery, security, and complete account lifecycle |
 | Dashboard | Implemented links to Campaigns and Characters | Personal cross-system overview |
 | Characters | Complete VtM owner workflow plus campaign read-only sharing | Multi-system characters and approved optional sharing |
@@ -22,8 +22,10 @@ The target site is a bilingual multi-system TTRPG hub with trusted dice tools, p
 | Members | GM/Player model, leave/remove | Retained and extended only by explicit decisions |
 | Campaign Characters | Link/unlink and shared read-only sheets | Retained across future campaign tools |
 | Campaign Management | Edit, complete, delete | Richer archive/settings only if approved |
-| Dice | Not implemented | Personal system roller and server-authoritative shared feed |
-| Video | Not implemented | Campaign-gated managed video room |
+| Personal dice | VtM roller, Custom Dice Pool, up to five presets, private personal history | Retained as non-authoritative personal tools |
+| Shared campaign dice | Not implemented | Phase 4D server-authoritative persisted feed after the Campaign Collaboration Contract |
+| Standalone Video Rooms | Not implemented; no route or navigation placeholder | Phase 4B authenticated top-level area independent of Campaigns |
+| Campaign video | Not implemented | Phase 4E campaign-authorized integration through the reusable video core |
 | Handouts | Not implemented | Private campaign library with visibility controls |
 | NPCs | Not implemented | Simple and optional full-sheet NPC support |
 | Sessions | Not implemented | First-class session records |
@@ -36,35 +38,18 @@ The target site is a bilingual multi-system TTRPG hub with trusted dice tools, p
 
 ## Completed transition
 
-The project has already moved:
-
-- from owner-only independent characters;
-- to campaign membership as a shared-access boundary;
-- to invitation, membership, lifecycle, and campaign character workflows.
+The project has moved from owner-only characters to campaign membership and read-only character sharing, and has completed personal VtM/Custom dice, personal persistence, and the cross-surface planned-system catalogue.
 
 ## Remaining transition
 
-The next architectural transition is:
+The next transition is from the current asynchronous application to standalone managed video, without campaign membership. Campaign collaboration is defined afterward; server-authoritative campaign dice and campaign-integrated video then reuse their own appropriate boundaries before the remaining campaign workspace is assembled.
 
-- from asynchronous campaign management;
-- to trusted system-specific dice execution;
-- to persisted realtime campaign dice;
-- to campaign-gated video;
-- to remaining campaign content;
-- then to public-readiness and additional systems.
+## Approved implementation order
 
-## Recommended implementation order
-
-1. Synchronize documentation after Campaign Foundation.
-2. Accept the VtM dice result contract.
-3. Build a pure personal VtM dice engine and roller.
-4. Add server-authoritative persisted campaign dice.
-5. Add a scoped realtime campaign feed.
-6. Compare managed video providers and run a disposable spike.
-7. Add the minimal campaign video room.
-8. Add Handouts, NPCs, Sessions, and Notes.
-9. Run a real friend-group campaign session.
-10. Complete visual identity.
-11. Expand the VtM Game Hub.
-12. Complete Public Readiness.
-13. Add Call of Cthulhu 7e.
+1. Phase 4A — VtM Personal Dice and Personal Persistence — complete.
+2. Phase 4B — define standalone Video Rooms architecture/security, compare providers, run a disposable spike, implement, and production-test.
+3. Phase 4C — define the Campaign Collaboration Contract.
+4. Phase 4D — add server-authoritative persisted shared campaign dice and scoped Realtime.
+5. Phase 4E — integrate campaign video through the reusable core and campaign-derived authorization.
+6. Phase 4F — assemble the campaign workspace.
+7. Continue with Milestones 5–9 in their approved order.

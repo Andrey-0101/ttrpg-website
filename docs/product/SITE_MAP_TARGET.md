@@ -3,6 +3,7 @@
 
 > Editable schematic site map in Mermaid and plain-text tree formats.
 > The diagrams can be edited directly in Markdown and rendered by GitHub and other Mermaid-compatible tools.
+> This is an approved target, not a map of implemented routes. The current implemented map remains `SITE_MAP.md`.
 
 ---
 
@@ -32,7 +33,7 @@ flowchart TD
 
 - Unregistered users can access **Games** and, if approved, the standalone **Dice Roller**.
 - Registered users can also access **Campaigns**, **Characters**, **Video Rooms**, and **Account**.
-- Campaign-specific video and dice tools are available inside the campaign **Game Room**.
+- Standalone Video Rooms are independent from Campaigns. Campaign-specific video and dice tools are later capabilities inside the campaign **Game Room**.
 
 ---
 
@@ -299,15 +300,18 @@ flowchart TD
 flowchart TD
     VIDEO_ROOMS["Video Rooms"]
 
-    VIDEO_ROOMS --> AVAILABLE["Available Rooms"]
-    AVAILABLE --> ROOM_01["Campaign 01 — Game Room"]
-    AVAILABLE --> ROOM_02["Campaign 02 — Game Room"]
-    AVAILABLE --> ROOM_N["Campaign N — Game Room"]
+    VIDEO_ROOMS --> CREATE["Create Room — Provisional"]
+    VIDEO_ROOMS --> AVAILABLE["Available Standalone Rooms"]
+    AVAILABLE --> ROOM_01["Standalone Room 01"]
+    AVAILABLE --> ROOM_02["Standalone Room 02"]
+    AVAILABLE --> ROOM_N["Standalone Room N"]
 ```
 
 ### Video Rooms principle
 
-The top-level Video Rooms section is a shortcut to Game Rooms that the registered user can currently access. The actual video room belongs to a campaign Game Room.
+The top-level Video Rooms section is an authenticated standalone area and does not depend on campaign membership. The approved target route is `/[locale]/video-rooms`; likely `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` supporting routes remain provisional. None is implemented, and there is no current navigation entry or placeholder.
+
+Standalone and later campaign video share a reusable video core but use separate authorization adapters. Campaign video remains inside the later campaign Game Room and requires campaign-derived authorization.
 
 ---
 
@@ -438,7 +442,8 @@ Home Page
 │   ├── Call of Cthulhu 7e
 │   └── Build a Dice Pool
 ├── Video Rooms
-│   └── Available Game Rooms
+│   ├── Create Standalone Room (provisional)
+│   └── Available Standalone Rooms
 ├── Account
 │   ├── Guest
 │   │   ├── Log In
@@ -478,8 +483,9 @@ Home Page
 - The diagram intentionally does not include a Dashboard.
 - Player invitations are part of Create Campaign.
 - Members contain only Game Master and Players.
-- Campaign dice and video are inside the Game Room.
+- Standalone Video Rooms are independent from Campaigns.
+- Campaign dice and campaign video are later capabilities inside the Game Room.
 - View and Edit are inside My Characters.
 - Character Settings is not included.
 - Unregistered users see only Games, Account authentication actions, and optionally the standalone Dice Roller.
-- The top-level Video Rooms section is only a shortcut to available campaign Game Rooms.
+- The planned top-level Video Rooms section owns standalone rooms; its supporting route names remain provisional.

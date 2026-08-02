@@ -19,7 +19,7 @@ This document defines the accepted target information architecture.
 It distinguishes:
 
 - implemented current routes;
-- the next Realtime Tools routes;
+- approved target routes, including provisional standalone Video Rooms supporting routes;
 - later Friend Campaign Alpha and Public Readiness routes.
 
 It does not claim that every target route already exists.
@@ -45,6 +45,7 @@ It does not claim that every target route already exists.
 - Dashboard
 - Characters
 - Campaigns
+- Video Rooms
 - Profile and Account
 - Help and Legal
 - Technical routes
@@ -78,6 +79,16 @@ Private collaboration for one campaign:
 - notes;
 - settings.
 
+### Standalone Video Rooms
+
+Authenticated rooms outside Campaigns:
+
+- no campaign membership dependency;
+- top-level target area;
+- reusable video core shared with later campaign video;
+- separate standalone application authorization;
+- supporting route names remain provisional.
+
 ### Dashboard
 
 The user's own overview across:
@@ -105,6 +116,7 @@ The user's own overview across:
 - Dashboard
 - Campaigns
 - Characters
+- Video Rooms, after it is implemented
 - Profile/Account
 - Language
 - Log out
@@ -243,12 +255,29 @@ Current:
 /[locale]/campaigns/[id]/characters/[characterId]
 ```
 
-Next Realtime Tools routes:
+Later campaign collaboration routes:
 
 ```text
 /[locale]/campaigns/[id]/dice
 /[locale]/campaigns/[id]/video
 ```
+
+### Standalone Video Rooms
+
+Approved target direction:
+
+```text
+/[locale]/video-rooms
+```
+
+Likely supporting routes, with names still provisional:
+
+```text
+/[locale]/video-rooms/new
+/[locale]/video-rooms/[id]
+```
+
+These routes are planned, not implemented. There is no current navigation entry or placeholder.
 
 Later campaign-content routes:
 
@@ -297,6 +326,21 @@ Do not create separate routes only to mirror a conceptual navigation section. Cr
 - Realtime feed;
 - optional accessible character context.
 
+This is Phase 4D, after the Phase 4C Campaign Collaboration Contract.
+
+### Standalone video
+
+```text
+/[locale]/video-rooms
+```
+
+- authenticated application access independent of Campaigns;
+- application authorization before a short-lived provider token is issued;
+- managed WebRTC provider behind a practical provider boundary;
+- reusable video core;
+- supporting routes remain provisional;
+- provider and room data model remain unresolved.
+
 ### Campaign video
 
 ```text
@@ -307,6 +351,8 @@ Do not create separate routes only to mirror a conceptual navigation section. Cr
 - server-issued short-lived provider token;
 - managed WebRTC provider;
 - no permanent public room URL.
+
+Campaign video is Phase 4E and reuses the video core through a separate campaign-derived authorization layer.
 
 ## Session structure
 
@@ -324,7 +370,7 @@ A session may aggregate:
 - notes;
 - optional video room/session mapping.
 
-Campaign-level dice and video should be implemented first. Session filtering can be added later.
+Standalone Video Rooms come first in the approved implementation sequence. Campaign-level dice and video follow the Campaign Collaboration Contract; session filtering can be added later.
 
 ## Domain ownership
 
@@ -372,6 +418,7 @@ Campaign-level dice and video should be implemented first. Session filtering can
 | Campaign workspace | campaign participant |
 | Campaign invitations | Game Master |
 | Campaign settings/lifecycle | Game Master |
+| Standalone Video Rooms | authenticated user with validated standalone application access |
 | Campaign dice feed | campaign participant according to approved roll policy |
 | Campaign video token | active campaign participant |
 | GM-private notes | Game Master only |
@@ -394,11 +441,12 @@ RLS, server-side checks, and Storage policies remain authoritative.
 
 ### Active VtM Realtime Tools
 
-- personal VtM dice;
-- campaign dice;
-- Realtime feed;
-- managed-video spike;
-- minimal campaign video room.
+- Phase 4A personal VtM dice and personal persistence — complete;
+- Phase 4B standalone Video Rooms — next approved phase;
+- Phase 4C Campaign Collaboration Contract — planned;
+- Phase 4D shared campaign dice and Realtime feed — planned;
+- Phase 4E campaign video integration — planned;
+- Phase 4F campaign workspace integration — planned.
 
 ### Friend Campaign Alpha
 

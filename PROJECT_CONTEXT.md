@@ -7,34 +7,22 @@
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
 | Document status | Current synchronized project context |
-| Last reviewed | 2026-08-01 |
-| Verified production catalogue baseline | `main` at `22736bf697a8345e19e92626a8f441f35db4b3c7` |
-| Release-candidate verification checkpoint | `chore/canonical-domain-docs-sync` at the 2026-08-01 uncommitted working tree, based on `22736bf697a8345e19e92626a8f441f35db4b3c7` |
+| Last reviewed | 2026-08-02 |
+| Verified production baseline | `main` at `cb6a07f11669916c8af68d0f0c93033438c901ea` |
+| Verified release | PR #26 merged, deployed, and production-verified; 169 automated tests; 36/36 static pages |
 | Canonical production domain | `https://ttrpg.fans` |
 | Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
 | Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Canonical-domain implementation and documentation synchronization before Phase 4B |
+| Current delivery stage | Phase 4B — Standalone Video Rooms architecture and security contract |
 | Current audience | Small invited group of friends |
 
 ## Release-state boundaries
 
-### Deployed production catalogue baseline
+### Verified production baseline
 
-The deployed and production-verified catalogue baseline is `main` at `22736bf697a8345e19e92626a8f441f35db4b3c7`. That release passed 156 dice/catalogue tests.
+The current deployed and production-verified baseline is `main` at `cb6a07f11669916c8af68d0f0c93033438c901ea`. PR #26 is merged and production-verified. The release passed 169 automated tests and generated 36/36 static pages.
 
-### Release-candidate verification checkpoint
-
-At the 2026-08-01 checkpoint, `chore/canonical-domain-docs-sync` is based on `22736bf697a8345e19e92626a8f441f35db4b3c7`. Its canonical-domain code and documentation changes remain uncommitted and are not merged, deployed, or production-verified. Local verification passed:
-
-- 156 dice/catalogue tests;
-- 13 site-URL tests;
-- 169 total automated tests;
-- the production build;
-- 36/36 generated static pages.
-
-### Future production state
-
-The release-candidate changes become production state only after the canonical-domain/documentation slice is merged, deployed, and production-verified.
+The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, and the planned game-system catalogue are complete. Standalone Video Rooms, campaign dice, and campaign video integration are not implemented, and no managed WebRTC provider has been selected. H007 remains the latest completed handoff; H008 does not exist.
 
 ## Purpose
 
@@ -87,7 +75,7 @@ Vercel `*.vercel.app` URLs remain technical deployment addresses. Application-ge
 
 ### External production configuration
 
-The production Vercel and hosted Supabase Auth settings were completed manually outside the repository and manually verified before this release-candidate checkpoint.
+The production Vercel and hosted Supabase Auth settings were completed manually outside the repository and manually verified for the merged and production-verified PR #26 release.
 
 Vercel state:
 
@@ -104,7 +92,7 @@ Hosted Supabase Auth state:
 - the canonical production callback is allowed;
 - arbitrary Vercel Preview authentication is not currently enabled.
 
-This hosted configuration is not implemented by `chore/canonical-domain-docs-sync` and contains no repository-managed secret values.
+This hosted configuration is external to the repository and contains no repository-managed secret values.
 
 ### Locales
 
@@ -300,18 +288,20 @@ Owns:
 - campaign lifecycle;
 - RLS-backed access checks and read-only character sharing.
 
-### Realtime tools
+### Realtime and collaboration tools
 
-Milestone 4A personal dice is implemented, including the deterministic VtM evaluator, public VtM and Custom rollers, saved Custom presets, and private personal history. No campaign-authoritative Realtime dice feed or video room is implemented yet.
+Milestone 4A personal dice is implemented, including the deterministic VtM evaluator, public VtM and Custom rollers, saved Custom presets, and private personal history. No standalone Video Room, campaign-authoritative Realtime dice feed, or campaign video integration is implemented yet.
 
-This domain will own:
+The reusable video core will own provider integration and media-room behavior. Standalone application authorization will be its first access adapter and must not depend on campaigns. Later campaign video must add a separate campaign-derived authorization adapter.
+
+The broader collaboration area will own:
 
 - VtM dice execution and roll feed;
 - presence;
 - video-room access;
 - session-scoped realtime features.
 
-Shared campaign dice and video must depend on verified campaign membership.
+Shared campaign dice and campaign-integrated video must depend on verified campaign membership. Standalone Video Rooms form a separate access domain.
 
 ### Campaign content
 
@@ -347,6 +337,6 @@ Public or generally accessible game-system information must remain separate from
 
 Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal dice persistence, and the planned game-system catalogue are complete.
 
-The canonical-domain and documentation-sync slice is the current release gate. Phase 4B shared campaign dice starts only after this slice is merged, deployed, and production-verified.
+Phase 4B Standalone Video Rooms is the next approved development phase. Its internal order is: architecture and security contract; managed-provider comparison; disposable two-to-three-user spike; permanent standalone implementation; then multi-user, desktop, mobile, reconnect, permission, failure, and production testing.
 
-Phase 4B requires a reviewed server-authoritative execution, persistence, RLS, Realtime, retention, and completed-campaign contract. Print/PDF, final decoration, broad automated testing, and public-readiness hardening remain deferred.
+Phase 4C defines the Campaign Collaboration Contract. Phase 4D then implements server-authoritative shared campaign dice, Phase 4E integrates campaign video through the reusable video core, and Phase 4F assembles the campaign workspace. Exact room schema, RLS, ownership, invitation, retention, provider, and campaign-video decisions remain open. Print/PDF, final decoration, broad public-readiness hardening, and Call of Cthulhu implementation remain deferred.

@@ -4,8 +4,8 @@
 
 This document contains:
 
-1. the implemented site map at `main` commit `a1c3a61381a2b7cddab9dd8fb620af56342209a9`;
-2. the next-stage map for VtM dice and video;
+1. the implemented site map at `main` commit `cb6a07f11669916c8af68d0f0c93033438c901ea`;
+2. the next-stage standalone Video Rooms planning map;
 3. the later campaign-workspace direction.
 
 The longer-term planning reference remains `SITE_MAP_TARGET.md`.
@@ -113,48 +113,42 @@ Implemented public routes:
 /[locale]/games/vampire-the-masquerade/tools/dice
 ```
 
-Recommended shared campaign route:
-
-```text
-/[locale]/campaigns/[id]/dice
-```
-
 ```mermaid
 flowchart TD
     HUB["Dice Rollers Hub"] --> PERSONAL_DICE["Personal VtM Dice"]
     VTM["VtM Game Area"] --> PERSONAL_DICE
     HUB --> CUSTOM["Custom Dice Pool"]
-    CAMPAIGN["Campaign Overview"] --> CAMPAIGN_DICE["Shared Campaign Dice"]
 
     PERSONAL_DICE --> LOCAL_RESULT["Structured Local Result"]
     CUSTOM --> CUSTOM_RESULT["Grouped Local Results"]
-
-    CAMPAIGN_DICE --> SERVER_ROLL["Server-Authoritative Roll"]
-    SERVER_ROLL --> DATABASE["Persisted dice_rolls"]
-    DATABASE --> REALTIME["Campaign Realtime Feed"]
+    LOCAL_RESULT --> PERSONAL_HISTORY["Private Personal History"]
+    CUSTOM_RESULT --> PRESETS["Saved Custom Presets"]
+    CUSTOM_RESULT --> PERSONAL_HISTORY
 ```
 
-Personal VtM dice and the Custom Dice Pool are implemented without persistence. The custom pool includes Coin (d2), d4, d6, d8, d10, d12, d20, and d100. Saved presets remain planned and will preserve Coin and numeric dice quantities; personal history remains planned and must stay separate from future campaign history.
+Personal VtM dice, the Custom Dice Pool, saved Custom presets, and private personal history are implemented. The custom pool includes Coin (d2), d4, d6, d8, d10, d12, d20, and d100. Personal history is non-authoritative and remains separate from future campaign history.
 
-The same deterministic VtM evaluator should later be reused by the server-authoritative campaign roll path.
+The same deterministic VtM evaluator should later be reused by the Phase 4D server-authoritative campaign roll path.
 
-## 5. Video map after the dice phases
+## 5. Next-stage standalone Video Rooms map
 
-Recommended campaign route:
+Approved top-level target route:
 
 ```text
-/[locale]/campaigns/[id]/video
+/[locale]/video-rooms
 ```
+
+Supporting routes such as `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` are provisional. No displayed Video Rooms route or navigation node is implemented today.
 
 ```mermaid
 flowchart TD
-    CAMPAIGN["Campaign Overview"] --> VIDEO["Campaign Video"]
-    VIDEO --> AUTH["Server Membership Check"]
-    AUTH --> TOKEN["Short-Lived Provider Token"]
-    TOKEN --> ROOM["Managed Video Room"]
+    AUTH_USER["Authenticated User"] --> STANDALONE_AUTH["Standalone Application Authorization"]
+    STANDALONE_AUTH --> TOKEN["Server-Issued Short-Lived Token"]
+    TOKEN --> CORE["Reusable Video Core"]
+    CORE --> PROVIDER["Managed WebRTC Provider"]
 ```
 
-There should be no permanent public room link.
+Standalone authorization does not depend on Campaigns. Provider secrets remain server-only, and application authorization happens before token issuance.
 
 ADR-009 remains Proposed until a provider comparison and disposable spike are complete.
 
@@ -178,6 +172,8 @@ flowchart TD
 
 Only implemented areas should appear as active navigation.
 
+Campaign video is a later Phase 4E capability. It reuses the video core through campaign-derived authorization and remains distinct from standalone Video Rooms.
+
 ## 7. Current versus planned
 
 Implemented now:
@@ -199,13 +195,14 @@ Implemented now:
 
 Planned next:
 
-- saved presets and personal history after persistence review;
-- shared campaign dice;
-- realtime campaign dice feed;
-- campaign video.
+- Phase 4B standalone Video Rooms architecture/security, provider comparison, disposable spike, implementation, and testing.
 
 Planned later:
 
+- Phase 4C Campaign Collaboration Contract;
+- Phase 4D shared campaign dice and Realtime feed;
+- Phase 4E campaign video integration;
+- Phase 4F campaign workspace integration;
 - handouts;
 - NPCs;
 - sessions;

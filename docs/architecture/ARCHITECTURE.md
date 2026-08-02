@@ -4,19 +4,21 @@
 
 Current architecture for the implemented VtM character and Campaign Foundation application, with Milestone 4 VtM Realtime Tools active.
 
-Verified production catalogue baseline:
+Verified production baseline:
 
 ```text
 main
-22736bf697a8345e19e92626a8f441f35db4b3c7
+cb6a07f11669916c8af68d0f0c93033438c901ea
 ```
+
+PR #26 is merged, deployed, and production-verified. The verified release passed 169 automated tests and generated 36/36 static pages.
 
 ## Architectural goals
 
 1. Deliver practical value to a small private group before optimizing for unrestricted public use.
 2. Keep game-system-specific behavior isolated from common platform behavior.
 3. Preserve character data through explicit schema versions and normalizers.
-4. Use campaign membership as the shared authorization boundary.
+4. Use campaign membership as the authorization boundary for campaign-owned collaboration, while keeping standalone Video Rooms in a separate access domain.
 5. Keep decorative design separate from business logic and persisted data.
 6. Avoid unnecessary universal abstractions until a second game system exposes real common requirements.
 7. Keep server and database authorization authoritative even when the UI hides or disables controls.
@@ -53,10 +55,14 @@ Future external service boundary:
 ```text
 Next.js server
   |
-  +-- managed video provider
+  +-- context-specific application authorization
+  +-- short-lived token issuance
+  +-- practical provider boundary
+        |
+        +-- managed video provider
 ```
 
-The video provider is not selected. ADR-009 remains Proposed pending comparison and a technical spike.
+The reusable video core must remain separate from authorization adapters. Phase 4B uses standalone application authorization that does not depend on Campaign Foundation; Phase 4E later adds campaign-derived authorization. Provider secrets remain server-only. The video provider is not selected, and ADR-009 remains Proposed pending comparison and a disposable technical spike.
 
 ## Route architecture
 
@@ -101,6 +107,16 @@ Technical route:
 The confirmation callback remains outside locale-prefixed routes. The intended locale and return destination are carried explicitly by the authentication flow.
 
 Route-level `loading.tsx` and `not-found.tsx` files provide safe framework states for character and campaign routes.
+
+Approved planned standalone Video Rooms route direction:
+
+```text
+/[locale]/video-rooms
+/[locale]/video-rooms/new       (provisional)
+/[locale]/video-rooms/[id]      (provisional)
+```
+
+These routes and a possible authenticated navigation entry are planned, not implemented.
 
 ## Middleware composition
 
@@ -286,7 +302,16 @@ Video room access
 Connection state
 ```
 
-Shared realtime tools must reuse campaign membership. They must not establish a second invitation or access model.
+Video capabilities are split into:
+
+```text
+Reusable video core
+Standalone authorization adapter (Phase 4B)
+Campaign-derived authorization adapter (Phase 4E)
+Practical managed-provider boundary
+```
+
+Standalone Video Rooms must not depend on campaign membership. Shared campaign dice and campaign-integrated video must reuse campaign authorization and must not establish a competing campaign invitation or access model. Exact standalone room schema, RLS, ownership, invitation, retention, and deletion behavior remain unresolved.
 
 ### Campaign-content domain
 
@@ -439,19 +464,21 @@ Completed:
 4. VtM personal dice and personal persistence;
 5. planned game-system catalogue.
 
-Next major development phase only after the canonical-domain/documentation slice is merged, deployed, and production-verified:
+Approved Milestone 4 sequence:
 
-6. persisted shared campaign dice;
-7. managed-video comparison and spike;
-8. minimal campaign video room.
+6. Phase 4B standalone Video Rooms architecture/security, provider comparison, disposable spike, permanent implementation, and production testing;
+7. Phase 4C Campaign Collaboration Contract;
+8. Phase 4D persisted shared campaign dice;
+9. Phase 4E campaign video integration through the reusable core;
+10. Phase 4F campaign workspace integration.
 
 Later:
 
-9. remaining friend campaign workspace;
-10. visual identity;
-11. VtM Game Hub;
-12. Public Readiness;
-13. Call of Cthulhu 7e.
+11. Milestone 5 Friend Campaign Alpha;
+12. visual identity;
+13. VtM Game Hub;
+14. Public Readiness;
+15. Call of Cthulhu 7e.
 
 ## Explicit non-goals for the current phase
 

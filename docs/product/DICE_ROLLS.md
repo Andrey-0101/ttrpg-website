@@ -2,9 +2,11 @@
 
 ## Status
 
-**Personal VtM roller and Custom Dice Pool implemented; shared campaign dice planned.**
+**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history implemented; Phase 4D shared campaign dice planned.**
 
-The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. The `dice_rolls` table and shared campaign dice are not implemented.
+The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and shared campaign dice are not implemented.
+
+Shared campaign dice are Phase 4D, after Phase 4C defines the Campaign Collaboration Contract. Phase 4B Standalone Video Rooms is the next approved development phase.
 
 Initial system:
 
@@ -14,12 +16,11 @@ Vampire: The Masquerade Fifth Edition
 
 Implementation order:
 
-1. define and review the VtM result contract;
-2. implement a pure deterministic evaluator;
-3. add random generation and personal roller UI;
-4. verify EN/RU and mobile;
-5. design persisted campaign rolls;
-6. add server-authoritative execution and Realtime feed.
+1. complete the reviewed VtM result contract, pure deterministic evaluator, client-side random generation, personal roller UI, EN/RU, and mobile support in Phase 4A;
+2. complete reviewed owner-scoped personal persistence, saved Custom Dice Pool presets, and private personal history in Phase 4A;
+3. deliver Phase 4B Standalone Video Rooms;
+4. define the Phase 4C Campaign Collaboration Contract;
+5. design and implement Phase 4D Shared Campaign Dice with server-authoritative execution and a Realtime feed.
 
 ## Product goals
 
@@ -210,11 +211,13 @@ Implemented:
 /[locale]/dice-rollers/custom
 ```
 
-Personal slice:
+Personal dice behavior:
 
-- public access consistent with the existing VtM game landing page;
-- local `crypto.getRandomValues` generation with rejection sampling;
-- no database row;
+- public rolling without authentication, consistent with the existing VtM game landing page;
+- client-side `crypto.getRandomValues` generation with rejection sampling;
+- client-side deterministic evaluation and non-authoritative results;
+- non-persistent guest rolls;
+- best-effort private personal-history recording for registered users;
 - no campaign required;
 - no Realtime subscription;
 - mobile-friendly controls;
@@ -222,7 +225,7 @@ Personal slice:
 - official symbolic dice display by default with a page-lifetime Numbers option;
 - repeat roll.
 
-A client-generated result is acceptable only for this non-shared, non-persisted mode.
+Personal results remain client-generated and non-authoritative even when best-effort personal persistence records them for a registered user. Personal history is owner-scoped, is not campaign evidence, and must not be reused as the Phase 4D campaign execution path.
 
 The official symbol provenance and numeric display mapping are recorded in `docs/architecture/WORLD_OF_DARKNESS_ASSETS.md`. Display selection never changes the evaluator result or reruns random generation.
 
@@ -234,28 +237,30 @@ Each item is generated independently in the browser with `crypto.getRandomValues
 
 The UI:
 
-- is public to guests and authenticated users;
+- allows guests and registered users to roll without requiring authentication;
 - groups Coin outcomes separately from numeric dice and reports Heads/Tails counts;
 - reports total rolled items and a numeric-dice total that excludes coins and is hidden for coin-only pools;
 - supports direct numeric input and keyboard-accessible increment/decrement controls;
 - keeps the most recent result as a snapshot when form quantities change;
 - replaces the result only after another valid Roll action;
 - clears configuration and results explicitly;
-- has no persistence, Supabase, campaign, Realtime, authentication, or named-game interpretation dependency.
+- keeps client-side generation independent from campaigns, Realtime, and named-game interpretation;
+- adds authentication only for saved presets and private personal history;
+- preserves the visible local result when best-effort persistence is unavailable or fails.
 
-## Approved personal-tool follow-up
+## Implemented personal-tool persistence
 
-Not implemented in this phase:
-
-- guest and authenticated access to public system rollers and the Custom Dice Pool is already implemented;
-- guest and authenticated custom rolls remain non-persistent;
-- registered users may eventually save up to 5 custom dice presets;
-- saved custom presets will preserve the selected Coin quantity as well as every numeric dice quantity;
+- guest and authenticated access to public system rollers and the Custom Dice Pool is implemented;
+- guest rolls remain non-persistent;
+- registered users may save up to 5 custom dice presets;
+- saved custom presets preserve the selected Coin quantity as well as every numeric dice quantity;
 - registered-user personal history retains the current roll plus 10 previous rolls;
-- personal roll history remains separate from future campaign roll history;
-- persistence requires a separate reviewed schema, migration, RLS, and UI phase.
+- personal persistence is owner-scoped and best-effort rather than guaranteed for every roll;
+- personal roll history remains private, non-authoritative, and separate from future campaign roll history;
+- personal records are not campaign evidence and must not be reused as the Phase 4D campaign execution path;
+- persistence was delivered through its reviewed schema, migration, RLS, and UI phase.
 
-## Persisted campaign roll phase
+## Phase 4D — Persisted shared campaign rolls
 
 Recommended route:
 
@@ -398,7 +403,8 @@ Use fixed die arrays for:
 4. Result text is understandable.
 5. EN/RU works.
 6. Mobile controls work.
-7. No persistence is implied.
+7. Guest rolls remain non-persistent, while registered-user persistence is private, owner-scoped, and best-effort.
+8. Personal results remain non-authoritative and are never treated as campaign evidence or the Phase 4D campaign execution path.
 
 ### Shared campaign dice
 

@@ -7,15 +7,15 @@
 | Project | TTRPG Hub |
 | Document type | Current information architecture |
 | Status | Implemented snapshot |
-| Repository snapshot | `main` at `a1c3a61381a2b7cddab9dd8fb620af56342209a9` |
+| Repository snapshot | `main` at `cb6a07f11669916c8af68d0f0c93033438c901ea` |
 | Current milestone | Milestone 4 — VtM Realtime Tools |
-| Completed milestones | Architecture Baseline, Character Friend Alpha, Campaign Foundation |
+| Completed milestones | Architecture Baseline, Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence |
 
 ## Purpose
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented custom dice, persisted dice, video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu routes as current.
+It does not describe unimplemented shared campaign dice, standalone or campaign video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu routes as current.
 
 ## Current primary navigation
 
@@ -46,7 +46,9 @@ The Dashboard is an accepted implemented personal overview route. It currently l
 │   ├── dashboard
 │   │   └── page.tsx
 │   ├── dice-rollers
-│   │   └── page.tsx
+│   │   ├── page.tsx
+│   │   └── custom
+│   │       └── page.tsx
 │   ├── games
 │   │   ├── page.tsx
 │   │   └── vampire-the-masquerade
@@ -127,10 +129,11 @@ The full VtM Game Hub remains planned.
 
 ```text
 /[locale]/dice-rollers
+/[locale]/dice-rollers/custom
 /[locale]/games/vampire-the-masquerade/tools/dice
 ```
 
-The public hub lists VtM V5 as available and marks the future Custom Dice Pool as planned without linking to an unfinished route. Guest rolls are local and non-persistent.
+The public hub links to the implemented VtM V5 roller and system-neutral Custom Dice Pool. Registered users may save up to five Custom Dice Pool presets and retain private personal VtM and Custom roll history; guest rolls remain local and non-persistent. Personal history is non-authoritative and separate from future campaign history.
 
 ### Authentication
 
@@ -199,7 +202,9 @@ Implemented:
 - optional portrait;
 - Private or Campaign visibility.
 
-Registered but unavailable:
+Planned catalogue entries are displayed but have no active controls or routes. Only the VtM V5 creation route is available; direct unsupported system IDs remain unavailable.
+
+Examples of registered but unavailable systems include:
 
 ```text
 call-of-cthulhu-7e
@@ -328,12 +333,11 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- Custom Dice Pool;
-- saved presets and personal roll history;
 - shared campaign dice;
-- persisted roll history;
+- campaign-authoritative persisted roll history;
 - realtime dice feed;
-- video rooms;
+- standalone Video Rooms;
+- campaign video integration;
 - handouts;
 - NPCs;
 - sessions/Chronicle;
@@ -344,11 +348,12 @@ Not implemented:
 
 ## Current structural conclusion
 
-The site is now a bilingual VtM character and campaign manager with a public personal dice tool.
+The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, and a twelve-system planned catalogue.
 
-It has a working shared authorization boundary and is ready for the next sequence:
+It has a working campaign authorization boundary and is ready for the approved next sequence:
 
-1. Custom Dice Pool and reviewed personal persistence;
-2. persisted shared campaign dice;
-3. managed-video spike and minimal campaign video room;
-4. remaining friend campaign workspace.
+1. Phase 4B standalone Video Rooms architecture/security, provider comparison, disposable spike, implementation, and testing;
+2. Phase 4C Campaign Collaboration Contract;
+3. Phase 4D persisted shared campaign dice;
+4. Phase 4E campaign video integration through the reusable video core;
+5. Phase 4F campaign workspace integration.

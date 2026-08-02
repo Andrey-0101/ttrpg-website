@@ -15,22 +15,18 @@ Completed:
 Active:
 
 - Milestone 4 — VtM Realtime Tools;
-- canonical-domain implementation and permanent-documentation synchronization.
+- Phase 4B — Standalone Video Rooms, the next approved development phase.
 
 The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
-Phase 4B shared campaign dice starts only after the current canonical-domain/documentation slice is merged, deployed, and production-verified.
-
-Verified production catalogue baseline:
+Verified production baseline:
 
 ```text
 main
-22736bf697a8345e19e92626a8f441f35db4b3c7
+cb6a07f11669916c8af68d0f0c93033438c901ea
 ```
 
-The production catalogue release at this commit passed 156 catalogue/dice tests.
-
-Release-candidate verification checkpoint, 2026-08-01: `chore/canonical-domain-docs-sync` is based on `22736bf697a8345e19e92626a8f441f35db4b3c7`. Its canonical-domain code and documentation changes are not yet merged, deployed, or production-verified. Local validation passed 156 dice/catalogue tests, 13 site-URL tests, 169 total automated tests, and the production build with 36/36 static pages generated. These changes become production state only after merge, deployment, and production verification.
+PR #26 is merged, deployed, and production-verified. The verified release passed 169 automated tests and generated 36/36 static pages. Phase 4A, personal dice persistence, and the planned game-system catalogue are complete. Standalone Video Rooms, campaign dice, and campaign video integration are not implemented; no managed WebRTC provider has been selected. H007 remains the latest completed handoff, and H008 does not exist.
 
 ## Architecture
 
@@ -51,7 +47,7 @@ Release-candidate verification checkpoint, 2026-08-01: `chore/canonical-domain-d
 | [`product/ROADMAP.md`](product/ROADMAP.md) | Milestones, current status, scope boundaries, and exit criteria |
 | [`product/IDEAS_BACKLOG.md`](product/IDEAS_BACKLOG.md) | Unapproved product ideas captured for review and possible roadmap acceptance |
 | [`product/CAMPAIGNS.md`](product/CAMPAIGNS.md) | Implemented Campaign Foundation contract and current UI |
-| [`product/DICE_ROLLS.md`](product/DICE_ROLLS.md) | VtM-first dice architecture and next implementation target |
+| [`product/DICE_ROLLS.md`](product/DICE_ROLLS.md) | Implemented personal dice contract and planned Phase 4D shared campaign dice |
 | [`product/VIDEO_ROOMS.md`](product/VIDEO_ROOMS.md) | Proposed managed-video architecture |
 | [`product/GAME_HUB.md`](product/GAME_HUB.md) | Proposed game-hub content and tools |
 | [`product/SITE_STRUCTURE_CURRENT.md`](product/SITE_STRUCTURE_CURRENT.md) | Current implemented information architecture |
