@@ -6,7 +6,7 @@ Proposed content and tool architecture.
 
 The current application already has a VtM game route, but the full VtM Game Hub is not implemented.
 
-The separate public Dice Rollers hub is implemented at `/[locale]/dice-rollers`. It lists the VtM V5 personal roller as available and the Custom Dice Pool as planned without presenting an inactive tool as usable.
+The separate public Dice Rollers hub is implemented at `/[locale]/dice-rollers`. The VtM V5 personal roller and Custom Dice Pool are available to guests and registered users; guest rolls remain non-persistent, while registered users can use saved Custom Dice Pool presets and private personal roll history.
 
 ## Separation of concerns
 

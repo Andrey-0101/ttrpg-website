@@ -63,6 +63,14 @@ Costs:
 - campaign schema, functions, RLS, and Storage read policy require multi-user testing;
 - visible dice/video work starts after foundational data work.
 
+## Scope clarification — 2026-08-02
+
+This clarification does not rewrite the original context or reverse the Accepted decision.
+
+Shared campaign dice and campaign-integrated video still require Campaign Foundation and its campaign-derived authorization boundary. The separately approved standalone Video Rooms phase forms a different application access domain, does not depend on campaign membership, and may proceed before those campaign collaboration tools.
+
+Standalone and campaign video may share a reusable video core and managed-provider boundary. They must retain separate authorization adapters: standalone application authorization first, then campaign-derived authorization later. This separation does not weaken campaign membership, removal/revocation, or lifecycle requirements for campaign video.
+
 ## Alternatives considered
 
 ### Multiple Game Masters

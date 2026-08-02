@@ -34,7 +34,8 @@ Implemented:
 Not yet implemented:
 
 - shared campaign dice and Realtime dice feed;
-- video rooms;
+- standalone Video Rooms;
+- campaign video integration;
 - handouts, NPCs, sessions, or campaign notes;
 - independent character-sheet language;
 - print/PDF export;
@@ -127,18 +128,16 @@ Start with:
 
 ## Current snapshot
 
-This documentation synchronization was prepared against:
+Current production state:
 
 ```text
 main
-22736bf697a8345e19e92626a8f441f35db4b3c7
+cb6a07f11669916c8af68d0f0c93033438c901ea
 ```
 
-`22736bf` is the production catalogue release, `Add planned game-system catalogue (#25)`. Its release verification passed lint, build, deployment checks, and 156 catalogue/dice tests.
+PR #26 is merged, deployed, and production-verified. The verified release passed 169 automated tests and generated 36/36 static pages. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
 
-Release-candidate verification checkpoint, 2026-08-01: the current branch is `chore/canonical-domain-docs-sync`, based on `22736bf`. Its canonical-domain code and documentation changes are not yet merged, deployed, or production-verified. Current validation passed 156 dice/catalogue tests, 13 site-URL tests, 169 total automated tests, and the production build with 36/36 static pages generated.
-
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal dice persistence, and the planned game-system catalogue are complete. Phase 4B shared campaign dice starts only after this canonical-domain/documentation slice is merged, deployed, and production-verified. Only then do the release-candidate changes become production state.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, and the planned game-system catalogue are complete. Standalone Video Rooms are not implemented, campaign dice are not implemented, campaign video integration is not implemented, and no managed WebRTC provider has been selected. H007 remains the latest completed handoff; H008 does not exist.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 
@@ -149,15 +148,17 @@ The agreed delivery strategy is:
 1. maintain the architecture and documentation baseline;
 2. keep the VtM character and campaign workflows stable;
 3. keep the completed personal dice tools and planned system catalogue stable;
-4. add server-authoritative persisted campaign rolls and a Realtime feed;
-5. run a managed-video provider comparison and technical spike;
-6. add the minimal private campaign video room;
-7. assemble the remaining friend-only campaign workspace;
-8. complete the visual identity;
-9. build the VtM Game Hub;
-10. complete public-readiness work;
-11. expand to Call of Cthulhu 7e.
+4. define standalone Video Rooms architecture and security, compare managed providers, and run a disposable spike;
+5. implement permanent standalone Video Rooms around a reusable video core;
+6. define the Campaign Collaboration Contract;
+7. add server-authoritative shared campaign dice and a Realtime feed;
+8. integrate the reusable video core with campaign-derived authorization;
+9. assemble the remaining friend-only campaign workspace;
+10. complete the visual identity;
+11. build the VtM Game Hub;
+12. complete public-readiness work;
+13. expand to Call of Cthulhu 7e.
 
-Personal history remains private and non-authoritative. Phase 4B must keep it separate from server-authoritative campaign roll history.
+Phase 4B Standalone Video Rooms is the next approved development phase. Personal history remains private and non-authoritative; Phase 4D shared campaign dice must keep it separate from server-authoritative campaign roll history.
 
 This is an unofficial fan-made software project and is not presented as an official product of any tabletop game publisher.

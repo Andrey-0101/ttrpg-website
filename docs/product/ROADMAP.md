@@ -16,47 +16,27 @@ Completed:
 - Milestone 1 — Architecture Baseline;
 - Milestone 2 — Character Friend Alpha;
 - Milestone 3 — Campaign Foundation;
-- Phase 4A — VtM personal dice and personal persistence;
+- Phase 4A — VtM Personal Dice and Personal Persistence;
 - planned game-system catalogue across all confirmed catalogue and selection surfaces.
 
 Active:
 
 - Milestone 4 — VtM Realtime Tools.
 
-Current release gate:
-
-- canonical production-domain implementation;
-- permanent documentation synchronization;
-- merge the canonical-domain/documentation slice;
-- deploy the merged slice;
-- production-verify the deployment before Phase 4B begins.
-
 Next major development phase:
 
-- Phase 4B — server-authoritative shared campaign dice and Realtime feed.
+- Phase 4B — Standalone Video Rooms.
 
-Verified production catalogue baseline:
+Verified production baseline:
 
 ```text
 main
-22736bf697a8345e19e92626a8f441f35db4b3c7
+cb6a07f11669916c8af68d0f0c93033438c901ea
 ```
 
-This is the deployed and production-verified planned-catalogue release. Its verification passed 156 catalogue/dice tests. The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
+PR #26 is merged, deployed, and production-verified at this commit. The verified release passed 169 automated tests and generated 36/36 static pages. The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
 
-Release-candidate verification checkpoint, 2026-08-01:
-
-- branch: `chore/canonical-domain-docs-sync`;
-- based on: `22736bf697a8345e19e92626a8f441f35db4b3c7`;
-- state: canonical-domain code and documentation changes are uncommitted and are not merged, deployed, or production-verified;
-- validation: 156 dice/catalogue tests passed;
-- validation: 13 site-URL tests passed;
-- validation: 169 total automated tests passed;
-- validation: the production build passed with 36/36 static pages generated.
-
-These release-candidate changes become production state only after merge, deployment, and production verification.
-
-External configuration was completed manually outside the repository and manually verified. In Vercel, `https://ttrpg.fans` is attached to the production project, `https://www.ttrpg.fans` permanently redirects to the apex domain, TLS succeeds for both, and both resolve to the localized production site. Vercel-generated domains remain technical deployment addresses. In hosted Supabase Auth, the Site URL is `https://ttrpg.fans`, production and local redirect allowlist entries are configured, and the canonical production callback is allowed. Arbitrary Vercel Preview authentication is not currently enabled. None of those hosted settings is implemented by this Git branch.
+Phase 4A, personal dice persistence, and the planned game-system catalogue are complete. Standalone Video Rooms, campaign dice, and campaign video integration are not implemented. No managed WebRTC provider has been selected. H007 remains the latest completed handoff; H008 does not exist.
 
 ## Completed foundation
 
@@ -202,9 +182,9 @@ An invited Player can join a private campaign, see only permitted campaign data,
 
 **Status: Active**
 
-### Phase 4A — VtM dice contract and personal roller
+### Phase 4A — VtM Personal Dice and Personal Persistence
 
-**Status: Implemented**
+**Status: Complete**
 
 #### Goal
 
@@ -282,84 +262,105 @@ Only Vampire: The Masquerade V5 is currently implemented. The remaining systems 
 
 The catalogue was deployed at `22736bf697a8345e19e92626a8f441f35db4b3c7`; 156 catalogue/dice tests passed for that release.
 
-### Phase 4B — Shared campaign dice
+### Phase 4B — Standalone Video Rooms
 
-**Status: Next major development phase only after the canonical-domain/documentation slice is merged, deployed, and production-verified**
+**Status: Next approved development phase**
+
+#### Goal
+
+Deliver secure standalone rooms for authenticated users without depending on campaign membership, while establishing a reusable video core for later campaign integration.
+
+#### Scope boundary and internal sequence
+
+1. approve the standalone Video Rooms architecture and security contract;
+2. compare managed WebRTC providers without selecting one in advance;
+3. run a disposable two-to-three-user technical spike;
+4. implement permanent standalone Video Rooms around the reusable video core;
+5. test multi-user, desktop, mobile, reconnect, permission, failure, and production behavior.
+
+The top-level target route is `/[locale]/video-rooms`. Supporting routes `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` are provisional. The routes and navigation entry are planned, not implemented. Provider-specific code must remain behind a practical boundary; secrets stay server-only; tokens are short-lived; and application authorization happens before token issuance.
+
+Exact schema, RLS, ownership, invitations, membership, expiry, retention, deletion, quotas, participant limits, provider, pricing, region, and first-version screen sharing remain unresolved. ADR-009 remains Proposed until comparison and spike evidence are complete.
+
+#### Exit criteria
+
+The standalone authorization contract is approved; comparison and spike evidence support a provider decision; and the permanent implementation, if approved after that gate, passes the defined multi-user and production test matrix without acquiring a campaign dependency.
+
+### Phase 4C — Campaign Collaboration Contract
+
+**Status: Planned**
+
+#### Goal
+
+Define the shared campaign collaboration lifecycle and authorization contract before adding campaign-authoritative realtime tools.
+
+#### Scope boundary
+
+Specify the campaign-derived access, lifecycle, revocation, retention, and cross-tool boundaries required by campaign dice and campaign video. Do not implement campaign dice or video, and do not force standalone room invitations or membership into the campaign model.
+
+#### Exit criteria
+
+A reviewed contract defines the authorization and lifecycle inputs required by Phases 4D and 4E while leaving unresolved data designs open for their implementation phases.
+
+### Phase 4D — Shared Campaign Dice
+
+**Status: Planned**
 
 #### Goal
 
 Persist campaign rolls authoritatively and show the same feed to all permitted campaign participants.
 
-#### In scope
+#### Scope boundary
 
-- reviewed `dice_rolls` schema;
-- server-authoritative random execution;
-- campaign membership authorization;
-- optional accessible character association;
-- full structured request and result persistence;
-- immutable ordinary history;
-- Supabase Realtime feed;
-- campaign dice UI;
+- reviewed `dice_rolls` schema and RLS;
+- server-authoritative random execution and VtM interpretation;
+- active campaign membership and accessible-character authorization;
+- structured request/result persistence and immutable ordinary history;
+- campaign-scoped Supabase Realtime feed;
 - removed-member and Outsider tests;
 - EN/RU and mobile.
 
+Personal roll history remains separate and non-authoritative.
+
 #### Exit criteria
 
-Campaign members can make shared VtM rolls and see the same trusted realtime results.
+Authorized campaign participants can make shared VtM rolls and see the same immutable trusted results; removed Players and Outsiders are denied.
 
-### Phase 4C — Managed-video provider comparison and spike
+### Phase 4E — Campaign Video Rooms Integration
+
+**Status: Planned**
 
 #### Goal
 
-Select a managed WebRTC provider using evidence rather than committing directly to an SDK.
+Reuse the standalone video core inside campaigns with campaign-derived authorization as a separate access layer.
 
-#### In scope
+#### Scope boundary
 
-- provider comparison;
-- SDK and browser support;
-- mobile behavior;
-- token model;
-- participant limits;
-- reconnect behavior;
-- cost;
-- privacy/data-region review;
-- screen-sharing capability;
-- provider exit strategy;
-- disposable two-to-three-user spike;
-- denied-permission and weak-network tests.
+Campaign membership must be checked before issuing a short-lived provider token. Removal/revocation and campaign lifecycle behavior must follow the Phase 4C contract. Campaign room cardinality, completed-campaign behavior, and reuse of standalone invitation logic remain open; this phase must not replace the standalone authorization adapter with campaign assumptions.
 
-#### Decision gate
+#### Exit criteria
 
-ADR-009 remains Proposed until the comparison and spike are complete.
+Authorized active campaign participants can use campaign video through the shared core, while removed members and unauthorized users cannot obtain new tokens and campaign lifecycle rules are verified.
 
-### Phase 4D — Minimal campaign video room
+### Phase 4F — Campaign Workspace Integration
 
-#### In scope
+**Status: Planned**
 
-- campaign membership authorization;
-- server-only provider secret;
-- short-lived room tokens;
-- Join/Leave;
-- microphone and camera controls;
-- participant list;
-- display name and optional character name;
-- GM indicator;
-- connecting/reconnecting states;
-- denied-permission and provider-unavailable states;
-- removed-member token denial;
-- EN/RU and mobile.
+#### Goal
 
-#### Deferred
+Assemble the approved dice and video capabilities into a coherent campaign workspace before Milestone 5 content expands it.
 
-- recording;
-- transcription;
-- breakout rooms;
-- virtual backgrounds;
-- in-video chat.
+#### Scope boundary
+
+Integrate navigation, layout, connection states, and cross-tool context without prematurely implementing Handouts, NPCs, Sessions, or Notes or merging standalone and campaign authorization models.
+
+#### Exit criteria
+
+The campaign workspace presents approved shared dice and campaign video coherently on desktop and mobile, with authorization and failure boundaries preserved.
 
 ### Milestone 4 exit criteria
 
-Campaign members can make shared VtM rolls and join a private campaign video room.
+Standalone Video Rooms work independently of campaigns, and the later campaign workspace provides trusted shared VtM rolls and campaign-authorized video through the reusable core.
 
 ---
 
