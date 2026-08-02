@@ -10,13 +10,15 @@ import {
   useTranslations,
 } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
 import { getAuthErrorKey } from "@/lib/auth/get-auth-error-key";
+import { createRegistrationCallbackUrl } from "@/lib/site-url";
 import { createClient } from "@/utils/supabase/client";
 
 export default function RegisterPage() {
   const translations = useTranslations("Register");
   const authErrors = useTranslations("AuthErrors");
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,14 +80,21 @@ export default function RegisterPage() {
 
     try {
       const supabase = createClient();
+      const emailRedirectUrl = createRegistrationCallbackUrl(
+        locale,
+        window.location.origin,
+      );
+
+      if (!emailRedirectUrl) {
+        throw new Error("Unable to resolve the registration callback URL.");
+      }
 
       const { error } =
         await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo:
-              `${window.location.origin}/auth/confirm?locale=${locale}`,
+            emailRedirectTo: emailRedirectUrl.toString(),
           },
         });
 

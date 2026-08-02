@@ -4,11 +4,11 @@
 
 Current architecture for the implemented VtM character and Campaign Foundation application, with Milestone 4 VtM Realtime Tools active.
 
-Synchronized repository snapshot:
+Verified production catalogue baseline:
 
 ```text
 main
-a1c3a61381a2b7cddab9dd8fb620af56342209a9
+22736bf697a8345e19e92626a8f441f35db4b3c7
 ```
 
 ## Architectural goals
@@ -46,6 +46,8 @@ Supabase
   +-- Realtime for future persisted dice feeds
 ```
 
+The canonical production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` permanently redirects to the apex domain. Vercel `*.vercel.app` URLs remain technical deployment addresses.
+
 Future external service boundary:
 
 ```text
@@ -80,6 +82,7 @@ Current user-facing route families:
 /[locale]/characters/new/[system]
 /[locale]/dashboard
 /[locale]/dice-rollers
+/[locale]/dice-rollers/custom
 /[locale]/games
 /[locale]/games/vampire-the-masquerade
 /[locale]/games/vampire-the-masquerade/tools/dice
@@ -157,9 +160,10 @@ Localization
 Navigation
 Common errors
 Shared UI behavior
+Canonical site-origin resolution
 ```
 
-It must not know VtM dice or sheet rules.
+The core platform owns `lib/site-url.ts`, which normalizes the configured public site origin for root metadata and browser-generated authentication and campaign-invitation links. A supplied browser origin remains the safe URL fallback for local and Preview deployments without `NEXT_PUBLIC_SITE_URL`. Authentication callbacks from arbitrary Preview deployments are not currently enabled; they require a separately approved, account-scoped Supabase redirect wildcard. The helper must not know VtM dice or sheet rules.
 
 ### Character domain
 
@@ -196,17 +200,29 @@ Game-hub content
 System campaign settings
 ```
 
-Current:
+Implemented system:
 
 ```text
 vtm-v5
 ```
 
-Registered but unavailable:
+The typed catalogue at `lib/game-systems/catalogue.ts` also contains these planned systems:
 
 ```text
+alien
+black-powder-and-brimstone
 call-of-cthulhu-7e
+coriolis
+cyberpunk-red
+delta-green
+forbidden-lands
+ironsworn
+mothership
+paranoia
+traveller-mongoose
 ```
+
+Capability status is tracked separately for game area, character creation, campaign creation, and dice roller. Only VtM V5 is available; planned capabilities expose no route. The catalogue is rendered across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool is not a game-system entry.
 
 ADR-008 is Accepted. The project must not create a complete universal rules engine before CoC exposes real shared interfaces.
 
@@ -224,7 +240,7 @@ The personal random-generation boundary is located at:
 lib/game-systems/vtm-v5/dice-roller.ts
 ```
 
-It produces unbiased d10 values with `crypto.getRandomValues`, accepts an injectable random source for deterministic tests, and passes the generated arrays unchanged to the pure evaluator. The localized client UI at `/[locale]/games/vampire-the-masquerade/tools/dice` is public, non-persisted, and has no campaign or Realtime dependency.
+It produces unbiased d10 values with `crypto.getRandomValues`, accepts an injectable random source for deterministic tests, and passes the generated arrays unchanged to the pure evaluator. The localized client UI at `/[locale]/games/vampire-the-masquerade/tools/dice` is public and has no campaign or Realtime dependency. Registered users may record its result in private personal history.
 
 The public `/[locale]/dice-rollers` hub is a platform navigation surface. It links to implemented system rollers and the generic Custom Dice Pool at `/[locale]/dice-rollers/custom`. Official VtM dice presentation is isolated in `lib/game-systems/vtm-v5/dice-symbols.ts`; it maps numeric results to documented official assets without interpreting or changing the roll.
 
@@ -234,9 +250,9 @@ The generic custom dice boundary is located at:
 lib/dice/custom-dice-pool.ts
 ```
 
-It is platform-owned rather than game-system-owned. It validates quantities for Coin (d2), d4, d6, d8, d10, d12, d20, and d100, and enforces a 100-item total limit. It generates each result independently with `crypto.getRandomValues` and one injectable random source. Coin results use the stable typed outcomes `heads` and `tails`, selected from equal halves of the uint32 range; numeric dice use rejection sampling. Returned quantities, Coin outcomes, and numeric result arrays are copied snapshots. Coins count as rolled items but never receive numeric scores or contribute to the numeric-dice total. The module does not interpret named-game rules, access authentication, persist data, or depend on Supabase, campaigns, or Realtime.
+It is platform-owned rather than game-system-owned. It validates quantities for Coin (d2), d4, d6, d8, d10, d12, d20, and d100, and enforces a 100-item total limit. It generates each result independently with `crypto.getRandomValues` and one injectable random source. Coin results use the stable typed outcomes `heads` and `tails`, selected from equal halves of the uint32 range; numeric dice use rejection sampling. Returned quantities, Coin outcomes, and numeric result arrays are copied snapshots. Coins count as rolled items but never receive numeric scores or contribute to the numeric-dice total. The generator does not interpret named-game rules or depend on campaigns or Realtime.
 
-Future registered-user presets and personal history require a separate persistence review. Registered users may later save up to 5 custom presets; each preset must preserve the selected Coin quantity and all numeric dice quantities. Personal history may retain the current roll plus 10 previous rolls. Personal history must remain a distinct domain from server-authoritative campaign roll history. Guest and current authenticated system/custom rolls remain non-persistent.
+Registered users may save up to 5 private Custom Dice Pool presets and retain the current personal roll plus 10 previous rolls. VtM and Custom results are revalidated and canonicalized at the persistence boundary. Guest rolls remain non-persistent. Personal history remains distinct from server-authoritative campaign roll history and is not campaign evidence.
 
 The same pure evaluator can later be called by server-authoritative campaign execution. That execution layer remains responsible for randomness, authorization, transport, and persistence.
 
@@ -405,7 +421,7 @@ feature branch
   -> merge to main
   -> local clean build
   -> Vercel Production
-  -> stable production alias verification
+  -> canonical domain and permanent www redirect verification
   -> delete merged feature branch
 ```
 
@@ -419,22 +435,23 @@ Completed:
 
 1. architecture baseline;
 2. Character Friend Alpha;
-3. Campaign Foundation.
+3. Campaign Foundation;
+4. VtM personal dice and personal persistence;
+5. planned game-system catalogue.
 
-Active:
+Next major development phase only after the canonical-domain/documentation slice is merged, deployed, and production-verified:
 
-4. VtM dice contract and personal roller;
-5. persisted shared campaign dice;
-6. managed-video comparison and spike;
-7. minimal campaign video room.
+6. persisted shared campaign dice;
+7. managed-video comparison and spike;
+8. minimal campaign video room.
 
 Later:
 
-8. remaining friend campaign workspace;
-9. visual identity;
-10. VtM Game Hub;
-11. Public Readiness;
-12. Call of Cthulhu 7e.
+9. remaining friend campaign workspace;
+10. visual identity;
+11. VtM Game Hub;
+12. Public Readiness;
+13. Call of Cthulhu 7e.
 
 ## Explicit non-goals for the current phase
 
