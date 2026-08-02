@@ -8,21 +8,29 @@ Completed:
 
 - Milestone 1 — Architecture Baseline;
 - Milestone 2 — Character Friend Alpha;
-- Milestone 3 — Campaign Foundation.
+- Milestone 3 — Campaign Foundation;
+- Milestone 4A — VtM personal dice and personal persistence;
+- planned game-system catalogue across Games, Dice Rollers, character creation, and campaign creation.
 
 Active:
 
 - Milestone 4 — VtM Realtime Tools;
-- first implementation slice: typed VtM V5 personal dice request/result contract and pure deterministic evaluator.
+- canonical-domain implementation and permanent-documentation synchronization.
 
-This evaluator sub-slice excludes UI, random generation, database persistence, migrations, Realtime, campaign integration, and video.
+The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
-Current synchronized repository snapshot:
+Phase 4B shared campaign dice starts only after the current canonical-domain/documentation slice is merged, deployed, and production-verified.
+
+Verified production catalogue baseline:
 
 ```text
 main
-cb378c18fc3f07ad6072f27508918ac53784e1b5
+22736bf697a8345e19e92626a8f441f35db4b3c7
 ```
+
+The production catalogue release at this commit passed 156 catalogue/dice tests.
+
+Release-candidate verification checkpoint, 2026-08-01: `chore/canonical-domain-docs-sync` is based on `22736bf697a8345e19e92626a8f441f35db4b3c7`. Its canonical-domain code and documentation changes are not yet merged, deployed, or production-verified. Local validation passed 156 dice/catalogue tests, 13 site-URL tests, 169 total automated tests, and the production build with 36/36 static pages generated. These changes become production state only after merge, deployment, and production verification.
 
 ## Architecture
 
@@ -67,9 +75,11 @@ Current decision status relevant to the next milestone:
 
 ## Handoffs
 
-Current handoff:
+Most recent completed handoff:
 
-[`handoffs/H006_CURRENT_HANDOFF.md`](handoffs/H006_CURRENT_HANDOFF.md)
+[`handoffs/H007_CURRENT_HANDOFF.md`](handoffs/H007_CURRENT_HANDOFF.md)
+
+A new current handoff will be created separately at the end of the current project chat.
 
 Historical handoffs remain available and must not be rewritten as current state:
 
@@ -77,7 +87,8 @@ Historical handoffs remain available and must not be rewritten as current state:
 - `H002_CURRENT_HANDOFF.md`;
 - `H003_CURRENT_HANDOFF.md`;
 - `H004_CURRENT_HANDOFF.md`;
-- `H005_CURRENT_HANDOFF.md`.
+- `H005_CURRENT_HANDOFF.md`;
+- `H006_CURRENT_HANDOFF.md`.
 
 ## Status vocabulary
 

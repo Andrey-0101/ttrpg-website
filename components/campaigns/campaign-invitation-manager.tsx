@@ -5,6 +5,10 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
+import {
+  createCampaignInvitationPath,
+  createSiteUrl,
+} from "@/lib/site-url";
 import { createClient } from "@/utils/supabase/client";
 
 type CampaignInvitation = {
@@ -111,10 +115,14 @@ export default function CampaignInvitationManager({
         acceptedAt: null,
         revokedAt: null,
       };
-      const joinPath = `/${locale}/campaigns/join/${encodeURIComponent(
-        data.token,
-      )}`;
-      const invitationLink = new URL(joinPath, window.location.origin).toString();
+      const joinPath = createCampaignInvitationPath(locale, data.token);
+      const invitationUrl = createSiteUrl(joinPath, window.location.origin);
+
+      if (!invitationUrl) {
+        throw new Error("Unable to resolve the campaign invitation URL.");
+      }
+
+      const invitationLink = invitationUrl.toString();
 
       setInvitations((current) => [invitation, ...current]);
       setLatestInvitationId(invitation.id);

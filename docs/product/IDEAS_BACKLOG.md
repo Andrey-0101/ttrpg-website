@@ -32,6 +32,7 @@ Items in this document are not commitments and are not automatically part of the
 | IDEA-002 | Move campaign invitations below players and characters | Campaigns / Page structure | Inbox | Milestone 5 — Friend Campaign Alpha, subject to review |
 | IDEA-003 | Combine players and characters into one list | Campaigns / Members / Characters | Inbox | Milestone 5 — Friend Campaign Alpha, subject to review |
 | IDEA-004 | Interactive character portrait preparation | Characters / Portraits / Image upload | Deferred | Milestone 6 — Visual Identity, subject to review |
+| IDEA-005 | AI-assisted character generation | Characters / AI assistance | Inbox | Unassigned; not committed roadmap scope |
 
 ---
 
@@ -313,6 +314,59 @@ Automatic cropping without user input should be used only as a fallback.
 #### Decision
 
 The broad portrait crop and focal-point capability is already listed as deferred in `ROADMAP.md`. This detailed interaction proposal remains unscoped and should be reviewed before implementation.
+
+---
+
+## AI Character Generation
+
+### IDEA-005 — AI-assisted character generation
+
+- **Status:** Inbox
+- **Area:** Characters / AI assistance
+- **Added:** 2026-07-31
+- **Suggested milestone:** Unassigned; not committed roadmap scope
+- **Priority:** Unassigned
+- **Source:** Product backlog discussion
+- **Related documents:**
+  - `docs/product/ROADMAP.md`
+  - `docs/architecture/CHARACTER_SHEETS.md`
+
+#### Problem
+
+Creating a complete character can require substantial system knowledge and manual entry. A user may know the character concept they want without knowing how to translate it into a supported system's sheet structure and rules.
+
+#### Idea
+
+Provide an optional AI-assisted character-generation flow:
+
+1. The user selects a supported game system.
+2. The user describes the desired character.
+3. The AI generates character data consistent with that system's supported schema and rules.
+4. The generated data is presented for review rather than saved automatically.
+5. The user can edit the result and save it through the normal character-creation flow.
+
+#### Why it may be useful
+
+- Helps users turn a narrative concept into a structured character draft.
+- Reduces repetitive data entry while retaining user control.
+- Uses the existing normal character review, validation, editing, and save flow.
+
+#### Risks or questions
+
+- Which implemented systems are eligible, and how is unsupported-system use prevented?
+- Which authoritative rule sources may the AI use?
+- May publisher-owned rule content be sent to an external model?
+- May generated output reproduce protected rule text?
+- Which publisher, content, and licensing restrictions apply?
+- How are generated mechanics validated against both the supported schema and legally usable rule content?
+- Which AI provider, model, privacy terms, cost controls, and rate limits are acceptable?
+- What user data may be sent to an external provider?
+- How are hallucinated, invalid, unsafe, or copyrighted outputs handled?
+- Should generated drafts be labelled or retain provenance metadata?
+
+#### Decision
+
+Not reviewed. This is a future backlog idea, not approved or committed roadmap scope.
 
 ---
 

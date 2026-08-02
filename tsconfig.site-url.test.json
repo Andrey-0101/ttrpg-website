@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "allowJs": false,
+    "noEmit": false,
+    "outDir": "node_modules/.cache/site-url-tests",
+    "rootDir": ".",
+    "incremental": false,
+    "isolatedModules": false,
+    "plugins": [],
+    "types": ["node"]
+  },
+  "include": [
+    "lib/site-url.ts",
+    "tests/site-url.test.ts"
+  ],
+  "exclude": []
+}

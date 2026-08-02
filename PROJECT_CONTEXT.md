@@ -7,11 +7,34 @@
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
 | Document status | Current synchronized project context |
-| Last reviewed | 2026-07-13 |
-| Source repository snapshot | `main` at `cb378c18fc3f07ad6072f27508918ac53784e1b5` |
-| Production alias | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Milestone 4A — VtM dice contract and personal roller |
+| Last reviewed | 2026-08-01 |
+| Verified production catalogue baseline | `main` at `22736bf697a8345e19e92626a8f441f35db4b3c7` |
+| Release-candidate verification checkpoint | `chore/canonical-domain-docs-sync` at the 2026-08-01 uncommitted working tree, based on `22736bf697a8345e19e92626a8f441f35db4b3c7` |
+| Canonical production domain | `https://ttrpg.fans` |
+| Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
+| Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
+| Current delivery stage | Canonical-domain implementation and documentation synchronization before Phase 4B |
 | Current audience | Small invited group of friends |
+
+## Release-state boundaries
+
+### Deployed production catalogue baseline
+
+The deployed and production-verified catalogue baseline is `main` at `22736bf697a8345e19e92626a8f441f35db4b3c7`. That release passed 156 dice/catalogue tests.
+
+### Release-candidate verification checkpoint
+
+At the 2026-08-01 checkpoint, `chore/canonical-domain-docs-sync` is based on `22736bf697a8345e19e92626a8f441f35db4b3c7`. Its canonical-domain code and documentation changes remain uncommitted and are not merged, deployed, or production-verified. Local verification passed:
+
+- 156 dice/catalogue tests;
+- 13 site-URL tests;
+- 169 total automated tests;
+- the production build;
+- 36/36 generated static pages.
+
+### Future production state
+
+The release-candidate changes become production state only after the canonical-domain/documentation slice is merged, deployed, and production-verified.
 
 ## Purpose
 
@@ -56,7 +79,32 @@ A discussed or planned object is not implemented unless it exists in code, migra
 - `next-intl` 4.13.0
 - Supabase PostgreSQL, Auth, RLS, and Storage
 - Vercel deployment
+- canonical production domain `https://ttrpg.fans`
+- permanent `www.ttrpg.fans` to apex redirect
 - GitHub source control
+
+Vercel `*.vercel.app` URLs remain technical deployment addresses. Application-generated production links prefer the configured canonical public origin.
+
+### External production configuration
+
+The production Vercel and hosted Supabase Auth settings were completed manually outside the repository and manually verified before this release-candidate checkpoint.
+
+Vercel state:
+
+- `https://ttrpg.fans` is attached to the production project;
+- `https://www.ttrpg.fans` permanently redirects to the apex domain;
+- TLS succeeds for both domains;
+- both addresses resolve successfully to the localized production site;
+- Vercel-generated domains remain technical deployment addresses.
+
+Hosted Supabase Auth state:
+
+- the Site URL is `https://ttrpg.fans`;
+- production and local redirect allowlist entries are configured;
+- the canonical production callback is allowed;
+- arbitrary Vercel Preview authentication is not currently enabled.
+
+This hosted configuration is not implemented by `chore/canonical-domain-docs-sync` and contains no repository-managed secret values.
 
 ### Locales
 
@@ -152,6 +200,7 @@ supabase/migrations/20260702150000_character_portraits.sql
 supabase/migrations/20260709150000_campaign_foundation.sql
 supabase/migrations/20260709163000_fix_campaign_select_policy.sql
 supabase/migrations/20260709170000_fix_campaign_character_trigger_security.sql
+supabase/migrations/20260722103835_personal_dice_persistence.sql
 ```
 
 Current public tables:
@@ -163,9 +212,11 @@ public.campaigns
 public.campaign_members
 public.campaign_invitations
 public.campaign_characters
+public.custom_dice_presets
+public.personal_roll_history
 ```
 
-No dice-roll, video-room, handout, NPC, session, or campaign-notes table is currently implemented.
+No campaign-authoritative dice-roll, video-room, handout, NPC, session, or campaign-notes table is currently implemented. Personal dice history is private per owner and is not campaign evidence.
 
 Generated types:
 
@@ -187,6 +238,7 @@ Owns:
 - common navigation;
 - common error handling;
 - shared UI primitives.
+- canonical public-origin resolution for metadata and browser-generated links.
 
 ### Characters
 
@@ -210,17 +262,29 @@ Owns system-specific behavior:
 - theme;
 - game-hub content.
 
-Current implementation:
+Implemented system:
 
 ```text
 vtm-v5
 ```
 
-Registered but unavailable:
+The shared typed catalogue also registers these planned systems with no active capabilities or routes:
 
 ```text
+alien
+black-powder-and-brimstone
 call-of-cthulhu-7e
+coriolis
+cyberpunk-red
+delta-green
+forbidden-lands
+ironsworn
+mothership
+paranoia
+traveller-mongoose
 ```
+
+The catalogue is implemented across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool remains system-neutral and outside it. The production catalogue release at `22736bf697a8345e19e92626a8f441f35db4b3c7` passed 156 catalogue/dice tests.
 
 ### Campaigns
 
@@ -238,7 +302,7 @@ Owns:
 
 ### Realtime tools
 
-Milestone 4A is active. No dice engine, dice route, persisted dice history, Realtime dice feed, or video room is implemented yet.
+Milestone 4A personal dice is implemented, including the deterministic VtM evaluator, public VtM and Custom rollers, saved Custom presets, and private personal history. No campaign-authoritative Realtime dice feed or video room is implemented yet.
 
 This domain will own:
 
@@ -281,8 +345,8 @@ Public or generally accessible game-system information must remain separate from
 
 ## Current milestone and next task
 
-Character Friend Alpha and Campaign Foundation are complete.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal dice persistence, and the planned game-system catalogue are complete.
 
-Milestone 4A — VtM dice contract and personal roller — is active. The exact next task is to define the typed VtM V5 personal dice request/result contract and implement a pure deterministic evaluator using fixed die arrays.
+The canonical-domain and documentation-sync slice is the current release gate. Phase 4B shared campaign dice starts only after this slice is merged, deployed, and production-verified.
 
-The first evaluator slice excludes UI, random generation, database persistence, migrations, Realtime, campaign integration, and video. Print/PDF, final decoration, broad automated testing, and public-readiness hardening remain deferred.
+Phase 4B requires a reviewed server-authoritative execution, persistence, RLS, Realtime, retention, and completed-campaign contract. Print/PDF, final decoration, broad automated testing, and public-readiness hardening remain deferred.

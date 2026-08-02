@@ -15,24 +15,48 @@ Completed:
 
 - Milestone 1 — Architecture Baseline;
 - Milestone 2 — Character Friend Alpha;
-- Milestone 3 — Campaign Foundation.
+- Milestone 3 — Campaign Foundation;
+- Phase 4A — VtM personal dice and personal persistence;
+- planned game-system catalogue across all confirmed catalogue and selection surfaces.
 
 Active:
 
 - Milestone 4 — VtM Realtime Tools.
 
-Next implementation slice:
+Current release gate:
 
-- typed VtM V5 personal dice request/result contract;
-- pure deterministic evaluator with fixed die arrays;
-- no UI, random generation, database persistence, migrations, Realtime, campaign integration, or video in this first sub-slice.
+- canonical production-domain implementation;
+- permanent documentation synchronization;
+- merge the canonical-domain/documentation slice;
+- deploy the merged slice;
+- production-verify the deployment before Phase 4B begins.
 
-Current synchronized snapshot:
+Next major development phase:
+
+- Phase 4B — server-authoritative shared campaign dice and Realtime feed.
+
+Verified production catalogue baseline:
 
 ```text
 main
-cb378c18fc3f07ad6072f27508918ac53784e1b5
+22736bf697a8345e19e92626a8f441f35db4b3c7
 ```
+
+This is the deployed and production-verified planned-catalogue release. Its verification passed 156 catalogue/dice tests. The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
+
+Release-candidate verification checkpoint, 2026-08-01:
+
+- branch: `chore/canonical-domain-docs-sync`;
+- based on: `22736bf697a8345e19e92626a8f441f35db4b3c7`;
+- state: canonical-domain code and documentation changes are uncommitted and are not merged, deployed, or production-verified;
+- validation: 156 dice/catalogue tests passed;
+- validation: 13 site-URL tests passed;
+- validation: 169 total automated tests passed;
+- validation: the production build passed with 36/36 static pages generated.
+
+These release-candidate changes become production state only after merge, deployment, and production verification.
+
+External configuration was completed manually outside the repository and manually verified. In Vercel, `https://ttrpg.fans` is attached to the production project, `https://www.ttrpg.fans` permanently redirects to the apex domain, TLS succeeds for both, and both resolve to the localized production site. Vercel-generated domains remain technical deployment addresses. In hosted Supabase Auth, the Site URL is `https://ttrpg.fans`, production and local redirect allowlist entries are configured, and the canonical production callback is allowed. Arbitrary Vercel Preview authentication is not currently enabled. None of those hosted settings is implemented by this Git branch.
 
 ## Completed foundation
 
@@ -44,6 +68,7 @@ cb378c18fc3f07ad6072f27508918ac53784e1b5
 - repository-backed migrations;
 - generated public-schema database types;
 - Vercel deployment workflow;
+- canonical production domain and permanent `www` to apex redirect;
 - safe localized loading, empty, retry, unavailable, and mutation states.
 
 ### Characters
@@ -204,9 +229,8 @@ Provide a trustworthy VtM V5 dice engine before adding persistence or realtime s
 - repeat roll;
 - character-assisted defaults where useful.
 
-#### Not in the first slice
+#### Deferred from Phase 4A
 
-- database persistence;
 - campaign dice feed;
 - Realtime subscription;
 - macros;
@@ -222,24 +246,24 @@ The same supplied die results always produce the same VtM interpretation, and a 
 - public `/[locale]/dice-rollers` hub and main navigation entry;
 - VtM V5 system roller and public Custom Dice Pool available from the hub;
 - Custom Dice Pool supports Coin (d2), d4, d6, d8, d10, d12, d20, and d100 with unbiased local generation and a 100-item total limit;
-- guest and authenticated custom rolls remain non-persistent;
+- guest rolls remain non-persistent;
 - official symbolic VtM dice with a non-persistent Numbers display option;
 - Dark Pack logo, legal notice, and EN/RU unofficial-material notice.
 
-#### Approved later personal-tool requirements
+#### Delivered personal persistence
 
 - public Custom Dice Pool for guests and registered users (delivered);
-- up to 5 saved custom dice presets for registered users;
+- up to 5 saved custom dice presets for registered users (delivered);
 - saved custom presets preserve the selected Coin quantity and all numeric dice quantities;
-- personal history containing the current roll plus 10 previous rolls for registered users;
+- personal history containing the current roll plus 10 previous rolls for registered users (delivered);
 - non-persistent guest rolls;
 - strict separation between personal and campaign roll history.
 
-The delivered Custom Dice Pool does not add persistence, migrations, RLS, saved presets, or history. Those capabilities remain later reviewed stages.
+Personal persistence is owner-scoped and non-authoritative. It must not be reused as campaign evidence or as the Phase 4B execution path.
 
-#### Approved later placeholder-system stage
+#### Delivered planned-system catalogue
 
-After the delivered Custom Dice Pool and the later saved-preset/personal-history stages, extend the Dice Rollers hub catalogue in this display order:
+The shared typed catalogue is implemented across Games, the System Rollers section, character creation, and campaign creation in this display order:
 
 1. Vampire: The Masquerade V5
 2. Alien
@@ -252,11 +276,15 @@ After the delivered Custom Dice Pool and the later saved-preset/personal-history
 9. Ironsworn
 10. Mothership
 11. Paranoia
-12. Traveller — Mongoose Publishing edition
+12. Traveller (Mongoose Publishing)
 
-Only Vampire: The Masquerade V5 is currently implemented. The remaining systems are planned placeholders and must not link to active rollers until their implementations are delivered and reviewed.
+Only Vampire: The Masquerade V5 is currently implemented. The remaining systems are status-only planned placeholders with no links, buttons, fake routes, or selectable campaign values. Custom Dice Pool remains system-neutral and outside the catalogue.
+
+The catalogue was deployed at `22736bf697a8345e19e92626a8f441f35db4b3c7`; 156 catalogue/dice tests passed for that release.
 
 ### Phase 4B — Shared campaign dice
+
+**Status: Next major development phase only after the canonical-domain/documentation slice is merged, deployed, and production-verified**
 
 #### Goal
 
