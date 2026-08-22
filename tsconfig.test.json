@@ -24,6 +24,7 @@
     "lib/game-systems/vtm-v5/dice-roller.ts",
     "lib/game-systems/vtm-v5/dice-symbols.ts",
     "tests/database/personal-dice-concurrency.test.ts",
+    "tests/database/campaign-video-foundation-concurrency.test.ts",
     "tests/dice/custom-dice-pool.test.ts",
     "tests/dice/personal-dice-persistence.test.ts",
     "tests/dice/personal-dice-persistence-server.test.ts",

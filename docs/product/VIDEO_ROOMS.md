@@ -137,7 +137,7 @@ Minimum requirements for standalone Video Rooms:
 - safe errors;
 - restrictive room-creation defaults once the ownership model is approved.
 
-Later campaign integration additionally requires active campaign authorization, removal/revocation behavior, and campaign lifecycle rules. See `../architecture/SECURITY.md`.
+Campaign integration additionally requires active campaign authorization immediately before token issuance. The local Stage 1 data foundation now fixes the campaign side at one GM plus at most six Players, persistent Player order, Player-only media groups, directed group/GM restrictions, individual publication permissions, private image visibility, and completed-campaign read-only behavior. Provider-room mapping, token issuance, runtime enforcement, media UI, and image-upload UI remain unimplemented. See `../architecture/SECURITY.md`.
 
 ## Deferred work
 
@@ -168,6 +168,4 @@ Later campaign integration additionally requires active campaign authorization, 
 - pricing tier;
 - data region;
 - screen sharing in the first permanent version;
-- campaign room cardinality;
-- completed-campaign video behavior;
 - whether standalone invitation logic is reusable for campaigns.

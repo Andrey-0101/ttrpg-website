@@ -17,9 +17,11 @@ supabase/migrations/20260702150000_character_portraits.sql
 supabase/migrations/20260709150000_campaign_foundation.sql
 supabase/migrations/20260709163000_fix_campaign_select_policy.sql
 supabase/migrations/20260709170000_fix_campaign_character_trigger_security.sql
+supabase/migrations/20260722103835_personal_dice_persistence.sql
+supabase/migrations/20260822190351_campaign_video_data_foundation.sql
 ```
 
-Local and linked remote migration histories were verified as synchronized after the Campaign Foundation work.
+The campaign-video foundation migration is a local review candidate. It has not been applied to a linked or remote project.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
@@ -114,12 +116,15 @@ Rules:
 | `campaign_id` | part of composite primary key; cascade delete |
 | `user_id` | part of composite primary key; cascade delete |
 | `joined_at` | non-null timestamptz |
+| `display_order` | non-null smallint from 1 through 6; unique per campaign with deferrable enforcement |
 
 Every row is a Player.
 
 The Game Master is never duplicated in this table.
 
 Direct client insertion is not allowed. Membership is created by secure invitation acceptance.
+
+Invitation acceptance locks the campaign, assigns the lowest free position, and rejects a seventh Player without consuming the invitation. Removing a Player leaves sparse positions until the Game Master uses the atomic reorder function.
 
 ### `public.campaign_invitations`
 
@@ -153,6 +158,20 @@ Terminal-state constraints prevent an invitation from being both accepted and re
 A partial unique index allows only one active campaign assignment per character.
 
 Historical unlinked rows may remain.
+
+### Campaign video foundation tables
+
+| Table | Purpose |
+|---|---|
+| `campaign_player_publication_permissions` | sparse per-Player audio/video prohibitions; row absence means both are allowed |
+| `campaign_media_groups` | persistent ordered Player-only groups |
+| `campaign_media_group_members` | zero-or-one group assignment for each Player in a campaign |
+| `campaign_media_restrictions` | directed `audio` or `video` blocks between groups and the separate GM endpoint |
+| `campaign_images` | private image metadata, exact object name, MIME, byte size, and visibility |
+| `campaign_image_recipients` | selected active Player recipients for an image |
+| `campaign_video_audit_log` | immutable, constrained administrative audit records |
+
+The foundation is provider-neutral. It does not persist LiveKit rooms, tokens, connections, session-only overrides, or media state.
 
 ## Indexes and consistency rules
 
@@ -193,6 +212,13 @@ campaigns
 campaign_members
 campaign_invitations
 campaign_characters
+campaign_player_publication_permissions
+campaign_media_groups
+campaign_media_group_members
+campaign_media_restrictions
+campaign_images
+campaign_image_recipients
+campaign_video_audit_log
 ```
 
 ### Profiles
@@ -230,6 +256,8 @@ The corrective migration `20260709163000_fix_campaign_select_policy.sql` makes t
 - the Game Master may remove a Player;
 - a Player may remove only their own membership;
 - direct insertion is denied.
+- membership insert and delete are rejected by database triggers after completion;
+- display order changes use the exact-set, GM-only reorder function.
 
 ### Invitations
 
@@ -254,6 +282,11 @@ current_user_is_campaign_player(uuid)
 current_user_can_access_campaign(uuid)
 current_user_can_view_campaign_character(uuid)
 current_user_can_view_campaign_portrait(text)
+current_user_is_active_campaign_game_master(uuid)
+current_user_is_active_campaign_player(uuid)
+current_user_can_access_active_campaign(uuid)
+current_user_can_read_campaign_image_object(text)
+current_user_can_upload_campaign_image_object(text)
 ```
 
 Invitation RPCs:
@@ -262,6 +295,9 @@ Invitation RPCs:
 create_campaign_invitation(uuid)
 accept_campaign_invitation(text)
 revoke_campaign_invitation(uuid)
+reorder_campaign_players(uuid, uuid[])
+reorder_campaign_media_groups(uuid, uuid[])
+set_campaign_image_visibility(uuid, text, uuid[])
 ```
 
 Integrity and lifecycle functions support campaign updates, invitations, memberships, assignments, completion, member removal, and character eligibility changes.
@@ -332,6 +368,18 @@ Current signed URL lifetime:
 
 Legacy `http://` and `https://` values in `portrait_url` are treated as external URLs. Other values are treated as private Storage paths.
 
+### Campaign images
+
+`campaign-images` is a second private bucket with the same exact 5 MiB (`5,242,880` byte) ceiling and JPEG, PNG, and WebP allowlist. Its required object contract is:
+
+```text
+CAMPAIGN_UUID/IMAGE_UUID/RANDOM_OBJECT_UUID.ext
+```
+
+Storage policies require an exact matching `campaign_images.storage_object_name`; path possession is never authorization. Active GMs may insert and delete represented objects. There is no object UPDATE policy, so rename and upsert are unavailable. Active Players may read only all-player images or selected images addressed to them. Completed or removed Players lose access, while the GM retains read-only completed access.
+
+Selected visibility and recipients change through one atomic function. Metadata cannot be deleted while the represented Storage object exists. Before remote uploads are enabled, application work must implement Storage-first deletion plus orphan reconciliation for failed multi-step operations and final campaign deletion.
+
 ## Portrait lifecycle
 
 ### Creation
@@ -393,7 +441,7 @@ Not implemented:
 
 ```text
 dice_rolls
-video_rooms
+provider_room_mappings
 handouts
 npcs
 sessions

@@ -48,6 +48,8 @@ Rules:
 - ownership transfer is not supported;
 - the Game Master is not duplicated in `campaign_members`;
 - every row in `campaign_members` represents a Player;
+- at most six Player rows exist, for seven unique campaign accounts including the GM;
+- each Player has a persistent GM-assigned display position from 1 through 6;
 - there is no customizable role or permission engine.
 
 The Game Master can:
@@ -113,6 +115,7 @@ Important fields:
 campaign_id
 user_id
 joined_at
+display_order
 ```
 
 Rules:
@@ -123,6 +126,9 @@ Rules:
 - membership is created by accepting a valid invitation;
 - a Player can delete their own membership while the campaign is active;
 - the Game Master can remove a Player while the campaign is active.
+- invitation acceptance fills the lowest free display position and rejects a seventh Player without consuming the invitation;
+- only the active GM can atomically replace the order with the exact current Player set;
+- removal leaves sparse positions until an explicit reorder.
 
 ### `public.campaign_invitations`
 
@@ -182,6 +188,18 @@ Behavior:
 - changing a linked character away from Campaign visibility closes its assignment;
 - changing the linked character's game system closes its assignment;
 - campaign completion closes all active assignments.
+
+### Campaign video data foundation
+
+The local Stage 1 foundation adds provider-neutral persistence for:
+
+- sparse per-Player audio/video publication prohibitions, where absence means both allowed;
+- ordered Player-only media groups with at most one group per Player;
+- separate directed audio/video blocks for group-to-group, GM-to-group, and group-to-GM paths;
+- private campaign images visible to the GM, all active Players, or selected active Players;
+- immutable constrained administrative audit rows.
+
+The GM is never a media-group member. Removing a prohibition does not activate a microphone or camera. Session-only overrides, provider rooms, tokens, connections, media tracks, and UI remain outside Stage 1.
 
 ## Character access
 
@@ -307,6 +325,8 @@ Players do not see management controls.
 - membership changes are disabled;
 - new linking and unlinking are disabled;
 - the campaign remains visible to existing participants;
+- campaign-video settings and images become invisible to Players;
+- campaign-video settings and images remain read-only to the Game Master;
 - the Game Master may delete it;
 - reactivation is not supported.
 
@@ -317,6 +337,9 @@ Deletion cascades campaign-owned records:
 - memberships;
 - invitations;
 - assignment records.
+- campaign video settings, groups, restrictions, image metadata/recipients, and audit rows.
+
+Campaign image objects are outside ordinary relational cascade behavior. Before remote image uploads are enabled, final deletion must use a Storage-first workflow and reconcile any orphan produced by an interrupted multi-step operation.
 
 Player-owned character rows and portrait objects are not campaign-owned and remain intact.
 
@@ -391,7 +414,7 @@ Outside the completed Campaign Foundation:
 
 - personal and shared dice tools;
 - realtime dice history;
-- video rooms;
+- campaign video runtime, provider-room mapping, token issuance, media UI, and image-upload UI;
 - handouts;
 - NPCs;
 - sessions;

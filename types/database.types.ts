@@ -76,6 +76,99 @@ export type Database = {
           },
         ]
       }
+      campaign_image_recipients: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string
+          image_id: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by: string
+          image_id: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string
+          image_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_image_recipients_image_fkey"
+            columns: ["campaign_id", "image_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_images"
+            referencedColumns: ["campaign_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_image_recipients_player_fkey"
+            columns: ["campaign_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_members"
+            referencedColumns: ["campaign_id", "user_id"]
+          },
+        ]
+      }
+      campaign_images: {
+        Row: {
+          byte_size: number
+          campaign_id: string
+          created_at: string
+          display_name: string
+          id: string
+          mime_type: string
+          storage_object_name: string
+          updated_at: string
+          uploader_id: string
+          visibility: string
+        }
+        Insert: {
+          byte_size: number
+          campaign_id: string
+          created_at?: string
+          display_name: string
+          id?: string
+          mime_type: string
+          storage_object_name: string
+          updated_at?: string
+          uploader_id: string
+          visibility?: string
+        }
+        Update: {
+          byte_size?: number
+          campaign_id?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          mime_type?: string
+          storage_object_name?: string
+          updated_at?: string
+          uploader_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_images_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_images_uploader_fkey"
+            columns: ["campaign_id", "uploader_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id", "game_master_id"]
+          },
+        ]
+      }
       campaign_invitations: {
         Row: {
           accepted_at: string | null
@@ -120,25 +213,242 @@ export type Database = {
           },
         ]
       }
+      campaign_media_group_members: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          campaign_id: string
+          group_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          campaign_id: string
+          group_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          campaign_id?: string
+          group_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_media_group_members_group_fkey"
+            columns: ["campaign_id", "group_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_media_groups"
+            referencedColumns: ["campaign_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_media_group_members_player_fkey"
+            columns: ["campaign_id", "user_id"]
+            isOneToOne: true
+            referencedRelation: "campaign_members"
+            referencedColumns: ["campaign_id", "user_id"]
+          },
+        ]
+      }
+      campaign_media_groups: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          display_order: number
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_media_groups_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_media_restrictions: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string
+          id: string
+          media_kind: string
+          source_group_id: string | null
+          source_type: string
+          target_group_id: string | null
+          target_type: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          media_kind: string
+          source_group_id?: string | null
+          source_type: string
+          target_group_id?: string | null
+          target_type: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          media_kind?: string
+          source_group_id?: string | null
+          source_type?: string
+          target_group_id?: string | null
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_media_restrictions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_media_restrictions_source_group_fkey"
+            columns: ["campaign_id", "source_group_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_media_groups"
+            referencedColumns: ["campaign_id", "id"]
+          },
+          {
+            foreignKeyName: "campaign_media_restrictions_target_group_fkey"
+            columns: ["campaign_id", "target_group_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_media_groups"
+            referencedColumns: ["campaign_id", "id"]
+          },
+        ]
+      }
       campaign_members: {
         Row: {
           campaign_id: string
+          display_order: number
           joined_at: string
           user_id: string
         }
         Insert: {
           campaign_id: string
+          display_order: number
           joined_at?: string
           user_id: string
         }
         Update: {
           campaign_id?: string
+          display_order?: number
           joined_at?: string
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "campaign_members_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_player_publication_permissions: {
+        Row: {
+          audio_allowed: boolean
+          campaign_id: string
+          updated_at: string
+          updated_by: string
+          user_id: string
+          video_allowed: boolean
+        }
+        Insert: {
+          audio_allowed?: boolean
+          campaign_id: string
+          updated_at?: string
+          updated_by: string
+          user_id: string
+          video_allowed?: boolean
+        }
+        Update: {
+          audio_allowed?: boolean
+          campaign_id?: string
+          updated_at?: string
+          updated_by?: string
+          user_id?: string
+          video_allowed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_player_publication_permissions_member_fkey"
+            columns: ["campaign_id", "user_id"]
+            isOneToOne: true
+            referencedRelation: "campaign_members"
+            referencedColumns: ["campaign_id", "user_id"]
+          },
+        ]
+      }
+      campaign_video_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          campaign_id: string
+          created_at: string
+          id: number
+          media_kind: string | null
+          new_state: string | null
+          old_state: string | null
+          subject_id: string | null
+          subject_type: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          campaign_id: string
+          created_at?: string
+          id?: never
+          media_kind?: string | null
+          new_state?: string | null
+          old_state?: string | null
+          subject_id?: string | null
+          subject_type: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          campaign_id?: string
+          created_at?: string
+          id?: never
+          media_kind?: string | null
+          new_state?: string | null
+          old_state?: string | null
+          subject_id?: string | null
+          subject_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_video_audit_log_campaign_id_fkey"
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
@@ -385,8 +695,20 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_user_can_access_active_campaign: {
+        Args: { target_campaign_id: string }
+        Returns: boolean
+      }
       current_user_can_access_campaign: {
         Args: { target_campaign_id: string }
+        Returns: boolean
+      }
+      current_user_can_read_campaign_image_object: {
+        Args: { object_name: string }
+        Returns: boolean
+      }
+      current_user_can_upload_campaign_image_object: {
+        Args: { object_name: string }
         Returns: boolean
       }
       current_user_can_view_campaign_character: {
@@ -395,6 +717,14 @@ export type Database = {
       }
       current_user_can_view_campaign_portrait: {
         Args: { object_name: string }
+        Returns: boolean
+      }
+      current_user_is_active_campaign_game_master: {
+        Args: { target_campaign_id: string }
+        Returns: boolean
+      }
+      current_user_is_active_campaign_player: {
+        Args: { target_campaign_id: string }
         Returns: boolean
       }
       current_user_is_campaign_game_master: {
@@ -436,8 +766,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      reorder_campaign_media_groups: {
+        Args: { ordered_group_ids: string[]; target_campaign_id: string }
+        Returns: number
+      }
+      reorder_campaign_players: {
+        Args: { ordered_player_ids: string[]; target_campaign_id: string }
+        Returns: number
+      }
       revoke_campaign_invitation: {
         Args: { target_invitation_id: string }
+        Returns: undefined
+      }
+      set_campaign_image_visibility: {
+        Args: {
+          target_image_id: string
+          target_recipient_ids?: string[]
+          target_visibility: string
+        }
         Returns: undefined
       }
       update_custom_dice_preset: {

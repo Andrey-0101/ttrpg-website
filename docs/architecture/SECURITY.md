@@ -75,6 +75,23 @@ A trusted group reduces product scope. It does not make missing authorization sa
 - completed campaign read-only enforcement;
 - direct-ID denial for Outsiders.
 
+### Campaign video data foundation
+
+- one GM plus no more than six Player memberships;
+- serialized invitation acceptance with lowest-free-slot allocation;
+- persistent GM-assigned Player order;
+- active-campaign helpers kept separate from historical campaign access;
+- sparse GM-managed Player publication prohibitions;
+- Player-only, zero-or-one media-group membership;
+- constrained directed group/GM audio and video restrictions;
+- private campaign-image metadata and exact represented Storage paths;
+- atomic selected-recipient visibility transitions;
+- completed-Player denial and completed-GM read-only access;
+- immutable, constrained audit records with no object paths, tokens, media, or unrestricted JSON;
+- RLS plus database triggers enforcing fail-closed completed-campaign mutations.
+
+This is a local data-foundation candidate only. It adds no provider token issuance, room connection, media UI, or upload endpoint.
+
 ### Invitations
 
 - single-use;
@@ -222,7 +239,7 @@ Required in addition to the reusable video-core controls:
 - GM, Player, removed Player, and Outsider tests;
 - no reuse of standalone invitations unless separately approved.
 
-Campaign room cardinality and completed-campaign video behavior remain unresolved.
+Campaign room authorization now uses one GM plus at most six active Players. Campaign completion prevents new campaign-video mutations and future token issuance; existing Players lose campaign-video settings and campaign-image access, while the GM retains read-only database and image access until final deletion. Provider-room teardown and already-issued-token behavior remain runtime work.
 
 ## Level A requirements for later campaign content
 
