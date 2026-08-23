@@ -25,7 +25,8 @@ export type CampaignVideoJoinHandlerDependencies = {
 
 async function readJsonBody(request: Request): Promise<unknown> {
   const contentType = request.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().startsWith("application/json")) return null;
+  const mediaType = contentType.split(";", 1)[0]?.trim().toLowerCase();
+  if (mediaType !== "application/json") return null;
 
   const contentLength = request.headers.get("content-length");
   if (

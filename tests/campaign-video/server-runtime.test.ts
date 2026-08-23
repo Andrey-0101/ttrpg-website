@@ -209,9 +209,32 @@ test("invalid campaign path and non-JSON content fail before provider dispatch",
   });
   const invalidPath = await invoke(harness, "{}", "not-a-uuid");
   assert.equal(invalidPath.response.status, 400);
-  const invalidType = await invoke(harness, "{}", CAMPAIGN_ID, "text/plain");
-  assert.equal(invalidType.response.status, 400);
+  for (const contentType of [
+    "text/plain",
+    "application/jsonp",
+    "application/json-patch+json",
+  ]) {
+    const invalidType = await invoke(harness, "{}", CAMPAIGN_ID, contentType);
+    assert.equal(invalidType.response.status, 400);
+  }
   assert.equal(providerOperationCount(harness.provider), 0);
+});
+
+test("JSON media type parameters preserve the exact empty-object contract", async () => {
+  const harness = createHarness({
+    userId: GM_ID,
+    campaign: activeCampaign(),
+    player: null,
+    publication: null,
+  });
+  const result = await invoke(
+    harness,
+    "{}",
+    CAMPAIGN_ID,
+    "Application/JSON; charset=utf-8",
+  );
+  assert.equal(result.response.status, 200);
+  assert.equal(providerOperationCount(harness.provider), 2);
 });
 
 test("unauthenticated, outsider, removed Player, and completed campaign requests dispatch no provider operation", async () => {
@@ -274,6 +297,7 @@ test("active GM and all six valid Player positions receive credentials", async (
   assert.deepEqual(gmResult.json.participant, {
     role: "game_master",
     playerPosition: null,
+    publication: { audio: true, video: true },
   });
   assert.equal(providerOperationCount(gmHarness.provider), 2);
 
@@ -289,6 +313,7 @@ test("active GM and all six valid Player positions receive credentials", async (
     assert.deepEqual(result.json.participant, {
       role: "player",
       playerPosition: position,
+      publication: { audio: true, video: true },
     });
     assert.equal(providerOperationCount(harness.provider), 2);
   }

@@ -39,6 +39,7 @@ export async function issueCampaignVideoCredentials(
       participant: {
         role: participant.role,
         playerPosition: participant.playerPosition,
+        publication: participant.publication,
       },
     };
   } catch (error) {

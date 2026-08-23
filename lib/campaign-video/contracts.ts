@@ -46,6 +46,7 @@ export type CampaignVideoJoinSuccess = {
   participant: {
     role: CampaignVideoRole;
     playerPosition: number | null;
+    publication: CampaignVideoPublicationPermissions;
   };
 };
 
