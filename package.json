@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:campaign-video": "node -e \"require('node:fs').rmSync('node_modules/.cache/campaign-video-tests',{recursive:true,force:true})\" && tsc --project tsconfig.campaign-video.test.json && node node_modules/.cache/campaign-video-tests/tests/campaign-video/server-runtime.test.js && node -e \"require('node:fs').rmSync('node_modules/.cache/campaign-video-tests',{recursive:true,force:true})\"",
     "test:db-concurrency": "node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\" && tsc --project tsconfig.test.json && node node_modules/.cache/vtm-v5-dice-tests/tests/database/personal-dice-concurrency.test.js && node node_modules/.cache/vtm-v5-dice-tests/tests/database/campaign-video-foundation-concurrency.test.js && node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\"",
     "test:site-url": "node scripts/run-site-url-tests.mjs",
     "test:dice": "node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\" && tsc --project tsconfig.test.json && node -e \"const{run}=require('node:test'),{spec}=require('node:test/reporters'),s=run({files:['node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-engine.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-roller.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/dice/vtm-v5-dice-symbols.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/dice/custom-dice-pool.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/dice/personal-dice-persistence.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/dice/personal-dice-persistence-server.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/dice/personal-roll-recording.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/dice/saved-custom-dice-presets-ui.test.js','node_modules/.cache/vtm-v5-dice-tests/tests/game-systems/catalogue.test.js'],isolation:'none'});let failed=false;s.on('test:fail',()=>failed=true);s.compose(spec()).pipe(process.stdout);s.on('end',()=>process.exitCode=failed?1:0)\" && node -e \"require('node:fs').rmSync('node_modules/.cache/vtm-v5-dice-tests',{recursive:true,force:true})\""
@@ -14,6 +15,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
+    "livekit-server-sdk": "2.17.0",
     "next": "16.2.9",
     "next-intl": "^4.13.0",
     "react": "19.2.4",
