@@ -75,6 +75,23 @@ A trusted group reduces product scope. It does not make missing authorization sa
 - completed campaign read-only enforcement;
 - direct-ID denial for Outsiders.
 
+### Campaign video data foundation
+
+- one GM plus no more than six Player memberships;
+- serialized invitation acceptance with lowest-free-slot allocation;
+- persistent GM-assigned Player order;
+- active-campaign helpers kept separate from historical campaign access;
+- sparse GM-managed Player publication prohibitions;
+- Player-only, zero-or-one media-group membership;
+- constrained directed group/GM audio and video restrictions;
+- private campaign-image metadata and exact represented Storage paths;
+- atomic selected-recipient visibility transitions;
+- completed-Player denial and completed-GM read-only access;
+- immutable, constrained audit records with no object paths, tokens, media, or unrestricted JSON;
+- RLS plus database triggers enforcing fail-closed completed-campaign mutations.
+
+This is a local data-foundation candidate only. It adds no provider token issuance, room connection, media UI, or upload endpoint.
+
 ### Invitations
 
 - single-use;
@@ -161,7 +178,7 @@ Two defects found during testing were fixed through separate migrations:
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
 - no shared campaign dice security model implemented yet;
-- no video provider or token implementation yet.
+- no browser video connection or deployed video-provider configuration yet; the local campaign-video server foundation now performs fresh authenticated campaign authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens without making provider calls in tests.
 
 ## Level A requirements for Milestone 4
 
@@ -222,7 +239,9 @@ Required in addition to the reusable video-core controls:
 - GM, Player, removed Player, and Outsider tests;
 - no reuse of standalone invitations unless separately approved.
 
-Campaign room cardinality and completed-campaign video behavior remain unresolved.
+Campaign room authorization now uses one GM plus at most six active Players. Campaign completion prevents new campaign-video mutations and future token issuance; existing Players lose campaign-video settings and campaign-image access, while the GM retains read-only database and image access until final deletion. Provider-room teardown and already-issued-token behavior remain runtime work.
+
+The Stage 2 join endpoint accepts only the campaign route identifier and an empty JSON body. Authentication, active-campaign access, Player position, and publication state are read afresh before configuration or provider dispatch. `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` are server-only variables; malformed or partial configuration fails closed. The current deterministic campaign mapping intentionally has no start/end rotation semantics, and ten-minute tokens already issued before membership removal or campaign completion remain valid until provider expiry unless a later moderation checkpoint adds active revocation.
 
 ## Level A requirements for later campaign content
 

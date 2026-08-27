@@ -443,7 +443,59 @@
       "active": "Active",
       "completed": "Completed"
     },
-    "characterOwnerFallback": "Campaign participant"
+    "characterOwnerFallback": "Campaign participant",
+    "playerFallback": "Campaign player"
+  },
+  "CampaignVideoRoom": {
+    "title": "Campaign video room",
+    "description": "Join the campaign room, then choose whether to enable your camera or microphone. Media stays off until you use a control.",
+    "join": "Join room",
+    "joining": "Joining...",
+    "retry": "Retry connection",
+    "leave": "Leave room",
+    "waitingForParticipants": "Connected. Waiting for other campaign participants.",
+    "mediaControls": "Camera, microphone, and sound controls",
+    "cameraOff": "Camera off",
+    "localCamera": "Your camera",
+    "youSuffix": "(You)",
+    "enableSound": "Enable sound",
+    "publicationRestricted": "A camera or microphone control is unavailable because campaign permissions do not allow that media source.",
+    "completedHelp": "Video rooms are unavailable for completed campaigns.",
+    "directoryUnavailable": "Campaign participant information could not be loaded, so the room is unavailable.",
+    "camera": {
+      "enable": "Turn camera on",
+      "disable": "Turn camera off"
+    },
+    "microphone": {
+      "enable": "Turn microphone on",
+      "disable": "Turn microphone off"
+    },
+    "roles": {
+      "gameMaster": "Game Master",
+      "player": "Player {number}"
+    },
+    "status": {
+      "idle": "Ready to join. Camera and microphone are off.",
+      "requestingCredentials": "Authorizing room access...",
+      "connecting": "Connecting to the room...",
+      "connected": "Connected to the campaign room.",
+      "reconnecting": "Connection interrupted. Reconnecting...",
+      "restored": "Connection restored.",
+      "disconnected": "Disconnected. Temporary room resources were disposed."
+    },
+    "errors": {
+      "authentication_required": "Sign in again before joining the room.",
+      "campaign_unavailable": "This campaign room is unavailable.",
+      "campaign_inactive": "Completed campaigns cannot open a video room.",
+      "capacity_unavailable": "The campaign room has reached its participant limit.",
+      "configuration_unavailable": "Video configuration is temporarily unavailable.",
+      "provider_unavailable": "The video service is temporarily unavailable.",
+      "permission_denied": "Camera or microphone access was denied. Check browser permissions and try again.",
+      "device_unavailable": "A requested camera or microphone is unavailable.",
+      "media_unavailable": "The selected media device could not be started.",
+      "connection_failed": "The room connection ended. Retry to request fresh access.",
+      "unexpected_error": "The room could not be opened safely."
+    }
   },
   "CampaignManagement": {
     "title": "Campaign management",

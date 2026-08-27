@@ -8,6 +8,7 @@ import CampaignCharactersPanel from "@/components/campaigns/campaign-characters-
 import CampaignInvitationManager from "@/components/campaigns/campaign-invitation-manager";
 import CampaignManagementPanel from "@/components/campaigns/campaign-management-panel";
 import CampaignMembersPanel from "@/components/campaigns/campaign-members-panel";
+import CampaignVideoRoom from "@/components/campaigns/campaign-video-room";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import {
@@ -15,6 +16,7 @@ import {
   normalizeGameSystemId,
 } from "@/lib/characters/game-systems";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
+import { deriveCampaignVideoParticipantIdentity } from "@/lib/campaign-video/mapping";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignPageProps = {
@@ -102,9 +104,9 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     await Promise.all([
       supabase
         .from("campaign_members")
-        .select("user_id, joined_at")
+        .select("user_id, joined_at, display_order")
         .eq("campaign_id", campaign.id)
-        .order("joined_at", {
+        .order("display_order", {
           ascending: true,
         }),
       supabase
@@ -210,8 +212,34 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       displayName: profile?.display_name ?? null,
       username: profile?.username ?? null,
       joinedAt: member.joined_at,
+      displayOrder: member.display_order,
     };
   });
+  const videoParticipantDirectory = [
+    {
+      providerIdentity: deriveCampaignVideoParticipantIdentity(
+        campaign.id,
+        campaign.game_master_id,
+      ),
+      displayName: gameMasterName,
+      role: "game_master" as const,
+      playerPosition: null,
+    },
+    ...members.map((member) => ({
+      providerIdentity: deriveCampaignVideoParticipantIdentity(
+        campaign.id,
+        member.userId,
+      ),
+      displayName:
+        member.userId === userId
+          ? translations("you")
+          : member.displayName ||
+            member.username ||
+            translations("playerFallback"),
+      role: "player" as const,
+      playerPosition: member.displayOrder,
+    })),
+  ];
 
   const linkedCharacterById = new Map(
     (linkedCharactersResult.data ?? []).map((character) => [
@@ -449,6 +477,13 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       </section>
 
       <div className="mt-6 grid gap-6">
+        <CampaignVideoRoom
+          campaignId={campaign.id}
+          campaignStatus={campaign.status}
+          directoryReady={!membersResult.error && !profilesResult.error}
+          participantDirectory={videoParticipantDirectory}
+        />
+
         {isGameMaster && (
           <CampaignManagementPanel
             campaignId={campaign.id}

@@ -1,0 +1,34 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "allowJs": false,
+    "noEmit": false,
+    "outDir": "node_modules/.cache/campaign-video-tests",
+    "rootDir": ".",
+    "incremental": false,
+    "isolatedModules": false,
+    "plugins": [],
+    "types": ["node"]
+  },
+  "include": [
+    "lib/campaign-video/authorization.ts",
+    "lib/campaign-video/browser/contracts.ts",
+    "lib/campaign-video/browser/controller.ts",
+    "lib/campaign-video/browser/errors.ts",
+    "lib/campaign-video/browser/media.ts",
+    "lib/campaign-video/config.ts",
+    "lib/campaign-video/contracts.ts",
+    "lib/campaign-video/http.ts",
+    "lib/campaign-video/join-handler.ts",
+    "lib/campaign-video/join-service.ts",
+    "lib/campaign-video/mapping.ts",
+    "lib/campaign-video/provider.ts",
+    "lib/campaign-video/providers/livekit.ts",
+    "tests/campaign-video/browser-room.test.ts",
+    "tests/campaign-video/server-runtime.test.ts"
+  ],
+  "exclude": []
+}

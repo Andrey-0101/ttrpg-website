@@ -1,8 +1,8 @@
-# Campaign Foundation RLS Matrix
+# Campaign RLS Matrix
 
 ## Status
 
-Implemented and verified.
+Campaign Foundation is implemented and verified. The campaign-video data foundation described below is a local review candidate and has not been applied remotely.
 
 The Campaign Foundation migrations are applied to the linked Supabase project, generated types are current for the synchronized snapshot, and the matrix was exercised through a GM/Player/Outsider transaction test.
 
@@ -15,6 +15,14 @@ campaign_invitations
 campaign_characters
 characters
 character-portraits
+campaign_player_publication_permissions
+campaign_media_groups
+campaign_media_group_members
+campaign_media_restrictions
+campaign_images
+campaign_image_recipients
+campaign_video_audit_log
+campaign-images
 ```
 
 ## Actors
@@ -28,6 +36,36 @@ character-portraits
 | Anonymous user | No authenticated user |
 
 A campaign has exactly one immutable Game Master. Membership rows represent only Players.
+
+Campaign video has a maximum of six Player rows in addition to the separate GM. Completed Players retain the existing campaign-history visibility described elsewhere, but receive no campaign-video settings or campaign-image access.
+
+## Campaign video settings
+
+| Resource / operation | Active GM | Active subject Player | Other active Player | Completed GM | Completed Player | Outsider / anonymous |
+|---|---:|---:|---:|---:|---:|---:|
+| Publication overrides: select | All | Own | Deny | All | Deny | Deny |
+| Publication overrides: mutate | Allow | Deny | Deny | Deny | Deny | Deny |
+| Media groups: select | All | Own group | Own group | All | Deny | Deny |
+| Group membership: select | All | Own row | Own row | All | Deny | Deny |
+| Groups and membership: mutate | Allow | Deny | Deny | Deny | Deny | Deny |
+| Directed restrictions: select | All | Rules involving own group | Rules involving own group | All | Deny | Deny |
+| Directed restrictions: mutate | Allow | Deny | Deny | Deny | Deny | Deny |
+| Audit: select | All | Deny | Deny | All | Deny | Deny |
+| Audit: direct mutation | Deny | Deny | Deny | Deny | Deny | Deny |
+
+Rules are constrained to group-to-group, GM-to-group, and group-to-GM endpoints. GM-to-GM and same-group rules are rejected. Each direction and media kind is a separate row, so two-way isolation requires two rows.
+
+## Campaign images
+
+| Operation | Active GM | Authorized active Player | Other active Player | Completed GM | Completed / removed Player | Outsider / anonymous |
+|---|---:|---:|---:|---:|---:|---:|
+| Read metadata/object | All | Allow for all-player or selected-recipient visibility | Deny | All | Deny | Deny |
+| Create metadata/upload represented object | Allow | Deny | Deny | Deny | Deny | Deny |
+| Change visibility/recipients | Atomic function | Deny | Deny | Deny | Deny | Deny |
+| Delete object then metadata | Allow, Storage first | Deny | Deny | Deny | Deny | Deny |
+| Rename/upsert object | Deny | Deny | Deny | Deny | Deny | Deny |
+
+The private `campaign-images` bucket enforces JPEG/PNG/WebP and a maximum of `5,242,880` bytes. Exact metadata equality with `CAMPAIGN_UUID/IMAGE_UUID/RANDOM_OBJECT_UUID.ext` is required; guessed IDs and paths grant nothing.
 
 ## Campaigns
 
@@ -64,6 +102,8 @@ Additional invariants:
 - invitation acceptance is the only membership-creation path;
 - an existing Player cannot consume another invitation for the same campaign;
 - removing a Player ends active assignments for that Player's characters.
+- member deletion is active-only, cleans publication/group/recipient state, and preserves sparse Player positions;
+- concurrent invitation acceptance is serialized on the campaign row and cannot exceed six Players.
 
 ## Campaign invitations
 
@@ -168,6 +208,8 @@ Immediately:
 - unused invitations are revoked;
 - active character assignments are marked unlinked;
 - campaign-derived character and portrait reads end.
+- campaign-video settings become read-only for the GM and invisible to Players;
+- campaign-image objects remain GM-readable until the required Storage-first final deletion workflow completes.
 
 ### Game Master account deleted
 
