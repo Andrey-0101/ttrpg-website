@@ -37,6 +37,7 @@ export function CampaignGameRoomHeaderFrame({
           <span aria-hidden="true">&larr;</span>
           <span className="ml-2">{backLabel}</span>
         </Link>
+        <div className="shrink-0" data-game-room-header-actions />
         <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
           <div className="min-w-0 max-w-28 sm:max-w-56 [&_summary]:truncate">
             {account}

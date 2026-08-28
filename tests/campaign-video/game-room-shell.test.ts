@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { CAMPAIGN_VIDEO_PARTICIPANT_SLOTS } from "../../lib/campaign-video/browser/presentation";
+import { resolveCampaignVideoParticipantLabel } from "../../lib/campaign-video/participant-label";
 
 function source(...segments: string[]) {
   return readFileSync(path.join(process.cwd(), ...segments), "utf8");
@@ -39,7 +40,7 @@ test("localized Game Room route keeps authentication and campaign RLS ahead of r
 test("Campaign Overview links to Game Room without mounting the active video component", () => {
   const overview = source("app", "[locale]", "campaigns", "[id]", "page.tsx");
   const card = source("components", "campaigns", "campaign-game-room-card.tsx");
-  assert.doesNotMatch(overview, /CampaignVideoRoom/u);
+  assert.doesNotMatch(overview, /import CampaignVideoRoom|<CampaignVideoRoom/u);
   assert.match(overview, /CampaignGameRoomCard/u);
   assert.match(card, /href=\{`\/campaigns\/\$\{campaignId\}\/game-room`\}/u);
   assert.match(card, /\{campaignActive && \(/u);
@@ -48,6 +49,10 @@ test("Campaign Overview links to Game Room without mounting the active video com
 
 test("Game Room requires explicit Join and keeps interactive controls local-only", () => {
   const room = source("components", "campaigns", "campaign-video-room.tsx");
+  const participantCard = room.slice(
+    room.indexOf("function ParticipantCard"),
+    room.indexOf("function phaseMessage"),
+  );
   assert.match(room, /onJoin=\{\(\) => void controllerRef\.current\?\.join\(\)\}/u);
   assert.match(room, /setCameraEnabled/u);
   assert.match(room, /setMicrophoneEnabled/u);
@@ -59,7 +64,69 @@ test("Game Room requires explicit Join and keeps interactive controls local-only
   assert.match(room, /aria-pressed=\{snapshot\.cameraEnabled\}/u);
   assert.match(room, /aria-pressed=\{snapshot\.microphoneEnabled\}/u);
   assert.match(room, /min-h-11/u);
+  assert.match(room, /createPortal/u);
+  assert.match(room, /data-game-room-leave/u);
+  assert.match(room, /absolute bottom-2 left-2/u);
+  assert.match(room, /data-control-circle/u);
+  assert.match(room, /h-11 w-11/u);
+  assert.match(room, /h-9 w-9/u);
+  assert.match(room, /h-5 w-5/u);
+  assert.doesNotMatch(participantCard, /onLeave|translations\("leave"\)/u);
+  assert.doesNotMatch(participantCard, /bg-gradient-to-b|bg-gradient-to-t|via-black\/90/u);
+  assert.doesNotMatch(participantCard, /youSuffix|title=\{statusMessage\}/u);
   assert.doesNotMatch(room, /getUserMedia|setScreenShareEnabled|recording|transcription/u);
+});
+
+test("participant labels prefer role, compatible character, nickname, then safe fallback", () => {
+  const options = {
+    campaignGameSystem: "call-of-cthulhu-7e",
+    gameMasterLabel: "Game Master",
+    playerFallback: "Campaign player",
+  };
+
+  assert.equal(
+    resolveCampaignVideoParticipantLabel({
+      ...options,
+      role: "game_master",
+      linkedCharacters: [
+        { name: "Ignored Keeper", gameSystem: "call-of-cthulhu-7e" },
+      ],
+      siteNickname: "Ignored nickname",
+    }),
+    "Game Master",
+  );
+  assert.equal(
+    resolveCampaignVideoParticipantLabel({
+      ...options,
+      role: "player",
+      linkedCharacters: [
+        { name: "Vampire", gameSystem: "vampire-the-masquerade-5e" },
+        { name: "Dr. Armitage", gameSystem: "call-of-cthulhu-7e" },
+      ],
+      siteNickname: "Investigator",
+    }),
+    "Dr. Armitage",
+  );
+  assert.equal(
+    resolveCampaignVideoParticipantLabel({
+      ...options,
+      role: "player",
+      linkedCharacters: [
+        { name: "Vampire", gameSystem: "vampire-the-masquerade-5e" },
+      ],
+      siteNickname: "Investigator",
+    }),
+    "Investigator",
+  );
+  assert.equal(
+    resolveCampaignVideoParticipantLabel({
+      ...options,
+      role: "player",
+      linkedCharacters: [],
+      siteNickname: null,
+    }),
+    "Campaign player",
+  );
 });
 
 test("Game Room uses the approved viewport-driven asymmetric composition", () => {
@@ -168,6 +235,7 @@ test("Game Room uses a compact header slot while the default site header stays i
   assert.match(compactHeader, /TTRPG Hub/u);
   assert.match(compactHeader, /AccountArea/u);
   assert.match(compactHeader, /LanguageSwitcher/u);
+  assert.match(compactHeader, /data-game-room-header-actions/u);
   assert.doesNotMatch(compactHeader, /navigation\("games"\)|navigation\("dashboard"\)/u);
   assert.match(regularHeader, /navigation\("games"\)/u);
   assert.match(regularHeader, /navigation\("dashboard"\)/u);

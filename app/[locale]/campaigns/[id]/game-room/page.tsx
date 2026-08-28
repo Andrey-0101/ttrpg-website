@@ -42,6 +42,10 @@ export default async function CampaignGameRoomPage({
     locale,
     namespace: "CampaignDetails",
   });
+  const videoTranslations = await getTranslations({
+    locale,
+    namespace: "CampaignVideoRoom",
+  });
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
@@ -53,7 +57,7 @@ export default async function CampaignGameRoomPage({
 
   const { data: campaign, error: campaignError } = await supabase
     .from("campaigns")
-    .select("id, name, status, game_master_id")
+    .select("id, name, game_system, status, game_master_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -67,10 +71,12 @@ export default async function CampaignGameRoomPage({
   const participantDirectoryResult = await loadCampaignParticipantDirectory({
     supabase,
     campaignId: campaign.id,
+    campaignGameSystem: campaign.game_system,
     gameMasterId: campaign.game_master_id,
     currentUserId: userId,
     labels: {
       you: campaignTranslations("you"),
+      gameMasterRole: videoTranslations("roles.gameMaster"),
       gameMasterFallback: campaignTranslations("gameMasterFallback"),
       playerFallback: campaignTranslations("playerFallback"),
     },

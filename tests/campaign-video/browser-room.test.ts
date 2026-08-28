@@ -458,12 +458,17 @@ test("campaign room UI and localization retain the accessible fail-closed contro
     'translations("microphone.enable")',
     'translations("enableSound")',
     'translations("cameraOff")',
+    'translations("connectedParticipant")',
+    'translations("leaveCompact")',
     'aria-live="polite"',
     'aria-pressed={snapshot.cameraEnabled}',
     'aria-pressed={snapshot.microphoneEnabled}',
   ]) {
     assert.equal(component.includes(required), true, required);
   }
+  assert.equal(component.includes("bg-gradient-to-b"), false);
+  assert.equal(component.includes("bg-gradient-to-t"), false);
+  assert.equal(component.includes("youSuffix"), false);
   assert.deepEqual(
     messageKeys(english.CampaignVideoRoom).sort(),
     messageKeys(russian.CampaignVideoRoom).sort(),
