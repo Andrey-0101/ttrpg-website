@@ -24,6 +24,8 @@ The current implementation connects:
 - invitations;
 - characters.
 
+Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
+
 Future milestones will add:
 
 - dice rolls;
@@ -188,6 +190,8 @@ Behavior:
 - changing a linked character away from Campaign visibility closes its assignment;
 - changing the linked character's game system closes its assignment;
 - campaign completion closes all active assignments.
+
+VtM and Call of Cthulhu characters are not cross-compatible. Because Call of Cthulhu character sheets are not implemented yet, a CoC campaign presents a localized planned state instead of offering VtM characters or a placeholder character route.
 
 ### Campaign video data foundation
 
@@ -426,6 +430,8 @@ Outside the completed Campaign Foundation:
 - custom roles;
 - Game Master editing of Player characters;
 - public campaign pages.
+
+The Call of Cthulhu 7th Edition campaign shell is implemented. Its character sheets, dice mechanics, Keeper tools, NPCs, clues, handouts, sessions, and notes remain outside the current scope.
 
 ## Open questions for later milestones
 

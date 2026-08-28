@@ -248,7 +248,7 @@ The shared typed catalogue is implemented across Games, the System Rollers secti
 1. Vampire: The Masquerade V5
 2. Alien
 3. Black Powder and Brimstone
-4. Call of Cthulhu
+4. Call of Cthulhu 7th Edition
 5. Coriolis
 6. Cyberpunk RED
 7. Delta Green
@@ -258,7 +258,7 @@ The shared typed catalogue is implemented across Games, the System Rollers secti
 11. Paranoia
 12. Traveller (Mongoose Publishing)
 
-Only Vampire: The Masquerade V5 is currently implemented. The remaining systems are status-only planned placeholders with no links, buttons, fake routes, or selectable campaign values. Custom Dice Pool remains system-neutral and outside the catalogue.
+Vampire: The Masquerade V5 is available across every implemented capability. Call of Cthulhu 7th Edition is available only as a generic campaign shell; its character creation, dice roller, and Game Hub remain planned and expose no route. The remaining systems are status-only planned placeholders with no links, buttons, fake routes, or selectable campaign values. Custom Dice Pool remains system-neutral and outside the catalogue.
 
 The catalogue was deployed at `22736bf697a8345e19e92626a8f441f35db4b3c7`; 156 catalogue/dice tests passed for that release.
 
@@ -288,7 +288,7 @@ The standalone authorization contract is approved; comparison and spike evidence
 
 ### Phase 4C — Campaign Collaboration Contract
 
-**Status: Planned**
+**Status: Partially implemented — minimal campaign shell delivered; system-specific features planned**
 
 #### Goal
 
@@ -489,14 +489,17 @@ Prove the platform with a second game system.
 
 ### In scope
 
+- generic CoC 7e campaign creation using the established campaign membership, invitation, lifecycle, authorization, and video boundaries (delivered);
 - refine real adapter boundaries;
 - CoC 7e sheet schema and normalizer;
 - renderer and summary cards;
 - CoC dice engine;
 - CoC theme;
 - CoC Game Hub;
-- campaign integration;
+- richer system-specific campaign integration beyond the delivered generic shell;
 - EN/RU content.
+
+The delivered shell does not implement CoC character sheets, dice mechanics, Keeper tools, NPCs, clues, handouts, sessions, or notes. VtM and CoC characters remain strictly incompatible at the UI, query, and database-integrity boundaries.
 
 ### Exit criteria
 

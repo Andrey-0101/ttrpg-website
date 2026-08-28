@@ -250,18 +250,23 @@ Owns system-specific behavior:
 - theme;
 - game-hub content.
 
-Implemented system:
+Implemented system-specific character, dice, and game-area support:
 
 ```text
 vtm-v5
 ```
 
-The shared typed catalogue also registers these planned systems with no active capabilities or routes:
+The shared typed catalogue also enables campaign creation for this system while its character creation, dice roller, and game area remain planned:
+
+```text
+call-of-cthulhu-7e
+```
+
+The catalogue registers these additional planned systems with no active capabilities or routes:
 
 ```text
 alien
 black-powder-and-brimstone
-call-of-cthulhu-7e
 coriolis
 cyberpunk-red
 delta-green
@@ -272,7 +277,7 @@ paranoia
 traveller-mongoose
 ```
 
-The catalogue is implemented across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool remains system-neutral and outside it. The production catalogue release at `22736bf697a8345e19e92626a8f441f35db4b3c7` passed 156 catalogue/dice tests.
+The catalogue is implemented across Games, the System Rollers section, character creation, and campaign creation. Capabilities are independent: enabling the Call of Cthulhu 7e campaign shell does not expose unfinished character, dice, or game-area routes. Custom Dice Pool remains system-neutral and outside the catalogue.
 
 ### Campaigns
 
@@ -287,6 +292,8 @@ Owns:
 - campaign navigation;
 - campaign lifecycle;
 - RLS-backed access checks and read-only character sharing.
+
+Campaign creation supports `vtm-v5` and the system-neutral `call-of-cthulhu-7e` shell. Character assignments remain game-system exact; VtM characters cannot be linked to CoC campaigns. CoC character sheets, dice, Game Hub content, and Keeper tools remain planned.
 
 ### Realtime and collaboration tools
 
@@ -339,4 +346,4 @@ Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal di
 
 Phase 4B Standalone Video Rooms is the next approved development phase. Its internal order is: architecture and security contract; managed-provider comparison; disposable two-to-three-user spike; permanent standalone implementation; then multi-user, desktop, mobile, reconnect, permission, failure, and production testing.
 
-Phase 4C defines the Campaign Collaboration Contract. Phase 4D then implements server-authoritative shared campaign dice, Phase 4E integrates campaign video through the reusable video core, and Phase 4F assembles the campaign workspace. Exact room schema, RLS, ownership, invitation, retention, provider, and campaign-video decisions remain open. Print/PDF, final decoration, broad public-readiness hardening, and Call of Cthulhu implementation remain deferred.
+Phase 4C defines the Campaign Collaboration Contract. Phase 4D then implements server-authoritative shared campaign dice, Phase 4E integrates campaign video through the reusable video core, and Phase 4F assembles the campaign workspace. Exact room schema, RLS, ownership, invitation, retention, provider, and campaign-video decisions remain open. Print/PDF, final decoration, broad public-readiness hardening, and Call of Cthulhu character, dice, Game Hub, and Keeper functionality remain deferred; only the generic CoC campaign shell is implemented.

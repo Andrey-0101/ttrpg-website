@@ -41,7 +41,7 @@ const LEGACY_FALLBACK_NAMES: Record<GameSystemId, string> = {
   "vtm-v5": "Vampire: The Masquerade V5",
   alien: "Alien",
   "black-powder-and-brimstone": "Black Powder and Brimstone",
-  "call-of-cthulhu-7e": "Call of Cthulhu",
+  "call-of-cthulhu-7e": "Call of Cthulhu 7th Edition",
   coriolis: "Coriolis",
   "cyberpunk-red": "Cyberpunk RED",
   "delta-green": "Delta Green",

@@ -17,6 +17,7 @@ import {
 } from "@/lib/characters/game-systems";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
 import { deriveCampaignVideoParticipantIdentity } from "@/lib/campaign-video/mapping";
+import { getGameSystemCatalogueEntry } from "@/lib/game-systems/catalogue";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignPageProps = {
@@ -370,9 +371,17 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   const gameSystemName = gameSystemTranslationKey
     ? catalogueTranslations(`systems.${gameSystemTranslationKey}.name`)
     : campaign.game_system;
-  const createCharacterHref = normalizedGameSystemId
-    ? `/characters/new/${normalizedGameSystemId}`
-    : "/characters/new";
+  const normalizedGameSystem = normalizedGameSystemId
+    ? getGameSystemCatalogueEntry(normalizedGameSystemId)
+    : null;
+  const characterCreationCapability =
+    normalizedGameSystem?.capabilities.characterCreation;
+  const createCharacterHref =
+    characterCreationCapability?.status === "available"
+      ? characterCreationCapability.route
+      : null;
+  const characterCreationPlanned =
+    characterCreationCapability?.status === "planned";
   const characterLoadError = Boolean(
     assignmentsResult.error ||
     linkedCharactersResult.error ||
@@ -521,6 +530,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           currentUserId={userId}
           isGameMaster={isGameMaster}
           createCharacterHref={createCharacterHref}
+          characterCreationPlanned={characterCreationPlanned}
+          gameSystemName={gameSystemName}
           initialLinkedCharacters={linkedCharacters}
           availableCharacters={availableCharacters}
           loadError={characterLoadError}

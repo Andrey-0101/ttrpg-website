@@ -4,18 +4,17 @@ import { useMemo, useRef, useState, type FormEvent } from "react";
 
 import { useTranslations } from "next-intl";
 
+import { createCampaignAction } from "@/app/[locale]/campaigns/new/actions";
 import { useRouter } from "@/i18n/navigation";
+import { CAMPAIGN_DESCRIPTION_MAX_LENGTH } from "@/lib/campaigns/creation";
 import {
   requestUnsavedChangesNavigation,
   useUnsavedChangesGuard,
 } from "@/lib/navigation/unsaved-changes";
 import {
-  getGameSystemCatalogueEntry,
-  hasAvailableGameSystemCapability,
   isGameSystemCapabilityAvailable,
   type GameSystemId,
 } from "@/lib/game-systems/catalogue";
-import { createClient } from "@/utils/supabase/client";
 
 type CampaignSystemOption = {
   id: GameSystemId;
@@ -32,8 +31,6 @@ type MutationMessage = {
   kind: "status" | "error";
   text: string;
 } | null;
-
-const CAMPAIGN_DESCRIPTION_MAX_LENGTH = 4000;
 
 export default function CampaignCreator({
   gameSystems,
@@ -108,14 +105,16 @@ export default function CampaignCreator({
       text: translations("creatingStatus"),
     });
 
-    const supabase = createClient();
     let releaseCreateLock = true;
 
     try {
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
+      const result = await createCampaignAction({
+        name,
+        gameSystem,
+        description,
+      });
 
-      if (userError || !userData.user) {
+      if (!result.ok && result.error === "unauthenticated") {
         if (!requestUnsavedChangesNavigation()) {
           return;
         }
@@ -125,47 +124,25 @@ export default function CampaignCreator({
         return;
       }
 
-      const trimmedDescription = description.trim();
-      const validatedGameSystem = getGameSystemCatalogueEntry(gameSystem);
-
-      if (
-        !validatedGameSystem ||
-        !hasAvailableGameSystemCapability(
-          validatedGameSystem,
-          "campaignCreation",
-        )
-      ) {
+      if (!result.ok && result.error === "game_system_unavailable") {
         setMessage({
           kind: "error",
           text: translations("gameSystemRequired"),
         });
         return;
       }
-      const validatedGameSystemId = validatedGameSystem.id;
 
-      const { data: campaign, error } = await supabase
-        .from("campaigns")
-        .insert({
-          game_master_id: userData.user.id,
-          game_system: validatedGameSystemId,
-          name: trimmedName,
-          description: trimmedDescription || null,
-        })
-        .select("id")
-        .single();
-
-      if (error || !campaign) {
-        console.error("Failed to create campaign:", error);
+      if (!result.ok) {
         setMessage({ kind: "error", text: translations("createError") });
         return;
       }
 
       allowNavigation();
       releaseCreateLock = false;
-      router.push(`/campaigns/${campaign.id}`);
+      router.push(`/campaigns/${result.campaignId}`);
       router.refresh();
-    } catch (error) {
-      console.error("Failed to create campaign:", error);
+    } catch {
+      console.error("Failed to create campaign.");
       setMessage({ kind: "error", text: translations("createError") });
     } finally {
       if (releaseCreateLock) {

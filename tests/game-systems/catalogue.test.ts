@@ -149,8 +149,11 @@ test("VtM V5 is available for every implemented capability", () => {
   }
 });
 
-test("every other system is planned and exposes no capability route", () => {
-  for (const system of GAME_SYSTEM_CATALOGUE.slice(1)) {
+test("systems without implemented features expose only planned capabilities", () => {
+  for (const system of GAME_SYSTEM_CATALOGUE.filter(
+    (entry) =>
+      entry.id !== "vtm-v5" && entry.id !== "call-of-cthulhu-7e",
+  )) {
     for (const capabilityName of GAME_SYSTEM_CAPABILITIES) {
       const capability: GameSystemCapabilityState =
         system.capabilities[capabilityName];
@@ -159,6 +162,36 @@ test("every other system is planned and exposes no capability route", () => {
       assert.equal(Object.hasOwn(capability, "route"), false);
     }
   }
+});
+
+test("Call of Cthulhu 7e is available only for campaign creation", () => {
+  const callOfCthulhu = getGameSystem("call-of-cthulhu-7e");
+
+  assert.ok(callOfCthulhu);
+  assert.deepEqual(callOfCthulhu.capabilities.campaignCreation, {
+    status: "available",
+    route: "/campaigns/new",
+  });
+
+  for (const capabilityName of [
+    "gameArea",
+    "characterCreation",
+    "diceRoller",
+  ] as const) {
+    assert.deepEqual(callOfCthulhu.capabilities[capabilityName], {
+      status: "planned",
+    });
+  }
+});
+
+test("only VtM V5 and Call of Cthulhu 7e allow campaign creation", () => {
+  assert.deepEqual(
+    GAME_SYSTEM_CATALOGUE.filter(
+      (system) =>
+        system.capabilities.campaignCreation.status === "available",
+    ).map((system) => system.id),
+    ["vtm-v5", "call-of-cthulhu-7e"],
+  );
 });
 
 test("only VtM V5 is available for character creation", () => {
@@ -199,6 +232,10 @@ test("legacy VtM and Call of Cthulhu identifiers still normalize", () => {
     "call-of-cthulhu-7e",
   );
   assert.equal(normalizeGameSystemId("unknown-system"), null);
+  assert.equal(
+    getGameSystemName("call-of-cthulhu-7e"),
+    "Call of Cthulhu 7th Edition",
+  );
 });
 
 test("unknown historical system values remain visible without translation", () => {

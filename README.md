@@ -24,6 +24,7 @@ Implemented:
 - campaign member listing, Player departure, and GM removal;
 - campaign character linking and shared read-only sheets;
 - campaign editing, completion, and deletion;
+- campaign creation for Vampire: The Masquerade V5 and a system-neutral Call of Cthulhu 7th Edition campaign shell;
 - public VtM V5 and system-neutral Custom Dice Pool rollers;
 - up to five saved Custom Dice Pool presets for registered users;
 - private personal roll history for registered users;
@@ -40,7 +41,7 @@ Not yet implemented:
 - independent character-sheet language;
 - print/PDF export;
 - public character sharing;
-- Call of Cthulhu 7e support;
+- Call of Cthulhu 7e character sheets, dice, Game Hub, and Keeper tools;
 - public-readiness security, monitoring, legal, and operational work.
 
 ## Technology
@@ -157,7 +158,7 @@ The agreed delivery strategy is:
 10. complete the visual identity;
 11. build the VtM Game Hub;
 12. complete public-readiness work;
-13. expand to Call of Cthulhu 7e.
+13. expand the delivered Call of Cthulhu 7e campaign shell with character sheets, dice, the Game Hub, and Keeper tools.
 
 Phase 4B Standalone Video Rooms is the next approved development phase. Personal history remains private and non-authoritative; Phase 4D shared campaign dice must keep it separate from server-authoritative campaign roll history.
 

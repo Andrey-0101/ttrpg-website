@@ -222,12 +222,11 @@ Implemented system:
 vtm-v5
 ```
 
-The typed catalogue at `lib/game-systems/catalogue.ts` also contains these planned systems:
+The typed catalogue at `lib/game-systems/catalogue.ts` enables campaign creation for `call-of-cthulhu-7e` while keeping its character creation, dice roller, and game area planned. It also contains these fully planned systems:
 
 ```text
 alien
 black-powder-and-brimstone
-call-of-cthulhu-7e
 coriolis
 cyberpunk-red
 delta-green
@@ -238,7 +237,7 @@ paranoia
 traveller-mongoose
 ```
 
-Capability status is tracked separately for game area, character creation, campaign creation, and dice roller. Only VtM V5 is available; planned capabilities expose no route. The catalogue is rendered across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool is not a game-system entry.
+Capability status is tracked separately for game area, character creation, campaign creation, and dice roller. VtM V5 is available for all four capabilities; Call of Cthulhu 7e is available only for the generic campaign shell. Planned capabilities expose no route. The catalogue is rendered across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool is not a game-system entry.
 
 ADR-008 is Accepted. The project must not create a complete universal rules engine before CoC exposes real shared interfaces.
 
