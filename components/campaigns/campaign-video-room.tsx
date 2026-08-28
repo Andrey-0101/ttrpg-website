@@ -177,7 +177,7 @@ function ParticipantCard({
 
   return (
     <article
-      className={`game-room-participant game-room-slot-${slot.key} relative aspect-video min-w-0 overflow-hidden rounded-xl border border-white/20 bg-neutral-950 shadow-lg`}
+      className="game-room-participant relative aspect-video min-w-0 overflow-hidden rounded-xl border border-white/20 bg-neutral-950 shadow-lg"
       data-participant-slot={slot.key}
       data-local-participant={slot.isCurrentUser ? "true" : "false"}
     >
@@ -360,23 +360,27 @@ export function CampaignVideoRoomLayout({
         {statusMessage}
       </p>
       {slots.map((slot) => (
-        <ParticipantCard
+        <div
           key={slot.key}
-          slot={slot}
-          snapshot={snapshot}
-          statusMessage={statusMessage}
-          hasBeenSeen={
-            slot.directoryEntry
-              ? seenParticipantIdentities.has(slot.directoryEntry.providerIdentity)
-              : false
-          }
-          canJoin={canJoin}
-          onJoin={onJoin}
-          onLeave={onLeave}
-          onCameraChange={onCameraChange}
-          onMicrophoneChange={onMicrophoneChange}
-          onEnableSound={onEnableSound}
-        />
+          className={`game-room-slot game-room-slot-${slot.key}`}
+        >
+          <ParticipantCard
+            slot={slot}
+            snapshot={snapshot}
+            statusMessage={statusMessage}
+            hasBeenSeen={
+              slot.directoryEntry
+                ? seenParticipantIdentities.has(slot.directoryEntry.providerIdentity)
+                : false
+            }
+            canJoin={canJoin}
+            onJoin={onJoin}
+            onLeave={onLeave}
+            onCameraChange={onCameraChange}
+            onMicrophoneChange={onMicrophoneChange}
+            onEnableSound={onEnableSound}
+          />
+        </div>
       ))}
       <CampaignGameRoomPlannedTools {...plannedWorkspace} />
     </section>

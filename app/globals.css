@@ -35,11 +35,13 @@ select option {
 }
 
 .campaign-game-room {
+  min-width: 0;
   min-height: calc(100dvh - 4rem);
 }
 
 .game-room-grid {
   display: grid;
+  min-width: 0;
   gap: 0.75rem;
   padding: 0.75rem;
 }
@@ -47,6 +49,7 @@ select option {
 .game-room-workspace {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: 0.75rem;
 }
 
@@ -78,26 +81,39 @@ select option {
   }
 
   .game-room-grid {
+    --game-room-gap: clamp(0.5rem, 0.55vw, 1.25rem);
+    --game-room-padding-block: clamp(0.5rem, 0.55vw, 1.5rem);
+    --game-room-padding-inline: clamp(0.75rem, 0.75vw, 1.75rem);
     grid-template-areas:
       "gm player-1 player-2"
       "workspace player-3 player-4"
       "workspace player-5 player-6";
     grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
     grid-template-rows: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    max-width: 240rem;
     height: 100%;
-    gap: 0.875rem;
-    padding: 0.75rem 0.875rem;
+    margin-inline: auto;
+    gap: var(--game-room-gap);
+    padding: var(--game-room-padding-block) var(--game-room-padding-inline);
+  }
+
+  .game-room-slot {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+    place-items: center;
+    container-type: size;
   }
 
   .game-room-participant {
-    align-self: center;
     width: 100%;
+    width: min(100cqw, 177.777778cqh, 68rem);
+    height: auto;
   }
 
   .game-room-slot-gm {
     grid-area: gm;
-    justify-self: center;
-    width: 66.6667%;
   }
 
   .game-room-slot-player-1 {
@@ -126,5 +142,6 @@ select option {
 
   .game-room-workspace {
     grid-area: workspace;
+    min-height: 0;
   }
 }
