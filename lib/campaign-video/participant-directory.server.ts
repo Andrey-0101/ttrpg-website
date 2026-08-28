@@ -1,6 +1,7 @@
 import "server-only";
 
 import { deriveCampaignVideoParticipantIdentity } from "./mapping";
+import { resolveCampaignVideoParticipantLabel } from "./participant-label";
 import type { CampaignVideoParticipantDirectoryEntry } from "./browser/contracts";
 import { createClient } from "../../utils/supabase/server";
 
@@ -22,6 +23,7 @@ type ParticipantProfile = {
 
 type ParticipantDirectoryLabels = {
   you: string;
+  gameMasterRole: string;
   gameMasterFallback: string;
   playerFallback: string;
 };
@@ -29,6 +31,7 @@ type ParticipantDirectoryLabels = {
 type LoadCampaignParticipantDirectoryOptions = {
   supabase: SupabaseServerClient;
   campaignId: string;
+  campaignGameSystem: string;
   gameMasterId: string;
   currentUserId: string;
   labels: ParticipantDirectoryLabels;
@@ -45,6 +48,7 @@ export type CampaignParticipantDirectoryResult = {
 export async function loadCampaignParticipantDirectory({
   supabase,
   campaignId,
+  campaignGameSystem,
   gameMasterId,
   currentUserId,
   labels,
@@ -59,14 +63,52 @@ export async function loadCampaignParticipantDirectory({
   const profileIds = Array.from(
     new Set([gameMasterId, ...membershipRows.map((member) => member.user_id)]),
   );
-  const profilesResult =
+  const [profilesResult, assignmentsResult] = await Promise.all([
     profileIds.length > 0
-      ? await supabase
+      ? supabase
           .from("profiles")
           .select("id, display_name, username")
           .in("id", profileIds)
-      : { data: [], error: null };
+      : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("campaign_characters")
+      .select("character_id, linked_by, linked_at")
+      .eq("campaign_id", campaignId)
+      .is("unlinked_at", null)
+      .order("linked_at", { ascending: true }),
+  ]);
   const profiles = profilesResult.data ?? [];
+  const assignmentRows = assignmentsResult.data ?? [];
+  const characterIds = assignmentRows.map(
+    (assignment) => assignment.character_id,
+  );
+  const charactersResult =
+    characterIds.length > 0
+      ? await supabase
+          .from("characters")
+          .select("id, name, game_system")
+          .in("id", characterIds)
+      : { data: [], error: null };
+  const charactersById = new Map(
+    (charactersResult.data ?? []).map((character) => [character.id, character]),
+  );
+  const linkedCharactersByUserId = new Map<
+    string,
+    Array<{ name: string; gameSystem: string }>
+  >();
+
+  for (const assignment of assignmentRows) {
+    const character = charactersById.get(assignment.character_id);
+    if (!character) continue;
+    const linkedCharacters =
+      linkedCharactersByUserId.get(assignment.linked_by) ?? [];
+    linkedCharacters.push({
+      name: character.name,
+      gameSystem: character.game_system,
+    });
+    linkedCharactersByUserId.set(assignment.linked_by, linkedCharacters);
+  }
+
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const gameMasterProfile = profileById.get(gameMasterId);
   const gameMasterName =
@@ -91,7 +133,14 @@ export async function loadCampaignParticipantDirectory({
         campaignId,
         gameMasterId,
       ),
-      displayName: gameMasterName,
+      displayName: resolveCampaignVideoParticipantLabel({
+        role: "game_master",
+        campaignGameSystem,
+        linkedCharacters: [],
+        siteNickname: null,
+        gameMasterLabel: labels.gameMasterRole,
+        playerFallback: labels.playerFallback,
+      }),
       role: "game_master",
       playerPosition: null,
       isCurrentUser: gameMasterId === currentUserId,
@@ -101,10 +150,15 @@ export async function loadCampaignParticipantDirectory({
         campaignId,
         member.userId,
       ),
-      displayName:
-        member.userId === currentUserId
-          ? labels.you
-          : member.displayName || member.username || labels.playerFallback,
+      displayName: resolveCampaignVideoParticipantLabel({
+        role: "player",
+        campaignGameSystem,
+        linkedCharacters:
+          linkedCharactersByUserId.get(member.userId) ?? [],
+        siteNickname: member.displayName || member.username,
+        gameMasterLabel: labels.gameMasterRole,
+        playerFallback: labels.playerFallback,
+      }),
       role: "player" as const,
       playerPosition: member.displayOrder,
       isCurrentUser: member.userId === currentUserId,
@@ -112,7 +166,11 @@ export async function loadCampaignParticipantDirectory({
   ];
 
   return {
-    ready: !membersResult.error && !profilesResult.error,
+    ready:
+      !membersResult.error &&
+      !profilesResult.error &&
+      !assignmentsResult.error &&
+      !charactersResult.error,
     members,
     profiles,
     gameMasterName,

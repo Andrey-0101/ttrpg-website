@@ -23,7 +23,7 @@ export function CampaignGameRoomHeaderFrame({
       className="game-room-header border-b border-white/25 bg-[#210609]"
       data-game-room-header
     >
-      <div className="mx-auto flex h-full min-h-16 w-full max-w-[1920px] items-center gap-3 px-3 sm:gap-5 sm:px-5 lg:px-7">
+      <div className="mx-auto flex h-full min-h-16 w-full max-w-[1920px] items-center gap-2 px-3 sm:gap-5 sm:px-5 lg:px-7">
         <Link
           href="/"
           className="shrink-0 rounded px-1 text-lg font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 sm:text-xl"
@@ -37,11 +37,14 @@ export function CampaignGameRoomHeaderFrame({
           <span aria-hidden="true">&larr;</span>
           <span className="ml-2">{backLabel}</span>
         </Link>
-        <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className="shrink-0" data-game-room-header-actions />
+        <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-3">
           <div className="min-w-0 max-w-28 sm:max-w-56 [&_summary]:truncate">
             {account}
           </div>
-          <LanguageSwitcher />
+          <div className="shrink-0 [&_button]:px-2 sm:[&_button]:px-3">
+            <LanguageSwitcher />
+          </div>
         </div>
       </div>
     </header>

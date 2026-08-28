@@ -26,6 +26,7 @@
     "lib/campaign-video/join-handler.ts",
     "lib/campaign-video/join-service.ts",
     "lib/campaign-video/mapping.ts",
+    "lib/campaign-video/participant-label.ts",
     "lib/campaign-video/provider.ts",
     "lib/campaign-video/providers/livekit.ts",
     "tests/campaign-video/browser-room.test.ts",

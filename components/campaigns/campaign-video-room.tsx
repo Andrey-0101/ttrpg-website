@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useTranslations } from "next-intl";
 
@@ -84,6 +85,60 @@ function MicrophoneIcon({ enabled }: { enabled: boolean }) {
   );
 }
 
+function LeaveIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+      <path
+        d="M10 5H6.75A1.75 1.75 0 0 0 5 6.75v10.5A1.75 1.75 0 0 0 6.75 19H10M14 8l4 4-4 4M9 12h9"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CampaignGameRoomHeaderAction({
+  visible,
+  label,
+  compactLabel,
+  onLeave,
+}: {
+  visible: boolean;
+  label: string;
+  compactLabel: string;
+  onLeave(): void;
+}) {
+  const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setPortalHost(
+        document.querySelector<HTMLElement>("[data-game-room-header-actions]"),
+      );
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  if (!visible || !portalHost) return null;
+
+  return createPortal(
+    <button
+      type="button"
+      onClick={onLeave}
+      aria-label={label}
+      title={label}
+      data-game-room-leave
+      className="flex min-h-9 min-w-9 items-center justify-center gap-1.5 rounded border border-white/45 px-2 text-xs font-medium text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+    >
+      <LeaveIcon />
+      <span className="hidden sm:inline">{compactLabel}</span>
+    </button>,
+    portalHost,
+  );
+}
+
 function MediaIndicator({
   kind,
   enabled,
@@ -98,7 +153,7 @@ function MediaIndicator({
       role="img"
       aria-label={label}
       title={label}
-      className={`flex h-11 w-11 items-center justify-center rounded-full border bg-black/65 ${
+      className={`flex h-9 w-9 items-center justify-center rounded-full border bg-black/65 ${
         enabled ? "border-emerald-200/55 text-emerald-100" : "border-white/25 text-white/55"
       }`}
     >
@@ -110,22 +165,18 @@ function MediaIndicator({
 function ParticipantCard({
   slot,
   snapshot,
-  statusMessage,
   hasBeenSeen,
   canJoin,
   onJoin,
-  onLeave,
   onCameraChange,
   onMicrophoneChange,
   onEnableSound,
 }: {
   slot: CampaignVideoParticipantSlot;
   snapshot: CampaignVideoRoomSnapshot;
-  statusMessage: string;
   hasBeenSeen: boolean;
   canJoin: boolean;
   onJoin(): void;
-  onLeave(): void;
   onCameraChange(enabled: boolean): void;
   onMicrophoneChange(enabled: boolean): void;
   onEnableSound(): void;
@@ -148,8 +199,12 @@ function ParticipantCard({
     slot.role === "game_master"
       ? translations("roles.gameMaster")
       : translations("roles.player", { number: slot.playerPosition });
-  const displayName = slot.directoryEntry?.displayName ?? role;
+  const displayName =
+    slot.role === "game_master"
+      ? translations("roles.gameMaster")
+      : slot.directoryEntry?.displayName ?? role;
   const connected = snapshot.phase === "connected";
+  const participantConnected = connected && participant !== null;
   const busy =
     snapshot.phase === "requesting_credentials" ||
     snapshot.phase === "connecting" ||
@@ -196,19 +251,20 @@ function ParticipantCard({
         <audio ref={audioRef} autoPlay />
       )}
 
-      <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 bg-gradient-to-b from-black/90 to-transparent px-3 pb-8 pt-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold sm:text-base">
-            {displayName}
-            {slot.isCurrentUser ? ` ${translations("youSuffix")}` : ""}
-          </p>
-          <p className="truncate text-xs text-white/65">{role}</p>
-        </div>
-        {slot.isCurrentUser && (
-          <span className="max-w-[48%] truncate rounded-full border border-white/20 bg-black/65 px-2 py-1 text-[0.65rem] font-medium text-white/75" title={statusMessage}>
-            {statusMessage}
+      <div
+        className="absolute right-2 top-2 flex max-w-[calc(100%-1rem)] items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-xs font-semibold text-white"
+        title={displayName}
+        data-participant-label
+      >
+        {participantConnected && (
+          <span className="shrink-0" data-participant-connected>
+            <span className="block h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+            <span className="sr-only">{translations("connectedParticipant")}</span>
           </span>
         )}
+        <span className="min-w-0 truncate" aria-label={displayName}>
+          {displayName}
+        </span>
       </div>
 
       <div className="absolute inset-x-3 top-1/2 flex -translate-y-1/2 flex-col items-center gap-2 text-center">
@@ -231,31 +287,21 @@ function ParticipantCard({
                 : translations("join")}
           </button>
         )}
-        {slot.isCurrentUser && connected && (
-          <div className="flex flex-wrap justify-center gap-2">
-            {snapshot.audioBlocked && (
-              <button
-                type="button"
-                onClick={onEnableSound}
-                className="min-h-11 rounded-full border border-amber-300/80 bg-black/70 px-3 py-2 text-xs font-semibold text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200"
-              >
-                {translations("enableSound")}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onLeave}
-              className="min-h-11 rounded-full border border-red-300/80 bg-black/70 px-4 py-2 text-xs font-semibold text-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-200"
-            >
-              {translations("leave")}
-            </button>
-          </div>
+        {slot.isCurrentUser && connected && snapshot.audioBlocked && (
+          <button
+            type="button"
+            onClick={onEnableSound}
+            className="min-h-11 rounded-full border border-amber-300/80 bg-black/70 px-3 py-2 text-xs font-semibold text-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200"
+          >
+            {translations("enableSound")}
+          </button>
         )}
       </div>
 
       <div
-        className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black via-black/90 to-transparent px-3 pb-3 pt-8"
+        className="absolute bottom-2 left-2 flex items-center gap-1"
         aria-label={slot.isCurrentUser ? translations("mediaControls") : translations("mediaIndicators")}
+        data-media-toolbar
       >
         {slot.isCurrentUser ? (
           <>
@@ -266,9 +312,11 @@ function ParticipantCard({
               aria-label={cameraLabel}
               aria-pressed={snapshot.cameraEnabled}
               title={cameraLabel}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/35 bg-black/70 text-white hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-45"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-transparent text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-45"
             >
-              <CameraIcon enabled={snapshot.cameraEnabled} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/35 bg-black/70 hover:bg-white/15" data-control-circle>
+                <CameraIcon enabled={snapshot.cameraEnabled} />
+              </span>
             </button>
             <button
               type="button"
@@ -277,9 +325,11 @@ function ParticipantCard({
               aria-label={microphoneLabel}
               aria-pressed={snapshot.microphoneEnabled}
               title={microphoneLabel}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/35 bg-black/70 text-white hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-45"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-transparent text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-45"
             >
-              <MicrophoneIcon enabled={snapshot.microphoneEnabled} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/35 bg-black/70 hover:bg-white/15" data-control-circle>
+                <MicrophoneIcon enabled={snapshot.microphoneEnabled} />
+              </span>
             </button>
           </>
         ) : (
@@ -351,39 +401,47 @@ export function CampaignVideoRoomLayout({
   );
 
   return (
-    <section className="game-room-grid" aria-label={translations("title")}>
-      <p
-        className="sr-only"
-        role={snapshot.error || !directoryReady ? "alert" : "status"}
-        aria-live="polite"
-      >
-        {statusMessage}
-      </p>
-      {slots.map((slot) => (
-        <div
-          key={slot.key}
-          className={`game-room-slot game-room-slot-${slot.key}`}
+    <>
+      <CampaignGameRoomHeaderAction
+        visible={connected}
+        label={translations("leave")}
+        compactLabel={translations("leaveCompact")}
+        onLeave={onLeave}
+      />
+      <section className="game-room-grid" aria-label={translations("title")}>
+        <p
+          className="sr-only"
+          role={snapshot.error || !directoryReady ? "alert" : "status"}
+          aria-live="polite"
         >
-          <ParticipantCard
-            slot={slot}
-            snapshot={snapshot}
-            statusMessage={statusMessage}
-            hasBeenSeen={
-              slot.directoryEntry
-                ? seenParticipantIdentities.has(slot.directoryEntry.providerIdentity)
-                : false
-            }
-            canJoin={canJoin}
-            onJoin={onJoin}
-            onLeave={onLeave}
-            onCameraChange={onCameraChange}
-            onMicrophoneChange={onMicrophoneChange}
-            onEnableSound={onEnableSound}
-          />
-        </div>
-      ))}
-      <CampaignGameRoomPlannedTools {...plannedWorkspace} />
-    </section>
+          {statusMessage}
+        </p>
+        {slots.map((slot) => (
+          <div
+            key={slot.key}
+            className={`game-room-slot game-room-slot-${slot.key}`}
+          >
+            <ParticipantCard
+              slot={slot}
+              snapshot={snapshot}
+              hasBeenSeen={
+                slot.directoryEntry
+                  ? seenParticipantIdentities.has(
+                      slot.directoryEntry.providerIdentity,
+                    )
+                  : false
+              }
+              canJoin={canJoin}
+              onJoin={onJoin}
+              onCameraChange={onCameraChange}
+              onMicrophoneChange={onMicrophoneChange}
+              onEnableSound={onEnableSound}
+            />
+          </div>
+        ))}
+        <CampaignGameRoomPlannedTools {...plannedWorkspace} />
+      </section>
+    </>
   );
 }
 
