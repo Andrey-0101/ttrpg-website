@@ -88,8 +88,9 @@ test("Game Room uses the approved viewport-driven asymmetric composition", () =>
   assert.match(styles, /\.game-room-grid \{[\s\S]*height: 100%/u);
   assert.match(styles, /--game-room-gap: clamp\(/u);
   assert.match(styles, /max-width: 240rem/u);
-  assert.match(styles, /max-width: min\(100%, 68rem\)/u);
-  assert.match(styles, /\.game-room-participant \{[\s\S]*height: 100%/u);
+  assert.match(styles, /\.game-room-slot \{[\s\S]*container-type: size/u);
+  assert.match(styles, /width: min\(100cqw, 177\.777778cqh, 68rem\)/u);
+  assert.match(styles, /\.game-room-participant \{[\s\S]*height: auto/u);
   assert.match(styles, /\.game-room-slot-gm \{\s*grid-area: gm;\s*\}/u);
   assert.doesNotMatch(styles, /\.campaign-game-room \{[\s\S]{0,120}overflow: hidden/u);
   assert.doesNotMatch(styles, /transform:\s*scale\(/u);

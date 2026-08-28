@@ -98,13 +98,18 @@ select option {
     padding: var(--game-room-padding-block) var(--game-room-padding-inline);
   }
 
-  .game-room-participant {
-    place-self: center;
-    width: auto;
-    max-width: min(100%, 68rem);
-    height: 100%;
-    max-height: 100%;
+  .game-room-slot {
+    display: grid;
+    min-width: 0;
     min-height: 0;
+    place-items: center;
+    container-type: size;
+  }
+
+  .game-room-participant {
+    width: 100%;
+    width: min(100cqw, 177.777778cqh, 68rem);
+    height: auto;
   }
 
   .game-room-slot-gm {
