@@ -146,7 +146,7 @@
         "description": "A grim fantasy game of gunpowder, occult danger, and desperate adventure."
       },
       "callOfCthulhu": {
-        "name": "Call of Cthulhu",
+        "name": "Call of Cthulhu 7th Edition",
         "description": "An investigative horror game about mysteries, dangerous knowledge, and the Cthulhu Mythos."
       },
       "coriolis": {
@@ -606,6 +606,8 @@
     "description": "Link one of your compatible characters to share it with the campaign. Linked sheets are read-only for other participants.",
     "completedDescription": "This campaign is completed. Active character links have been closed, and new linking is disabled.",
     "createCharacter": "Create character",
+    "plannedTitle": "Compatible character sheets are planned",
+    "plannedDescription": "Character sheets for {system} are not available yet. Characters from other game systems cannot be linked to this campaign.",
     "linkedTitle": "Linked characters",
     "linkedEmpty": "No characters are currently linked to this campaign.",
     "owner": "Owner: {name}",

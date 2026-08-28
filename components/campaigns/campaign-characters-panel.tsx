@@ -31,7 +31,9 @@ type CampaignCharactersPanelProps = {
   campaignStatus: string;
   currentUserId: string;
   isGameMaster: boolean;
-  createCharacterHref: string;
+  createCharacterHref: string | null;
+  characterCreationPlanned: boolean;
+  gameSystemName: string;
   initialLinkedCharacters: LinkedCharacter[];
   availableCharacters: AvailableCharacter[];
   loadError: boolean;
@@ -75,6 +77,8 @@ export default function CampaignCharactersPanel({
   currentUserId,
   isGameMaster,
   createCharacterHref,
+  characterCreationPlanned,
+  gameSystemName,
   initialLinkedCharacters,
   availableCharacters,
   loadError,
@@ -224,12 +228,14 @@ export default function CampaignCharactersPanel({
           </p>
         </div>
 
-        <Link
-          href={createCharacterHref}
-          className="w-full shrink-0 rounded border border-white/70 px-4 py-2 text-center text-sm font-semibold hover:bg-white/10 sm:w-auto"
-        >
-          {translations("createCharacter")}
-        </Link>
+        {createCharacterHref && (
+          <Link
+            href={createCharacterHref}
+            className="w-full shrink-0 rounded border border-white/70 px-4 py-2 text-center text-sm font-semibold hover:bg-white/10 sm:w-auto"
+          >
+            {translations("createCharacter")}
+          </Link>
+        )}
       </div>
 
       {loadError ? (
@@ -317,81 +323,96 @@ export default function CampaignCharactersPanel({
             )}
           </div>
 
-          <div className="mt-7 border-t border-white/20 pt-6">
-            <h3 className="text-lg font-semibold">
-              {translations("yourCharactersTitle")}
-            </h3>
-            <p className="mt-1 text-sm text-white/70">
-              {translations("yourCharactersDescription")}
-            </p>
-
-            {availableCharacters.length === 0 ? (
-              <p className="mt-3 rounded-lg border border-dashed border-white/25 p-4 text-sm text-white/70">
-                {translations("availableEmpty")}
+          {characterCreationPlanned ? (
+            <div className="mt-7 border-t border-white/20 pt-6">
+              <div className="rounded-lg border border-amber-200/50 bg-amber-950/25 p-4">
+                <h3 className="text-lg font-semibold">
+                  {translations("plannedTitle")}
+                </h3>
+                <p className="mt-2 text-sm text-white/80">
+                  {translations("plannedDescription", {
+                    system: gameSystemName,
+                  })}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-7 border-t border-white/20 pt-6">
+              <h3 className="text-lg font-semibold">
+                {translations("yourCharactersTitle")}
+              </h3>
+              <p className="mt-1 text-sm text-white/70">
+                {translations("yourCharactersDescription")}
               </p>
-            ) : (
-              <ul className="mt-3 grid gap-3">
-                {availableCharacters.map((character) => {
-                  const needsCampaignVisibility =
-                    character.visibility !== "campaign";
-                  const canLink =
-                    isActiveCampaign &&
-                    !needsCampaignVisibility &&
-                    !character.linkedElsewhere;
-                  const isMutating = mutatingCharacterId === character.id;
 
-                  return (
-                    <li
-                      key={character.id}
-                      className="rounded-lg border border-white/20 bg-black/20 p-4"
-                    >
-                      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
-                        <CharacterPortrait
-                          name={character.name}
-                          portraitUrl={character.portraitUrl}
-                        />
+              {availableCharacters.length === 0 ? (
+                <p className="mt-3 rounded-lg border border-dashed border-white/25 p-4 text-sm text-white/70">
+                  {translations("availableEmpty")}
+                </p>
+              ) : (
+                <ul className="mt-3 grid gap-3">
+                  {availableCharacters.map((character) => {
+                    const needsCampaignVisibility =
+                      character.visibility !== "campaign";
+                    const canLink =
+                      isActiveCampaign &&
+                      !needsCampaignVisibility &&
+                      !character.linkedElsewhere;
+                    const isMutating = mutatingCharacterId === character.id;
 
-                        <div className="min-w-0 flex-1">
-                          <p className="break-words text-lg font-semibold">
-                            {character.name}
-                          </p>
-                          <p className="mt-1 text-sm text-white/70">
-                            {character.linkedElsewhere
-                              ? translations("linkedElsewhere")
-                              : needsCampaignVisibility
-                                ? translations("needsCampaignVisibility")
-                                : translations("readyToLink")}
-                          </p>
+                    return (
+                      <li
+                        key={character.id}
+                        className="rounded-lg border border-white/20 bg-black/20 p-4"
+                      >
+                        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+                          <CharacterPortrait
+                            name={character.name}
+                            portraitUrl={character.portraitUrl}
+                          />
+
+                          <div className="min-w-0 flex-1">
+                            <p className="break-words text-lg font-semibold">
+                              {character.name}
+                            </p>
+                            <p className="mt-1 text-sm text-white/70">
+                              {character.linkedElsewhere
+                                ? translations("linkedElsewhere")
+                                : needsCampaignVisibility
+                                  ? translations("needsCampaignVisibility")
+                                  : translations("readyToLink")}
+                            </p>
+                          </div>
+
+                          <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
+                            <Link
+                              href={`/characters/${character.id}`}
+                              className="rounded border border-white/70 px-3 py-2 text-center text-sm font-semibold hover:bg-white/10"
+                            >
+                              {needsCampaignVisibility
+                                ? translations("editVisibility")
+                                : translations("openOwned")}
+                            </Link>
+
+                            <button
+                              type="button"
+                              onClick={() => handleLink(character)}
+                              disabled={!canLink || mutatingCharacterId !== null}
+                              className="rounded border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-950/30 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {isMutating
+                                ? translations("linking")
+                                : translations("link")}
+                            </button>
+                          </div>
                         </div>
-
-                        <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
-                          <Link
-                            href={`/characters/${character.id}`}
-                            className="rounded border border-white/70 px-3 py-2 text-center text-sm font-semibold hover:bg-white/10"
-                          >
-                            {needsCampaignVisibility
-                              ? translations("editVisibility")
-                              : translations("openOwned")}
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={() => handleLink(character)}
-                            disabled={!canLink || mutatingCharacterId !== null}
-                            className="rounded border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-950/30 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            {isMutating
-                              ? translations("linking")
-                              : translations("link")}
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
         </>
       )}
 

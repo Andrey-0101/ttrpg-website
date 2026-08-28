@@ -78,7 +78,13 @@ export const GAME_SYSTEM_CATALOGUE = [
     id: "call-of-cthulhu-7e",
     translationKey: "callOfCthulhu",
     legacyValues: ["Call of Cthulhu", "Call of Cthulhu 7th Edition"],
-    capabilities: plannedCapabilities,
+    capabilities: {
+      ...plannedCapabilities,
+      campaignCreation: {
+        status: "available",
+        route: "/campaigns/new",
+      },
+    },
   },
   {
     id: "coriolis",
@@ -147,6 +153,8 @@ export type GameSystemsAvailableFor<
 
 export type AvailableCharacterCreationSystemId =
   GameSystemsAvailableFor<"characterCreation">["id"];
+export type AvailableCampaignCreationSystemId =
+  GameSystemsAvailableFor<"campaignCreation">["id"];
 
 export const GAME_SYSTEMS_BY_ID = Object.fromEntries(
   GAME_SYSTEM_CATALOGUE.map((system) => [system.id, system]),

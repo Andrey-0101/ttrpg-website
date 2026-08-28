@@ -11,9 +11,9 @@ The target site is a bilingual multi-system TTRPG hub with standalone Video Room
 | Area | Current | Target |
 |---|---|---|
 | Home | Implemented localized landing | Expanded entry point and relevant calls to action |
-| Games catalogue | Twelve-system catalogue; VtM V5 available, others planned | Multi-system catalogue with additional implemented systems over time |
+| Games catalogue | Twelve-system catalogue; VtM V5 fully available and CoC 7e campaign creation available | Multi-system catalogue with additional implemented systems over time |
 | VtM area | Basic game page and implemented personal roller | Complete Game Hub |
-| CoC area | Planned catalogue entry only | Complete later Game Hub and tools |
+| CoC area | Generic campaign shell implemented; Game Hub, characters, dice, and Keeper tools planned | Complete later Game Hub and tools |
 | Authentication | Implemented | Recovery, security, and complete account lifecycle |
 | Dashboard | Implemented links to Campaigns and Characters | Personal cross-system overview |
 | Characters | Complete VtM owner workflow plus campaign read-only sharing | Multi-system characters and approved optional sharing |
