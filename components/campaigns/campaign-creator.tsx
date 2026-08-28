@@ -8,6 +8,10 @@ import { createCampaignAction } from "@/app/[locale]/campaigns/new/actions";
 import { useRouter } from "@/i18n/navigation";
 import { CAMPAIGN_DESCRIPTION_MAX_LENGTH } from "@/lib/campaigns/creation";
 import {
+  createCampaignCreationSubmissionState,
+  submitCampaignCreation,
+} from "@/lib/campaigns/creation-navigation";
+import {
   requestUnsavedChangesNavigation,
   useUnsavedChangesGuard,
 } from "@/lib/navigation/unsaved-changes";
@@ -47,7 +51,12 @@ export default function CampaignCreator({
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<MutationMessage>(null);
   const [creating, setCreating] = useState(false);
-  const createLockRef = useRef(false);
+  const [createdCampaignId, setCreatedCampaignId] = useState<string | null>(
+    null,
+  );
+  const creationSubmissionRef = useRef(
+    createCampaignCreationSubmissionState(),
+  );
 
   const cleanSnapshot = useMemo(
     () =>
@@ -69,7 +78,7 @@ export default function CampaignCreator({
   );
   const hasUnsavedChanges = currentSnapshot !== cleanSnapshot;
   const { allowNavigation } = useUnsavedChangesGuard({
-    enabled: hasUnsavedChanges,
+    enabled: hasUnsavedChanges && !createdCampaignId,
     confirmMessage: unsavedTranslations("leaveConfirm"),
   });
 
@@ -80,10 +89,6 @@ export default function CampaignCreator({
 
     if (!trimmedName) {
       setMessage({ kind: "error", text: translations("nameRequired") });
-      return;
-    }
-
-    if (createLockRef.current) {
       return;
     }
 
@@ -98,58 +103,57 @@ export default function CampaignCreator({
       return;
     }
 
-    createLockRef.current = true;
-    setCreating(true);
-    setMessage({
-      kind: "status",
-      text: translations("creatingStatus"),
-    });
+    if (!creationSubmissionRef.current.createdCampaignId) {
+      setMessage({
+        kind: "status",
+        text: translations("creatingStatus"),
+      });
+    }
 
-    let releaseCreateLock = true;
-
-    try {
-      const result = await createCampaignAction({
+    await submitCampaignCreation({
+      input: {
         name,
         gameSystem,
         description,
-      });
-
-      if (!result.ok && result.error === "unauthenticated") {
-        if (!requestUnsavedChangesNavigation()) {
-          return;
-        }
-
-        releaseCreateLock = false;
-        router.push("/login");
-        return;
-      }
-
-      if (!result.ok && result.error === "game_system_unavailable") {
-        setMessage({
-          kind: "error",
-          text: translations("gameSystemRequired"),
-        });
-        return;
-      }
-
-      if (!result.ok) {
-        setMessage({ kind: "error", text: translations("createError") });
-        return;
-      }
-
-      allowNavigation();
-      releaseCreateLock = false;
-      router.push(`/campaigns/${result.campaignId}`);
-      router.refresh();
-    } catch {
-      console.error("Failed to create campaign.");
-      setMessage({ kind: "error", text: translations("createError") });
-    } finally {
-      if (releaseCreateLock) {
-        createLockRef.current = false;
-        setCreating(false);
-      }
-    }
+      },
+      state: creationSubmissionRef.current,
+      dependencies: {
+        createCampaign: createCampaignAction,
+        requestLoginNavigation: requestUnsavedChangesNavigation,
+        allowCampaignNavigation: allowNavigation,
+        navigate: (href) => router.push(href),
+        setCreating,
+        onFailure: (error) => {
+          setMessage({
+            kind: "error",
+            text:
+              error === "game_system_unavailable"
+                ? translations("gameSystemRequired")
+                : translations("createError"),
+          });
+        },
+        onAuthenticationRequired: () => {
+          setMessage({
+            kind: "error",
+            text: translations("signInRequired"),
+          });
+        },
+        onCreated: (campaignId) => {
+          setCreatedCampaignId(campaignId);
+          setMessage({
+            kind: "status",
+            text: translations("createdStatus"),
+          });
+        },
+        onNavigationFailure: () => {
+          console.error("Failed to open the created campaign.");
+          setMessage({
+            kind: "status",
+            text: translations("createdStatus"),
+          });
+        },
+      },
+    });
   }
 
   const fieldStyle =
@@ -167,7 +171,7 @@ export default function CampaignCreator({
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            disabled={creating}
+            disabled={creating || Boolean(createdCampaignId)}
             maxLength={120}
             className={fieldStyle}
             placeholder={translations("namePlaceholder")}
@@ -175,7 +179,7 @@ export default function CampaignCreator({
           />
         </label>
 
-        <fieldset disabled={creating}>
+        <fieldset disabled={creating || Boolean(createdCampaignId)}>
           <legend className="font-medium">{translations("gameSystem")}</legend>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             {gameSystems.map((system) => {
@@ -250,7 +254,7 @@ export default function CampaignCreator({
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            disabled={creating}
+            disabled={creating || Boolean(createdCampaignId)}
             maxLength={CAMPAIGN_DESCRIPTION_MAX_LENGTH}
             rows={7}
             className={`${fieldStyle} resize-y`}
@@ -265,7 +269,7 @@ export default function CampaignCreator({
         </label>
       </div>
 
-      {hasUnsavedChanges && !creating && (
+      {hasUnsavedChanges && !creating && !createdCampaignId && (
         <p className="mt-5 text-sm font-medium text-amber-800" role="status">
           {unsavedTranslations("status")}
         </p>
@@ -287,12 +291,20 @@ export default function CampaignCreator({
           type="submit"
           disabled={
             creating ||
-            !gameSystem ||
-            !isGameSystemCapabilityAvailable(gameSystem, "campaignCreation")
+            (!createdCampaignId &&
+              (!gameSystem ||
+                !isGameSystemCapabilityAvailable(
+                  gameSystem,
+                  "campaignCreation",
+                )))
           }
           className="rounded bg-neutral-950 px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {creating ? translations("creating") : translations("create")}
+          {creating
+            ? translations("creating")
+            : createdCampaignId
+              ? translations("openCreated")
+              : translations("create")}
         </button>
       </div>
     </form>

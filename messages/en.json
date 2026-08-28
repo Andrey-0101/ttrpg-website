@@ -412,7 +412,10 @@
     "create": "Create Campaign",
     "creating": "Creating...",
     "creatingStatus": "Creating the campaign. Please wait.",
+    "createdStatus": "Campaign created. Opening it now. If this page remains open, use Open Created Campaign.",
+    "openCreated": "Open Created Campaign",
     "createError": "Unable to create the campaign.",
+    "signInRequired": "Your session expired. Sign in before trying again.",
     "nameRequired": "Enter a campaign name.",
     "gameSystemRequired": "Select an available game system."
   },
