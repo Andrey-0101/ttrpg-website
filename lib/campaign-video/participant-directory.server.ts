@@ -94,6 +94,7 @@ export async function loadCampaignParticipantDirectory({
       displayName: gameMasterName,
       role: "game_master",
       playerPosition: null,
+      isCurrentUser: gameMasterId === currentUserId,
     },
     ...members.map((member) => ({
       providerIdentity: deriveCampaignVideoParticipantIdentity(
@@ -106,6 +107,7 @@ export async function loadCampaignParticipantDirectory({
           : member.displayName || member.username || labels.playerFallback,
       role: "player" as const,
       playerPosition: member.displayOrder,
+      isCurrentUser: member.userId === currentUserId,
     })),
   ];
 

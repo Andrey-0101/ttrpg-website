@@ -8,6 +8,7 @@ export type CampaignVideoParticipantDirectoryEntry = {
   displayName: string;
   role: CampaignVideoRole;
   playerPosition: number | null;
+  isCurrentUser: boolean;
 };
 
 export type CampaignVideoTrackKind = "camera" | "microphone";

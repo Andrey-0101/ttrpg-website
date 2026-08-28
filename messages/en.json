@@ -452,6 +452,7 @@
   },
   "CampaignGameRoom": {
     "back": "Back to Campaign Overview",
+    "backCompact": "Back to campaign",
     "title": "Game Room",
     "description": "The campaign's virtual tabletop. Video is available now; the remaining workspace tools are shown as the approved future structure.",
     "roleLabel": "Your role",
@@ -464,6 +465,10 @@
       "description": "Open the campaign's dedicated virtual tabletop for video, participant media, and the planned session workspace.",
       "open": "Open Game Room",
       "completedHelp": "Completed campaigns keep their history, but the Game Room cannot be opened for an active video session."
+    },
+    "workspace": {
+      "display": "Image / Handout Display",
+      "tools": "Game Tools"
     },
     "planned": {
       "title": "Session workspace",
@@ -504,7 +509,10 @@
     "waitingForParticipants": "Connected. Waiting for other campaign participants.",
     "videoIdle": "Join the room when you are ready. Camera and microphone remain off until you enable them yourself.",
     "mediaControls": "Camera, microphone, and sound controls",
+    "mediaIndicators": "Camera and microphone status",
     "cameraOff": "Camera off",
+    "waitingParticipant": "Waiting",
+    "disconnectedParticipant": "Disconnected",
     "localCamera": "Your camera",
     "youSuffix": "(You)",
     "enableSound": "Enable sound",

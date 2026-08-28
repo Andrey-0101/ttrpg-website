@@ -1,49 +1,42 @@
-type PlannedTool = {
-  title: string;
-  description: string;
-  details?: string[];
-};
-
 type CampaignGameRoomPlannedToolsProps = {
-  heading: string;
-  description: string;
+  displayHeading: string;
+  toolsHeading: string;
   status: string;
-  tools: PlannedTool[];
 };
 
 export default function CampaignGameRoomPlannedTools({
-  heading,
-  description,
+  displayHeading,
+  toolsHeading,
   status,
-  tools,
 }: CampaignGameRoomPlannedToolsProps) {
   return (
-    <section aria-labelledby="planned-tools-title">
-      <h2 id="planned-tools-title" className="text-xl font-bold">
-        {heading}
-      </h2>
-      <p className="mt-2 max-w-3xl text-sm text-white/70">{description}</p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {tools.map((tool) => (
-          <article
-            key={tool.title}
-            className="rounded-lg border border-white/15 bg-black/20 p-4"
-          >
-            <span className="rounded-full bg-white/10 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-white/65">
-              {status}
-            </span>
-            <h3 className="mt-3 font-semibold">{tool.title}</h3>
-            <p className="mt-2 text-sm text-white/65">{tool.description}</p>
-            {tool.details && (
-              <ul className="mt-3 space-y-1 text-xs text-white/55">
-                {tool.details.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            )}
-          </article>
-        ))}
-      </div>
-    </section>
+    <div className="game-room-workspace min-h-0" data-game-room-workspace>
+      <section
+        className="flex min-h-48 flex-1 items-center justify-center rounded-xl border border-white/20 bg-black/55 p-5 text-center"
+        aria-labelledby="handout-display-title"
+        data-handout-display
+      >
+        <div>
+          <h2 id="handout-display-title" className="text-lg font-semibold sm:text-xl">
+            {displayHeading}
+          </h2>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/55">
+            {status}
+          </p>
+        </div>
+      </section>
+      <section
+        className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-white/20 bg-black/65 px-4 py-2"
+        aria-labelledby="game-tools-title"
+        data-game-tools-panel
+      >
+        <h2 id="game-tools-title" className="truncate text-sm font-semibold sm:text-base">
+          {toolsHeading}
+        </h2>
+        <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white/60">
+          {status}
+        </span>
+      </section>
+    </div>
   );
 }

@@ -8,11 +8,11 @@ import {
   setRequestLocale,
 } from "next-intl/server";
 import { notFound } from "next/navigation";
-import SiteHeader from "@/components/site-header";
 import { routing } from "@/i18n/routing";
 
 type LocaleLayoutProps = {
   children: React.ReactNode;
+  header: React.ReactNode;
   params: Promise<{
     locale: string;
   }>;
@@ -53,6 +53,7 @@ export async function generateMetadata({
 
 export default async function LocaleLayout({
   children,
+  header,
   params,
 }: LocaleLayoutProps) {
   const { locale } = await params;
@@ -66,7 +67,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider>
       <div className="min-h-screen">
-        <SiteHeader />
+        {header}
         {children}
       </div>
     </NextIntlClientProvider>
