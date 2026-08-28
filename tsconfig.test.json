@@ -20,6 +20,7 @@
     "lib/dice/saved-custom-dice-presets-ui.ts",
     "lib/characters/game-systems.ts",
     "lib/campaigns/creation.ts",
+    "lib/campaigns/creation-navigation.ts",
     "lib/game-systems/catalogue.ts",
     "lib/game-systems/vtm-v5/dice-engine.ts",
     "lib/game-systems/vtm-v5/dice-roller.ts",
