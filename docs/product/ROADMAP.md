@@ -36,7 +36,7 @@ cb6a07f11669916c8af68d0f0c93033438c901ea
 
 PR #26 is merged, deployed, and production-verified at this commit. The verified release passed 169 automated tests and generated 36/36 static pages. The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
 
-Phase 4A, personal dice persistence, and the planned game-system catalogue are complete. Standalone Video Rooms, campaign dice, and campaign video integration are not implemented. No managed WebRTC provider has been selected. H007 remains the latest completed handoff; H008 does not exist.
+Phase 4A, personal dice persistence, the planned game-system catalogue, and the basic campaign LiveKit integration are complete. The first campaign Game Room shell now gives authorized active campaign participants a dedicated video workspace. Standalone Video Rooms, shared campaign dice, and the remaining Game Room tools are not implemented; standalone authorization remains a separate future domain.
 
 ## Completed foundation
 
@@ -328,31 +328,31 @@ Authorized campaign participants can make shared VtM rolls and see the same immu
 
 ### Phase 4E — Campaign Video Rooms Integration
 
-**Status: Planned**
+**Status: Basic campaign video room implemented**
 
 #### Goal
 
-Reuse the standalone video core inside campaigns with campaign-derived authorization as a separate access layer.
+Provide campaign-authorized LiveKit video through the reusable provider-neutral controller and browser media core.
 
 #### Scope boundary
 
-Campaign membership must be checked before issuing a short-lived provider token. Removal/revocation and campaign lifecycle behavior must follow the Phase 4C contract. Campaign room cardinality, completed-campaign behavior, and reuse of standalone invitation logic remain open; this phase must not replace the standalone authorization adapter with campaign assumptions.
+Campaign membership is checked before issuing a short-lived provider token. One GM plus no more than six Players share the deterministic campaign room, completed campaigns cannot join, and campaign access remains separate from the still-planned standalone authorization model. Recording, transcription, screen sharing, remote moderation, and campaign image presentation are outside the basic room.
 
 #### Exit criteria
 
-Authorized active campaign participants can use campaign video through the shared core, while removed members and unauthorized users cannot obtain new tokens and campaign lifecycle rules are verified.
+Authorized active campaign participants can use explicit Join/Leave, their own camera and microphone, participant media tiles, sound unlock, reconnect, and safe error states. Removed members and unauthorized users cannot obtain new tokens.
 
 ### Phase 4F — Campaign Workspace Integration
 
-**Status: Planned**
+**Status: First Game Room shell implemented; broader workspace planned**
 
 #### Goal
 
-Assemble the approved dice and video capabilities into a coherent campaign workspace before Milestone 5 content expands it.
+Assemble approved live-session capabilities into a coherent campaign workspace before Milestone 5 content expands it.
 
 #### Scope boundary
 
-Integrate navigation, layout, connection states, and cross-tool context without prematurely implementing Handouts, NPCs, Sessions, or Notes or merging standalone and campaign authorization models.
+The localized `/[locale]/campaigns/[id]/game-room` route now provides the responsive campaign video workspace and presents Campaign Dice, Handouts, Participants, Quick Notes, and Session Context as clearly non-interactive planned areas. Their APIs, persistence, and routes remain unimplemented, and standalone and campaign authorization remain separate.
 
 #### Exit criteria
 

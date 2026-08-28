@@ -22,7 +22,7 @@
 
 The current deployed and production-verified baseline is `main` at `cb6a07f11669916c8af68d0f0c93033438c901ea`. PR #26 is merged and production-verified. The release passed 169 automated tests and generated 36/36 static pages.
 
-The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, and the planned game-system catalogue are complete. Standalone Video Rooms, campaign dice, and campaign video integration are not implemented, and no managed WebRTC provider has been selected. H007 remains the latest completed handoff; H008 does not exist.
+The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, campaign-authorized LiveKit video, and the first dedicated campaign Game Room shell are implemented. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain planned.
 
 ## Purpose
 
@@ -297,9 +297,9 @@ Campaign creation supports `vtm-v5` and the system-neutral `call-of-cthulhu-7e` 
 
 ### Realtime and collaboration tools
 
-Milestone 4A personal dice is implemented, including the deterministic VtM evaluator, public VtM and Custom rollers, saved Custom presets, and private personal history. No standalone Video Room, campaign-authoritative Realtime dice feed, or campaign video integration is implemented yet.
+Milestone 4A personal dice is implemented, including the deterministic VtM evaluator, public VtM and Custom rollers, saved Custom presets, and private personal history. Campaign-authorized LiveKit video now runs in a dedicated localized Game Room; no standalone Video Room or campaign-authoritative Realtime dice feed is implemented yet.
 
-The reusable video core will own provider integration and media-room behavior. Standalone application authorization will be its first access adapter and must not depend on campaigns. Later campaign video must add a separate campaign-derived authorization adapter.
+The reusable video core owns the implemented campaign provider integration and media-room behavior behind a campaign-derived authorization adapter. Future standalone application authorization must remain separate and must not depend on campaigns.
 
 The broader collaboration area will own:
 
@@ -346,4 +346,4 @@ Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal di
 
 Phase 4B Standalone Video Rooms is the next approved development phase. Its internal order is: architecture and security contract; managed-provider comparison; disposable two-to-three-user spike; permanent standalone implementation; then multi-user, desktop, mobile, reconnect, permission, failure, and production testing.
 
-Phase 4C defines the Campaign Collaboration Contract. Phase 4D then implements server-authoritative shared campaign dice, Phase 4E integrates campaign video through the reusable video core, and Phase 4F assembles the campaign workspace. Exact room schema, RLS, ownership, invitation, retention, provider, and campaign-video decisions remain open. Print/PDF, final decoration, broad public-readiness hardening, and Call of Cthulhu character, dice, Game Hub, and Keeper functionality remain deferred; only the generic CoC campaign shell is implemented.
+Campaign video is integrated through the reusable core, and the first Phase 4F Game Room shell now gives it a dedicated workspace route. Phase 4D shared campaign dice and the remaining Game Room areas—Handouts, Participants, Quick Notes, and Session Context—remain planned. Standalone room schema, RLS, ownership, invitation, retention, and deletion decisions remain open. Print/PDF, final decoration, broad public-readiness hardening, and Call of Cthulhu character, dice, Game Hub, and Keeper functionality remain deferred; only the generic CoC campaign shell is implemented.

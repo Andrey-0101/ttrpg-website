@@ -26,7 +26,7 @@ main
 cb6a07f11669916c8af68d0f0c93033438c901ea
 ```
 
-PR #26 is merged, deployed, and production-verified. The verified release passed 169 automated tests and generated 36/36 static pages. Phase 4A, personal dice persistence, and the planned game-system catalogue are complete. Standalone Video Rooms, campaign dice, and campaign video integration are not implemented; no managed WebRTC provider has been selected. H007 remains the latest completed handoff, and H008 does not exist.
+The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, campaign-authorized LiveKit video, and the first dedicated campaign Game Room shell. Standalone Video Rooms and shared campaign dice remain unimplemented, and the non-video Game Room workspace tools remain planned.
 
 ## Architecture
 

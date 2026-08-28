@@ -178,7 +178,7 @@ Two defects found during testing were fixed through separate migrations:
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
 - no shared campaign dice security model implemented yet;
-- no browser video connection or deployed video-provider configuration yet; the local campaign-video server foundation now performs fresh authenticated campaign authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens without making provider calls in tests.
+- no standalone Video Rooms authorization model or route yet; campaign video now performs fresh authenticated authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens only after an explicit Join action.
 
 ## Level A requirements for Milestone 4
 
@@ -242,6 +242,8 @@ Required in addition to the reusable video-core controls:
 Campaign room authorization now uses one GM plus at most six active Players. Campaign completion prevents new campaign-video mutations and future token issuance; existing Players lose campaign-video settings and campaign-image access, while the GM retains read-only database and image access until final deletion. Provider-room teardown and already-issued-token behavior remain runtime work.
 
 The Stage 2 join endpoint accepts only the campaign route identifier and an empty JSON body. Authentication, active-campaign access, Player position, and publication state are read afresh before configuration or provider dispatch. `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` are server-only variables; malformed or partial configuration fails closed. The current deterministic campaign mapping intentionally has no start/end rotation semantics, and ten-minute tokens already issued before membership removal or campaign completion remain valid until provider expiry unless a later moderation checkpoint adds active revocation.
+
+The localized Game Room route loads only RLS-visible campaign and participant data. Opening either Campaign Overview or Game Room does not request credentials, connect to LiveKit, or request camera/microphone access. The browser constructs a provider session only after explicit Join; camera and microphone remain off until their own explicit controls are used, and Leave or component disposal tears down the temporary session.
 
 ## Level A requirements for later campaign content
 

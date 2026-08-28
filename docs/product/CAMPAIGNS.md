@@ -22,14 +22,14 @@ The current implementation connects:
 - campaign details and lifecycle;
 - members;
 - invitations;
-- characters.
+- characters;
+- a dedicated campaign Game Room with the basic LiveKit video experience.
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
 Future milestones will add:
 
 - dice rolls;
-- video access;
 - handouts;
 - NPCs;
 - sessions;
@@ -241,6 +241,7 @@ Private portrait access follows the same campaign boundary. The Storage policy v
 /[locale]/campaigns/[id]
 /[locale]/campaigns/[id]/loading
 /[locale]/campaigns/[id]/not-found
+/[locale]/campaigns/[id]/game-room
 /[locale]/campaigns/[id]/characters/[characterId]
 /[locale]/campaigns/[id]/characters/[characterId]/loading
 /[locale]/campaigns/[id]/characters/[characterId]/not-found
@@ -310,6 +311,12 @@ The Game Master can:
 Lifecycle actions are disabled while campaign details have unsaved changes.
 
 Players do not see management controls.
+
+### Game Room
+
+`/[locale]/campaigns/[id]/game-room` is the dedicated localized virtual tabletop for an authorized campaign participant. The Campaign Overview contains a compact entry card and no longer mounts or connects the active video component.
+
+The first working shell includes explicit room Join/Leave, participant video tiles, own camera and microphone controls, browser sound unlock when required, participant names and roles, reconnect, cleanup, and safe errors. The Campaign Dice Roller, Handout Preview, separate Participants panel, Quick Notes, and Current Session Context are visible only as non-interactive planned structure. Completed campaigns cannot start a room connection.
 
 ## Lifecycle
 
@@ -418,7 +425,7 @@ Outside the completed Campaign Foundation:
 
 - personal and shared dice tools;
 - realtime dice history;
-- campaign video runtime, provider-room mapping, token issuance, media UI, and image-upload UI;
+- campaign image-upload/presentation UI, remote moderation, and directed media-group enforcement;
 - handouts;
 - NPCs;
 - sessions;

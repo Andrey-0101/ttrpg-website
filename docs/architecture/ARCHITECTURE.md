@@ -81,6 +81,7 @@ Current user-facing route families:
 /[locale]/campaigns/new
 /[locale]/campaigns/join/[token]
 /[locale]/campaigns/[id]
+/[locale]/campaigns/[id]/game-room
 /[locale]/campaigns/[id]/characters/[characterId]
 /[locale]/characters
 /[locale]/characters/[id]
@@ -286,7 +287,7 @@ Campaign navigation
 Authorization helpers
 ```
 
-Campaigns carry a `game_system` discriminator. VtM-specific rules do not belong in generic campaign columns.
+Campaigns carry a `game_system` discriminator. VtM-specific rules do not belong in generic campaign columns. The dedicated campaign Game Room uses the existing RLS-protected campaign boundary for its initial server render and issues no provider token until the participant explicitly selects Join.
 
 ### Realtime tools domain
 
@@ -468,8 +469,8 @@ Approved Milestone 4 sequence:
 6. Phase 4B standalone Video Rooms architecture/security, provider comparison, disposable spike, permanent implementation, and production testing;
 7. Phase 4C Campaign Collaboration Contract;
 8. Phase 4D persisted shared campaign dice;
-9. Phase 4E campaign video integration through the reusable core;
-10. Phase 4F campaign workspace integration.
+9. Phase 4E basic campaign video integration through the reusable core — implemented;
+10. Phase 4F first Game Room shell — implemented for video, with shared dice and the remaining workspace tools still planned.
 
 Later:
 

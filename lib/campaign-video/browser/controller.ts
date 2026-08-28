@@ -299,19 +299,25 @@ export function createCampaignVideoRoomController(
       return Promise.resolve();
     }
     const currentSession = session;
+    const currentGeneration = generation;
     const operation = (
       kind === "camera"
         ? currentSession.setCameraEnabled(enabled)
         : currentSession.setMicrophoneEnabled(enabled)
     )
-      .then(() =>
+      .then(() => {
+        if (!isCurrent(currentGeneration) || session !== currentSession) return;
         publish(
           kind === "camera"
             ? { cameraEnabled: enabled, error: null }
             : { microphoneEnabled: enabled, error: null },
-        ),
-      )
-      .catch((error) => publish({ error: clientError(error) }));
+        );
+      })
+      .catch((error) => {
+        if (isCurrent(currentGeneration) && session === currentSession) {
+          publish({ error: clientError(error) });
+        }
+      });
     const wrapped = operation.finally(() => {
       if (mediaOperation === wrapped) mediaOperation = null;
     });
@@ -321,11 +327,17 @@ export function createCampaignVideoRoomController(
 
   async function enableSound() {
     if (!session || !snapshot.audioBlocked) return;
+    const currentSession = session;
+    const currentGeneration = generation;
     try {
-      await session.startAudio();
-      publish({ audioBlocked: false, error: null });
+      await currentSession.startAudio();
+      if (isCurrent(currentGeneration) && session === currentSession) {
+        publish({ audioBlocked: false, error: null });
+      }
     } catch {
-      publish({ error: "media_unavailable" });
+      if (isCurrent(currentGeneration) && session === currentSession) {
+        publish({ error: "media_unavailable" });
+      }
     }
   }
 

@@ -36,7 +36,7 @@ Not yet implemented:
 
 - shared campaign dice and Realtime dice feed;
 - standalone Video Rooms;
-- campaign video integration;
+- campaign video moderation, image presentation, and the remaining Game Room workspace tools;
 - handouts, NPCs, sessions, or campaign notes;
 - independent character-sheet language;
 - print/PDF export;
@@ -138,7 +138,7 @@ cb6a07f11669916c8af68d0f0c93033438c901ea
 
 PR #26 is merged, deployed, and production-verified. The verified release passed 169 automated tests and generated 36/36 static pages. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, and the planned game-system catalogue are complete. Standalone Video Rooms are not implemented, campaign dice are not implemented, campaign video integration is not implemented, and no managed WebRTC provider has been selected. H007 remains the latest completed handoff; H008 does not exist.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the planned game-system catalogue, campaign-authorized LiveKit video, and the first dedicated Game Room shell are implemented. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain visibly planned.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 

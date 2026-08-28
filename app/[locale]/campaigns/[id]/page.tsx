@@ -5,10 +5,10 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import CampaignCharactersPanel from "@/components/campaigns/campaign-characters-panel";
+import CampaignGameRoomCard from "@/components/campaigns/campaign-game-room-card";
 import CampaignInvitationManager from "@/components/campaigns/campaign-invitation-manager";
 import CampaignManagementPanel from "@/components/campaigns/campaign-management-panel";
 import CampaignMembersPanel from "@/components/campaigns/campaign-members-panel";
-import CampaignVideoRoom from "@/components/campaigns/campaign-video-room";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import {
@@ -16,7 +16,7 @@ import {
   normalizeGameSystemId,
 } from "@/lib/characters/game-systems";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
-import { deriveCampaignVideoParticipantIdentity } from "@/lib/campaign-video/mapping";
+import { loadCampaignParticipantDirectory } from "@/lib/campaign-video/participant-directory.server";
 import { getGameSystemCatalogueEntry } from "@/lib/game-systems/catalogue";
 import { createClient } from "@/utils/supabase/server";
 
@@ -72,6 +72,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     locale,
     namespace: "CampaignDetails",
   });
+  const gameRoomTranslations = await getTranslations({
+    locale,
+    namespace: "CampaignGameRoom",
+  });
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
@@ -101,15 +105,19 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   }
 
   const isGameMaster = campaign.game_master_id === userId;
-  const [membersResult, assignmentsResult, ownCharactersResult] =
+  const [participantDirectoryResult, assignmentsResult, ownCharactersResult] =
     await Promise.all([
-      supabase
-        .from("campaign_members")
-        .select("user_id, joined_at, display_order")
-        .eq("campaign_id", campaign.id)
-        .order("display_order", {
-          ascending: true,
-        }),
+      loadCampaignParticipantDirectory({
+        supabase,
+        campaignId: campaign.id,
+        gameMasterId: campaign.game_master_id,
+        currentUserId: userId,
+        labels: {
+          you: translations("you"),
+          gameMasterFallback: translations("gameMasterFallback"),
+          playerFallback: translations("playerFallback"),
+        },
+      }),
       supabase
         .from("campaign_characters")
         .select("id, character_id, linked_by, linked_at")
@@ -128,8 +136,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         }),
     ]);
 
-  if (membersResult.error) {
-    console.error("Failed to load campaign Players:", membersResult.error);
+  if (!participantDirectoryResult.ready) {
+    console.error("Failed to load the campaign participant directory.");
   }
 
   if (assignmentsResult.error) {
@@ -146,7 +154,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     );
   }
 
-  const membershipRows = membersResult.data ?? [];
+  const members = participantDirectoryResult.members;
   const assignmentRows = assignmentsResult.data ?? [];
   const linkedCharacterIds = assignmentRows.map(
     (assignment) => assignment.character_id,
@@ -169,78 +177,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     );
   }
 
-  const profileIds = Array.from(
-    new Set([
-      campaign.game_master_id,
-      ...membershipRows.map((member) => member.user_id),
-      ...(linkedCharactersResult.data ?? []).map(
-        (character) => character.owner_id,
-      ),
-    ]),
-  );
-  const profilesResult =
-    profileIds.length > 0
-      ? await supabase
-          .from("profiles")
-          .select("id, display_name, username")
-          .in("id", profileIds)
-      : {
-          data: [],
-          error: null,
-        };
-
-  if (profilesResult.error) {
-    console.error(
-      "Failed to load campaign participant profiles:",
-      profilesResult.error,
-    );
-  }
-
   const profileById = new Map(
-    (profilesResult.data ?? []).map((profile) => [profile.id, profile]),
+    participantDirectoryResult.profiles.map((profile) => [profile.id, profile]),
   );
-  const gameMasterProfile = profileById.get(campaign.game_master_id);
-  const gameMasterName = isGameMaster
-    ? translations("you")
-    : gameMasterProfile?.display_name ||
-      gameMasterProfile?.username ||
-      translations("gameMasterFallback");
-  const members = membershipRows.map((member) => {
-    const profile = profileById.get(member.user_id);
-
-    return {
-      userId: member.user_id,
-      displayName: profile?.display_name ?? null,
-      username: profile?.username ?? null,
-      joinedAt: member.joined_at,
-      displayOrder: member.display_order,
-    };
-  });
-  const videoParticipantDirectory = [
-    {
-      providerIdentity: deriveCampaignVideoParticipantIdentity(
-        campaign.id,
-        campaign.game_master_id,
-      ),
-      displayName: gameMasterName,
-      role: "game_master" as const,
-      playerPosition: null,
-    },
-    ...members.map((member) => ({
-      providerIdentity: deriveCampaignVideoParticipantIdentity(
-        campaign.id,
-        member.userId,
-      ),
-      displayName:
-        member.userId === userId
-          ? translations("you")
-          : member.displayName ||
-            member.username ||
-            translations("playerFallback"),
-      role: "player" as const,
-      playerPosition: member.displayOrder,
-    })),
-  ];
+  const gameMasterName = participantDirectoryResult.gameMasterName;
 
   const linkedCharacterById = new Map(
     (linkedCharactersResult.data ?? []).map((character) => [
@@ -387,7 +327,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     linkedCharactersResult.error ||
     ownCharactersResult.error ||
     ownActiveAssignmentsResult.error ||
-    profilesResult.error,
+    !participantDirectoryResult.ready,
   );
 
   const statusLabel =
@@ -486,11 +426,15 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       </section>
 
       <div className="mt-6 grid gap-6">
-        <CampaignVideoRoom
+        <CampaignGameRoomCard
           campaignId={campaign.id}
-          campaignStatus={campaign.status}
-          directoryReady={!membersResult.error && !profilesResult.error}
-          participantDirectory={videoParticipantDirectory}
+          campaignActive={campaign.status === "active"}
+          title={gameRoomTranslations("title")}
+          description={gameRoomTranslations("overview.description")}
+          availableLabel={gameRoomTranslations("availability.available")}
+          unavailableLabel={gameRoomTranslations("availability.unavailable")}
+          openLabel={gameRoomTranslations("overview.open")}
+          unavailableHelp={gameRoomTranslations("overview.completedHelp")}
         />
 
         {isGameMaster && (
@@ -521,7 +465,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           isGameMaster={isGameMaster}
           locale={locale}
           initialMembers={members}
-          loadError={Boolean(membersResult.error)}
+          loadError={!participantDirectoryResult.ready}
         />
 
         <CampaignCharactersPanel
