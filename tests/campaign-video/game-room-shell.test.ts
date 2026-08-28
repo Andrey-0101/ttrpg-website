@@ -62,7 +62,7 @@ test("Game Room requires explicit Join and keeps interactive controls local-only
   assert.doesNotMatch(room, /getUserMedia|setScreenShareEnabled|recording|transcription/u);
 });
 
-test("FullHD Game Room uses the approved stable asymmetric composition", () => {
+test("Game Room uses the approved viewport-driven asymmetric composition", () => {
   assert.deepEqual(
     CAMPAIGN_VIDEO_PARTICIPANT_SLOTS.map((slot) => slot.key),
     ["gm", "player-1", "player-2", "player-3", "player-4", "player-5", "player-6"],
@@ -83,14 +83,35 @@ test("FullHD Game Room uses the approved stable asymmetric composition", () => {
   assert.match(styles, /"gm player-1 player-2"/u);
   assert.match(styles, /"workspace player-3 player-4"/u);
   assert.match(styles, /"workspace player-5 player-6"/u);
-  assert.match(styles, /\.game-room-slot-gm[\s\S]*width: 66\.6667%/u);
   assert.match(styles, /height: calc\(100dvh - 5rem\)/u);
   assert.match(styles, /grid-template-rows: repeat\(3, minmax\(0, 1fr\)\)/u);
   assert.match(styles, /\.game-room-grid \{[\s\S]*height: 100%/u);
+  assert.match(styles, /--game-room-gap: clamp\(/u);
+  assert.match(styles, /max-width: 240rem/u);
+  assert.match(styles, /max-width: min\(100%, 68rem\)/u);
+  assert.match(styles, /\.game-room-participant \{[\s\S]*height: 100%/u);
+  assert.match(styles, /\.game-room-slot-gm \{\s*grid-area: gm;\s*\}/u);
   assert.doesNotMatch(styles, /\.campaign-game-room \{[\s\S]{0,120}overflow: hidden/u);
+  assert.doesNotMatch(styles, /transform:\s*scale\(/u);
+  assert.doesNotMatch(room, /ResizeObserver|addEventListener\(["']resize/u);
   assert.match(styles, /@media \(min-width: 48rem\) and \(max-width: 74\.999rem\)/u);
   assert.match(styles, /@media \(min-width: 75rem\) and \(min-height: 43\.75rem\)/u);
   assert.match(room, /min-h-11/u);
+  assert.match(room, /object-cover/u);
+});
+
+test("LiveKit keeps adaptive subscriptions and 720p simulcast publication", () => {
+  const liveKit = source("lib", "campaign-video", "browser", "livekit.ts");
+  const packageJson = JSON.parse(source("package.json")) as {
+    dependencies: Record<string, string>;
+  };
+
+  assert.equal(packageJson.dependencies["livekit-client"], "2.21.0");
+  assert.match(liveKit, /adaptiveStream:\s*true/u);
+  assert.match(liveKit, /dynacast:\s*true/u);
+  assert.match(liveKit, /videoCaptureDefaults:[\s\S]*width:\s*1280[\s\S]*height:\s*720/u);
+  assert.match(liveKit, /setCameraEnabled\(enabled,[\s\S]*width:\s*1280[\s\S]*height:\s*720/u);
+  assert.doesNotMatch(liveKit, /simulcast:\s*false/u);
 });
 
 test("planned display and compact tools panel are localized and non-interactive", () => {

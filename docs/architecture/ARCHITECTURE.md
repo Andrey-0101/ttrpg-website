@@ -287,7 +287,7 @@ Campaign navigation
 Authorization helpers
 ```
 
-Campaigns carry a `game_system` discriminator. VtM-specific rules do not belong in generic campaign columns. The dedicated campaign Game Room uses the existing RLS-protected campaign boundary for its initial server render and issues no provider token until the participant explicitly selects Join. Its localized route uses a named Next.js header slot for compact route-specific chrome while other routes keep the normal site header. The browser presentation maps the server-owned participant directory to fixed GM and Player 1–6 positions, so provider presence changes do not reorder the FullHD table layout.
+Campaigns carry a `game_system` discriminator. VtM-specific rules do not belong in generic campaign columns. The dedicated campaign Game Room uses the existing RLS-protected campaign boundary for its initial server render and issues no provider token until the participant explicitly selects Join. Its localized route uses a named Next.js header slot for compact route-specific chrome while other routes keep the normal site header. The browser presentation maps the server-owned participant directory to fixed GM and Player 1–6 positions, so provider presence changes do not reorder the viewport-driven desktop layout. CSS Grid derives the available workspace from `100dvh` and the compact header, constrains participant cards by both their grid column and row, preserves 16:9 media without resize listeners, and reflows below the desktop breakpoint.
 
 ### Realtime tools domain
 
