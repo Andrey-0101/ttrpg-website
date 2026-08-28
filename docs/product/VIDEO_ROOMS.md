@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed standalone-first architecture. No browser Video Rooms route, navigation entry, room schema, or deployed provider integration is implemented. A local campaign-scoped LiveKit server foundation now exists for Stage 2 review, but it does not accept ADR-009 or complete provider selection for the standalone product.
+Standalone Video Rooms remain proposed: no standalone browser route, navigation entry, room schema, or authorization model is implemented. Separately, campaign video uses the reusable browser/controller core with a LiveKit adapter and campaign-derived authorization in the localized campaign Game Room.
 
 ADR-009 remains Proposed until the provider comparison and disposable spike produce sufficient evidence.
 
@@ -49,17 +49,17 @@ Standalone Video Rooms form their own application access domain. They require au
 
 The exact ownership, invitation, membership, expiry, retention, and deletion models remain open. A permanent provider room URL or provider knowledge alone must never be the authorization mechanism.
 
-### Later campaign-derived authorization
+### Campaign-derived authorization
 
-Campaign video integration is a later phase. It will reuse the video core while adding a distinct authorization adapter based on active campaign access and the Campaign Collaboration Contract.
+Campaign video integration reuses the video core with a distinct authorization adapter based on active campaign access. The first Game Room shell is implemented at `/[locale]/campaigns/[id]/game-room`.
 
-Removal or revocation must prevent new campaign-derived tokens, and campaign lifecycle behavior must be defined and tested in that later phase. These campaign rules must not be imposed on standalone rooms.
+Removal prevents new campaign-derived tokens, and completed campaigns cannot obtain new join credentials. These campaign rules are not imposed on standalone rooms.
 
 ## Managed infrastructure direction
 
 Use a managed video/WebRTC provider. Do not build and operate custom signaling, SFU, TURN, recording, and media-routing infrastructure in the first version.
 
-Provider selection remains open and must compare:
+Provider and product decisions for the separate standalone feature remain open and must compare:
 
 - browser and mobile support;
 - token security model;
@@ -141,7 +141,7 @@ Campaign integration additionally requires active campaign authorization immedia
 
 The local Stage 2 server foundation adds an authenticated campaign-scoped join endpoint and a narrow LiveKit server adapter. It derives an application-owned, collision-resistant room name from the campaign ID, gives the same campaign/account pair a stable non-UUID participant identity, explicitly creates or validates the room at `maxParticipants = 7`, and issues ten-minute room-bound tokens. Tokens allow subscription and only the camera/microphone sources permitted by the Stage 1 publication state; they deny data publication, screen sharing, room administration, recording, ingress, agent, and related elevated grants. The endpoint returns no raw account ID, provider API credential, or database row.
 
-This is an offline server foundation, not a completed room product. Session start/end and room-name rotation remain deferred to the basic-room checkpoint because no lifecycle semantics are approved yet. Browser connection, active moderation, directed subscription enforcement, media UI, image-upload UI, provider verification, and deployment configuration remain unimplemented. See `../architecture/SECURITY.md`.
+The campaign Game Room now provides explicit Join and Leave, participant video tiles, local camera and microphone controls, browser sound unlock, reconnect handling, cleanup, and safe localized error states. Camera and microphone remain off until the participant explicitly enables them. Active moderation, directed subscription enforcement, campaign image upload/presentation, recording, transcription, screen sharing, and the standalone Video Rooms product remain unimplemented. See `../architecture/SECURITY.md`.
 
 ## Deferred work
 

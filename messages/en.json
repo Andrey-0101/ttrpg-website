@@ -364,6 +364,7 @@
     "campaigns": "My Campaigns",
     "campaignCreate": "Create Campaign",
     "campaignDetails": "Campaign",
+    "campaignGameRoom": "Campaign Game Room",
     "campaignJoin": "Join Campaign"
   },
   "AuthErrors": {
@@ -449,6 +450,50 @@
     "characterOwnerFallback": "Campaign participant",
     "playerFallback": "Campaign player"
   },
+  "CampaignGameRoom": {
+    "back": "Back to Campaign Overview",
+    "title": "Game Room",
+    "description": "The campaign's virtual tabletop. Video is available now; the remaining workspace tools are shown as the approved future structure.",
+    "roleLabel": "Your role",
+    "availability": {
+      "label": "Room status",
+      "available": "Available",
+      "unavailable": "Unavailable"
+    },
+    "overview": {
+      "description": "Open the campaign's dedicated virtual tabletop for video, participant media, and the planned session workspace.",
+      "open": "Open Game Room",
+      "completedHelp": "Completed campaigns keep their history, but the Game Room cannot be opened for an active video session."
+    },
+    "planned": {
+      "title": "Session workspace",
+      "description": "These approved areas are intentionally non-interactive until their data, authorization, and lifecycle contracts are implemented.",
+      "status": "Planned",
+      "dice": {
+        "title": "Campaign Dice Roller",
+        "description": "Shared campaign rolls and their authoritative history will be added later."
+      },
+      "handouts": {
+        "title": "Handout Preview",
+        "description": "Approved campaign handouts will be presented here in a later phase."
+      },
+      "participants": {
+        "title": "Participants",
+        "description": "A separate session participant panel will supplement the current video tiles."
+      },
+      "quickNotes": {
+        "title": "Quick Notes",
+        "description": "Session notes remain planned and have no persistence or controls yet."
+      },
+      "sessionContext": {
+        "title": "Current Session Context",
+        "description": "The session workspace will later bring together the approved campaign context.",
+        "activeCharacters": "Active Characters",
+        "currentNpcs": "Current NPCs",
+        "selectedHandouts": "Selected Handouts"
+      }
+    }
+  },
   "CampaignVideoRoom": {
     "title": "Campaign video room",
     "description": "Join the campaign room, then choose whether to enable your camera or microphone. Media stays off until you use a control.",
@@ -457,6 +502,7 @@
     "retry": "Retry connection",
     "leave": "Leave room",
     "waitingForParticipants": "Connected. Waiting for other campaign participants.",
+    "videoIdle": "Join the room when you are ready. Camera and microphone remain off until you enable them yourself.",
     "mediaControls": "Camera, microphone, and sound controls",
     "cameraOff": "Camera off",
     "localCamera": "Your camera",

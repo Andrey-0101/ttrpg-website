@@ -15,7 +15,7 @@
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented shared campaign dice, standalone or campaign video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu routes as current.
+It does not describe unimplemented shared campaign dice, standalone video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu character routes as current.
 
 ## Current primary navigation
 
@@ -92,6 +92,8 @@ The Dashboard is an accepted implemented personal overview route. It currently l
 │           ├── page.tsx
 │           ├── loading.tsx
 │           ├── not-found.tsx
+│           ├── game-room
+│           │   └── page.tsx
 │           └── characters
 │               └── [characterId]
 │                   ├── page.tsx
@@ -310,6 +312,14 @@ Current integrated workspace sections:
 
 The current foundation intentionally keeps these controls on the overview route rather than creating separate Members, Characters, or Settings routes.
 
+### Campaign Game Room
+
+```text
+/[locale]/campaigns/[id]/game-room
+```
+
+This authenticated participant-only route is the dedicated campaign virtual tabletop. Its active surface is the existing campaign-authorized video room: explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Campaign Dice, Handouts, a separate Participants panel, Quick Notes, and Session Context are present only as non-interactive planned structure. Completed campaigns cannot start a video connection.
+
 ## Current authorization shape
 
 | Area | Current access |
@@ -320,6 +330,7 @@ The current foundation intentionally keeps these controls on the overview route 
 | Campaign shared character | active campaign GM or Player; read only |
 | My Campaigns | authenticated participant |
 | Campaign Overview | campaign GM or active Player |
+| Campaign Game Room | campaign GM or Player through campaign RLS; active campaign required to Join video |
 | Invitation management | GM only |
 | Accept invitation | authenticated valid token holder |
 | Remove Player | GM only |
@@ -337,7 +348,7 @@ Not implemented:
 - campaign-authoritative persisted roll history;
 - realtime dice feed;
 - standalone Video Rooms;
-- campaign video integration;
+- campaign video moderation, image presentation, and later workspace expansion;
 - handouts;
 - NPCs;
 - sessions/Chronicle;

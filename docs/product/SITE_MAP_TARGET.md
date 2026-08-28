@@ -177,6 +177,8 @@ The campaign Overview may show:
 
 The **Game Room** is the virtual table for the current session.
 
+Implemented first slice: the separate localized Game Room route hosts the existing campaign-authorized video room and media controls. Dice, Handout Preview, the separate Participant List, Quick Notes, and Current Session Context remain clearly labelled, non-interactive planned areas.
+
 ```mermaid
 flowchart TD
     GAME_ROOM["Game Room"]
@@ -311,7 +313,7 @@ flowchart TD
 
 The top-level Video Rooms section is an authenticated standalone area and does not depend on campaign membership. The approved target route is `/[locale]/video-rooms`; likely `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` supporting routes remain provisional. None is implemented, and there is no current navigation entry or placeholder.
 
-Standalone and later campaign video share a reusable video core but use separate authorization adapters. Campaign video remains inside the later campaign Game Room and requires campaign-derived authorization.
+Standalone and campaign video share a reusable video core but use separate authorization adapters. Campaign video is implemented inside the campaign Game Room and requires campaign-derived authorization; standalone Video Rooms remain future work.
 
 ---
 
@@ -484,7 +486,7 @@ Home Page
 - Player invitations are part of Create Campaign.
 - Members contain only Game Master and Players.
 - Standalone Video Rooms are independent from Campaigns.
-- Campaign dice and campaign video are later capabilities inside the Game Room.
+- Campaign video is active inside the Game Room; campaign dice and the other workspace tools remain planned.
 - View and Edit are inside My Characters.
 - Character Settings is not included.
 - Unregistered users see only Games, Account authentication actions, and optionally the standalone Dice Roller.

@@ -364,6 +364,34 @@ test("unmount aborts an unfinished credential request before room construction",
   assert.equal(factoryCalls, 0);
 });
 
+test("late media completion cannot restore stale state after leave", async () => {
+  let finishCamera!: () => void;
+  const cameraOperation = new Promise<void>((resolve) => {
+    finishCamera = resolve;
+  });
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    participantDirectory: DIRECTORY,
+    createSession: async () => ({
+      setCameraEnabled: async () => cameraOperation,
+      setMicrophoneEnabled: async () => undefined,
+      startAudio: async () => undefined,
+      disconnect: async () => undefined,
+    }),
+    fetcher: async () => joinResponse(),
+    onChange: () => undefined,
+  });
+  await controller.join();
+  const media = controller.setCameraEnabled(true);
+  await controller.leave();
+  finishCamera();
+  await media;
+  assert.equal(controller.getSnapshot().phase, "disconnected");
+  assert.equal(controller.getSnapshot().cameraEnabled, false);
+});
+
 test("campaign room UI and localization retain the accessible fail-closed controls", () => {
   const component = readFileSync(
     path.join(
