@@ -102,7 +102,7 @@ Content must be an original concise reference, not a reproduction of copyrighted
 - characters;
 - campaigns;
 - VtM dice roller;
-- future campaign video;
+- campaign Game Room video;
 - future NPC tools.
 
 ## Content architecture

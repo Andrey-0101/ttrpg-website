@@ -13,6 +13,7 @@ import type {
 } from "../../lib/campaign-video/browser/contracts";
 import { classifyCampaignVideoMediaError } from "../../lib/campaign-video/browser/errors";
 import { attachCampaignVideoTrack } from "../../lib/campaign-video/browser/media";
+import { getCampaignVideoParticipantSlots } from "../../lib/campaign-video/browser/presentation";
 
 const CAMPAIGN_ID = "a1000000-0000-4000-8000-000000000001";
 const DIRECTORY = [
@@ -21,18 +22,21 @@ const DIRECTORY = [
     displayName: "GM",
     role: "game_master" as const,
     playerPosition: null,
+    isCurrentUser: false,
   },
   {
     providerIdentity: "player-1-safe",
     displayName: "Player 1",
     role: "player" as const,
     playerPosition: 1,
+    isCurrentUser: true,
   },
   {
     providerIdentity: "player-2-safe",
     displayName: "Player 2",
     role: "player" as const,
     playerPosition: 2,
+    isCurrentUser: false,
   },
 ];
 
@@ -184,6 +188,35 @@ test("participant presentation is directory-owned, deduplicated, and role ordere
       { providerIdentity: "player-2-safe", displayName: "Player 2", playerPosition: 2 },
     ],
   );
+});
+
+test("seven campaign slots remain stable across camera-off and disconnect states", () => {
+  const connected = orderCampaignVideoParticipants(
+    [
+      { identity: "player-2-safe", isLocal: false, camera: null, microphone: null },
+      { identity: "gm-safe", isLocal: false, camera: null, microphone: null },
+      { identity: "player-1-safe", isLocal: true, camera: null, microphone: null },
+    ],
+    DIRECTORY,
+  );
+  const connectedSlots = getCampaignVideoParticipantSlots(DIRECTORY, connected);
+  const disconnectedSlots = getCampaignVideoParticipantSlots(
+    DIRECTORY,
+    connected.filter((participant) => participant.providerIdentity !== "player-2-safe"),
+  );
+
+  assert.deepEqual(
+    connectedSlots.map((slot) => slot.key),
+    ["gm", "player-1", "player-2", "player-3", "player-4", "player-5", "player-6"],
+  );
+  assert.deepEqual(
+    disconnectedSlots.map((slot) => slot.key),
+    connectedSlots.map((slot) => slot.key),
+  );
+  assert.equal(connectedSlots[2]?.participant?.camera, null);
+  assert.equal(disconnectedSlots[2]?.participant, null);
+  assert.equal(connectedSlots[1]?.isCurrentUser, true);
+  assert.equal(connectedSlots[0]?.isCurrentUser, false);
 });
 
 test("camera and microphone controls serialize device operations", async () => {
