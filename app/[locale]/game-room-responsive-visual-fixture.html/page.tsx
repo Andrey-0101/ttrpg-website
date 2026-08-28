@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
 
 import CampaignGameRoomVisualFixture from "@/components/campaigns/campaign-game-room-visual-fixture";
 
@@ -15,6 +16,7 @@ export default async function GameRoomResponsiveVisualFixturePage({
     locale,
     namespace: "CampaignGameRoom",
   });
+  const messages = await getMessages({ locale });
 
   return (
     <main
@@ -23,7 +25,9 @@ export default async function GameRoomResponsiveVisualFixturePage({
       data-game-room-visual-fixture
     >
       <h1 className="sr-only">{translations("title")}</h1>
-      <CampaignGameRoomVisualFixture />
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <CampaignGameRoomVisualFixture />
+      </NextIntlClientProvider>
     </main>
   );
 }
