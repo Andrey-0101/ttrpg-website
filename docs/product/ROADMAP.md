@@ -21,22 +21,22 @@ Completed:
 
 Active:
 
-- Milestone 4 — VtM Realtime Tools.
+- Milestone 4 — VtM Realtime Tools; campaign video and the responsive Game Room are complete and accepted.
 
 Next major development phase:
 
-- Phase 4B — Standalone Video Rooms.
+- not yet selected.
 
 Verified production baseline:
 
 ```text
 main
-cb6a07f11669916c8af68d0f0c93033438c901ea
+b033b93b1993561cbdf349987aa37aaf83574108
 ```
 
-PR #26 is merged, deployed, and production-verified at this commit. The verified release passed 169 automated tests and generated 36/36 static pages. The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
+PRs #28–#34 are merged and accepted in Production at this commit. They delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation correction, dedicated Game Room, responsive seven-slot layout, and final video-card UX. The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
 
-Phase 4A, personal dice persistence, the planned game-system catalogue, and the basic campaign LiveKit integration are complete. The first campaign Game Room shell now gives authorized active campaign participants a dedicated video workspace. Standalone Video Rooms, shared campaign dice, and the remaining Game Room tools are not implemented; standalone authorization remains a separate future domain.
+Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign LiveKit integration, and the responsive Game Room are complete. The human Production group test passed without quantitative packet-loss, latency, jitter, or connection-quality telemetry; no additional acceptance retest is currently required. Standalone Video Rooms, shared campaign dice, and the remaining Game Room tools are not implemented; standalone authorization remains a separate future domain.
 
 ## Completed foundation
 
@@ -239,7 +239,7 @@ The same supplied die results always produce the same VtM interpretation, and a 
 - non-persistent guest rolls;
 - strict separation between personal and campaign roll history.
 
-Personal persistence is owner-scoped and non-authoritative. It must not be reused as campaign evidence or as the Phase 4B execution path.
+Personal persistence is owner-scoped and non-authoritative. It must not be reused as campaign evidence or as the Phase 4D execution path.
 
 #### Delivered planned-system catalogue
 
@@ -264,7 +264,7 @@ The catalogue was deployed at `22736bf697a8345e19e92626a8f441f35db4b3c7`; 156 ca
 
 ### Phase 4B — Standalone Video Rooms
 
-**Status: Next approved development phase**
+**Status: Planned separate product capability; not selected as the next stage**
 
 #### Goal
 
@@ -280,7 +280,7 @@ Deliver secure standalone rooms for authenticated users without depending on cam
 
 The top-level target route is `/[locale]/video-rooms`. Supporting routes `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` are provisional. The routes and navigation entry are planned, not implemented. Provider-specific code must remain behind a practical boundary; secrets stay server-only; tokens are short-lived; and application authorization happens before token issuance.
 
-Exact schema, RLS, ownership, invitations, membership, expiry, retention, deletion, quotas, participant limits, provider, pricing, region, and first-version screen sharing remain unresolved. ADR-009 remains Proposed until comparison and spike evidence are complete.
+Exact schema, RLS, ownership, invitations, membership, expiry, retention, deletion, quotas, participant limits, provider, pricing, region, and first-version screen sharing remain unresolved. ADR-009 is Accepted only for managed infrastructure and LiveKit in the current campaign Game Room; it does not settle these standalone decisions.
 
 #### Exit criteria
 
@@ -328,7 +328,7 @@ Authorized campaign participants can make shared VtM rolls and see the same immu
 
 ### Phase 4E — Campaign Video Rooms Integration
 
-**Status: Basic campaign video room implemented**
+**Status: Complete / accepted in Production for the current campaign scope**
 
 #### Goal
 
@@ -342,9 +342,11 @@ Campaign membership is checked before issuing a short-lived provider token. One 
 
 Authorized active campaign participants can use explicit Join/Leave, their own camera and microphone, participant media tiles, sound unlock, reconnect, and safe error states. Removed members and unauthorized users cannot obtain new tokens.
 
+The accepted human group test confirmed practical function and user-visible quality. Quantitative network and connection-quality telemetry was not collected and is not required for current acceptance.
+
 ### Phase 4F — Campaign Workspace Integration
 
-**Status: First Game Room shell implemented; broader workspace planned**
+**Status: Responsive Game Room video workspace complete / accepted; broader tools planned**
 
 #### Goal
 
@@ -352,7 +354,7 @@ Assemble approved live-session capabilities into a coherent campaign workspace b
 
 #### Scope boundary
 
-The localized `/[locale]/campaigns/[id]/game-room` route now provides the responsive campaign video workspace and presents Campaign Dice, Handouts, Participants, Quick Notes, and Session Context as clearly non-interactive planned areas. Their APIs, persistence, and routes remain unimplemented, and standalone and campaign authorization remain separate.
+The localized `/[locale]/campaigns/[id]/game-room` route now provides the accepted responsive campaign video workspace and presents Campaign Dice, Handouts, Participants, Quick Notes, Session Context, Characters, NPCs, Selected Handouts, and active Display/image presentation as clearly non-interactive planned areas. Their APIs, persistence, and routes remain unimplemented, and standalone and campaign authorization remain separate.
 
 #### Exit criteria
 
@@ -366,7 +368,7 @@ Standalone Video Rooms work independently of campaigns, and the later campaign w
 
 ## Milestone 5 — Friend Campaign Alpha
 
-**Status: Planned**
+**Status: Generic campaign shell delivered; CoC-specific character and game tools planned**
 
 ### Goal
 

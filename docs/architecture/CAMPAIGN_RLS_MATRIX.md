@@ -2,9 +2,9 @@
 
 ## Status
 
-Campaign Foundation is implemented and verified. The campaign-video data foundation described below is a local review candidate and has not been applied remotely.
+Campaign Foundation and the campaign-video data foundation are implemented and current in Production at `b033b93b1993561cbdf349987aa37aaf83574108`.
 
-The Campaign Foundation migrations are applied to the linked Supabase project, generated types are current for the synchronized snapshot, and the matrix was exercised through a GM/Player/Outsider transaction test.
+All eight repository migrations are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables, five required foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
 
 This matrix describes the current minimum access boundary for:
 
@@ -257,6 +257,15 @@ Verify:
 
 
 ## Verification record
+
+The current Production campaign-video verification confirmed:
+
+- all eight migrations present and a repeat dry-run up to date;
+- RLS enabled on all seven campaign-video tables;
+- all five required foreign-key indexes valid;
+- database grants hardened by `20260823143856_harden_campaign_database_grants.sql`;
+- `handle_new_user()` execution revoked from unintended roles;
+- private `campaign-images` Storage retained.
 
 The recorded Campaign Foundation security test verified the expected allow/deny behavior for:
 

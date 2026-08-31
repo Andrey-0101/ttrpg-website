@@ -35,7 +35,7 @@ Accepted ADRs must not be silently rewritten when the decision changes. Create a
 | ADR-006 | `next-intl` and Supabase proxy composition | Accepted |
 | ADR-007 | Campaign foundation before shared realtime tools | Accepted |
 | ADR-008 | Game-system domain boundaries | Accepted |
-| ADR-009 | Managed video infrastructure | Proposed |
+| ADR-009 | Managed video infrastructure | Accepted |
 
 ## Current decision gates
 
@@ -49,13 +49,4 @@ ADR-008 is accepted and governs the next implementation:
 
 ### Video
 
-ADR-009 remains Proposed.
-
-It may be accepted only after:
-
-- provider comparison;
-- disposable two-to-three-user spike;
-- browser/mobile verification;
-- token model review;
-- cost and privacy review;
-- reconnect and denied-permission tests.
+ADR-009 is Accepted for managed infrastructure and LiveKit in the current campaign Game Room. The decision does not automatically settle the separate future standalone Video Rooms product. Reconsidering the provider requires new evidence or materially changed requirements.

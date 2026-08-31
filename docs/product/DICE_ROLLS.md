@@ -6,7 +6,7 @@
 
 The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and shared campaign dice are not implemented.
 
-Shared campaign dice are Phase 4D, after Phase 4C defines the Campaign Collaboration Contract. Phase 4B Standalone Video Rooms is the next approved development phase.
+Shared campaign dice remain planned Phase 4D work. Campaign-authorized LiveKit video and the responsive Game Room are complete and accepted; standalone Video Rooms remain a separate planned product capability. The next product stage has not yet been selected.
 
 Initial system:
 
@@ -18,9 +18,9 @@ Implementation order:
 
 1. complete the reviewed VtM result contract, pure deterministic evaluator, client-side random generation, personal roller UI, EN/RU, and mobile support in Phase 4A;
 2. complete reviewed owner-scoped personal persistence, saved Custom Dice Pool presets, and private personal history in Phase 4A;
-3. deliver Phase 4B Standalone Video Rooms;
-4. define the Phase 4C Campaign Collaboration Contract;
-5. design and implement Phase 4D Shared Campaign Dice with server-authoritative execution and a Realtime feed.
+3. preserve the completed campaign Game Room and keep its planned tools inactive;
+4. define any remaining Campaign Collaboration Contract required by the selected next feature;
+5. when separately approved, design and implement Phase 4D Shared Campaign Dice with server-authoritative execution and a Realtime feed.
 
 ## Product goals
 

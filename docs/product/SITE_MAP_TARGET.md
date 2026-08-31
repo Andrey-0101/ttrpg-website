@@ -89,7 +89,7 @@ flowchart TD
 ### Notes
 
 - **Vampire: The Masquerade V5** is the first complete game section.
-- **Call of Cthulhu 7e** follows the same target structure but remains a later milestone.
+- **Call of Cthulhu 7e** has an implemented generic campaign shell; its target Game Hub, character creation, dice, and Keeper tools remain a later milestone.
 - Game pages contain general information and system-specific tools.
 - Private campaign data does not belong inside the Games section.
 

@@ -53,8 +53,23 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: TypeScript
+        run: npm exec -- tsc --noEmit
+
+      - name: Test site URL
+        run: npm run test:site-url
+
       - name: Test dice engine
         run: npm run test:dice
+
+      - name: Test campaigns
+        run: npm run test:campaigns
+
+      - name: Test Game Room
+        run: npm run test:game-room
+
+      - name: Test campaign video
+        run: npm run test:campaign-video
 
       - name: Build
         run: npm run build

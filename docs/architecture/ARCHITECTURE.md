@@ -2,16 +2,16 @@
 
 ## Status
 
-Current architecture for the implemented VtM character and Campaign Foundation application, with Milestone 4 VtM Realtime Tools active.
+Current architecture for the implemented VtM character and campaign application, including the accepted campaign-authorized LiveKit Game Room.
 
 Verified production baseline:
 
 ```text
 main
-cb6a07f11669916c8af68d0f0c93033438c901ea
+b033b93b1993561cbdf349987aa37aaf83574108
 ```
 
-PR #26 is merged, deployed, and production-verified. The verified release passed 169 automated tests and generated 36/36 static pages.
+PRs #28–#34 are merged and accepted in Production. The current campaign-video and Game Room scope passed human Production acceptance; no quantitative packet-loss, latency, jitter, or connection-quality telemetry was collected.
 
 ## Architectural goals
 
@@ -50,7 +50,7 @@ Supabase
 
 The canonical production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` permanently redirects to the apex domain. Vercel `*.vercel.app` URLs remain technical deployment addresses.
 
-Future external service boundary:
+Current managed-video service boundary:
 
 ```text
 Next.js server
@@ -62,7 +62,7 @@ Next.js server
         +-- managed video provider
 ```
 
-The reusable video core must remain separate from authorization adapters. Phase 4B uses standalone application authorization that does not depend on Campaign Foundation; Phase 4E later adds campaign-derived authorization. Provider secrets remain server-only. The video provider is not selected, and ADR-009 remains Proposed pending comparison and a disposable technical spike.
+The reusable video core remains separate from authorization adapters. The current Campaign Game Room uses campaign-derived authorization and LiveKit, the accepted provider for this implementation. Provider secrets remain server-only. Future standalone Video Rooms remain a separate planned application-authorization domain; ADR-009 does not automatically select a provider or product model for that future capability.
 
 ## Route architecture
 
@@ -142,7 +142,7 @@ Prefer server-side code for:
 - signed portrait URL creation;
 - campaign participant and role-dependent initial rendering;
 - safe direct-route unavailable behavior;
-- future video token issuance;
+- current campaign-video token issuance after fresh campaign authorization;
 - future persisted campaign dice execution.
 
 ### Client responsibilities
@@ -306,12 +306,12 @@ Video capabilities are split into:
 
 ```text
 Reusable video core
-Standalone authorization adapter (Phase 4B)
-Campaign-derived authorization adapter (Phase 4E)
-Practical managed-provider boundary
+Campaign-derived authorization adapter (implemented)
+LiveKit provider boundary (accepted current implementation)
+Standalone authorization adapter (planned separately)
 ```
 
-Standalone Video Rooms must not depend on campaign membership. Shared campaign dice and campaign-integrated video must reuse campaign authorization and must not establish a competing campaign invitation or access model. Exact standalone room schema, RLS, ownership, invitation, retention, and deletion behavior remain unresolved.
+The current campaign Game Room is implemented at `/{locale}/campaigns/{campaignId}/game-room` for one GM plus up to six Players. Standalone Video Rooms must not depend on campaign membership. Shared campaign dice and campaign-integrated video must reuse campaign authorization and must not establish a competing campaign invitation or access model. Exact standalone room schema, RLS, ownership, invitation, retention, deletion behavior, and future provider remain unresolved.
 
 ### Campaign-content domain
 
@@ -466,11 +466,13 @@ Completed:
 
 Approved Milestone 4 sequence:
 
-6. Phase 4B standalone Video Rooms architecture/security, provider comparison, disposable spike, permanent implementation, and production testing;
+6. Phase 4B standalone Video Rooms — remains a separate planned product capability, not the selected next stage;
 7. Phase 4C Campaign Collaboration Contract;
 8. Phase 4D persisted shared campaign dice;
-9. Phase 4E basic campaign video integration through the reusable core — implemented;
-10. Phase 4F first Game Room shell — implemented for video, with shared dice and the remaining workspace tools still planned.
+9. Phase 4E campaign video integration through the reusable core — complete and accepted in Production;
+10. Phase 4F responsive Game Room video workspace — complete and accepted, with shared dice and the remaining workspace tools still planned and inactive.
+
+The next product stage has not yet been selected.
 
 Later:
 

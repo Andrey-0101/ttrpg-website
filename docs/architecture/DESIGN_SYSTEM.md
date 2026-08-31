@@ -122,6 +122,22 @@ The architecture baseline does not require an immediate component-library rewrit
 - desktop A4 behavior is a sheet-rendering concern, not a global page constraint;
 - character actions remain reachable and consistently aligned.
 
+## Accepted Campaign Game Room design
+
+The current Campaign Game Room uses a compact route-specific header and a viewport-driven desktop composition of approximately `1.5fr / 1fr / 1fr`. One GM and Player positions 1–6 occupy stable slots; camera state and provider presence do not reorder them. The layout grows through FullHD, QHD, and 4K, then reflows with vertical scrolling on smaller screens without horizontal overflow.
+
+Video-card rules:
+
+- responsive `16:9` cards with `object-fit: cover` and normal video brightness;
+- no full-card vignette, lower black gradient, or full-width control strip;
+- compact single-line participant label in the upper-right with only a small local translucent background;
+- a small green connected-state dot, without a permanent connection pill;
+- local-only camera and microphone controls in the lower-left, with 44×44 px accessible hit targets around approximately 36×36 px visible controls;
+- disabled media uses only the crossed-out icon, without a color or size change;
+- Leave is a room-level action in the compact header, never a video overlay.
+
+The Display and Game Tools areas remain presentational planned structure. Dice, Handouts, Participants, Quick Notes, Session Context, Characters, NPCs, Selected Handouts, and active image presentation are not implemented by this design contract.
+
 ## Accessibility baseline
 
 Friend-alpha still requires:

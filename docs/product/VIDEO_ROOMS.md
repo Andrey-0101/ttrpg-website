@@ -4,7 +4,7 @@
 
 Standalone Video Rooms remain proposed: no standalone browser route, navigation entry, room schema, or authorization model is implemented. Separately, campaign video uses the reusable browser/controller core with a LiveKit adapter and campaign-derived authorization in the localized campaign Game Room.
 
-ADR-009 remains Proposed until the provider comparison and disposable spike produce sufficient evidence.
+ADR-009 is Accepted for managed infrastructure and LiveKit in the current campaign Game Room. It does not automatically settle the provider or product model for future standalone Video Rooms.
 
 ## Goal
 
@@ -59,7 +59,7 @@ Removal prevents new campaign-derived tokens, and completed campaigns cannot obt
 
 Use a managed video/WebRTC provider. Do not build and operate custom signaling, SFU, TURN, recording, and media-routing infrastructure in the first version.
 
-Provider and product decisions for the separate standalone feature remain open and must compare:
+Provider and product decisions for the separate standalone feature remain open. Any future selection must compare:
 
 - browser and mobile support;
 - token security model;
@@ -83,7 +83,7 @@ Authenticated user requests standalone room access
 
 Application authorization must complete before token issuance.
 
-## Phase 4B sequence
+## Future standalone sequence
 
 1. approve the standalone Video Rooms architecture and security contract;
 2. compare managed WebRTC providers;
@@ -91,7 +91,7 @@ Application authorization must complete before token issuance.
 4. implement permanent standalone Video Rooms only after the evidence gate;
 5. test multi-user, desktop, mobile, reconnect, permission, failure, and production behavior.
 
-The spike must remain disposable and must not define a permanent room schema or select campaign rules by accident.
+This sequence is planned but is not the selected next product stage. Any future spike must remain disposable and must not define a permanent room schema or select campaign rules by accident.
 
 ## Minimum permanent UI direction
 
@@ -137,15 +137,17 @@ Minimum requirements for standalone Video Rooms:
 - safe errors;
 - restrictive room-creation defaults once the ownership model is approved.
 
-Campaign integration additionally requires active campaign authorization immediately before token issuance. The local Stage 1 data foundation fixes the campaign side at one GM plus at most six Players, persistent Player order, Player-only media groups, directed group/GM restrictions, individual publication permissions, private image visibility, and completed-campaign read-only behavior.
+Campaign integration additionally requires active campaign authorization immediately before token issuance. The current Production data foundation fixes the campaign side at one GM plus at most six Players, persistent Player order, Player-only media groups, directed group/GM restrictions, individual publication permissions, private image visibility, and completed-campaign read-only behavior.
 
-The local Stage 2 server foundation adds an authenticated campaign-scoped join endpoint and a narrow LiveKit server adapter. It derives an application-owned, collision-resistant room name from the campaign ID, gives the same campaign/account pair a stable non-UUID participant identity, explicitly creates or validates the room at `maxParticipants = 7`, and issues ten-minute room-bound tokens. Tokens allow subscription and only the camera/microphone sources permitted by the Stage 1 publication state; they deny data publication, screen sharing, room administration, recording, ingress, agent, and related elevated grants. The endpoint returns no raw account ID, provider API credential, or database row.
+The current Production server foundation provides an authenticated campaign-scoped join endpoint and a narrow LiveKit server adapter. It derives an application-owned, collision-resistant room name from the campaign ID, gives the same campaign/account pair a stable non-UUID participant identity, explicitly creates or validates the room at `maxParticipants = 7`, and issues ten-minute room-bound tokens. Tokens allow subscription and only the camera/microphone sources permitted by the publication state; they deny data publication, screen sharing, room administration, recording, ingress, agent, and related elevated grants. The endpoint returns no raw account ID, provider API credential, or database row.
 
 The campaign Game Room now provides explicit Join and Leave, participant video tiles, local camera and microphone controls, browser sound unlock, reconnect handling, cleanup, and safe localized error states. Its viewport-driven desktop composition uses a compact route-specific header and seven stable slots: one centered GM tile, Player positions 1–6, and a lower-left Image/Handout Display with one compact Game Tools panel. The primary desktop acceptance viewport is 1920 × 900 CSS pixels; the same `1.5fr / 1fr / 1fr` composition grows through QHD and 4K within bounded layout ranges, while smaller screens reflow with vertical scrolling and no horizontal overflow. Disconnects and camera-off states do not move a participant to another slot; only the local participant receives interactive camera and microphone controls, while remote tiles expose status indicators. Camera and microphone remain off until the participant explicitly enables them.
 
 The installed `livekit-client@2.21.0` room configuration explicitly enables adaptive stream subscription and dynacast and caps default camera capture at 1280 × 720 at 30 fps. The SDK's supported simulcast default remains enabled, allowing attached remote video elements to select an appropriate subscription layer from their rendered size and visibility without tying CSS card dimensions to the media capture resolution.
 
 The Image/Handout Display and Game Tools panel are presentational placeholders only. Active moderation, directed subscription enforcement, campaign image upload/presentation, game-tool APIs, recording, transcription, screen sharing, and the standalone Video Rooms product remain unimplemented. See `../architecture/SECURITY.md`.
+
+The human Production group test passed for the current campaign implementation. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected. No additional media/layout/human acceptance retest is currently required.
 
 ## Deferred work
 
@@ -172,7 +174,7 @@ The Image/Handout Display and Game Tools panel are presentational placeholders o
 - room deletion behavior;
 - maximum rooms per owner;
 - participant limits;
-- exact provider;
+- provider for the future standalone product;
 - pricing tier;
 - data region;
 - screen sharing in the first permanent version;

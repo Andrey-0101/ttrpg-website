@@ -7,22 +7,34 @@
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
 | Document status | Current synchronized project context |
-| Last reviewed | 2026-08-02 |
-| Verified production baseline | `main` at `cb6a07f11669916c8af68d0f0c93033438c901ea` |
-| Verified release | PR #26 merged, deployed, and production-verified; 169 automated tests; 36/36 static pages |
+| Last reviewed | 2026-08-30 |
+| Verified production baseline | `main` at `b033b93b1993561cbdf349987aa37aaf83574108` |
+| Verified release | PRs #28–#34 merged and accepted in Production; current deployment `dpl_GMGzywmaHjEZheB2NQcCPvJ98GND` is `READY` |
 | Canonical production domain | `https://ttrpg.fans` |
 | Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
 | Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Phase 4B — Standalone Video Rooms architecture and security contract |
+| Current delivery stage | Campaign video and Game Room scope complete; next product stage not selected |
 | Current audience | Small invited group of friends |
 
 ## Release-state boundaries
 
 ### Verified production baseline
 
-The current deployed and production-verified baseline is `main` at `cb6a07f11669916c8af68d0f0c93033438c901ea`. PR #26 is merged and production-verified. The release passed 169 automated tests and generated 36/36 static pages.
+The current deployed and production-verified baseline is `main` at `b033b93b1993561cbdf349987aa37aaf83574108`. PRs #28 through #34 delivered the campaign-video data foundation, CoC campaign shell, campaign creation fix, dedicated Game Room, responsive seven-slot layout, and final video-card UX. The current verified Production deployment is `dpl_GMGzywmaHjEZheB2NQcCPvJ98GND` in `READY` state.
 
-The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, campaign-authorized LiveKit video, and the first dedicated campaign Game Room shell are implemented. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain planned.
+The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the dedicated responsive Campaign Game Room are implemented and accepted. The human Production group test passed. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional media, layout, or human acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain planned and inactive.
+
+Release history relevant to the current baseline:
+
+| PR | Accepted outcome |
+|---|---|
+| #28 | Campaign-video data foundation, Production migrations, and LiveKit configuration |
+| #29 | CoC campaign shell with system-exact character compatibility |
+| #30 | Campaign-creation navigation and submission correction |
+| #31 | Dedicated localized Campaign Game Room route |
+| #32 | Three-column composition and stable seven-slot layout |
+| #33 | Responsive FullHD, QHD, 4K, tablet, and mobile behavior |
+| #34 | Final accepted video-card UX and Production presentation |
 
 ## Purpose
 
@@ -49,10 +61,10 @@ When information conflicts, use this priority:
 3. generated database types;
 4. verified Supabase and Vercel behavior;
 5. accepted ADRs;
-6. permanent project documentation;
-7. the current handoff;
+6. the current authoritative handoff, `docs/handoffs/H010_CURRENT_HANDOFF.md`;
+7. permanent project documentation;
 8. current chat decisions;
-9. historical handoffs and old snippets.
+9. historical handoffs H001–H009 and old snippets.
 
 A discussed or planned object is not implemented unless it exists in code, migrations, generated types, or verified infrastructure.
 
@@ -75,7 +87,18 @@ Vercel `*.vercel.app` URLs remain technical deployment addresses. Application-ge
 
 ### External production configuration
 
-The production Vercel and hosted Supabase Auth settings were completed manually outside the repository and manually verified for the merged and production-verified PR #26 release.
+The production Vercel, LiveKit, and hosted Supabase Auth settings were completed outside the repository and verified for the current PR #34 Production release.
+
+Required Production variable names, without values:
+
+```text
+NEXT_PUBLIC_SITE_URL
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+LIVEKIT_URL
+LIVEKIT_API_KEY
+LIVEKIT_API_SECRET
+```
 
 Vercel state:
 
@@ -189,6 +212,8 @@ supabase/migrations/20260709150000_campaign_foundation.sql
 supabase/migrations/20260709163000_fix_campaign_select_policy.sql
 supabase/migrations/20260709170000_fix_campaign_character_trigger_security.sql
 supabase/migrations/20260722103835_personal_dice_persistence.sql
+supabase/migrations/20260822190351_campaign_video_data_foundation.sql
+supabase/migrations/20260823143856_harden_campaign_database_grants.sql
 ```
 
 Current public tables:
@@ -202,9 +227,16 @@ public.campaign_invitations
 public.campaign_characters
 public.custom_dice_presets
 public.personal_roll_history
+public.campaign_player_publication_permissions
+public.campaign_media_groups
+public.campaign_media_group_members
+public.campaign_media_restrictions
+public.campaign_images
+public.campaign_image_recipients
+public.campaign_video_audit_log
 ```
 
-No campaign-authoritative dice-roll, video-room, handout, NPC, session, or campaign-notes table is currently implemented. Personal dice history is private per owner and is not campaign evidence.
+All eight repository migrations are current in Production. The seven campaign-video tables use RLS; the five required foreign-key indexes, database grants, and `handle_new_user()` hardening are current. The private `campaign-images` Storage bucket is current. No campaign-authoritative dice-roll, provider-room-mapping, handout, NPC, session, or campaign-notes table is currently implemented. Personal dice history is private per owner and is not campaign evidence.
 
 Generated types:
 
@@ -344,6 +376,6 @@ Public or generally accessible game-system information must remain separate from
 
 Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal dice persistence, and the planned game-system catalogue are complete.
 
-Phase 4B Standalone Video Rooms is the next approved development phase. Its internal order is: architecture and security contract; managed-provider comparison; disposable two-to-three-user spike; permanent standalone implementation; then multi-user, desktop, mobile, reconnect, permission, failure, and production testing.
+Campaign-authorized LiveKit video and the responsive Game Room at `/{locale}/campaigns/{campaignId}/game-room` are complete and accepted for one GM plus up to six Players. LiveKit is the accepted provider for this current campaign implementation. The final card design uses responsive 16:9 media, stable participant slots, a compact upper-right label, local-only lower-left media controls, and a header-level Leave action.
 
-Campaign video is integrated through the reusable core, and the first Phase 4F Game Room shell now gives it a dedicated workspace route. Phase 4D shared campaign dice and the remaining Game Room areas—Handouts, Participants, Quick Notes, and Session Context—remain planned. Standalone room schema, RLS, ownership, invitation, retention, and deletion decisions remain open. Print/PDF, final decoration, broad public-readiness hardening, and Call of Cthulhu character, dice, Game Hub, and Keeper functionality remain deferred; only the generic CoC campaign shell is implemented.
+Phase 4D shared campaign dice and the remaining Game Room areas—Handouts, Participants, Quick Notes, Session Context, Characters, NPCs, Selected Handouts, and active Display/image presentation—remain planned and inactive. Standalone Video Rooms remain a separate planned product capability whose schema, RLS, ownership, invitation, retention, deletion, and future provider decision remain open. Print/PDF, broad public-readiness hardening, and Call of Cthulhu character, dice, Game Hub, and Keeper functionality remain deferred; only the generic CoC campaign shell is implemented. The next product stage has not yet been selected.

@@ -8,7 +8,7 @@ Campaign Foundation is complete in the synchronized repository snapshot:
 
 ```text
 main
-a1c3a61381a2b7cddab9dd8fb620af56342209a9
+b033b93b1993561cbdf349987aa37aaf83574108
 ```
 
 It includes the database schema, RLS, invitation lifecycle, membership controls, campaign character sharing, campaign management UI, EN/RU localization, mobile layouts, and multi-user security testing.
@@ -195,7 +195,7 @@ VtM and Call of Cthulhu characters are not cross-compatible. Because Call of Cth
 
 ### Campaign video data foundation
 
-The local Stage 1 foundation adds provider-neutral persistence for:
+The current Production campaign-video foundation adds provider-neutral persistence for:
 
 - sparse per-Player audio/video publication prohibitions, where absence means both allowed;
 - ordered Player-only media groups with at most one group per Player;
@@ -203,7 +203,7 @@ The local Stage 1 foundation adds provider-neutral persistence for:
 - private campaign images visible to the GM, all active Players, or selected active Players;
 - immutable constrained administrative audit rows.
 
-The GM is never a media-group member. Removing a prohibition does not activate a microphone or camera. Session-only overrides, provider rooms, tokens, connections, media tracks, and UI remain outside Stage 1.
+The GM is never a media-group member. Removing a prohibition does not activate a microphone or camera. Session-only overrides, provider rooms, tokens, connections, and media tracks are not persisted by this foundation. All eight migrations, the campaign-video RLS policies, required foreign-key indexes, hardened grants, and private `campaign-images` Storage are current in Production.
 
 ## Character access
 
@@ -318,6 +318,8 @@ Players do not see management controls.
 
 The first working shell includes explicit room Join/Leave, participant video tiles, own camera and microphone controls, browser sound unlock when required, participant names and roles, reconnect, cleanup, and safe errors. The Campaign Dice Roller, Handout Preview, separate Participants panel, Quick Notes, and Current Session Context are visible only as non-interactive planned structure. Completed campaigns cannot start a room connection.
 
+The accepted layout uses a compact header, approximately `1.5fr / 1fr / 1fr` desktop columns, and stable slots for one GM plus Player positions 1–6. Video cards remain responsive `16:9`, use normal brightness and `object-fit: cover`, keep a compact upper-right label, and expose lower-left media controls only for the local participant. Leave remains in the header. The human Production group test passed; quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional acceptance retest is currently required.
+
 ## Lifecycle
 
 ### Active
@@ -383,6 +385,8 @@ docs/architecture/DATABASE.md
 ```
 
 ## Verification
+
+The current campaign-video and Game Room scope is accepted in Production. LiveKit is the accepted provider for this campaign implementation; standalone Video Rooms remain a separate future product decision.
 
 The Campaign Foundation security script tested:
 
