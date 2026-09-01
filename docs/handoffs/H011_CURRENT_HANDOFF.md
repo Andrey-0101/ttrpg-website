@@ -11,7 +11,8 @@
 | Canonical branch | `main` |
 | Canonical remote | `origin/main` |
 | H011 consolidation source baseline | `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
-| Publication | H011 consolidation PR; see the final execution report and Git history for its exact merge commit |
+| H011 consolidation publication | PR #36, merge commit `4799514e782da769cd18c5eaefe22f61b10dac3c`, deployed `READY` |
+| Final cleanup-record publication | The `origin/main` commit containing this finalization; see the final execution report and Git history for its exact SHA |
 | Previous handoff | `H010_CURRENT_HANDOFF.md` |
 
 H011 is current. H001–H010 are historical and must not override current code, migrations, verified infrastructure, or this handoff. H009 remains the detailed historical release and acceptance record for Campaign Game Room and LiveKit.
@@ -130,7 +131,7 @@ Repeat only a gate affected by a relevant code, schema, dependency, provider, br
 | `C:\Projects\ttrpg-video-spike-evidence` | Removed after distilling the useful, non-sensitive provider-validation conclusion into `docs/evidence/HISTORICAL_LIVEKIT_PROVIDER_VALIDATION.md`. Raw logs, screenshots, temporary runners, and identifiers were not retained. |
 | Five branch-scoped Vercel variables for the deleted M4E Preview branch | Removed after confirming the exact obsolete branch scope. The six required variable names remain present in their intended Production or shared Preview/Production scopes without values being inspected. |
 | H011 publication branch | Removed locally and remotely after merge. |
-| `C:\Projects\ttrpg-website-h010-audit` | Moved to `C:\Projects\ttrpg-website` after publication, then registered as the sole worktree on clean `main`. |
+| `C:\Projects\ttrpg-website-h010-audit` | Removed after the repository's primary worktree at `C:\Projects\ttrpg-website` was cleared of the superseded spike, restored to verified `main`, and confirmed canonical. The primary-worktree constraint made an in-place canonical reset safer than moving the linked audit worktree. |
 
 No backup, renamed, temporary, or just-in-case TTRPG project copy is required outside the canonical repository.
 
