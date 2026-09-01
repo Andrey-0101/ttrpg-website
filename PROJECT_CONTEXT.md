@@ -7,9 +7,9 @@
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
 | Document status | Current synchronized project context |
-| Last reviewed | 2026-08-30 |
-| Verified production baseline | `main` at `b033b93b1993561cbdf349987aa37aaf83574108` |
-| Verified release | PRs #28–#34 merged and accepted in Production; current deployment `dpl_GMGzywmaHjEZheB2NQcCPvJ98GND` is `READY` |
+| Last reviewed | 2026-09-01 |
+| H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
+| Verified release | PRs #28–#35 merged; Campaign Game Room accepted in Production and the H010 synchronization deployed `READY` |
 | Canonical production domain | `https://ttrpg.fans` |
 | Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
 | Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
@@ -20,9 +20,9 @@
 
 ### Verified production baseline
 
-The current deployed and production-verified baseline is `main` at `b033b93b1993561cbdf349987aa37aaf83574108`. PRs #28 through #34 delivered the campaign-video data foundation, CoC campaign shell, campaign creation fix, dedicated Game Room, responsive seven-slot layout, and final video-card UX. The current verified Production deployment is `dpl_GMGzywmaHjEZheB2NQcCPvJ98GND` in `READY` state.
+H011 consolidation started from the clean, deployed `main` baseline at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`. PRs #28 through #34 delivered the campaign-video data foundation, CoC campaign shell, campaign creation fix, dedicated Game Room, responsive seven-slot layout, and final video-card UX; PR #35 published the H010 audit, dependency remediation, documentation synchronization, and CI expansion. The current authoritative publication state is recorded in `docs/handoffs/H011_CURRENT_HANDOFF.md`.
 
-The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the dedicated responsive Campaign Game Room are implemented and accepted. The human Production group test passed. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional media, layout, or human acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain planned and inactive.
+The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the dedicated responsive Campaign Game Room are implemented and accepted. The last human Production group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional media, layout, or human acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain planned and inactive.
 
 Release history relevant to the current baseline:
 
@@ -61,7 +61,7 @@ When information conflicts, use this priority:
 3. generated database types;
 4. verified Supabase and Vercel behavior;
 5. accepted ADRs;
-6. the current authoritative handoff, `docs/handoffs/H010_CURRENT_HANDOFF.md`;
+6. the current authoritative handoff, `docs/handoffs/H011_CURRENT_HANDOFF.md`;
 7. permanent project documentation;
 8. current chat decisions;
 9. historical handoffs H001–H009 and old snippets.
@@ -72,7 +72,7 @@ A discussed or planned object is not implemented unless it exists in code, migra
 
 ### Platform
 
-- Next.js 16.2.9 App Router
+- Next.js 16.3.3 App Router
 - React 19.2.4
 - TypeScript
 - Tailwind CSS 4

@@ -2,7 +2,7 @@
 
 ## Status
 
-Campaign Foundation and the campaign-video data foundation are implemented and current in Production at `b033b93b1993561cbdf349987aa37aaf83574108`.
+Campaign Foundation and the campaign-video data foundation are implemented and current in Production. H011 consolidation started from deployed `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`.
 
 All eight repository migrations are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables, five required foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
 

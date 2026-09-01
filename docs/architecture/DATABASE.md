@@ -6,7 +6,7 @@ Current applied repository-backed database state for the synchronized snapshot:
 
 ```text
 main
-b033b93b1993561cbdf349987aa37aaf83574108
+609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
 Applied migrations:

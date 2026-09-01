@@ -8,7 +8,7 @@ Campaign Foundation is complete in the synchronized repository snapshot:
 
 ```text
 main
-b033b93b1993561cbdf349987aa37aaf83574108
+609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
 It includes the database schema, RLS, invitation lifecycle, membership controls, campaign character sharing, campaign management UI, EN/RU localization, mobile layouts, and multi-user security testing.
@@ -318,7 +318,7 @@ Players do not see management controls.
 
 The first working shell includes explicit room Join/Leave, participant video tiles, own camera and microphone controls, browser sound unlock when required, participant names and roles, reconnect, cleanup, and safe errors. The Campaign Dice Roller, Handout Preview, separate Participants panel, Quick Notes, and Current Session Context are visible only as non-interactive planned structure. Completed campaigns cannot start a room connection.
 
-The accepted layout uses a compact header, approximately `1.5fr / 1fr / 1fr` desktop columns, and stable slots for one GM plus Player positions 1–6. Video cards remain responsive `16:9`, use normal brightness and `object-fit: cover`, keep a compact upper-right label, and expose lower-left media controls only for the local participant. Leave remains in the header. The human Production group test passed; quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional acceptance retest is currently required.
+The accepted layout uses a compact header, approximately `1.5fr / 1fr / 1fr` desktop columns, and stable slots for one GM plus Player positions 1–6. Video cards remain responsive `16:9`, use normal brightness and `object-fit: cover`, keep a compact upper-right label, and expose lower-left media controls only for the local participant. Leave remains in the header. The last human Production group test passed with one GM and four Players; quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional acceptance retest is currently required.
 
 ## Lifecycle
 

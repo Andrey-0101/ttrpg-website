@@ -23,10 +23,10 @@ Verified production baseline:
 
 ```text
 main
-b033b93b1993561cbdf349987aa37aaf83574108
+609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
-The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the accepted responsive Campaign Game Room. PRs #28–#34 are the current release sequence. The Production human group test passed without quantitative network/connection-quality telemetry, and no additional acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented, and the non-video Game Room workspace tools remain planned and inactive.
+The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the accepted responsive Campaign Game Room. PRs #28–#35 are the completed release-and-audit sequence before H011 consolidation. The last Production human group test passed with one GM and four Players, without quantitative network/connection-quality telemetry, and no additional acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented, and the non-video Game Room workspace tools remain planned and inactive.
 
 ## Architecture
 
@@ -69,13 +69,19 @@ Current decision status relevant to the next milestone:
 - ADR-008 — Game-system domain boundaries: Accepted;
 - ADR-009 — Managed video infrastructure: Accepted for the current LiveKit campaign Game Room; standalone Video Rooms remain a separate future decision.
 
+## Evidence summaries
+
+| Document | Purpose |
+|---|---|
+| [`evidence/HISTORICAL_LIVEKIT_PROVIDER_VALIDATION.md`](evidence/HISTORICAL_LIVEKIT_PROVIDER_VALIDATION.md) | Sanitized conclusion and evidence limits from the retired external provider-spike archive |
+
 ## Handoffs
 
 Current authoritative handoff:
 
-[`handoffs/H010_CURRENT_HANDOFF.md`](handoffs/H010_CURRENT_HANDOFF.md)
+[`handoffs/H011_CURRENT_HANDOFF.md`](handoffs/H011_CURRENT_HANDOFF.md)
 
-H010 overrides older handoffs when historical statements conflict with current code, migrations, infrastructure evidence, or accepted Production state. H009 remains the authoritative record for its completed release stage.
+H011 overrides older handoffs when historical statements conflict with current code, migrations, infrastructure evidence, or accepted Production state. H009 remains the authoritative record for its completed release stage.
 
 Historical handoffs remain available and must not be rewritten as current state:
 
@@ -87,7 +93,8 @@ Historical handoffs remain available and must not be rewritten as current state:
 - `H006_CURRENT_HANDOFF.md`;
 - `H007_CURRENT_HANDOFF.md`;
 - `H008_CURRENT_HANDOFF.md`;
-- `H009_CURRENT_HANDOFF.md`.
+- `H009_CURRENT_HANDOFF.md`;
+- `H010_CURRENT_HANDOFF.md`.
 
 ## Status vocabulary
 

@@ -4,7 +4,7 @@
 
 This document contains:
 
-1. the implemented site map at `main` commit `b033b93b1993561cbdf349987aa37aaf83574108`;
+1. the implemented site map at the H011 consolidation baseline, `main` commit `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`;
 2. the separate planned standalone Video Rooms map;
 3. the later campaign-workspace direction.
 

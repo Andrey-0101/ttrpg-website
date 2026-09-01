@@ -147,7 +147,7 @@ The installed `livekit-client@2.21.0` room configuration explicitly enables adap
 
 The Image/Handout Display and Game Tools panel are presentational placeholders only. Active moderation, directed subscription enforcement, campaign image upload/presentation, game-tool APIs, recording, transcription, screen sharing, and the standalone Video Rooms product remain unimplemented. See `../architecture/SECURITY.md`.
 
-The human Production group test passed for the current campaign implementation. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected. No additional media/layout/human acceptance retest is currently required.
+The last human Production group test passed for the current campaign implementation with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected. No additional media/layout/human acceptance retest is currently required.
 
 ## Deferred work
 
