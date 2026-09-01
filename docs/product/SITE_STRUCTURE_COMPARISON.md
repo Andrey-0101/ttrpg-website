@@ -25,7 +25,7 @@ The target site is a bilingual multi-system TTRPG hub with standalone Video Room
 | Personal dice | VtM roller, Custom Dice Pool, up to five presets, private personal history | Retained as non-authoritative personal tools |
 | Shared campaign dice | Not implemented | Phase 4D server-authoritative persisted feed after the Campaign Collaboration Contract |
 | Standalone Video Rooms | Not implemented; no route or navigation placeholder | Phase 4B authenticated top-level area independent of Campaigns |
-| Campaign video | Not implemented | Phase 4E campaign-authorized integration through the reusable video core |
+| Campaign video | Implemented and accepted in the responsive localized Game Room with LiveKit | Retain campaign-derived authorization and extend only through separately approved tools |
 | Handouts | Not implemented | Private campaign library with visibility controls |
 | NPCs | Not implemented | Simple and optional full-sheet NPC support |
 | Sessions | Not implemented | First-class session records |
@@ -42,14 +42,14 @@ The project has moved from owner-only characters to campaign membership and read
 
 ## Remaining transition
 
-The next transition is from the current asynchronous application to standalone managed video, without campaign membership. Campaign collaboration is defined afterward; server-authoritative campaign dice and campaign-integrated video then reuse their own appropriate boundaries before the remaining campaign workspace is assembled.
+Campaign-authorized LiveKit video and the responsive Game Room are complete. The next product transition has not yet been selected. Standalone Video Rooms remain a separate planned capability; shared campaign dice and the remaining Game Room tools also remain planned.
 
 ## Approved implementation order
 
 1. Phase 4A — VtM Personal Dice and Personal Persistence — complete.
-2. Phase 4B — define standalone Video Rooms architecture/security, compare providers, run a disposable spike, implement, and production-test.
+2. Phase 4B — standalone Video Rooms remain separately planned; not selected as the next stage.
 3. Phase 4C — define the Campaign Collaboration Contract.
 4. Phase 4D — add server-authoritative persisted shared campaign dice and scoped Realtime.
-5. Phase 4E — integrate campaign video through the reusable core and campaign-derived authorization.
-6. Phase 4F — assemble the campaign workspace.
+5. Phase 4E — campaign video through the reusable core and campaign-derived authorization — complete / accepted.
+6. Phase 4F — responsive Game Room video workspace — complete / accepted; remaining tools planned.
 7. Continue with Milestones 5–9 in their approved order.

@@ -1,7 +1,7 @@
 # TTRPG Hub — Target Project Folder Structure
 
 > This is the recommended target repository structure.
-> It combines the current application, the approved documentation set, the target site map, standalone Video Rooms, later Campaign Game Room integration, Dice Roller, and the future Call of Cthulhu 7e extension.
+> It combines the current application, the approved documentation set, the target site map, planned standalone Video Rooms, the implemented Campaign Game Room, Dice Roller, and the future Call of Cthulhu 7e extension.
 >
 > Not every listed folder or file exists yet. Planned and deferred areas should be created only when their milestone begins.
 
@@ -11,7 +11,8 @@
 - `[NEXT]` — expected in the next one or two milestones.
 - `[PHASE 4B]` — planned standalone Video Rooms work; not currently implemented.
 - `[PHASE 4D]` — planned shared campaign dice work.
-- `[PHASE 4E]` — planned campaign video integration work.
+- `[PHASE 4E]` — implemented campaign video integration work.
+- `[PHASE 4F]` — implemented Game Room shell or planned workspace expansion, as labelled.
 - `[PLANNED]` — part of the approved target architecture.
 - `[PUBLIC]` — required mainly for Public Readiness.
 - `[COC]` — introduced during the Call of Cthulhu 7e milestone.
@@ -132,8 +133,8 @@ ttrpg-website/
 │   │   │       │       └── not-found.tsx          [CURRENT]
 │   │   │       ├── dice/
 │   │   │       │   └── page.tsx                   [PHASE 4D]
-│   │   │       ├── video/
-│   │   │       │   └── page.tsx                   [PHASE 4E]
+│   │   │       ├── game-room/
+│   │   │       │   └── page.tsx                   [CURRENT, PHASE 4F]
 │   │   │       ├── handouts/
 │   │   │       │   ├── page.tsx                   [PLANNED]
 │   │   │       │   └── [handoutId]/
@@ -279,7 +280,7 @@ ttrpg-website/
 │   │   ├── campaign-characters-panel.tsx           [CURRENT]
 │   │   ├── campaign-management-panel.tsx           [CURRENT]
 │   │   ├── campaign-dice-panel.tsx                 [PHASE 4D]
-│   │   ├── campaign-video-room.tsx                 [PHASE 4E]
+│   │   ├── campaign-video-room.tsx                 [CURRENT, PHASE 4E]
 │   │   ├── handouts/
 │   │   │   ├── handout-list.tsx                    [PLANNED]
 │   │   │   ├── handout-card.tsx                    [PLANNED]
@@ -299,8 +300,8 @@ ttrpg-website/
 │   │       └── gm-private-notes.tsx                [PLANNED]
 │   │
 │   ├── game-room/
-│   │   ├── game-room.tsx                           [PLANNED]
-│   │   ├── game-room-layout.tsx                    [PLANNED]
+│   │   ├── game-room.tsx                           [CURRENT EQUIVALENT, PHASE 4F]
+│   │   ├── game-room-layout.tsx                    [CURRENT EQUIVALENT, PHASE 4F]
 │   │   ├── participant-list.tsx                    [PLANNED]
 │   │   ├── current-session-context.tsx             [PLANNED]
 │   │   ├── quick-notes.tsx                         [PLANNED]
@@ -493,10 +494,10 @@ ttrpg-website/
 │   │   └── persistence.ts                          [PHASE 4D]
 │   │
 │   ├── video/
-│   │   ├── provider boundary                       [PHASE 4B]
-│   │   ├── reusable video core                     [PHASE 4B]
+│   │   ├── provider boundary                       [CURRENT, PHASE 4E]
+│   │   ├── reusable video core                     [CURRENT, PHASE 4E]
 │   │   ├── standalone authorization                [PHASE 4B]
-│   │   └── campaign authorization                  [PHASE 4E]
+│   │   └── campaign authorization                  [CURRENT, PHASE 4E]
 │   │
 │   ├── handouts/
 │   │   ├── storage.ts                              [PLANNED]
@@ -656,7 +657,7 @@ Russian versions use the same location with `.ru.md`.
 
 ## Recommended current repository scope
 
-Do not create the complete target tree now. Phase 4B may introduce only the standalone Video Rooms areas justified by the approved architecture, provider evidence, and implementation plan. Phase 4D campaign dice and Phase 4E campaign video remain later work.
+Do not create the complete target tree now. The current campaign-video core and Game Room are implemented. Future standalone Video Rooms may introduce only areas justified by a separately approved architecture, provider decision, and implementation plan. Phase 4D campaign dice and the remaining Game Room tools remain later work. The next product stage has not yet been selected.
 
 The following initial Architecture Baseline documentation inventory is retained as historical placement context. It is not the current implementation scope:
 
@@ -714,7 +715,7 @@ docs/
     └── H004_CURRENT_HANDOFF.ru.md
 ```
 
-Application, Campaign, Dice, Video, Content, Tests, and Public Readiness folders should be introduced only as their corresponding milestones begin. Do not create exact room persistence or authorization files until the open schema, RLS, ownership, invitation, retention, provider, and campaign-integration decisions are resolved.
+Application, Campaign, Dice, Video, Content, Tests, and Public Readiness folders should be introduced only as their corresponding milestones begin. Do not create exact standalone-room persistence or authorization files until that product's open schema, RLS, ownership, invitation, retention, and provider decisions are resolved.
 
 ## Important implementation rule
 

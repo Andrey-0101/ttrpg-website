@@ -10,7 +10,7 @@ Synchronized snapshot:
 
 ```text
 main
-cb6a07f11669916c8af68d0f0c93033438c901ea
+b033b93b1993561cbdf349987aa37aaf83574108
 ```
 
 ## Strategy
@@ -90,7 +90,7 @@ A trusted group reduces product scope. It does not make missing authorization sa
 - immutable, constrained audit records with no object paths, tokens, media, or unrestricted JSON;
 - RLS plus database triggers enforcing fail-closed completed-campaign mutations.
 
-This is a local data-foundation candidate only. It adds no provider token issuance, room connection, media UI, or upload endpoint.
+This foundation is current in Production. All seven campaign-video tables use RLS; the required foreign-key indexes, grants, and `handle_new_user()` execution hardening are current. The private `campaign-images` bucket remains current. Campaign image upload/presentation UI and remote moderation remain planned and inactive.
 
 ### Invitations
 
@@ -227,7 +227,7 @@ Required before production standalone video:
 
 The exact room schema, RLS, ownership, invitation, membership, expiry, retention, deletion, quota, and participant model remain open and must not be inferred from these requirements.
 
-### Campaign-integrated Video Rooms — Phase 4E
+### Campaign-integrated Video Rooms — accepted current implementation
 
 Required in addition to the reusable video-core controls:
 
@@ -244,6 +244,8 @@ Campaign room authorization now uses one GM plus at most six active Players. Cam
 The Stage 2 join endpoint accepts only the campaign route identifier and an empty JSON body. Authentication, active-campaign access, Player position, and publication state are read afresh before configuration or provider dispatch. `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` are server-only variables; malformed or partial configuration fails closed. The current deterministic campaign mapping intentionally has no start/end rotation semantics, and ten-minute tokens already issued before membership removal or campaign completion remain valid until provider expiry unless a later moderation checkpoint adds active revocation.
 
 The localized Game Room route loads only RLS-visible campaign and participant data. Opening either Campaign Overview or Game Room does not request credentials, connect to LiveKit, or request camera/microphone access. The browser constructs a provider session only after explicit Join; camera and microphone remain off until their own explicit controls are used, and Leave or component disposal tears down the temporary session.
+
+The Production human group test passed for the accepted current scope. Quantitative packet-loss, latency, jitter, reconnect-timeline, and per-participant connection-quality telemetry was not collected. That evidence boundary is non-blocking, and no additional media/layout/human acceptance retest is currently required unless a relevant regression is reported, the implementation changes materially, or the user explicitly requests it.
 
 ## Level A requirements for later campaign content
 

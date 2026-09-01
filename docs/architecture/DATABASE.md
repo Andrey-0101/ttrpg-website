@@ -6,7 +6,7 @@ Current applied repository-backed database state for the synchronized snapshot:
 
 ```text
 main
-cb378c18fc3f07ad6072f27508918ac53784e1b5
+b033b93b1993561cbdf349987aa37aaf83574108
 ```
 
 Applied migrations:
@@ -19,9 +19,10 @@ supabase/migrations/20260709163000_fix_campaign_select_policy.sql
 supabase/migrations/20260709170000_fix_campaign_character_trigger_security.sql
 supabase/migrations/20260722103835_personal_dice_persistence.sql
 supabase/migrations/20260822190351_campaign_video_data_foundation.sql
+supabase/migrations/20260823143856_harden_campaign_database_grants.sql
 ```
 
-The campaign-video foundation migration is a local review candidate. It has not been applied to a linked or remote project.
+All eight migrations are current in Production. The campaign-video data foundation and grant-hardening migration are applied; a repeat migration dry-run reported the database up to date.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
@@ -208,6 +209,8 @@ RLS is enabled on:
 ```text
 profiles
 characters
+custom_dice_presets
+personal_roll_history
 campaigns
 campaign_members
 campaign_invitations
@@ -409,15 +412,14 @@ Known limitation:
 
 ## Verification evidence
 
-Campaign Foundation verification recorded:
+Current database verification recorded:
 
-- five synchronized local/remote migration versions;
-- four campaign tables with RLS enabled;
-- fifteen expected campaign functions;
-- seven expected campaign triggers;
-- twelve expected campaign-related policies;
-- a full GM/Player/Outsider transaction test;
-- all test data rolled back.
+- eight synchronized repository/Production migration versions;
+- RLS on all fifteen public tables, including all seven campaign-video tables;
+- all five required foreign-key indexes valid;
+- hardened table/function grants and restricted `handle_new_user()` execution;
+- private `campaign-images` Storage;
+- the recorded Campaign Foundation GM/Player/Outsider transaction test, with all test data rolled back.
 
 The security test exposed two issues that were corrected through new migrations rather than editing the applied foundation migration:
 

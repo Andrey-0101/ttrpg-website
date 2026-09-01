@@ -1,23 +1,23 @@
 # ADR-009: Managed Video Infrastructure
 
-- Status: Proposed
-- Date: 2026-07-02
+- Status: Accepted
+- Date: 2026-08-30
 
 ## Context
 
 Private video rooms require signaling, media routing, NAT traversal, reconnect behavior, browser support, and operational reliability. Building and operating the entire media stack is outside the project's current purpose.
 
-The approved delivery order now begins with standalone Video Rooms and adds campaign-integrated video later. Both contexts need the same media capabilities, but they have different application authorization domains.
+The campaign Game Room now uses managed LiveKit infrastructure in Production. A future standalone Video Rooms product remains a separate application authorization domain and is not selected or implemented by this decision.
 
-## Proposed decision
+## Decision
 
-Integrate a managed video/WebRTC provider behind a practical provider boundary.
+Use managed video/WebRTC infrastructure behind a practical provider boundary. LiveKit is the accepted implementation provider for the current campaign Game Room.
 
 The application owns:
 
 - context-specific application authorization before token issuance;
-- standalone room authorization first;
-- campaign-derived authorization in a later phase;
+- campaign-derived authorization for the current Game Room;
+- separate standalone authorization only if a future standalone Video Rooms product is approved;
 - application-room to provider-room mapping;
 - server-side short-lived token issuance;
 - application UI and reusable video core;
@@ -61,8 +61,8 @@ Rejected for the first version because of complexity and operational burden.
 
 Rejected because the application must authorize access before issuing a short-lived provider token.
 
-## Acceptance gate
+## Accepted scope and future reconsideration
 
-Run a managed-provider comparison and a disposable two-to-three-user technical spike before accepting this ADR or selecting a provider. The evidence must cover token behavior, browser/mobile support, reconnect and permission failures, participant limits, pricing, privacy/data region, and provider exit risk.
+The current campaign implementation passed the provider spike, Preview/Production rollout, responsive verification, authenticated visual review, and a human Production group test for one GM plus up to six Players. The human test did not collect quantitative packet-loss, latency, jitter, or connection-quality telemetry; that missing telemetry is a documented non-blocking evidence limit.
 
-No exact provider, pricing tier, data region, database schema, RLS policy, or permanent room model is selected by this proposed decision.
+This acceptance applies only to managed infrastructure and LiveKit for the current campaign Game Room. It does not automatically settle a future standalone Video Rooms product, including its provider, pricing tier, data region, schema, RLS, ownership, invitation, retention, or deletion model. Future provider reconsideration requires new evidence or materially changed requirements.

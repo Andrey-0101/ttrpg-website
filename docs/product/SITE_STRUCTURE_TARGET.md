@@ -252,14 +252,14 @@ Current:
 /[locale]/campaigns/new
 /[locale]/campaigns/join/[token]
 /[locale]/campaigns/[id]
+/[locale]/campaigns/[id]/game-room
 /[locale]/campaigns/[id]/characters/[characterId]
 ```
 
-Later campaign collaboration routes:
+Later campaign collaboration route:
 
 ```text
 /[locale]/campaigns/[id]/dice
-/[locale]/campaigns/[id]/video
 ```
 
 ### Standalone Video Rooms
@@ -344,7 +344,7 @@ This is Phase 4D, after the Phase 4C Campaign Collaboration Contract.
 ### Campaign video
 
 ```text
-/[locale]/campaigns/[id]/video
+/{locale}/campaigns/{campaignId}/game-room
 ```
 
 - campaign membership required;
@@ -352,7 +352,7 @@ This is Phase 4D, after the Phase 4C Campaign Collaboration Contract.
 - managed WebRTC provider;
 - no permanent public room URL.
 
-Campaign video is Phase 4E and reuses the video core through a separate campaign-derived authorization layer.
+Campaign video is implemented and accepted through a separate campaign-derived authorization layer. LiveKit is accepted for this current implementation; the decision does not settle future standalone Video Rooms.
 
 ## Session structure
 
@@ -370,7 +370,7 @@ A session may aggregate:
 - notes;
 - optional video room/session mapping.
 
-Standalone Video Rooms come first in the approved implementation sequence. Campaign-level dice and video follow the Campaign Collaboration Contract; session filtering can be added later.
+Standalone Video Rooms remain separately planned and are not the selected next stage. Campaign-level video is current; campaign dice and session filtering remain planned.
 
 ## Domain ownership
 
@@ -442,11 +442,11 @@ RLS, server-side checks, and Storage policies remain authoritative.
 ### Active VtM Realtime Tools
 
 - Phase 4A personal VtM dice and personal persistence — complete;
-- Phase 4B standalone Video Rooms — next approved phase;
+- Phase 4B standalone Video Rooms — planned separately; not selected as the next stage;
 - Phase 4C Campaign Collaboration Contract — planned;
 - Phase 4D shared campaign dice and Realtime feed — planned;
-- Phase 4E campaign video integration — planned;
-- Phase 4F campaign workspace integration — planned.
+- Phase 4E campaign video integration — complete / accepted;
+- Phase 4F responsive Game Room video workspace — complete / accepted; remaining tools planned.
 
 ### Friend Campaign Alpha
 

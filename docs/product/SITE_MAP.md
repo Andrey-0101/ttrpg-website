@@ -4,8 +4,8 @@
 
 This document contains:
 
-1. the implemented site map at `main` commit `cb6a07f11669916c8af68d0f0c93033438c901ea`;
-2. the next-stage standalone Video Rooms planning map;
+1. the implemented site map at `main` commit `b033b93b1993561cbdf349987aa37aaf83574108`;
+2. the separate planned standalone Video Rooms map;
 3. the later campaign-workspace direction.
 
 The longer-term planning reference remains `SITE_MAP_TARGET.md`.
@@ -38,6 +38,7 @@ flowchart TD
 
     CAMPAIGNS --> CAMPAIGN_NEW["/[locale]/campaigns/new — Create Campaign"]
     CAMPAIGNS --> CAMPAIGN_DETAIL["/[locale]/campaigns/[id] — Campaign Overview"]
+    CAMPAIGN_DETAIL --> GAME_ROOM["/[locale]/campaigns/[id]/game-room — Campaign Game Room"]
     CAMPAIGN_DETAIL --> SHARED_CHARACTER["/[locale]/campaigns/[id]/characters/[characterId] — Shared Read-Only Character"]
 
     INVITE["/[locale]/campaigns/join/[token] — Accept Invitation"]
@@ -130,7 +131,7 @@ Personal VtM dice, the Custom Dice Pool, saved Custom presets, and private perso
 
 The same deterministic VtM evaluator should later be reused by the Phase 4D server-authoritative campaign roll path.
 
-## 5. Next-stage standalone Video Rooms map
+## 5. Planned standalone Video Rooms map
 
 Approved top-level target route:
 
@@ -150,7 +151,7 @@ flowchart TD
 
 Standalone authorization does not depend on Campaigns. Provider secrets remain server-only, and application authorization happens before token issuance.
 
-ADR-009 remains Proposed until a provider comparison and disposable spike are complete.
+ADR-009 is Accepted for managed infrastructure and LiveKit in the current campaign Game Room. Future standalone provider and product decisions remain open.
 
 ## 6. Later Friend Campaign Alpha map
 
@@ -172,7 +173,7 @@ flowchart TD
 
 Only implemented areas should appear as active navigation.
 
-Campaign video is a later Phase 4E capability. It reuses the video core through campaign-derived authorization and remains distinct from standalone Video Rooms.
+Campaign video is implemented and accepted at `/[locale]/campaigns/[id]/game-room`. It reuses the video core through campaign-derived authorization and remains distinct from standalone Video Rooms. Shared dice and the other workspace tools in this map remain planned and inactive.
 
 ## 7. Current versus planned
 
@@ -191,18 +192,20 @@ Implemented now:
 - invitation acceptance;
 - membership controls;
 - character sharing;
-- campaign management.
+- campaign management;
+- CoC campaign creation shell;
+- campaign-authorized LiveKit video and the responsive Game Room.
 
-Planned next:
+Next stage:
 
-- Phase 4B standalone Video Rooms architecture/security, provider comparison, disposable spike, implementation, and testing.
+- not yet selected.
 
 Planned later:
 
 - Phase 4C Campaign Collaboration Contract;
 - Phase 4D shared campaign dice and Realtime feed;
-- Phase 4E campaign video integration;
-- Phase 4F campaign workspace integration;
+- future standalone Video Rooms;
+- remaining Phase 4F campaign workspace tools;
 - handouts;
 - NPCs;
 - sessions;

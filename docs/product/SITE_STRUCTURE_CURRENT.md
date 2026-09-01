@@ -7,7 +7,7 @@
 | Project | TTRPG Hub |
 | Document type | Current information architecture |
 | Status | Implemented snapshot |
-| Repository snapshot | `main` at `cb6a07f11669916c8af68d0f0c93033438c901ea` |
+| Repository snapshot | `main` at `b033b93b1993561cbdf349987aa37aaf83574108` |
 | Current milestone | Milestone 4 — VtM Realtime Tools |
 | Completed milestones | Architecture Baseline, Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence |
 
@@ -320,6 +320,8 @@ The current foundation intentionally keeps these controls on the overview route 
 
 This authenticated participant-only route is the dedicated campaign virtual tabletop. Its active surface is the existing campaign-authorized video room: explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Campaign Dice, Handouts, a separate Participants panel, Quick Notes, and Session Context are present only as non-interactive planned structure. Completed campaigns cannot start a video connection.
 
+The accepted participant model is one GM plus up to six Players. The responsive layout keeps seven stable 16:9 slots, uses a compact Game Room header and final accepted video-card controls, and reflows with vertical scrolling where needed. The human Production group test passed without quantitative network or connection-quality telemetry; no additional acceptance retest is currently required.
+
 ## Current authorization shape
 
 | Area | Current access |
@@ -359,12 +361,11 @@ Not implemented:
 
 ## Current structural conclusion
 
-The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, and a twelve-system planned catalogue.
+The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
 
-It has a working campaign authorization boundary and is ready for the approved next sequence:
+It has a working campaign authorization boundary and a Production-accepted campaign video workspace. The next product stage has not yet been selected. Remaining planned capabilities include:
 
-1. Phase 4B standalone Video Rooms architecture/security, provider comparison, disposable spike, implementation, and testing;
-2. Phase 4C Campaign Collaboration Contract;
+1. standalone Video Rooms with separate authorization and product decisions;
+2. any remaining Campaign Collaboration Contract work;
 3. Phase 4D persisted shared campaign dice;
-4. Phase 4E campaign video integration through the reusable video core;
-5. Phase 4F campaign workspace integration.
+4. the inactive Game Room tools and broader campaign workspace.
