@@ -36,14 +36,14 @@ Implemented:
 
 Not yet implemented:
 
-- shared campaign dice and Realtime dice feed;
-- standalone Video Rooms;
-- campaign video moderation, image presentation, and the remaining Game Room workspace tools;
-- handouts, NPCs, sessions, or campaign notes;
+- Campaign Image Library and Game Room image presentation;
+- Call of Cthulhu 7e dice, character sheets, and system-aware Game Room integration;
+- campaign notes within the approved shared/GM-private scope;
+- general Handouts, NPCs, Sessions, Chronicle records, or clues;
 - independent character-sheet language;
 - print/PDF export;
 - public character sharing;
-- Call of Cthulhu 7e character sheets, dice, Game Hub, and Keeper tools;
+- CoC, Delta Green, and Vampire Game System Hubs;
 - public-readiness security, monitoring, legal, and operational work.
 
 ## Technology
@@ -143,7 +143,7 @@ main
 
 PRs #28 through #34 are merged and accepted in Production. They delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation fix, dedicated Game Room, responsive seven-slot composition, and final video-card UX. The current verified deployment is `READY`. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the responsive dedicated Game Room are implemented. The last Production human group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected; no additional media/layout/human acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain visibly planned and inactive.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the responsive dedicated Game Room are implemented. The last Production human group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected; no additional media/layout/human acceptance retest is currently required. Phase 4C1 Campaign Image Library is the next approved work. Standalone Video Rooms are no longer an active roadmap commitment.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 
@@ -151,20 +151,16 @@ If the repository advances, inspect the newer code, migrations, generated types,
 
 The agreed delivery strategy is:
 
-1. maintain the architecture and documentation baseline;
-2. keep the VtM character and campaign workflows stable;
-3. keep the completed personal dice tools and planned system catalogue stable;
-4. define standalone Video Rooms architecture and security, compare managed providers, and run a disposable spike;
-5. implement permanent standalone Video Rooms around a reusable video core;
-6. define the Campaign Collaboration Contract;
-7. add server-authoritative shared campaign dice and a Realtime feed;
-8. integrate the reusable video core with campaign-derived authorization;
-9. assemble the remaining friend-only campaign workspace;
-10. complete the visual identity;
-11. build the VtM Game Hub;
-12. complete public-readiness work;
-13. expand the delivered Call of Cthulhu 7e campaign shell with character sheets, dice, the Game Hub, and Keeper tools.
+1. completed Milestones 1–3: architecture, character friend-alpha, and Campaign Foundation;
+2. complete Phase 4 Core Play & Campaign Tools, beginning next with 4C1 Campaign Image Library;
+3. complete Phase 5 site-wide UI Technical Refinement;
+4. define and apply Phase 6 Visual Identity after the technical UI baseline is stable;
+5. add Delta Green system parity in Phase 7;
+6. build CoC, Delta Green, and Vampire system hubs in that Phase 8 order;
+7. complete Phase 9 Public Readiness.
 
-LiveKit is accepted for the current campaign Game Room. This does not settle the future standalone Video Rooms product, which remains a separate planned capability. Personal history remains private and non-authoritative; Phase 4D shared campaign dice must keep it separate from server-authoritative campaign roll history. The next product stage has not yet been selected.
+LiveKit is accepted only for the current campaign Game Room. Standalone Video Rooms are an uncommitted backlog idea requiring a separate future product, authorization, and provider review. Personal history remains private and non-authoritative; any later campaign dice persistence must keep it separate from server-authoritative campaign results.
+
+The current implementation targets Vampire: The Masquerade V5. White Wolf announced V6 in July 2026 while it remains in alpha, with materially different mechanics and no announced release date. A possible migration or replacement before public release remains undecided; see the roadmap for the approved planning note.
 
 This is an unofficial fan-made software project and is not presented as an official product of any tabletop game publisher.

@@ -2,81 +2,43 @@
 
 ## Product strategy
 
-Build a useful private tool for a small group first. Use real sessions to refine workflows. Complete the visual identity after the core friend-alpha experience works. Perform public-readiness hardening before inviting unrestricted users. Add new game systems after the VtM platform architecture is proven.
+Build a useful private tool for a small group first, refine real play workflows, then complete site-wide technical refinement and visual identity before public readiness. New game systems should reuse the proven platform boundaries without adding unrelated platform capabilities by default.
 
-## Idea intake
-
-New ideas are captured in `IDEAS_BACKLOG.md`.
-They enter this roadmap only after review and acceptance.
+New ideas are captured in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). Backlog items are not commitments and enter this roadmap only after explicit review and acceptance.
 
 ## Current status
 
-Completed:
+Completed foundation:
 
 - Milestone 1 — Architecture Baseline;
 - Milestone 2 — Character Friend Alpha;
 - Milestone 3 — Campaign Foundation;
-- Phase 4A — VtM Personal Dice and Personal Persistence;
-- planned game-system catalogue across all confirmed catalogue and selection surfaces.
+- Phase 4A — VtM Personal Dice & Personal Persistence;
+- Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room.
 
-Active:
+Next approved work:
 
-- Milestone 4 — VtM Realtime Tools; campaign video and the responsive Game Room are complete and accepted.
+- Phase 4C1 — Campaign Image Library.
 
-Next major development phase:
+Current Production facts:
 
-- not yet selected.
+- campaign video is implemented only inside `/{locale}/campaigns/{campaignId}/game-room`;
+- LiveKit is accepted for that campaign implementation;
+- supported capacity is one GM plus up to six Players;
+- the last human Production group test passed with one GM and four Players;
+- quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred;
+- the generic Call of Cthulhu 7e campaign shell is implemented, but CoC character sheets and dice are not;
+- Delta Green is a catalogue entry only;
+- game-system hubs are not implemented;
+- Phase 4C1 and every later phase remain unimplemented.
 
-Verified production baseline:
+Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
-```text
-main
-609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
-```
+> **Vampire edition note:** The current implementation targets Vampire: The Masquerade 5th Edition (V5). White Wolf announced Vampire: The Masquerade 6th Edition (V6) in July 2026; V6 is currently in alpha development, introduces materially different mechanics, and has no announced release date. Depending on V6 development and release timing relative to this project, V5 support may be migrated to or replaced by V6 before public release.
 
-PRs #28–#35 are merged and deployed at this consolidation baseline. PRs #28–#34 delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation correction, dedicated Game Room, responsive seven-slot layout, and final video-card UX; PR #35 published the H010 audit and synchronization. The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
+This is a planning dependency, not a migration decision. Until a separate decision is accepted, current V5 behavior, data, routes, and terminology remain authoritative.
 
-Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign LiveKit integration, and the responsive Game Room are complete. The last human Production group test passed with one GM and four Players, without quantitative packet-loss, latency, jitter, or connection-quality telemetry; no additional acceptance retest is currently required. Standalone Video Rooms, shared campaign dice, and the remaining Game Room tools are not implemented; standalone authorization remains a separate future domain.
-
-## Completed foundation
-
-### Platform
-
-- EN/RU locale-prefixed routes;
-- Supabase authentication and profiles;
-- personal Dashboard;
-- repository-backed migrations;
-- generated public-schema database types;
-- Vercel deployment workflow;
-- canonical production domain and permanent `www` to apex redirect;
-- safe localized loading, empty, retry, unavailable, and mutation states.
-
-### Characters
-
-- VtM V5 `schemaVersion: 3`;
-- complete two-page character sheet;
-- explicit create, save, edit, clear, and delete flows;
-- unsaved-change and duplicate-submit protection;
-- private portrait Storage;
-- A4-oriented desktop rendering;
-- responsive mobile/tablet rendering;
-- summary cards;
-- Private and Campaign visibility;
-- owner-only editing and deletion;
-- campaign-derived read-only sharing.
-
-### Campaigns
-
-- one immutable Game Master per campaign;
-- active and completed lifecycle;
-- Player memberships;
-- single-use seven-day invitations;
-- invitation revocation;
-- Player join, leave, and GM removal;
-- character assignment and unlinking;
-- shared read-only character sheets and portraits;
-- campaign editing, completion, and deletion;
-- multi-user GM, Player, and Outsider RLS verification.
+Official references: [White Wolf/Paradox announcement](https://www.paradoxinteractive.com/media/press-releases/press-release/new-blood-eternal-legacy-white-wolf-unveils-vampire-the-masquerade-6th-edition) and [V6 FAQ](https://www.paradoxinteractive.com/games/world-of-darkness/news/vtm-sixth-edition-faq).
 
 ---
 
@@ -84,446 +46,216 @@ Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC 
 
 **Status: Complete**
 
-### Goal
-
-Create a stable project map before adding collaborative features.
-
-### Delivered
-
-- project architecture;
-- current database/RLS/Storage documentation;
-- I18N documentation;
-- character-sheet specification;
-- campaign, dice, video, and game-hub plans;
-- security/public-readiness plan;
-- design contract;
-- ADR set;
-- repository README;
-- project handoffs.
-
-### Exit result
-
-The permanent documentation set, architecture sequence, and initial ADRs were reviewed and merged.
-
----
+Delivered the project architecture, database/RLS/Storage documentation, localization and character-sheet specifications, security and design contracts, ADR set, repository documentation, and handoff sequence.
 
 ## Milestone 2 — Character Friend Alpha
 
 **Status: Complete**
 
-### Goal
+Delivered the usable VtM V5 character workflow, explicit save and lifecycle controls, private portraits, responsive sheets, campaign visibility, read-only campaign sharing, and verified friend-alpha behavior.
 
-Make the VtM character workflow comfortable and difficult to misuse for a small private group.
-
-### Delivered
-
-- unsaved-change protection;
-- Saving/Saved/Save failed states;
-- duplicate-submit protection;
-- portrait creation, replacement, and removal;
-- clear two-page navigation;
-- loading, empty, unavailable, and retry states;
-- long-value handling;
-- responsive mobile verification;
-- Private/Campaign/Public visibility clarification;
-- production smoke test.
-
-### Deferred
-
-- print/PDF;
-- final decorative design;
-- portrait crop/reposition;
-- complex autosave;
-- public sharing;
-- large automated test program.
-
-### Exit result
-
-A user can register, create, fill, save, reopen, and edit a VtM character on desktop and mobile without accidental data loss.
-
----
+Deferred items such as print/PDF, portrait crop controls, public character sharing, and final decorative design remain outside this completed milestone.
 
 ## Milestone 3 — Campaign Foundation
 
 **Status: Complete**
 
-### Goal
+Delivered the campaign authorization boundary: one immutable GM, up to six Players, invitations, membership lifecycle, character assignment, shared read-only character access, campaign lifecycle, RLS, Storage policies, and multi-user security verification.
 
-Create the shared authorization boundary before shared realtime tools.
-
-### Delivered
-
-- campaign entity with game-system discriminator;
-- exactly one immutable Game Master defined by the creator;
-- Player memberships;
-- single-use Player invitations;
-- invitation expiry and revocation;
-- My Campaigns;
-- Create Campaign;
-- Campaign Overview;
-- member listing and removal;
-- Player departure;
-- campaign character assignment;
-- shared read-only character sheets;
-- campaign editing;
-- campaign completion;
-- campaign deletion;
-- completed-campaign read-only UI;
-- applied migrations, generated types, RLS, triggers, helper functions, and Storage policy;
-- multi-user GM/Player/Outsider security tests.
-
-### Exit result
-
-An invited Player can join a private campaign, see only permitted campaign data, and link an owned eligible character. The creator remains the single non-transferable Game Master.
+The generic campaign shell supports V5 and CoC 7e. System-specific capabilities remain independently gated.
 
 ---
 
-## Milestone 4 — VtM Realtime Tools
+## Phase 4 — Core Play & Campaign Tools
 
-**Status: Active**
-
-### Phase 4A — VtM Personal Dice and Personal Persistence
+### Phase 4A — VtM Personal Dice & Personal Persistence
 
 **Status: Complete**
 
-#### Goal
+Delivered:
 
-Provide a trustworthy VtM V5 dice engine before adding persistence or realtime synchronization.
+- deterministic VtM V5 evaluation separated from random generation;
+- public VtM and Custom Dice Pool rollers;
+- EN/RU and responsive interfaces;
+- up to five saved Custom Dice Pool presets for registered users;
+- private personal history containing the current roll plus ten previous rolls;
+- non-persistent guest rolls.
 
-#### In scope
+Personal history is owner-scoped, best-effort, and non-authoritative. It is not campaign evidence and must not be reused as the campaign dice execution path.
 
-- ordinary dice;
-- Hunger dice;
-- optional Difficulty;
-- successes;
-- criticals;
-- messy criticals;
-- bestial failures;
-- total failures;
-- individual die results;
-- readable EN/RU interpretation;
-- pure deterministic result evaluation separated from random generation;
-- personal roller UI;
-- mobile controls;
-- optional label;
-- repeat roll;
-- character-assisted defaults where useful.
+### Phase 4B — Campaign Video Rooms Integration
 
-#### Deferred from Phase 4A
+**Status: Complete / accepted in Production**
 
-- campaign dice feed;
-- Realtime subscription;
-- macros;
-- 3D physics;
-- universal multi-system expression language.
+Delivered campaign-authorized LiveKit video through the dedicated localized Campaign Game Room.
 
-#### Exit criteria
+The implementation:
 
-The same supplied die results always produce the same VtM interpretation, and a user can make a personal roll on desktop and mobile.
+- authorizes active campaign access before issuing a short-lived room-bound token;
+- supports one GM plus up to six Players in stable slots;
+- provides explicit Join/Leave, local camera and microphone controls, participant media, sound unlock, reconnect handling, cleanup, and safe localized failures;
+- keeps provider secrets and application identifiers out of the client-facing authorization contract;
+- prevents completed campaigns and unauthorized users from obtaining new join credentials.
 
-#### Delivered public-tool extension
+Recording, transcription, screen sharing, standalone rooms, and remote moderation are not delivered or committed by this phase. The accepted human test involved one GM and four Players; no quantitative network telemetry was collected.
 
-- public `/[locale]/dice-rollers` hub and main navigation entry;
-- VtM V5 system roller and public Custom Dice Pool available from the hub;
-- Custom Dice Pool supports Coin (d2), d4, d6, d8, d10, d12, d20, and d100 with unbiased local generation and a 100-item total limit;
-- guest rolls remain non-persistent;
-- official symbolic VtM dice with a non-persistent Numbers display option;
-- Dark Pack logo, legal notice, and EN/RU unofficial-material notice.
+### Phase 4C1 — Campaign Image Library
 
-#### Delivered personal persistence
-
-- public Custom Dice Pool for guests and registered users (delivered);
-- up to 5 saved custom dice presets for registered users (delivered);
-- saved custom presets preserve the selected Coin quantity and all numeric dice quantities;
-- personal history containing the current roll plus 10 previous rolls for registered users (delivered);
-- non-persistent guest rolls;
-- strict separation between personal and campaign roll history.
-
-Personal persistence is owner-scoped and non-authoritative. It must not be reused as campaign evidence or as the Phase 4D execution path.
-
-#### Delivered planned-system catalogue
-
-The shared typed catalogue is implemented across Games, the System Rollers section, character creation, and campaign creation in this display order:
-
-1. Vampire: The Masquerade V5
-2. Alien
-3. Black Powder and Brimstone
-4. Call of Cthulhu 7th Edition
-5. Coriolis
-6. Cyberpunk RED
-7. Delta Green
-8. Forbidden Lands
-9. Ironsworn
-10. Mothership
-11. Paranoia
-12. Traveller (Mongoose Publishing)
-
-Vampire: The Masquerade V5 is available across every implemented capability. Call of Cthulhu 7th Edition is available only as a generic campaign shell; its character creation, dice roller, and Game Hub remain planned and expose no route. The remaining systems are status-only planned placeholders with no links, buttons, fake routes, or selectable campaign values. Custom Dice Pool remains system-neutral and outside the catalogue.
-
-The catalogue was deployed at `22736bf697a8345e19e92626a8f441f35db4b3c7`; 156 catalogue/dice tests passed for that release.
-
-### Phase 4B — Standalone Video Rooms
-
-**Status: Planned separate product capability; not selected as the next stage**
+**Status: Planned / next**
 
 #### Goal
 
-Deliver secure standalone rooms for authenticated users without depending on campaign membership, while establishing a reusable video core for later campaign integration.
+Provide a private campaign image library for the existing campaign authorization domain.
 
-#### Scope boundary and internal sequence
+#### Scope
 
-1. approve the standalone Video Rooms architecture and security contract;
-2. compare managed WebRTC providers without selecting one in advance;
-3. run a disposable two-to-three-user technical spike;
-4. implement permanent standalone Video Rooms around the reusable video core;
-5. test multi-user, desktop, mobile, reconnect, permission, failure, and production behavior.
+- GM-managed campaign image upload, listing, viewing, and removal;
+- the existing private `campaign-images` Storage bucket and campaign image metadata/recipient model;
+- current campaign membership, lifecycle, RLS, Storage, and visibility boundaries;
+- EN/RU, responsive, accessible loading, empty, success, and failure states;
+- safe deletion and orphan-handling behavior.
 
-The top-level target route is `/[locale]/video-rooms`. Supporting routes `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` are provisional. The routes and navigation entry are planned, not implemented. Provider-specific code must remain behind a practical boundary; secrets stay server-only; tokens are short-lived; and application authorization happens before token issuance.
-
-Exact schema, RLS, ownership, invitations, membership, expiry, retention, deletion, quotas, participant limits, provider, pricing, region, and first-version screen sharing remain unresolved. ADR-009 is Accepted only for managed infrastructure and LiveKit in the current campaign Game Room; it does not settle these standalone decisions.
+This is an image library, not a general Handouts system. It does not add documents, annotations, maps, clues, NPCs, sessions, Chronicle records, screen sharing, or presentation controls.
 
 #### Exit criteria
 
-The standalone authorization contract is approved; comparison and spike evidence support a provider decision; and the permanent implementation, if approved after that gate, passes the defined multi-user and production test matrix without acquiring a campaign dependency.
+Authorized users see only images allowed by the accepted campaign visibility model, the GM can safely manage the library, and removed Players and Outsiders are denied.
 
-### Phase 4C — Campaign Collaboration Contract
-
-**Status: Partially implemented — minimal campaign shell delivered; system-specific features planned**
-
-#### Goal
-
-Define the shared campaign collaboration lifecycle and authorization contract before adding campaign-authoritative realtime tools.
-
-#### Scope boundary
-
-Specify the campaign-derived access, lifecycle, revocation, retention, and cross-tool boundaries required by campaign dice and campaign video. Do not implement campaign dice or video, and do not force standalone room invitations or membership into the campaign model.
-
-#### Exit criteria
-
-A reviewed contract defines the authorization and lifecycle inputs required by Phases 4D and 4E while leaving unresolved data designs open for their implementation phases.
-
-### Phase 4D — Shared Campaign Dice
+### Phase 4C2 — Game Room Image Presentation
 
 **Status: Planned**
 
 #### Goal
 
-Persist campaign rolls authoritatively and show the same feed to all permitted campaign participants.
+Let the GM present an image from the Campaign Image Library in the shared Game Room Display.
 
-#### Scope boundary
+#### Scope
 
-- reviewed `dice_rolls` schema and RLS;
-- server-authoritative random execution and VtM interpretation;
-- active campaign membership and accessible-character authorization;
-- structured request/result persistence and immutable ordinary history;
-- campaign-scoped Supabase Realtime feed;
-- removed-member and Outsider tests;
-- EN/RU and mobile.
+- GM selects an existing campaign-library image;
+- all authorized Game Room participants see the same selected image;
+- the GM can replace the displayed image or stop presentation;
+- presentation reuses campaign authorization and image visibility rules;
+- EN/RU, responsive, reconnect, and safe failure behavior.
+
+No annotations, maps, screen sharing, general Handouts system, drawing tools, or presentation history are included.
+
+### Phase 4D1 — CoC 7e Dice Roller
+
+**Status: Planned**
+
+Deliver a tested Call of Cthulhu 7e dice engine and personal roller with system-accurate interpretation, EN/RU presentation, and responsive controls. This phase does not create campaign-authoritative history.
+
+### Phase 4D2 — Game Room Dice Integration
+
+**Status: Planned**
+
+Add a system-aware campaign dice surface to the Game Room:
+
+- VtM campaigns use the implemented VtM roller and VtM rules;
+- CoC campaigns use the Phase 4D1 CoC roller and CoC rules;
+- the shared platform derives the campaign system and does not expose an incompatible roller;
+- any persisted or realtime campaign history requires a reviewed server-authoritative schema, RLS contract, and execution boundary.
 
 Personal roll history remains separate and non-authoritative.
 
-#### Exit criteria
-
-Authorized campaign participants can make shared VtM rolls and see the same immutable trusted results; removed Players and Outsiders are denied.
-
-### Phase 4E — Campaign Video Rooms Integration
-
-**Status: Complete / accepted in Production for the current campaign scope**
-
-#### Goal
-
-Provide campaign-authorized LiveKit video through the reusable provider-neutral controller and browser media core.
-
-#### Scope boundary
-
-Campaign membership is checked before issuing a short-lived provider token. One GM plus no more than six Players share the deterministic campaign room, completed campaigns cannot join, and campaign access remains separate from the still-planned standalone authorization model. Recording, transcription, screen sharing, remote moderation, and campaign image presentation are outside the basic room.
-
-#### Exit criteria
-
-Authorized active campaign participants can use explicit Join/Leave, their own camera and microphone, participant media tiles, sound unlock, reconnect, and safe error states. Removed members and unauthorized users cannot obtain new tokens.
-
-The accepted human group test confirmed practical function and user-visible quality. Quantitative network and connection-quality telemetry was not collected and is not required for current acceptance.
-
-### Phase 4F — Campaign Workspace Integration
-
-**Status: Responsive Game Room video workspace complete / accepted; broader tools planned**
-
-#### Goal
-
-Assemble approved live-session capabilities into a coherent campaign workspace before Milestone 5 content expands it.
-
-#### Scope boundary
-
-The localized `/[locale]/campaigns/[id]/game-room` route now provides the accepted responsive campaign video workspace and presents Campaign Dice, Handouts, Participants, Quick Notes, Session Context, Characters, NPCs, Selected Handouts, and active Display/image presentation as clearly non-interactive planned areas. Their APIs, persistence, and routes remain unimplemented, and standalone and campaign authorization remain separate.
-
-#### Exit criteria
-
-The campaign workspace presents approved shared dice and campaign video coherently on desktop and mobile, with authorization and failure boundaries preserved.
-
-### Milestone 4 exit criteria
-
-Standalone Video Rooms work independently of campaigns, and the later campaign workspace provides trusted shared VtM rolls and campaign-authorized video through the reusable core.
-
----
-
-## Milestone 5 — Friend Campaign Alpha
-
-**Status: Generic campaign shell delivered; CoC-specific character and game tools planned**
-
-### Goal
-
-Assemble a practical private play workspace and use it in a real friend-group session.
-
-### Areas
-
-1. Overview
-2. Members
-3. Characters
-4. Dice
-5. Video
-6. Handouts
-7. NPCs
-8. Sessions/Chronicle
-9. Shared and GM-private Notes
-10. Campaign Settings
-
-### Exit criteria
-
-The friend group can prepare and run a real session primarily through the campaign workspace, then provide workflow feedback for targeted fixes.
-
----
-
-## Milestone 6 — Visual Identity
+### Phase 4E — Campaign & Game Room UX/UI Refinement
 
 **Status: Planned**
 
-### Goal
+Refine the existing Campaign and Game Room experience without adding new product capabilities:
 
-Apply a coherent platform design after real workflows stabilize.
+- layout, navigation, information hierarchy, responsive behavior, accessibility, usability, and consistent states;
+- campaign overview and live-room transitions;
+- clearer participant, character, image, dice, and notes areas as those capabilities become available;
+- placeholders for unavailable capabilities remain visibly disabled and must not expose fake behavior, controls, or routes.
 
-### In scope
+This campaign-focused technical refinement is distinct from the site-wide Phase 5 UI Technical Refinement.
 
-- shared tokens and primitives;
-- VtM theme;
-- backgrounds and wallpapers;
-- decorative frames;
-- fonts;
-- landing visuals;
-- campaign cards;
-- dice and video styling;
-- NPC/handout presentation;
-- final responsive polish;
-- accessibility-aware visual review.
-
-### Exit criteria
-
-The platform has a coherent VtM-facing identity without coupling decoration to persisted data or authorization.
-
----
-
-## Milestone 7 — VtM Game Hub
+### Phase 4F1 — CoC 7e Character Sheets
 
 **Status: Planned**
 
-### Goal
+Implement CoC 7e schema, normalization, validation, character creation/editing, summary cards, EN/RU presentation, and tests within the accepted game-system boundary.
 
-Create the complete VtM information and tool-entry area.
-
-### In scope
-
-- landing;
-- Getting Started;
-- character guide;
-- quick reference;
-- resources;
-- tool directory;
-- EN/RU content;
-- legal/content review.
-
-Long-form content should use a reviewed content model such as Markdown/MDX rather than large translation JSON blocks.
-
-### Exit criteria
-
-A new user can understand the available VtM workflow and reach the correct character, campaign, and dice tools.
-
----
-
-## Milestone 8 — Public Readiness
+### Phase 4F2 — Game Room Character Integration
 
 **Status: Planned**
 
-### Goal
+Expose only the current campaign's linked participant characters in the Game Room, using the campaign system and existing read-only sharing boundary. VtM campaigns show linked VtM characters; CoC campaigns show linked CoC characters after Phase 4F1. Unlinked, incompatible, inaccessible, and private characters remain unavailable.
 
-Prepare for users outside the known private group.
-
-### In scope
-
-- complete permission matrix;
-- RLS and Storage audit;
-- automated tests and CI;
-- rate limiting;
-- monitoring;
-- backups and restore testing;
-- staging;
-- privacy and terms;
-- account deletion;
-- data export;
-- support/contact;
-- accessibility;
-- performance;
-- browser matrix;
-- public beta process;
-- incident response.
-
-### Exit criteria
-
-The public launch gate in `docs/architecture/SECURITY.md` passes and operational ownership is defined.
-
----
-
-## Milestone 9 — Call of Cthulhu 7e
+### Phase 4G — Campaign Notes
 
 **Status: Planned**
 
-### Goal
+Deliver only:
 
-Prove the platform with a second game system.
+- shared notes editable or readable by permitted active campaign participants under an explicit authorization contract;
+- GM-private notes readable and writable only by the campaign GM.
 
-### In scope
+This phase does not add Sessions, Chronicle records, NPCs, Handouts, clues, maps, wikis, or general campaign-content modules.
 
-- generic CoC 7e campaign creation using the established campaign membership, invitation, lifecycle, authorization, and video boundaries (delivered);
-- refine real adapter boundaries;
-- CoC 7e sheet schema and normalizer;
-- renderer and summary cards;
-- CoC dice engine;
-- CoC theme;
-- CoC Game Hub;
-- richer system-specific campaign integration beyond the delivered generic shell;
-- EN/RU content.
+### Phase 4 exit result
 
-The delivered shell does not implement CoC character sheets, dice mechanics, Keeper tools, NPCs, clues, handouts, sessions, or notes. VtM and CoC characters remain strictly incompatible at the UI, query, and database-integrity boundaries.
-
-### Exit criteria
-
-VtM and CoC coexist without system-specific logic leaking into shared campaign and core domains.
+The private group can use system-aware dice and linked characters, campaign images and presentation, campaign video, and narrowly scoped notes through one coherent Campaign Game Room. No additional active campaign capability is committed after Phase 4G.
 
 ---
 
-## Deferred backlog
+## Phase 5 — UI Technical Refinement
 
-- independent sheet language;
-- print/PDF;
-- portrait crop/focal point;
-- public character pages;
-- campaign discovery;
-- chat;
-- relationship maps;
-- locations/factions;
-- calendars;
-- maps;
-- music;
-- initiative/combat tracking;
-- recording/transcription;
-- advanced dice macros.
+**Status: Planned**
 
-Items move into a milestone only after explicit scope review.
+Perform site-wide technical consistency work after the core play workflow is complete:
+
+- shared component and interaction consistency;
+- responsive behavior and accessibility;
+- loading, empty, failure, retry, and disabled states;
+- navigation and information hierarchy;
+- maintainable design tokens and primitives;
+- removal of demonstrated UI duplication or inconsistency.
+
+Phase 5 adds no new product features and does not decide final visual identity.
+
+## Phase 6 — Visual Identity
+
+**Status: Planned**
+
+Define and apply the platform's visual identity after Phase 5. The exact themes, fonts, palette, imagery, decorative language, and system-specific presentation are intentionally undecided until the technical UI baseline is stable.
+
+## Phase 7 — Delta Green System Implementation
+
+**Status: Planned**
+
+Bring Delta Green to parity with the platform capabilities that exist when this phase begins. This is a system implementation phase only: schema, characters, dice, terminology, content, theme hooks, and compatible campaign/Game Room integration. It must not introduce unrelated platform capabilities or special Delta Green-only campaign tools.
+
+## Phase 8 — Game System Hubs
+
+**Status: Planned**
+
+Implement system hubs in this order:
+
+1. Phase 8A — Call of Cthulhu 7e;
+2. Phase 8B — Delta Green;
+3. Phase 8C — Vampire: The Masquerade.
+
+Each hub organizes already implemented system information and links to existing tools. Hubs do not add new mechanics or platform capabilities. Long-form content should use reviewed Markdown/MDX or another suitable content model rather than large localization JSON blocks.
+
+## Phase 9 — Public Readiness
+
+**Status: Planned**
+
+Prepare the proven private product for users outside the invited group. This remains a high-level release gate covering security, privacy, legal/operational ownership, abuse controls, monitoring, recovery, accessibility, performance, browser support, account lifecycle, and public-beta operations.
+
+Existing detailed security and public-readiness references remain useful implementation checklists. Their presence does not mean every listed mechanism or product detail is newly committed before its relevant review.
+
+---
+
+## Uncommitted possibilities
+
+The following are not active roadmap commitments unless explicitly accepted later:
+
+- standalone Video Rooms;
+- general Handouts, NPC, Sessions, Chronicle, clue, map, wiki, or campaign-discovery systems;
+- recording, transcription, screen sharing, streaming, remote moderation, or breakout rooms;
+- print/PDF, independent sheet language, public character pages, chat, relationship maps, calendars, music, combat tracking, advanced dice macros, and AI-assisted character generation.
+
+See [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md) for reviewed and unreviewed ideas.

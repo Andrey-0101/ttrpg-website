@@ -2,7 +2,7 @@
 
 ## Status
 
-Minimal design contract for architecture-baseline work. Final visual identity is deferred until the friend-only feature set is usable.
+Current technical design contract. Site-wide UI Technical Refinement is Phase 5; final Visual Identity is Phase 6 and remains deliberately undecided until Phase 5 is complete.
 
 ## Goals
 
@@ -136,7 +136,7 @@ Video-card rules:
 - disabled media uses only the crossed-out icon, without a color or size change;
 - Leave is a room-level action in the compact header, never a video overlay.
 
-The Display and Game Tools areas remain presentational planned structure. Dice, Handouts, Participants, Quick Notes, Session Context, Characters, NPCs, Selected Handouts, and active image presentation are not implemented by this design contract.
+The Display and Game Tools areas remain presentational placeholders. They do not establish product scope. Phase 4C2 may activate image presentation, Phase 4D2 may activate system-aware dice, and Phase 4F2 may activate linked characters. General Handouts, NPCs, Sessions/Chronicle, and other placeholder labels are not active roadmap commitments.
 
 ## Accessibility baseline
 
@@ -151,11 +151,13 @@ Friend-alpha still requires:
 - no essential information conveyed only by color;
 - reduced-motion consideration for future animation.
 
-Full accessibility review is part of Public Readiness.
+Phase 5 performs site-wide technical accessibility refinement; Phase 9 retains the public-release accessibility gate.
 
-## Future visual milestone
+## Phase 5 and Phase 6 boundary
 
-The Visual Identity milestone may add:
+Phase 5 may refine shared primitives, technical consistency, layout, responsive behavior, states, navigation, and accessibility without adding product features.
+
+Phase 6 may define and apply:
 
 - site wallpaper/backgrounds;
 - VtM decorative frame;
@@ -164,11 +166,10 @@ The Visual Identity milestone may add:
 - campaign card theme;
 - dice interface theme;
 - video-room theme;
-- NPC and handout layouts;
 - loading skeletons;
 - final mobile polish.
 
-It must not require database or character-schema changes.
+Exact themes, fonts, palette, imagery, and decorative language are intentionally undecided until Phase 5 establishes the technical baseline. Phase 6 must not require database or character-schema changes.
 
 ## Theme boundary
 

@@ -2,214 +2,70 @@
 
 ## Status
 
-This document contains:
+This document separates the current implemented route map from approved forward product areas. Planned labels are not routes until implementation exists.
 
-1. the implemented site map at the H011 consolidation baseline, `main` commit `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`;
-2. the separate planned standalone Video Rooms map;
-3. the later campaign-workspace direction.
-
-The longer-term planning reference remains `SITE_MAP_TARGET.md`.
-
-## 1. Current implemented site map
+## Current implemented site map
 
 ```mermaid
 flowchart TD
-    ROOT["/[locale] — Home"]
-
-    ROOT --> GAMES["/[locale]/games — Games"]
-    GAMES --> VTM["/[locale]/games/vampire-the-masquerade — VtM"]
-    ROOT --> DICE_ROLLERS["/[locale]/dice-rollers — Dice Rollers"]
-    DICE_ROLLERS --> PERSONAL_DICE["/[locale]/games/vampire-the-masquerade/tools/dice — VtM V5 Roller"]
-    DICE_ROLLERS --> CUSTOM_DICE["/[locale]/dice-rollers/custom — Custom Dice Pool"]
-
-    ROOT --> DASHBOARD["/[locale]/dashboard — Dashboard"]
-    DASHBOARD --> CAMPAIGNS["/[locale]/campaigns — My Campaigns"]
-    DASHBOARD --> CHARACTERS["/[locale]/characters — My Characters"]
-
-    ROOT --> LOGIN["/[locale]/login — Login"]
-    ROOT --> REGISTER["/[locale]/register — Register"]
-    ROOT --> PROFILE["/[locale]/profile — Profile"]
-    PROFILE --> PROFILE_EDIT["/[locale]/profile/edit — Edit Profile"]
-    ROOT --> ACCOUNT["/[locale]/account — Account"]
-
-    CHARACTERS --> CHARACTER_NEW["/[locale]/characters/new — Select System"]
-    CHARACTER_NEW --> CHARACTER_NEW_SYSTEM["/[locale]/characters/new/[system] — Create Character"]
-    CHARACTERS --> CHARACTER_DETAIL["/[locale]/characters/[id] — View/Edit Character"]
-
-    CAMPAIGNS --> CAMPAIGN_NEW["/[locale]/campaigns/new — Create Campaign"]
-    CAMPAIGNS --> CAMPAIGN_DETAIL["/[locale]/campaigns/[id] — Campaign Overview"]
-    CAMPAIGN_DETAIL --> GAME_ROOM["/[locale]/campaigns/[id]/game-room — Campaign Game Room"]
-    CAMPAIGN_DETAIL --> SHARED_CHARACTER["/[locale]/campaigns/[id]/characters/[characterId] — Shared Read-Only Character"]
-
-    INVITE["/[locale]/campaigns/join/[token] — Accept Invitation"]
-    LOGIN --> INVITE
-    INVITE --> CAMPAIGN_DETAIL
-
-    CONFIRM["/auth/confirm — Technical Auth Callback"]
-    REGISTER --> CONFIRM
+    ROOT["/"] --> LOCALE["/[locale]"]
+    LOCALE --> GAMES["Games catalogue"]
+    LOCALE --> DICE["Dice Rollers"]
+    LOCALE --> AUTH["Login / Register"]
+    LOCALE --> DASHBOARD["Dashboard"]
+    LOCALE --> CHARACTERS["Characters"]
+    LOCALE --> CAMPAIGNS["Campaigns"]
+    LOCALE --> PROFILE["Profile / Account"]
+    DICE --> VTM_DICE["VtM V5 Roller"]
+    DICE --> CUSTOM_DICE["Custom Dice Pool"]
+    CAMPAIGNS --> CAMPAIGN["Campaign Overview"]
+    CAMPAIGN --> SHARED_CHARACTER["Read-only linked character"]
+    CAMPAIGN --> GAME_ROOM["Campaign Game Room"]
+    GAME_ROOM --> VIDEO["Campaign-authorized LiveKit video"]
 ```
 
-## 2. Current campaign overview structure
+The catalogue includes a generic CoC 7e campaign shell. CoC character and dice routes do not yet exist. Delta Green is a catalogue entry only. No complete game-system hub exists.
 
-The current Campaign Foundation uses one integrated overview route rather than separate subroutes for every section.
+## Approved Phase 4 additions
 
 ```mermaid
 flowchart TD
-    CAMPAIGN["Campaign Overview"]
-
-    CAMPAIGN --> IDENTITY["Identity and Status"]
-    CAMPAIGN --> MANAGEMENT["GM Management"]
-    CAMPAIGN --> INVITATIONS["Invitations"]
-    CAMPAIGN --> MEMBERS["Game Master and Players"]
-    CAMPAIGN --> CHARACTERS["Linked and Eligible Characters"]
-
-    MANAGEMENT --> EDIT["Edit Name and Description"]
-    MANAGEMENT --> COMPLETE["Complete Campaign"]
-    MANAGEMENT --> DELETE["Delete Campaign"]
-
-    INVITATIONS --> CREATE_INVITE["Create One-Time Invitation"]
-    INVITATIONS --> REVOKE_INVITE["Revoke Invitation"]
-
-    MEMBERS --> LEAVE["Player Leaves"]
-    MEMBERS --> REMOVE["GM Removes Player"]
-
-    CHARACTERS --> LINK["Owner Links Eligible Character"]
-    CHARACTERS --> OPEN["Participant Opens Read-Only Sheet"]
-    CHARACTERS --> UNLINK["Owner or GM Unlinks"]
+    CAMPAIGN["Campaign"] --> IMAGES["4C1 Campaign Image Library"]
+    IMAGES --> DISPLAY["4C2 Game Room Image Presentation"]
+    CAMPAIGN --> GAME_ROOM["Game Room"]
+    GAME_ROOM --> SYSTEM_DICE["4D2 System-aware Dice"]
+    COC_DICE["4D1 CoC Dice Roller"] --> SYSTEM_DICE
+    GAME_ROOM --> LINKED_CHARACTERS["4F2 Linked Participant Characters"]
+    COC_CHARACTERS["4F1 CoC Character Sheets"] --> LINKED_CHARACTERS
+    CAMPAIGN --> NOTES["4G Shared and GM-private Notes"]
 ```
 
-## 3. Current access map
+Phase 4E refines Campaign and Game Room UX/UI without adding a route or product capability. Unavailable placeholders must remain visibly disabled and must not expose fake routes or behavior.
 
-```mermaid
-flowchart LR
-    USER["Authenticated User"]
+The image phases are not a general Handouts feature. Notes do not imply Sessions, Chronicle, NPCs, clues, maps, or wiki modules.
 
-    USER --> OWN_CHARACTER["Own Character: Read/Edit/Delete"]
-    USER --> PRIVATE_PORTRAIT["Own Portrait: Read/Upload/Replace/Delete"]
+## Later approved areas
 
-    GM["Campaign Game Master"]
-    PLAYER["Campaign Player"]
-    OUTSIDER["Outsider"]
+- Phase 5 site-wide UI Technical Refinement adds no product routes;
+- Phase 6 Visual Identity adds no product routes by itself;
+- Phase 7 implements Delta Green parity using established shared routes and system-specific routes justified at implementation time;
+- Phase 8 adds system hubs in CoC, Delta Green, then Vampire order;
+- Phase 9 may add public-readiness support routes only after their exact operational need is reviewed.
 
-    GM --> CAMPAIGN["Campaign Overview"]
-    PLAYER --> CAMPAIGN
-    OUTSIDER -. denied .-> CAMPAIGN
+## Explicit non-routes
 
-    GM --> SHARED["Linked Character: Read Only"]
-    PLAYER --> SHARED
-    OUTSIDER -. denied .-> SHARED
+Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and related routes are not approved targets. General Handouts, NPCs, Sessions, Chronicle, recording, transcription, and screen-sharing routes are also not active commitments.
 
-    OWNER["Character Owner"] --> EDIT["Character Edit"]
-    GM -. no edit unless owner .-> EDIT
-    PLAYER -. no edit unless owner .-> EDIT
-```
+## Current versus planned
 
-## 4. VtM dice map
-
-Implemented public routes:
-
-```text
-/[locale]/dice-rollers
-/[locale]/dice-rollers/custom
-/[locale]/games/vampire-the-masquerade/tools/dice
-```
-
-```mermaid
-flowchart TD
-    HUB["Dice Rollers Hub"] --> PERSONAL_DICE["Personal VtM Dice"]
-    VTM["VtM Game Area"] --> PERSONAL_DICE
-    HUB --> CUSTOM["Custom Dice Pool"]
-
-    PERSONAL_DICE --> LOCAL_RESULT["Structured Local Result"]
-    CUSTOM --> CUSTOM_RESULT["Grouped Local Results"]
-    LOCAL_RESULT --> PERSONAL_HISTORY["Private Personal History"]
-    CUSTOM_RESULT --> PRESETS["Saved Custom Presets"]
-    CUSTOM_RESULT --> PERSONAL_HISTORY
-```
-
-Personal VtM dice, the Custom Dice Pool, saved Custom presets, and private personal history are implemented. The custom pool includes Coin (d2), d4, d6, d8, d10, d12, d20, and d100. Personal history is non-authoritative and remains separate from future campaign history.
-
-The same deterministic VtM evaluator should later be reused by the Phase 4D server-authoritative campaign roll path.
-
-## 5. Planned standalone Video Rooms map
-
-Approved top-level target route:
-
-```text
-/[locale]/video-rooms
-```
-
-Supporting routes such as `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` are provisional. No displayed Video Rooms route or navigation node is implemented today.
-
-```mermaid
-flowchart TD
-    AUTH_USER["Authenticated User"] --> STANDALONE_AUTH["Standalone Application Authorization"]
-    STANDALONE_AUTH --> TOKEN["Server-Issued Short-Lived Token"]
-    TOKEN --> CORE["Reusable Video Core"]
-    CORE --> PROVIDER["Managed WebRTC Provider"]
-```
-
-Standalone authorization does not depend on Campaigns. Provider secrets remain server-only, and application authorization happens before token issuance.
-
-ADR-009 is Accepted for managed infrastructure and LiveKit in the current campaign Game Room. Future standalone provider and product decisions remain open.
-
-## 6. Later Friend Campaign Alpha map
-
-```mermaid
-flowchart TD
-    CAMPAIGN["Campaign Workspace"]
-
-    CAMPAIGN --> OVERVIEW["Overview"]
-    CAMPAIGN --> MEMBERS["Members"]
-    CAMPAIGN --> CHARACTERS["Characters"]
-    CAMPAIGN --> DICE["Dice"]
-    CAMPAIGN --> VIDEO["Video"]
-    CAMPAIGN --> HANDOUTS["Handouts"]
-    CAMPAIGN --> NPCS["NPCs"]
-    CAMPAIGN --> SESSIONS["Sessions / Chronicle"]
-    CAMPAIGN --> NOTES["Shared and GM-Private Notes"]
-    CAMPAIGN --> SETTINGS["Settings"]
-```
-
-Only implemented areas should appear as active navigation.
-
-Campaign video is implemented and accepted at `/[locale]/campaigns/[id]/game-room`. It reuses the video core through campaign-derived authorization and remains distinct from standalone Video Rooms. Shared dice and the other workspace tools in this map remain planned and inactive.
-
-## 7. Current versus planned
-
-Implemented now:
-
-- Home;
-- Games and basic VtM page;
-- Auth;
-- Dashboard;
-- Profile and Account;
-- Characters;
-- Campaigns;
-- Dice Rollers hub;
-- personal VtM dice;
-- public Custom Dice Pool;
-- invitation acceptance;
-- membership controls;
-- character sharing;
-- campaign management;
-- CoC campaign creation shell;
-- campaign-authorized LiveKit video and the responsive Game Room.
-
-Next stage:
-
-- not yet selected.
-
-Planned later:
-
-- Phase 4C Campaign Collaboration Contract;
-- Phase 4D shared campaign dice and Realtime feed;
-- future standalone Video Rooms;
-- remaining Phase 4F campaign workspace tools;
-- handouts;
-- NPCs;
-- sessions;
-- notes;
-- full VtM Game Hub;
-- Public Readiness;
-- Call of Cthulhu 7e.
+| Area | Current | Approved forward state |
+|---|---|---|
+| Campaign video | Implemented and Production accepted | Retain; technical refinement only unless separately scoped |
+| Campaign images | Database/Storage foundation exists; no management UI | 4C1 library, then 4C2 presentation |
+| VtM dice | Personal roller implemented | Use for VtM campaigns in 4D2 |
+| CoC dice | Not implemented | 4D1 personal roller, then 4D2 campaign integration |
+| VtM characters | Implemented | 4F2 linked-character Game Room integration |
+| CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
+| Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |
+| Game-system hubs | Not implemented | 8A CoC, 8B Delta Green, 8C Vampire |
+| Standalone Video Rooms | Not implemented | Uncommitted backlog idea only |

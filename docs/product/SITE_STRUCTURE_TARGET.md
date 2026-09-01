@@ -4,480 +4,93 @@
 
 | Field | Value |
 |---|---|
-| Project | TTRPG Hub |
-| Document type | Target information architecture |
-| Status | Accepted direction; updated after Campaign Foundation |
-| Current scope | Private friend-alpha |
-| First complete game system | Vampire: The Masquerade Fifth Edition |
-| Later game system | Call of Cthulhu Seventh Edition |
-| Route model | Locale prefix required for application routes |
+| Status | Current approved target structure |
+| Current source | [`ROADMAP.md`](ROADMAP.md) |
+| Current route reference | [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCTURE_CURRENT.md) |
+| Next product phase | 4C1 Campaign Image Library |
 
 ## Purpose
 
-This document defines the accepted target information architecture.
-
-It distinguishes:
-
-- implemented current routes;
-- approved target routes, including provisional standalone Video Rooms supporting routes;
-- later Friend Campaign Alpha and Public Readiness routes.
-
-It does not claim that every target route already exists.
+Describe the intended structure without presenting speculative routes or uncommitted capabilities as approved work.
 
 ## Delivery sequence
 
-1. Architecture Baseline — complete
-2. Character Friend Alpha — complete
-3. Campaign Foundation — complete
-4. VtM Realtime Tools — active
-5. Friend Campaign Alpha
-6. Visual Identity
-7. VtM Game Hub
-8. Public Readiness
-9. Call of Cthulhu 7e
+1. Milestones 1–3 — complete;
+2. Phase 4A personal VtM dice — complete;
+3. Phase 4B Campaign Video Rooms Integration — complete and Production accepted;
+4. Phase 4C1 Campaign Image Library — next;
+5. Phase 4C2 Game Room Image Presentation;
+6. Phase 4D1 CoC 7e Dice Roller;
+7. Phase 4D2 system-aware Game Room Dice Integration;
+8. Phase 4E Campaign & Game Room UX/UI Refinement;
+9. Phase 4F1 CoC 7e Character Sheets;
+10. Phase 4F2 system-aware linked-character Game Room integration;
+11. Phase 4G Campaign Notes;
+12. Phase 5 UI Technical Refinement;
+13. Phase 6 Visual Identity;
+14. Phase 7 Delta Green System Implementation;
+15. Phase 8 Game System Hubs: CoC, Delta Green, Vampire;
+16. Phase 9 Public Readiness.
 
 ## Target top-level structure
 
-- Home
-- Games
-  - Vampire: The Masquerade
-  - Call of Cthulhu
-- Dashboard
-- Characters
-- Campaigns
-- Video Rooms
-- Profile and Account
-- Help and Legal
-- Technical routes
-
-The Dashboard is an accepted part of the target structure. It is the personal cross-domain overview and should aggregate existing resources rather than duplicate their management interfaces.
-
-## Architectural distinctions
-
-### Game Hub
-
-General information and system-specific tools:
-
-- getting started;
-- character guide;
-- rules references;
-- resources;
-- personal dice tools.
-
-### Campaign Workspace
-
-Private collaboration for one campaign:
-
-- overview;
-- members;
-- characters;
-- shared dice;
-- video;
-- handouts;
-- NPCs;
-- sessions;
-- notes;
-- settings.
-
-### Standalone Video Rooms
-
-Authenticated rooms outside Campaigns:
-
-- no campaign membership dependency;
-- top-level target area;
-- reusable video core shared with later campaign video;
-- separate standalone application authorization;
-- supporting route names remain provisional.
-
-### Dashboard
-
-The user's own overview across:
-
-- characters;
-- campaigns;
-- recent activity;
-- relevant tools;
-- later sessions and notifications.
-
-## Primary navigation
-
-### Public user
-
-- Home
-- Games
-- Log in
-- Register
-- Language
-
-### Authenticated user
-
-- Home
-- Games
-- Dashboard
-- Campaigns
-- Characters
-- Video Rooms, after it is implemented
-- Profile/Account
-- Language
-- Log out
-
-### Campaign context
-
-Only implemented areas should be visible.
-
-Target campaign navigation:
-
-- Overview
-- Members
-- Characters
-- Dice
-- Video
-- Handouts
-- NPCs
-- Sessions
-- Notes
-- Settings
-
-The current Campaign Foundation keeps Members, Characters, Invitations, and Settings controls integrated into Campaign Overview. Separate routes should be introduced only when the workspace becomes too large or the next feature requires them.
-
-## Target route tree
-
-### Core public routes
-
 ```text
-/[locale]
-/[locale]/games
-/[locale]/help
-/[locale]/about
-/[locale]/contact
-/[locale]/privacy
-/[locale]/terms
+Public
+├── Home
+├── Games catalogue
+├── Dice Rollers
+└── Authentication
+
+Authenticated
+├── Dashboard
+├── Characters
+├── Campaigns
+├── Profile
+└── Account
 ```
 
-Help and legal routes belong to Public Readiness.
+No standalone Video Rooms top-level area is approved.
 
-### Authentication
-
-Current:
+## Campaign structure
 
 ```text
-/[locale]/login
-/[locale]/register
-/auth/confirm
+Campaign
+├── Overview and lifecycle
+├── Members, invitations, and linked characters
+├── Game Room
+│   ├── Campaign video                         [CURRENT]
+│   ├── Image presentation                     [4C2]
+│   ├── System-aware dice                      [4D2]
+│   └── Linked participant characters          [4F2]
+├── Campaign Image Library                     [4C1]
+└── Campaign Notes                             [4G]
+    ├── Shared notes for permitted participants
+    └── GM-private notes
 ```
 
-Later:
+The existing Game Room may retain clearly disabled placeholders during transition, but placeholders do not approve product scope or routes. Phase 4E decides the clean technical presentation as capabilities arrive.
 
-```text
-/[locale]/account/security
-/[locale]/account/privacy
-/[locale]/account/data
-/auth/reset-password
-/auth/update-password
-```
+General Handouts, NPCs, Sessions, Chronicle records, clues, maps, wikis, and similar campaign modules are not active roadmap scope.
 
-### Dashboard
+## Game-system structure
 
-```text
-/[locale]/dashboard
-```
+The shared catalogue tracks capability availability independently. A system route or control is exposed only when that capability is implemented.
 
-Target sections:
+- VtM V5: current character, dice, campaign, and basic game-area capabilities;
+- CoC 7e: current generic campaign shell; dice planned in 4D1 and characters in 4F1;
+- Delta Green: catalogue only until Phase 7;
+- other catalogue systems: planned placeholders only.
 
-- quick actions;
-- recent characters;
-- active campaigns;
-- relevant tools;
-- later recent sessions and activity;
-- setup notices.
+Phase 8 hubs organize existing information and tools. They do not introduce new mechanics or campaign capabilities. Long-form hub content should use reviewed Markdown/MDX or another suitable content model.
 
-### Characters
+## UI and visual phases
 
-Current route family retained:
+Phase 5 provides site-wide technical UI consistency and adds no product features. Phase 6 decides visual identity only after that technical baseline. Themes, fonts, palette, imagery, and decorative language are intentionally undecided today.
 
-```text
-/[locale]/characters
-/[locale]/characters/new
-/[locale]/characters/new/[system]
-/[locale]/characters/[id]
-```
+## Public Readiness
 
-Current campaign shared route:
+Phase 9 remains a high-level launch gate. Existing detailed security and operational checklists remain reference material, but exact public routes and processes are approved only when their operational requirement is confirmed.
 
-```text
-/[locale]/campaigns/[id]/characters/[characterId]
-```
+## Backlog boundary
 
-Potential Public Readiness additions:
-
-```text
-/[locale]/characters/[id]/settings
-/[locale]/shared/characters/[shareId]
-```
-
-Public sharing remains deferred until its access model is approved.
-
-### Games catalogue
-
-```text
-/[locale]/games
-/[locale]/games/vampire-the-masquerade
-/[locale]/games/call-of-cthulhu-7e
-```
-
-The CoC route family is planned for Milestone 9.
-
-### VtM Game Hub
-
-Recommended target:
-
-```text
-/[locale]/games/vampire-the-masquerade
-/[locale]/games/vampire-the-masquerade/getting-started
-/[locale]/games/vampire-the-masquerade/character-creation
-/[locale]/games/vampire-the-masquerade/quick-reference
-/[locale]/games/vampire-the-masquerade/resources
-/[locale]/games/vampire-the-masquerade/tools
-/[locale]/games/vampire-the-masquerade/tools/dice
-```
-
-The personal VtM dice route is the recommended next feature route.
-
-### Campaigns
-
-Current:
-
-```text
-/[locale]/campaigns
-/[locale]/campaigns/new
-/[locale]/campaigns/join/[token]
-/[locale]/campaigns/[id]
-/[locale]/campaigns/[id]/game-room
-/[locale]/campaigns/[id]/characters/[characterId]
-```
-
-Later campaign collaboration route:
-
-```text
-/[locale]/campaigns/[id]/dice
-```
-
-### Standalone Video Rooms
-
-Approved target direction:
-
-```text
-/[locale]/video-rooms
-```
-
-Likely supporting routes, with names still provisional:
-
-```text
-/[locale]/video-rooms/new
-/[locale]/video-rooms/[id]
-```
-
-These routes are planned, not implemented. There is no current navigation entry or placeholder.
-
-Later campaign-content routes:
-
-```text
-/[locale]/campaigns/[id]/handouts
-/[locale]/campaigns/[id]/handouts/[handoutId]
-/[locale]/campaigns/[id]/npcs
-/[locale]/campaigns/[id]/npcs/[npcId]
-/[locale]/campaigns/[id]/sessions
-/[locale]/campaigns/[id]/sessions/[sessionId]
-/[locale]/campaigns/[id]/notes
-```
-
-Optional later separation:
-
-```text
-/[locale]/campaigns/[id]/members
-/[locale]/campaigns/[id]/characters
-/[locale]/campaigns/[id]/settings
-```
-
-Do not create separate routes only to mirror a conceptual navigation section. Create them when the workflow benefits.
-
-## Realtime route direction
-
-### Personal dice
-
-```text
-/[locale]/games/vampire-the-masquerade/tools/dice
-```
-
-- no campaign required;
-- system-specific VtM rules;
-- local result in the first slice;
-- no database persistence initially.
-
-### Campaign dice
-
-```text
-/[locale]/campaigns/[id]/dice
-```
-
-- campaign membership required;
-- server-authoritative execution;
-- persisted history;
-- Realtime feed;
-- optional accessible character context.
-
-This is Phase 4D, after the Phase 4C Campaign Collaboration Contract.
-
-### Standalone video
-
-```text
-/[locale]/video-rooms
-```
-
-- authenticated application access independent of Campaigns;
-- application authorization before a short-lived provider token is issued;
-- managed WebRTC provider behind a practical provider boundary;
-- reusable video core;
-- supporting routes remain provisional;
-- provider and room data model remain unresolved.
-
-### Campaign video
-
-```text
-/{locale}/campaigns/{campaignId}/game-room
-```
-
-- campaign membership required;
-- server-issued short-lived provider token;
-- managed WebRTC provider;
-- no permanent public room URL.
-
-Campaign video is implemented and accepted through a separate campaign-derived authorization layer. LiveKit is accepted for this current implementation; the decision does not settle future standalone Video Rooms.
-
-## Session structure
-
-Sessions become first-class campaign records later.
-
-A session may aggregate:
-
-- date and time;
-- participants;
-- preparation;
-- summary;
-- related dice history;
-- handouts;
-- NPCs;
-- notes;
-- optional video room/session mapping.
-
-Standalone Video Rooms remain separately planned and are not the selected next stage. Campaign-level video is current; campaign dice and session filtering remain planned.
-
-## Domain ownership
-
-### Platform
-
-- Auth
-- Profiles
-- Localization
-- Dashboard
-- Characters lifecycle
-- Campaigns
-- Memberships
-- Invitations
-- Storage access
-- Common navigation
-
-### Game system
-
-- sheet schema;
-- normalizer;
-- renderer;
-- summary card;
-- dice rules;
-- terminology;
-- theme;
-- Game Hub content.
-
-### Campaign content
-
-- handouts;
-- NPCs;
-- sessions;
-- shared notes;
-- GM-private notes.
-
-## Permission direction
-
-| Area | Intended access |
-|---|---|
-| Dashboard | authenticated user |
-| Character list | owner |
-| Character edit/delete | owner |
-| Campaign shared character | current campaign participant, read only |
-| Campaign list | campaign participant |
-| Campaign workspace | campaign participant |
-| Campaign invitations | Game Master |
-| Campaign settings/lifecycle | Game Master |
-| Standalone Video Rooms | authenticated user with validated standalone application access |
-| Campaign dice feed | campaign participant according to approved roll policy |
-| Campaign video token | active campaign participant |
-| GM-private notes | Game Master only |
-| Public shared character | only after separate approved policy |
-
-RLS, server-side checks, and Storage policies remain authoritative.
-
-## Target structure by milestone
-
-### Completed Campaign Foundation
-
-- Campaigns;
-- creation;
-- invitations;
-- membership;
-- campaign character sharing;
-- management;
-- completion;
-- deletion.
-
-### Active VtM Realtime Tools
-
-- Phase 4A personal VtM dice and personal persistence — complete;
-- Phase 4B standalone Video Rooms — planned separately; not selected as the next stage;
-- Phase 4C Campaign Collaboration Contract — planned;
-- Phase 4D shared campaign dice and Realtime feed — planned;
-- Phase 4E campaign video integration — complete / accepted;
-- Phase 4F responsive Game Room video workspace — complete / accepted; remaining tools planned.
-
-### Friend Campaign Alpha
-
-- handouts;
-- NPCs;
-- sessions;
-- notes;
-- real friend-group session.
-
-### Public Readiness
-
-- help/legal;
-- account security/privacy/data;
-- monitoring;
-- rate limiting;
-- automated tests;
-- public beta controls.
-
-### Call of Cthulhu 7e
-
-- CoC Game Hub;
-- sheet;
-- dice;
-- campaign integration.
-
-## Navigation rule
-
-Never expose a navigation item merely because it exists in the target map.
-
-Navigation should show only:
-
-- implemented destinations;
-- routes the current user is authorized to use;
-- features appropriate to the current milestone.
+Standalone Video Rooms are `IDEA-006`, not target structure. LiveKit's accepted campaign use does not select a future standalone provider. Recording, transcription, screen sharing, moderation, and broad campaign content are also uncommitted unless explicitly accepted later.

@@ -1,493 +1,79 @@
+# TTRPG Hub — Approved Target Site Map
 
-# TTRPG Hub — Revised Target Site Map
+## Document boundary
 
-> Editable schematic site map in Mermaid and plain-text tree formats.
-> The diagrams can be edited directly in Markdown and rendered by GitHub and other Mermaid-compatible tools.
-> This is an approved target, not a map of implemented routes. The current implemented map remains `SITE_MAP.md`.
+This map contains only the current application and approved roadmap direction. It does not reserve routes for backlog ideas or broad campaign modules that have not been accepted.
 
----
+## Access model
 
-## 1. Access Model
+- Public users can access localized landing, Games, Dice Rollers, and authentication entry points.
+- Authenticated users can access Dashboard, Profile/Account, owned Characters, and authorized Campaigns.
+- Campaign access is derived from the immutable GM role or active Player membership.
+- The Campaign Game Room and every later campaign tool reuse campaign authorization.
+- Game System Hubs remain separate from private campaign workspaces.
 
-```mermaid
-flowchart TD
-    HOME["Home Page"]
-
-    HOME --> PUBLIC["Public Access"]
-    HOME --> REGISTERED["Registered User Access"]
-
-    PUBLIC --> GAMES["Games"]
-    PUBLIC --> PUBLIC_DICE["Dice Roller (optional public access)"]
-    PUBLIC --> LOGIN["Log In"]
-    PUBLIC --> REGISTER["Register"]
-
-    REGISTERED --> GAMES_AUTH["Games"]
-    REGISTERED --> CAMPAIGNS["Campaigns"]
-    REGISTERED --> CHARACTERS["Characters"]
-    REGISTERED --> DICE["Dice Roller"]
-    REGISTERED --> VIDEO_SHORTCUTS["Video Rooms"]
-    REGISTERED --> ACCOUNT["Account"]
-```
-
-### Access rule
-
-- Unregistered users can access **Games** and, if approved, the standalone **Dice Roller**.
-- Registered users can also access **Campaigns**, **Characters**, **Video Rooms**, and **Account**.
-- Standalone Video Rooms are independent from Campaigns. Campaign-specific video and dice tools are later capabilities inside the campaign **Game Room**.
-
----
-
-## 2. Top-Level Site Map
+## Target topology
 
 ```mermaid
 flowchart TD
-    HOME["Home Page"]
-
-    HOME --> GAMES["Games"]
-    HOME --> CAMPAIGNS["Campaigns"]
-    HOME --> CHARACTERS["Characters"]
-    HOME --> DICE["Dice Roller"]
-    HOME --> VIDEO["Video Rooms"]
-    HOME --> ACCOUNT["Account"]
-    HOME --> HELP["Help and Information"]
-```
-
----
-
-## 3. Games Section
-
-```mermaid
-flowchart TD
-    GAMES["Games"]
-
-    GAMES --> VTM["Vampire: The Masquerade V5"]
-    GAMES --> COC["Call of Cthulhu 7e"]
-
-    VTM --> VTM_OVERVIEW["Overview and Setting"]
-    VTM --> VTM_START["Getting Started"]
-    VTM --> VTM_SYSTEM["Game System"]
-    VTM --> VTM_CREATION["Character Creation"]
-    VTM --> VTM_RULES["Base Rules"]
-    VTM --> VTM_REFERENCE["Quick Reference"]
-    VTM --> VTM_RESOURCES["Resources"]
-    VTM --> VTM_TOOLS["Tools"]
-    VTM_TOOLS --> VTM_CREATE_CHARACTER["Create Character"]
-    VTM_TOOLS --> VTM_DICE["Dice Roller"]
-
-    COC --> COC_OVERVIEW["Overview and Setting"]
-    COC --> COC_START["Getting Started"]
-    COC --> COC_SYSTEM["Game System"]
-    COC --> COC_CREATION["Character Creation"]
-    COC --> COC_RULES["Base Rules"]
-    COC --> COC_REFERENCE["Quick Reference"]
-    COC --> COC_RESOURCES["Resources"]
-    COC --> COC_TOOLS["Tools"]
-    COC_TOOLS --> COC_CREATE_CHARACTER["Create Character"]
-    COC_TOOLS --> COC_DICE["Dice Roller"]
-```
-
-### Notes
-
-- **Vampire: The Masquerade V5** is the first complete game section.
-- **Call of Cthulhu 7e** has an implemented generic campaign shell; its target Game Hub, character creation, dice, and Keeper tools remain a later milestone.
-- Game pages contain general information and system-specific tools.
-- Private campaign data does not belong inside the Games section.
-
----
-
-## 4. Campaigns Section
-
-```mermaid
-flowchart TD
-    CAMPAIGNS["Campaigns"]
-
-    CAMPAIGNS --> CREATE["Create Campaign"]
-    CREATE --> CREATE_DETAILS["Campaign Details"]
-    CREATE --> CREATE_SYSTEM["Select Game System"]
-    CREATE --> CREATE_GM["Confirm Game Master"]
-    CREATE --> CREATE_PLAYERS["Invite Players"]
-
-    CAMPAIGNS --> ACTIVE["Active Campaigns"]
-    ACTIVE --> CAMPAIGN_01["Campaign 01"]
-    ACTIVE --> CAMPAIGN_02["Campaign 02"]
-    ACTIVE --> CAMPAIGN_03["Campaign 03"]
-    ACTIVE --> CAMPAIGN_N["Campaign N"]
-
-    CAMPAIGNS --> COMPLETED["Completed Campaigns"]
-    COMPLETED --> COMPLETED_01["Completed Campaign 01"]
-    COMPLETED --> COMPLETED_02["Completed Campaign 02"]
-    COMPLETED --> COMPLETED_03["Completed Campaign 03"]
-    COMPLETED --> COMPLETED_N["Completed Campaign N"]
-```
-
-### Campaign creation
-
-Player invitations are sent during campaign creation. There is no separate global Campaign Invitations section in the initial structure.
-
----
-
-## 5. Active Campaign Structure
-
-```mermaid
-flowchart TD
-    CAMPAIGN["Active Campaign"]
-
-    CAMPAIGN --> OVERVIEW["Overview"]
+    ROOT["Localized application"] --> PUBLIC["Public areas"]
+    ROOT --> PRIVATE["Authenticated areas"]
+    PUBLIC --> GAMES["Games catalogue"]
+    PUBLIC --> DICE["Dice Rollers"]
+    PUBLIC --> AUTH["Authentication"]
+    PRIVATE --> DASHBOARD["Dashboard"]
+    PRIVATE --> CHARACTERS["Characters"]
+    PRIVATE --> CAMPAIGNS["Campaigns"]
+    PRIVATE --> ACCOUNT["Profile / Account"]
+    CAMPAIGNS --> CAMPAIGN["Campaign Overview"]
     CAMPAIGN --> GAME_ROOM["Game Room"]
-    CAMPAIGN --> MEMBERS["Members"]
-    CAMPAIGN --> CHARACTERS["Characters"]
-    CAMPAIGN --> HANDOUTS["Handouts"]
-    CAMPAIGN --> NPCS["NPCs"]
-    CAMPAIGN --> CHRONICLE["Chronicle"]
-    CAMPAIGN --> NOTES["Notes"]
-    CAMPAIGN --> SETTINGS["Settings"]
-
-    MEMBERS --> GM["Game Master"]
-    MEMBERS --> PLAYERS["Players"]
-
-    CHRONICLE --> SESSION_01["Session 01"]
-    CHRONICLE --> SESSION_02["Session 02"]
-    CHRONICLE --> SESSION_03["Session 03"]
-    CHRONICLE --> SESSION_N["Session N"]
-
-    NOTES --> SHARED_NOTES["Shared Notes"]
-    NOTES --> GM_NOTES["GM Private Notes"]
-
-    SETTINGS --> CAMPAIGN_DETAILS["Campaign Details"]
-    SETTINGS --> COMPLETE_CAMPAIGN["Complete Campaign"]
-    SETTINGS --> DELETE_CAMPAIGN["Delete Campaign"]
+    CAMPAIGN --> IMAGE_LIBRARY["4C1 Image Library"]
+    GAME_ROOM --> VIDEO["4B Campaign Video — complete"]
+    GAME_ROOM --> IMAGE_DISPLAY["4C2 Image Presentation"]
+    GAME_ROOM --> SYSTEM_DICE["4D2 System-aware Dice"]
+    GAME_ROOM --> LINKED_CHARACTERS["4F2 Linked Characters"]
+    CAMPAIGN --> NOTES["4G Campaign Notes"]
+    GAMES --> COC_HUB["8A CoC Hub"]
+    GAMES --> DG_HUB["8B Delta Green Hub"]
+    GAMES --> VAMPIRE_HUB["8C Vampire Hub"]
 ```
 
-### Active campaign overview
+## Route direction
 
-The campaign Overview may show:
+Current routes remain authoritative in [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCTURE_CURRENT.md). Later route names should be finalized only when their phase begins.
 
-- campaign name and description;
-- game system;
-- Game Master;
-- players;
-- next or current session;
-- active characters;
-- recent Chronicle entries;
-- quick entry to the Game Room.
-
----
-
-## 6. Game Room
-
-The **Game Room** is the virtual table for the current session.
-
-Implemented first slice: the separate localized Game Room route hosts the existing campaign-authorized video room and media controls. Dice, Handout Preview, the separate Participant List, Quick Notes, and Current Session Context remain clearly labelled, non-interactive planned areas.
-
-```mermaid
-flowchart TD
-    GAME_ROOM["Game Room"]
-
-    GAME_ROOM --> VIDEO["Video"]
-    GAME_ROOM --> DICE["Dice Roller"]
-    GAME_ROOM --> HANDOUT_PREVIEW["Handout Preview"]
-    GAME_ROOM --> PARTICIPANTS["Participant List"]
-    GAME_ROOM --> QUICK_NOTES["Quick Notes"]
-    GAME_ROOM --> CURRENT_CONTEXT["Current Session Context"]
-
-    CURRENT_CONTEXT --> CURRENT_CHARACTERS["Active Characters"]
-    CURRENT_CONTEXT --> CURRENT_NPCS["Current NPCs"]
-    CURRENT_CONTEXT --> CURRENT_HANDOUTS["Selected Handouts"]
-```
-
-### Game Room principle
-
-The Game Room combines the live-session tools in one place:
-
-- video communication;
-- campaign dice roller;
-- handout preview;
-- participant list;
-- current characters and NPCs;
-- temporary quick notes.
-
-Permanent campaign content remains stored in:
-
-- Characters;
-- Handouts;
-- NPCs;
-- Chronicle;
-- Notes.
-
----
-
-## 7. Completed Campaign Structure
-
-```mermaid
-flowchart TD
-    COMPLETED_CAMPAIGN["Completed Campaign"]
-
-    COMPLETED_CAMPAIGN --> OVERVIEW["Overview"]
-    COMPLETED_CAMPAIGN --> MEMBERS["Members"]
-    COMPLETED_CAMPAIGN --> CHARACTERS["Characters"]
-    COMPLETED_CAMPAIGN --> HANDOUTS["Handouts"]
-    COMPLETED_CAMPAIGN --> NPCS["NPCs"]
-    COMPLETED_CAMPAIGN --> CHRONICLE["Chronicle"]
-    COMPLETED_CAMPAIGN --> NOTES["Notes"]
-    COMPLETED_CAMPAIGN --> SETTINGS["Settings"]
-
-    SETTINGS --> RESTORE["Restore Campaign"]
-    SETTINGS --> DELETE["Delete Campaign"]
-```
-
-### Completed campaign behavior
-
-- Completed campaigns are primarily read-only archives.
-- The Game Room is not active.
-- The GM may restore a campaign if the project supports reopening completed campaigns.
-
----
-
-## 8. Characters Section
-
-```mermaid
-flowchart TD
-    CHARACTERS["Characters"]
-
-    CHARACTERS --> MY_CHARACTERS["My Characters"]
-    CHARACTERS --> CREATE_CHARACTER["Create Character"]
-
-    MY_CHARACTERS --> CHARACTER_01["Character 01"]
-    MY_CHARACTERS --> CHARACTER_02["Character 02"]
-    MY_CHARACTERS --> CHARACTER_N["Character N"]
-
-    CHARACTER_01 --> VIEW_01["View"]
-    CHARACTER_01 --> EDIT_01["Edit"]
-
-    CHARACTER_02 --> VIEW_02["View"]
-    CHARACTER_02 --> EDIT_02["Edit"]
-
-    CHARACTER_N --> VIEW_N["View"]
-    CHARACTER_N --> EDIT_N["Edit"]
-
-    CREATE_CHARACTER --> SELECT_SYSTEM["Select Game System"]
-    SELECT_SYSTEM --> CHARACTER_FORM["Character Form"]
-```
-
-### Character principle
-
-- View and Edit are contained inside **My Characters**.
-- There is no separate Character Details or Character Settings section.
-- Campaign assignment and other character changes are handled through the existing character editing flow when those functions are introduced.
-
----
-
-## 9. Standalone Dice Roller
-
-```mermaid
-flowchart TD
-    DICE["Dice Roller"]
-
-    DICE --> VTM["Vampire: The Masquerade V5"]
-    DICE --> COC["Call of Cthulhu 7e"]
-    DICE --> CUSTOM["Build a Dice Pool"]
-```
-
-### Dice Roller distinction
-
-- The standalone Dice Roller is a general tool outside a campaign.
-- The Game Room contains the campaign/session Dice Roller.
-- Both may reuse the same game-system dice engine.
-
----
-
-## 10. Video Rooms
-
-```mermaid
-flowchart TD
-    VIDEO_ROOMS["Video Rooms"]
-
-    VIDEO_ROOMS --> CREATE["Create Room — Provisional"]
-    VIDEO_ROOMS --> AVAILABLE["Available Standalone Rooms"]
-    AVAILABLE --> ROOM_01["Standalone Room 01"]
-    AVAILABLE --> ROOM_02["Standalone Room 02"]
-    AVAILABLE --> ROOM_N["Standalone Room N"]
-```
-
-### Video Rooms principle
-
-The top-level Video Rooms section is an authenticated standalone area and does not depend on campaign membership. The approved target route is `/[locale]/video-rooms`; likely `/[locale]/video-rooms/new` and `/[locale]/video-rooms/[id]` supporting routes remain provisional. None is implemented, and there is no current navigation entry or placeholder.
-
-Standalone and campaign video share a reusable video core but use separate authorization adapters. Campaign video is implemented inside the campaign Game Room and requires campaign-derived authorization; standalone Video Rooms remain future work.
-
----
-
-## 11. Account Section
-
-```mermaid
-flowchart TD
-    ACCOUNT["Account"]
-
-    ACCOUNT --> GUEST["Guest"]
-    ACCOUNT --> USER["Registered User"]
-
-    GUEST --> LOGIN["Log In"]
-    GUEST --> REGISTER["Register"]
-
-    USER --> PROFILE["Profile"]
-    USER --> EDIT_PROFILE["Edit Profile"]
-    USER --> SECURITY["Security"]
-    USER --> PREFERENCES["Preferences"]
-    USER --> LOGOUT["Log Out"]
-```
-
-Potential public-readiness additions:
-
-- Privacy;
-- Export Data;
-- Delete Account.
-
----
-
-## 12. Help and Information
-
-```mermaid
-flowchart TD
-    HELP["Help and Information"]
-
-    HELP --> HELP_CENTER["Help"]
-    HELP --> ABOUT["About"]
-    HELP --> CONTACT["Contact"]
-    HELP --> PRIVACY["Privacy"]
-    HELP --> TERMS["Terms"]
-```
-
-These pages may be introduced during the Public Readiness milestone.
-
----
-
-## 13. Complete Plain-Text Target Tree
+Conceptual approved additions:
 
 ```text
-Home Page
-├── Games
-│   ├── Vampire: The Masquerade V5
-│   │   ├── Overview and Setting
-│   │   ├── Getting Started
-│   │   ├── Game System
-│   │   ├── Character Creation
-│   │   ├── Base Rules
-│   │   ├── Quick Reference
-│   │   ├── Resources
-│   │   └── Tools
-│   │       ├── Create Character
-│   │       └── Dice Roller
-│   └── Call of Cthulhu 7e
-│       ├── Overview and Setting
-│       ├── Getting Started
-│       ├── Game System
-│       ├── Character Creation
-│       ├── Base Rules
-│       ├── Quick Reference
-│       ├── Resources
-│       └── Tools
-│           ├── Create Character
-│           └── Dice Roller
-├── Campaigns
-│   ├── Create Campaign
-│   │   ├── Campaign Details
-│   │   ├── Select Game System
-│   │   ├── Confirm Game Master
-│   │   └── Invite Players
-│   ├── Active Campaigns
-│   │   └── Campaign
-│   │       ├── Overview
-│   │       ├── Game Room
-│   │       │   ├── Video
-│   │       │   ├── Dice Roller
-│   │       │   ├── Handout Preview
-│   │       │   ├── Participant List
-│   │       │   ├── Quick Notes
-│   │       │   └── Current Session Context
-│   │       ├── Members
-│   │       │   ├── Game Master
-│   │       │   └── Players
-│   │       ├── Characters
-│   │       ├── Handouts
-│   │       ├── NPCs
-│   │       ├── Chronicle
-│   │       │   └── Sessions
-│   │       ├── Notes
-│   │       │   ├── Shared Notes
-│   │       │   └── GM Private Notes
-│   │       └── Settings
-│   │           ├── Campaign Details
-│   │           ├── Complete Campaign
-│   │           └── Delete Campaign
-│   └── Completed Campaigns
-│       └── Completed Campaign
-│           ├── Overview
-│           ├── Members
-│           ├── Characters
-│           ├── Handouts
-│           ├── NPCs
-│           ├── Chronicle
-│           ├── Notes
-│           └── Settings
-│               ├── Restore Campaign
-│               └── Delete Campaign
-├── Characters
-│   ├── My Characters
-│   │   └── Character
-│   │       ├── View
-│   │       └── Edit
-│   └── Create Character
-│       ├── Select Game System
-│       └── Character Form
-├── Dice Roller
-│   ├── Vampire: The Masquerade V5
-│   ├── Call of Cthulhu 7e
-│   └── Build a Dice Pool
-├── Video Rooms
-│   ├── Create Standalone Room (provisional)
-│   └── Available Standalone Rooms
-├── Account
-│   ├── Guest
-│   │   ├── Log In
-│   │   └── Register
-│   └── Registered User
-│       ├── Profile
-│       ├── Edit Profile
-│       ├── Security
-│       ├── Preferences
-│       └── Log Out
-└── Help and Information
-    ├── Help
-    ├── About
-    ├── Contact
-    ├── Privacy
-    └── Terms
+/[locale]/campaigns/[id]/images          Phase 4C1
+/[locale]/campaigns/[id]/game-room       Existing route expanded by 4C2, 4D2, 4E, and 4F2
+/[locale]/campaigns/[id]/notes           Phase 4G, exact route subject to implementation review
 ```
 
----
+CoC and Delta Green character, dice, and hub paths should follow the established game-system routing convention when those capabilities are implemented. Planned catalogue entries must not expose controls or routes before capability support exists.
 
-## 14. Naming Applied
+## Game Room target
 
-| Previous label | Revised label |
-|---|---|
-| Dice Pull | Dice Roller |
-| Build Your Own Set | Build a Dice Pool |
-| Legacy | Completed Campaigns |
-| History | Chronicle |
-| Useful sources | Resources |
-| Lore Description | Overview and Setting |
-| Playground | Game Room |
+The approved Game Room target combines only:
 
----
+- accepted campaign LiveKit video;
+- GM-controlled presentation of an image selected from the Campaign Image Library;
+- system-aware dice appropriate to the campaign system;
+- linked participant characters appropriate to the campaign system;
+- technical Campaign/Game Room UX refinement.
 
-## 15. Editing Notes
+Campaign notes may remain a Campaign area rather than a dense live-room tool unless Phase 4G usability evidence supports a narrow Game Room surface.
 
-- The diagram intentionally does not include a Dashboard.
-- Player invitations are part of Create Campaign.
-- Members contain only Game Master and Players.
-- Standalone Video Rooms are independent from Campaigns.
-- Campaign video is active inside the Game Room; campaign dice and the other workspace tools remain planned.
-- View and Edit are inside My Characters.
-- Character Settings is not included.
-- Unregistered users see only Games, Account authentication actions, and optionally the standalone Dice Roller.
-- The planned top-level Video Rooms section owns standalone rooms; its supporting route names remain provisional.
+## Excluded target routes
+
+The active roadmap does not approve routes for:
+
+- standalone Video Rooms;
+- general Handouts;
+- NPC management;
+- Sessions or Chronicle records;
+- clues, maps, wikis, recording, transcription, or screen sharing.
+
+## Later phases
+
+Phase 5 and Phase 6 refine the existing product without inventing feature routes. Phase 7 adds Delta Green system parity. Phase 8 adds CoC, Delta Green, and Vampire hubs in that order. Phase 9 adds only public-readiness routes justified by an accepted operational requirement.

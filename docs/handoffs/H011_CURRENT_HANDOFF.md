@@ -144,7 +144,7 @@ No backup, renamed, temporary, or just-in-case TTRPG project copy is required ou
 - Call of Cthulhu 7e characters, dice, Game Hub content, and Keeper tools;
 - print/PDF, independent sheet language, public sharing, and broader public-readiness work including abuse controls, monitoring, legal/privacy operations, and hosted leaked-password protection.
 
-The next product stage has not been selected.
+Post-H011 roadmap amendment (2026-09-01): Phase 4C1 Campaign Image Library is the next approved product stage. The permanent roadmap in `docs/product/ROADMAP.md` supersedes the earlier unselected-stage statement and the obsolete H011 future-capability list; all H011 implementation, verification, cleanup, and Production-acceptance facts remain unchanged.
 
 ## 10. Exact starting procedure for the next stage
 
@@ -153,7 +153,7 @@ The next product stage has not been selected.
 3. Run `git fetch origin --prune`.
 4. Confirm `git branch --show-current` is `main`, `git status --short --branch` is clean, and `git rev-parse HEAD` equals `git rev-parse origin/main`.
 5. Inspect `package.json` and the installed Next.js 16.3.3 documentation before changing Next.js code.
-6. Select and scope one next product stage explicitly. Do not infer that standalone Video Rooms or shared campaign dice is next.
+6. Begin from the approved Phase 4C1 Campaign Image Library scope in `docs/product/ROADMAP.md`; do not infer that standalone Video Rooms, broad Handouts, or the superseded shared-dice phase is next.
 7. Create a new isolated `codex/` branch or worktree from the verified `origin/main` and rerun only the gates proportionate to that change.
 
 Future work must not depend on any former external folder or historical handoff being treated as current.

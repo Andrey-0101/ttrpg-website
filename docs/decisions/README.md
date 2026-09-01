@@ -49,4 +49,4 @@ ADR-008 is accepted and governs the next implementation:
 
 ### Video
 
-ADR-009 is Accepted for managed infrastructure and LiveKit in the current campaign Game Room. The decision does not automatically settle the separate future standalone Video Rooms product. Reconsidering the provider requires new evidence or materially changed requirements.
+ADR-009 is Accepted for managed infrastructure and LiveKit in the current campaign Game Room. Standalone Video Rooms are not active roadmap scope, and the decision does not automatically settle any future standalone product. Reconsidering the provider requires new evidence or materially changed requirements.
