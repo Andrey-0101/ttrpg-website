@@ -186,10 +186,12 @@ Two defects found during testing were fixed through separate migrations:
 - no staging environment;
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
-- no shared campaign dice security model implemented yet;
-- no standalone Video Rooms authorization model or route yet; campaign video now performs fresh authenticated authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens only after an explicit Join action.
+- no campaign-authoritative dice security model implemented yet;
+- no Campaign Image Library management or Game Room presentation UI yet;
+- no standalone Video Rooms authorization model or route; standalone rooms are not active roadmap scope;
+- campaign video performs fresh authenticated authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens only after an explicit Join action.
 
-## Level A requirements for Milestone 4
+## Level A requirements for Phase 4
 
 ### Personal dice
 
@@ -201,7 +203,7 @@ Even without persistence:
 - cover messy critical, bestial failure, critical, and failure cases;
 - use safe bounds to prevent accidental UI or performance abuse.
 
-### Shared campaign dice — Phase 4D
+### CoC and Game Room dice — Phases 4D1 and 4D2
 
 Required before persistence:
 
@@ -218,9 +220,9 @@ Required before persistence:
 - safe Realtime subscription scope;
 - rate-limit plan before external exposure.
 
-### Standalone Video Rooms — Phase 4B
+### Standalone Video Rooms — uncommitted backlog gate
 
-Required before production standalone video:
+Standalone Video Rooms are not active roadmap scope. If `IDEA-006` is accepted into a future roadmap, the following minimum gate would apply before Production:
 
 - authenticated user;
 - context-specific standalone application access validation;
@@ -236,17 +238,17 @@ Required before production standalone video:
 
 The exact room schema, RLS, ownership, invitation, membership, expiry, retention, deletion, quota, and participant model remain open and must not be inferred from these requirements.
 
-### Campaign-integrated Video Rooms — accepted current implementation
+### Campaign-integrated Video Rooms — Phase 4B accepted current implementation
 
 Required in addition to the reusable video-core controls:
 
 - active campaign authorization immediately before token issuance;
-- campaign-derived access kept separate from standalone authorization;
+- campaign-derived access must not be weakened by any future standalone authorization model;
 - removed or revoked participants cannot obtain new campaign-room tokens;
 - token lifetime limits continued access after authorization loss;
-- campaign completion, deletion, and any reopening behavior follow the approved Campaign Collaboration Contract;
+- campaign completion and deletion follow the implemented Campaign Foundation lifecycle;
 - GM, Player, removed Player, and Outsider tests;
-- no reuse of standalone invitations unless separately approved.
+- no reuse of a future standalone invitation model unless separately approved.
 
 Campaign room authorization now uses one GM plus at most six active Players. Campaign completion prevents new campaign-video mutations and future token issuance; existing Players lose campaign-video settings and campaign-image access, while the GM retains read-only database and image access until final deletion. Provider-room teardown and already-issued-token behavior remain runtime work.
 
@@ -256,30 +258,28 @@ The localized Game Room route loads only RLS-visible campaign and participant da
 
 The last Production human group test passed for the accepted current scope with one GM and four Players. Quantitative packet-loss, latency, jitter, reconnect-timeline, and per-participant connection-quality telemetry was not collected. That evidence boundary is non-blocking, and no additional media/layout/human acceptance retest is currently required unless a relevant regression is reported, the implementation changes materially, or the user explicitly requests it.
 
-## Level A requirements for later campaign content
+## Level A requirements for approved later campaign content
 
-### Handouts
+### Campaign Image Library and presentation — Phases 4C1 and 4C2
 
 - private Storage;
-- content-type and size limits;
+- reviewed image content-type and size limits;
 - safe campaign path policy;
 - filename/path sanitization;
-- visibility enforcement;
-- signed downloads;
+- campaign image and recipient visibility enforcement;
+- signed display access;
 - quota plan.
+- safe Storage-first deletion and orphan reconciliation;
+- GM-only presentation selection and stop controls;
+- removed-Player and Outsider tests.
 
-### NPCs and notes
+### Campaign notes — Phase 4G
 
-- explicit shared versus GM-private fields;
+- explicit shared-permitted versus GM-private records;
 - no accidental GM-private exposure;
 - RLS tests with GM, Player, and Outsider.
 
-### Sessions
-
-- participant authorization;
-- clear ownership of preparation and summary fields;
-- safe relation to dice, handouts, and notes;
-- time-zone contract.
+General Handouts, NPCs, Sessions, Chronicle records, clues, and maps are not active roadmap commitments. Their historical checklist concepts do not pre-approve a schema or implementation.
 
 ## Level B Public Readiness work
 
@@ -386,7 +386,7 @@ Before unrestricted use, verify that a non-member cannot:
 - read a campaign;
 - read campaign characters;
 - read campaign portraits;
-- read handouts;
+- read campaign images or other approved campaign content;
 - read dice history;
 - obtain a video token;
 - use a revoked, expired, or accepted invitation;

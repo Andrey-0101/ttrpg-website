@@ -2,11 +2,11 @@
 
 ## Status
 
-**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history implemented; Phase 4D shared campaign dice planned.**
+**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history implemented; Phase 4D1 CoC dice and Phase 4D2 system-aware Game Room dice planned.**
 
-The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and shared campaign dice are not implemented.
+The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and campaign-authoritative Game Room dice are not implemented.
 
-Shared campaign dice remain planned Phase 4D work. Campaign-authorized LiveKit video and the responsive Game Room are complete and accepted; standalone Video Rooms remain a separate planned product capability. The next product stage has not yet been selected.
+Campaign-authorized LiveKit video and the responsive Game Room are complete and accepted. Phase 4C1 Campaign Image Library is next. Dice resumes in Phase 4D1 with the CoC 7e personal roller and in Phase 4D2 with system-aware Game Room integration.
 
 Initial system:
 
@@ -18,9 +18,10 @@ Implementation order:
 
 1. complete the reviewed VtM result contract, pure deterministic evaluator, client-side random generation, personal roller UI, EN/RU, and mobile support in Phase 4A;
 2. complete reviewed owner-scoped personal persistence, saved Custom Dice Pool presets, and private personal history in Phase 4A;
-3. preserve the completed campaign Game Room and keep its planned tools inactive;
-4. define any remaining Campaign Collaboration Contract required by the selected next feature;
-5. when separately approved, design and implement Phase 4D Shared Campaign Dice with server-authoritative execution and a Realtime feed.
+3. preserve the completed campaign Game Room and keep unavailable controls visibly disabled;
+4. implement the CoC 7e personal dice engine and roller in Phase 4D1;
+5. integrate the correct system roller into the Game Room in Phase 4D2: VtM for VtM campaigns and CoC for CoC campaigns;
+6. add persisted or realtime campaign history only if the Phase 4D2 design approves a server-authoritative schema, execution boundary, and RLS contract.
 
 ## Product goals
 
@@ -225,7 +226,7 @@ Personal dice behavior:
 - official symbolic dice display by default with a page-lifetime Numbers option;
 - repeat roll.
 
-Personal results remain client-generated and non-authoritative even when best-effort personal persistence records them for a registered user. Personal history is owner-scoped, is not campaign evidence, and must not be reused as the Phase 4D campaign execution path.
+Personal results remain client-generated and non-authoritative even when best-effort personal persistence records them for a registered user. Personal history is owner-scoped, is not campaign evidence, and must not be reused as the Phase 4D2 campaign execution path.
 
 The official symbol provenance and numeric display mapping are recorded in `docs/architecture/WORLD_OF_DARKNESS_ASSETS.md`. Display selection never changes the evaluator result or reruns random generation.
 
@@ -257,10 +258,14 @@ The UI:
 - registered-user personal history retains the current roll plus 10 previous rolls;
 - personal persistence is owner-scoped and best-effort rather than guaranteed for every roll;
 - personal roll history remains private, non-authoritative, and separate from future campaign roll history;
-- personal records are not campaign evidence and must not be reused as the Phase 4D campaign execution path;
+- personal records are not campaign evidence and must not be reused as the Phase 4D2 campaign execution path;
 - persistence was delivered through its reviewed schema, migration, RLS, and UI phase.
 
-## Phase 4D — Persisted shared campaign rolls
+## Phase 4D1 — CoC 7e Dice Roller
+
+Planned Phase 4D1 adds a system-accurate Call of Cthulhu 7e personal roller, deterministic evaluation, EN/RU presentation, responsive controls, and tests. It does not create campaign-authoritative history.
+
+## Phase 4D2 — System-aware Game Room dice
 
 Recommended route:
 
@@ -271,8 +276,11 @@ Recommended route:
 Requirements:
 
 - active campaign participant;
+- derive the campaign game system server-side;
+- use VtM rules for VtM campaigns and CoC rules for CoC campaigns;
+- never expose an incompatible system roller;
 - server-authoritative random generation;
-- server-authoritative VtM interpretation;
+- server-authoritative system-specific interpretation if persisted or shared history is approved;
 - structured request and result persistence;
 - authenticated actor derived server-side;
 - optional character association only when accessible;
@@ -404,9 +412,9 @@ Use fixed die arrays for:
 5. EN/RU works.
 6. Mobile controls work.
 7. Guest rolls remain non-persistent, while registered-user persistence is private, owner-scoped, and best-effort.
-8. Personal results remain non-authoritative and are never treated as campaign evidence or the Phase 4D campaign execution path.
+8. Personal results remain non-authoritative and are never treated as campaign evidence or the Phase 4D2 campaign execution path.
 
-### Shared campaign dice
+### Phase 4D2 Game Room dice
 
 1. Campaign membership is enforced.
 2. Server produces and persists the result.

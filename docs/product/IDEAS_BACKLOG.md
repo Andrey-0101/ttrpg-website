@@ -28,11 +28,12 @@ Items in this document are not commitments and are not automatically part of the
 
 | ID | Idea | Area | Status | Suggested milestone |
 |---|---|---|---|---|
-| IDEA-001 | Campaign edit mode activated by a button | Campaigns / User interface | Inbox | Milestone 5 — Friend Campaign Alpha, subject to review |
-| IDEA-002 | Move campaign invitations below players and characters | Campaigns / Page structure | Inbox | Milestone 5 — Friend Campaign Alpha, subject to review |
-| IDEA-003 | Combine players and characters into one list | Campaigns / Members / Characters | Inbox | Milestone 5 — Friend Campaign Alpha, subject to review |
-| IDEA-004 | Interactive character portrait preparation | Characters / Portraits / Image upload | Deferred | Milestone 6 — Visual Identity, subject to review |
+| IDEA-001 | Campaign edit mode activated by a button | Campaigns / User interface | Inbox | Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review |
+| IDEA-002 | Move campaign invitations below players and characters | Campaigns / Page structure | Inbox | Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review |
+| IDEA-003 | Combine players and characters into one list | Campaigns / Members / Characters | Inbox | Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review |
+| IDEA-004 | Interactive character portrait preparation | Characters / Portraits / Image upload | Deferred | Phase 6 — Visual Identity, subject to review |
 | IDEA-005 | AI-assisted character generation | Characters / AI assistance | Inbox | Unassigned; not committed roadmap scope |
+| IDEA-006 | Standalone Video Rooms | Video / Separate product | Deferred | Unassigned; removed from active roadmap |
 
 ---
 
@@ -43,7 +44,7 @@ Items in this document are not commitments and are not automatically part of the
 - **Status:** Inbox
 - **Area:** Campaigns / User interface
 - **Added:** 2026-07-10
-- **Suggested milestone:** Milestone 5 — Friend Campaign Alpha, subject to review
+- **Suggested milestone:** Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review
 - **Priority:** Unassigned
 - **Source:** Observation during Campaign Management testing
 - **Related documents:**
@@ -96,7 +97,7 @@ Not reviewed.
 - **Status:** Inbox
 - **Area:** Campaigns / Page structure
 - **Added:** 2026-07-10
-- **Suggested milestone:** Milestone 5 — Friend Campaign Alpha, subject to review
+- **Suggested milestone:** Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review
 - **Priority:** Unassigned
 - **Source:** Observation during Campaign Overview testing
 - **Related documents:**
@@ -153,7 +154,7 @@ Not reviewed.
 - **Status:** Inbox
 - **Area:** Campaigns / Members / Characters
 - **Added:** 2026-07-10
-- **Suggested milestone:** Milestone 5 — Friend Campaign Alpha, subject to review
+- **Suggested milestone:** Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review
 - **Priority:** Unassigned
 - **Source:** Observation during Campaign Members and Campaign Characters testing
 - **Related documents:**
@@ -227,7 +228,7 @@ Not reviewed.
 - **Status:** Deferred
 - **Area:** Characters / Portraits / Image upload
 - **Added:** 2026-07-10
-- **Suggested milestone:** Milestone 6 — Visual Identity, subject to review
+- **Suggested milestone:** Phase 6 — Visual Identity, subject to review
 - **Priority:** Unassigned
 - **Source:** Observation during character sheet testing
 - **Related documents:**
@@ -367,6 +368,50 @@ Provide an optional AI-assisted character-generation flow:
 #### Decision
 
 Not reviewed. This is a future backlog idea, not approved or committed roadmap scope.
+
+---
+
+## Video
+
+### IDEA-006 — Standalone Video Rooms
+
+- **Status:** Deferred
+- **Area:** Video / Separate product
+- **Added:** 2026-09-01
+- **Suggested milestone:** Unassigned; removed from active roadmap
+- **Priority:** Unassigned
+- **Source:** Roadmap consolidation decision
+- **Related documents:**
+  - `docs/product/VIDEO_ROOMS.md`
+  - `docs/product/ROADMAP.md`
+  - `docs/decisions/ADR-009-managed-video-infrastructure.md`
+
+#### Problem
+
+The earlier roadmap treated authenticated standalone Video Rooms as an active Phase 4 product. The approved current architecture and near-term product sequence are campaign-only, and no standalone route, schema, authorization model, ownership contract, invitation lifecycle, or provider decision exists.
+
+#### Idea
+
+If a future need is demonstrated, review a separate standalone video product independently of Campaigns. That review would need to define its user value, authorization, ownership, invitations, membership, expiry, retention, deletion, participant limits, privacy, cost, and provider evidence before any implementation commitment.
+
+The reusable campaign media core may inform that review, but it does not create a standalone product contract. LiveKit's accepted use for the Campaign Game Room does not automatically settle the standalone provider decision.
+
+#### Why it may be useful
+
+- Could support ad hoc authenticated calls that do not belong to a campaign.
+- Could reuse proven media presentation behavior if a distinct product need emerges.
+
+#### Risks or questions
+
+- Is a separate product needed when the active use case is campaign play?
+- What establishes room access independently of campaign membership?
+- Which ownership, invitation, expiry, retention, deletion, and abuse controls are required?
+- Which provider best fits future requirements and cost constraints?
+- Would the capability duplicate established external meeting tools without enough project value?
+
+#### Decision
+
+Removed from the active roadmap. Retained only as an uncommitted future idea requiring a fresh product and authorization review. No route, provider, schema, or delivery phase is approved.
 
 ---
 

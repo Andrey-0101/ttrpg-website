@@ -27,13 +27,14 @@ The current implementation connects:
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
-Future milestones will add:
+Approved later Phase 4 work will add:
 
-- dice rolls;
-- handouts;
-- NPCs;
-- sessions;
-- shared and GM-private notes.
+- Campaign Image Library and GM-controlled Game Room image presentation;
+- system-aware campaign dice for VtM and CoC;
+- system-aware linked-character presentation in the Game Room;
+- shared notes for permitted participants and GM-private notes.
+
+General Handouts, NPCs, Sessions, Chronicle records, clues, and other broad campaign-content modules are not active roadmap commitments.
 
 The application does not support public campaign discovery.
 
@@ -316,7 +317,7 @@ Players do not see management controls.
 
 `/[locale]/campaigns/[id]/game-room` is the dedicated localized virtual tabletop for an authorized campaign participant. The Campaign Overview contains a compact entry card and no longer mounts or connects the active video component.
 
-The first working shell includes explicit room Join/Leave, participant video tiles, own camera and microphone controls, browser sound unlock when required, participant names and roles, reconnect, cleanup, and safe errors. The Campaign Dice Roller, Handout Preview, separate Participants panel, Quick Notes, and Current Session Context are visible only as non-interactive planned structure. Completed campaigns cannot start a room connection.
+The first working shell includes explicit room Join/Leave, participant video tiles, own camera and microphone controls, browser sound unlock when required, participant names and roles, reconnect, cleanup, and safe errors. Existing Campaign Dice, Handout Preview, Participants, Quick Notes, and Session Context placeholders are non-interactive presentation only; they do not establish roadmap scope. Future implemented controls must follow the current roadmap and unavailable areas must remain visibly disabled without fake routes or behavior. Completed campaigns cannot start a room connection.
 
 The accepted layout uses a compact header, approximately `1.5fr / 1fr / 1fr` desktop columns, and stable slots for one GM plus Player positions 1–6. Video cards remain responsive `16:9`, use normal brightness and `object-fit: cover`, keep a compact upper-right label, and expose lower-left media controls only for the local participant. Leave remains in the header. The last human Production group test passed with one GM and four Players; quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional acceptance retest is currently required.
 
@@ -386,7 +387,7 @@ docs/architecture/DATABASE.md
 
 ## Verification
 
-The current campaign-video and Game Room scope is accepted in Production. LiveKit is the accepted provider for this campaign implementation; standalone Video Rooms remain a separate future product decision.
+The current campaign-video and Game Room scope is accepted in Production. LiveKit is the accepted provider for this campaign implementation. Standalone Video Rooms are not active roadmap scope and would require a separate future product, authorization, and provider review.
 
 The Campaign Foundation security script tested:
 
@@ -427,14 +428,12 @@ ADR-008 defines the accepted boundary.
 
 Outside the completed Campaign Foundation:
 
-- personal and shared dice tools;
-- realtime dice history;
-- campaign image-upload/presentation UI, remote moderation, and directed media-group enforcement;
-- handouts;
-- NPCs;
-- sessions;
-- shared notes;
-- GM-private notes;
+- Phase 4C1 campaign image-library UI;
+- Phase 4C2 Game Room image presentation;
+- Phase 4D1 CoC dice and Phase 4D2 system-aware Game Room dice;
+- Phase 4E Campaign & Game Room UX/UI refinement;
+- Phase 4F1 CoC character sheets and Phase 4F2 system-aware linked-character integration;
+- Phase 4G shared notes and GM-private notes;
 - campaign discovery;
 - ownership transfer;
 - multiple Game Masters;
@@ -442,13 +441,11 @@ Outside the completed Campaign Foundation:
 - Game Master editing of Player characters;
 - public campaign pages.
 
-The Call of Cthulhu 7th Edition campaign shell is implemented. Its character sheets, dice mechanics, Keeper tools, NPCs, clues, handouts, sessions, and notes remain outside the current scope.
+The Call of Cthulhu 7th Edition campaign shell is implemented. Its character sheets and dice mechanics remain planned in Phases 4D1 and 4F1. Keeper-specific tools, NPCs, clues, Handouts, Sessions, and Chronicle records are not active roadmap commitments.
 
 ## Open questions for later milestones
 
 - Can a Player have multiple active characters in one campaign?
 - What information is retained in a richer completed-campaign archive?
-- How are session time zones represented?
-- What handout file types and quotas are allowed?
 - Which campaign events appear in activity history?
 - Should account deletion offer an export before a Game Master's campaigns are cascade-deleted?

@@ -9,13 +9,13 @@ Completed:
 - Milestone 1 — Architecture Baseline;
 - Milestone 2 — Character Friend Alpha;
 - Milestone 3 — Campaign Foundation;
-- Milestone 4A — VtM personal dice and personal persistence;
+- Phase 4A — VtM personal dice and personal persistence;
 - planned game-system catalogue across Games, Dice Rollers, character creation, and campaign creation.
 
 Active:
 
-- Milestone 4 — VtM Realtime Tools, with the current campaign video and Game Room scope complete;
-- next product stage — not yet selected.
+- Phase 4 — Core Play & Campaign Tools, with 4A and 4B complete;
+- next product stage — Phase 4C1 Campaign Image Library.
 
 The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
@@ -26,7 +26,7 @@ main
 609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
-The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the accepted responsive Campaign Game Room. PRs #28–#35 are the completed release-and-audit sequence before H011 consolidation. The last Production human group test passed with one GM and four Players, without quantitative network/connection-quality telemetry, and no additional acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented, and the non-video Game Room workspace tools remain planned and inactive.
+The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the accepted responsive Campaign Game Room. PRs #28–#35 are the completed release-and-audit sequence before H011 consolidation. The last Production human group test passed with one GM and four Players, without quantitative network/connection-quality telemetry, and no additional acceptance retest is currently required. Phase 4C1 Campaign Image Library is next. Standalone Video Rooms are retained only as an uncommitted backlog idea.
 
 ## Architecture
 
@@ -47,8 +47,8 @@ The implemented product includes Phase 4A personal dice and persistence, the gam
 | [`product/ROADMAP.md`](product/ROADMAP.md) | Milestones, current status, scope boundaries, and exit criteria |
 | [`product/IDEAS_BACKLOG.md`](product/IDEAS_BACKLOG.md) | Unapproved product ideas captured for review and possible roadmap acceptance |
 | [`product/CAMPAIGNS.md`](product/CAMPAIGNS.md) | Implemented Campaign Foundation contract and current UI |
-| [`product/DICE_ROLLS.md`](product/DICE_ROLLS.md) | Implemented personal dice contract and planned Phase 4D shared campaign dice |
-| [`product/VIDEO_ROOMS.md`](product/VIDEO_ROOMS.md) | Accepted current campaign-video decision and separate planned standalone Video Rooms capability |
+| [`product/DICE_ROLLS.md`](product/DICE_ROLLS.md) | Implemented VtM personal dice and planned CoC/Game Room dice sequence |
+| [`product/VIDEO_ROOMS.md`](product/VIDEO_ROOMS.md) | Accepted campaign-only LiveKit scope and uncommitted standalone backlog boundary |
 | [`product/GAME_HUB.md`](product/GAME_HUB.md) | Proposed game-hub content and tools |
 | [`product/SITE_STRUCTURE_CURRENT.md`](product/SITE_STRUCTURE_CURRENT.md) | Current implemented information architecture |
 | [`product/SITE_STRUCTURE_TARGET.md`](product/SITE_STRUCTURE_TARGET.md) | Accepted target information architecture |
@@ -67,7 +67,7 @@ Current decision status relevant to the next milestone:
 
 - ADR-007 — Campaign foundation before shared realtime tools: Accepted;
 - ADR-008 — Game-system domain boundaries: Accepted;
-- ADR-009 — Managed video infrastructure: Accepted for the current LiveKit campaign Game Room; standalone Video Rooms remain a separate future decision.
+- ADR-009 — Managed video infrastructure: Accepted for the current LiveKit campaign Game Room only; standalone Video Rooms are not active roadmap scope.
 
 ## Evidence summaries
 

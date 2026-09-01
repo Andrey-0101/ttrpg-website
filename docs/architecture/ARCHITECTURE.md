@@ -18,7 +18,7 @@ PRs #28–#35 are merged and deployed at the H011 consolidation baseline. The cu
 1. Deliver practical value to a small private group before optimizing for unrestricted public use.
 2. Keep game-system-specific behavior isolated from common platform behavior.
 3. Preserve character data through explicit schema versions and normalizers.
-4. Use campaign membership as the authorization boundary for campaign-owned collaboration, while keeping standalone Video Rooms in a separate access domain.
+4. Use campaign membership as the authorization boundary for every approved campaign-owned collaboration capability; any future standalone product requires a separate authorization design.
 5. Keep decorative design separate from business logic and persisted data.
 6. Avoid unnecessary universal abstractions until a second game system exposes real common requirements.
 7. Keep server and database authorization authoritative even when the UI hides or disables controls.
@@ -45,7 +45,7 @@ Supabase
   +-- Auth
   +-- Row Level Security
   +-- Storage
-  +-- Realtime for future persisted dice feeds
+  +-- Realtime only where a later approved campaign capability requires it
 ```
 
 The canonical production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` permanently redirects to the apex domain. Vercel `*.vercel.app` URLs remain technical deployment addresses.
@@ -62,7 +62,7 @@ Next.js server
         +-- managed video provider
 ```
 
-The reusable video core remains separate from authorization adapters. The current Campaign Game Room uses campaign-derived authorization and LiveKit, the accepted provider for this implementation. Provider secrets remain server-only. Future standalone Video Rooms remain a separate planned application-authorization domain; ADR-009 does not automatically select a provider or product model for that future capability.
+The reusable video core remains separate from authorization adapters. The current Campaign Game Room uses campaign-derived authorization and LiveKit, the accepted provider for this implementation. Provider secrets remain server-only. Standalone Video Rooms are not active roadmap scope; any future product would require a separate authorization and provider review. ADR-009 does not automatically select it.
 
 ## Route architecture
 
@@ -109,15 +109,7 @@ The confirmation callback remains outside locale-prefixed routes. The intended l
 
 Route-level `loading.tsx` and `not-found.tsx` files provide safe framework states for character and campaign routes.
 
-Approved planned standalone Video Rooms route direction:
-
-```text
-/[locale]/video-rooms
-/[locale]/video-rooms/new       (provisional)
-/[locale]/video-rooms/[id]      (provisional)
-```
-
-These routes and a possible authenticated navigation entry are planned, not implemented.
+No standalone Video Rooms route or navigation entry is approved. Earlier `/[locale]/video-rooms` route sketches are superseded planning history.
 
 ## Middleware composition
 
@@ -289,15 +281,16 @@ Authorization helpers
 
 Campaigns carry a `game_system` discriminator. VtM-specific rules do not belong in generic campaign columns. The dedicated campaign Game Room uses the existing RLS-protected campaign boundary for its initial server render and issues no provider token until the participant explicitly selects Join. Its localized route uses a named Next.js header slot for compact route-specific chrome while other routes keep the normal site header. The browser presentation maps the server-owned participant directory to fixed GM and Player 1–6 positions, so provider presence changes do not reorder the viewport-driven desktop layout. CSS Grid derives the available workspace from `100dvh` and the compact header, constrains participant cards by both their grid column and row, preserves 16:9 media without resize listeners, and reflows below the desktop breakpoint.
 
-### Realtime tools domain
+### Core play and campaign-tools domain
 
-Active roadmap area:
+Approved responsibilities:
 
 ```text
 Personal dice execution
-Persisted campaign dice execution
-Dice feed
-Presence where needed
+System-aware campaign dice execution if approved by the Phase 4D2 persistence contract
+Campaign image library and shared current-image presentation
+Linked campaign-character presentation
+Shared and GM-private campaign notes
 Video room access
 Connection state
 ```
@@ -308,22 +301,23 @@ Video capabilities are split into:
 Reusable video core
 Campaign-derived authorization adapter (implemented)
 LiveKit provider boundary (accepted current implementation)
-Standalone authorization adapter (planned separately)
+Standalone authorization adapter (not implemented; no active roadmap phase)
 ```
 
-The current campaign Game Room is implemented at `/{locale}/campaigns/{campaignId}/game-room` for one GM plus up to six Players. Standalone Video Rooms must not depend on campaign membership. Shared campaign dice and campaign-integrated video must reuse campaign authorization and must not establish a competing campaign invitation or access model. Exact standalone room schema, RLS, ownership, invitation, retention, deletion behavior, and future provider remain unresolved.
+The current campaign Game Room is implemented at `/{locale}/campaigns/{campaignId}/game-room` for one GM plus up to six Players. Image presentation, system-aware dice, linked characters, and notes must reuse campaign authorization and must not establish competing access models. A future standalone video idea would remain independent, but no schema, route, provider, or delivery phase is approved.
 
 ### Campaign-content domain
 
-Planned:
+Approved planned scope:
 
 ```text
-Handouts
-NPCs
-Sessions
+Campaign Image Library
+Game Room current-image presentation
 Shared notes
 GM-private notes
 ```
+
+General Handouts, NPCs, Sessions, Chronicle records, clues, maps, and wikis are not active roadmap scope.
 
 ### Game-hub content domain
 
@@ -464,23 +458,22 @@ Completed:
 4. VtM personal dice and personal persistence;
 5. planned game-system catalogue.
 
-Approved Milestone 4 sequence:
+Approved sequence:
 
-6. Phase 4B standalone Video Rooms — remains a separate planned product capability, not the selected next stage;
-7. Phase 4C Campaign Collaboration Contract;
-8. Phase 4D persisted shared campaign dice;
-9. Phase 4E campaign video integration through the reusable core — complete and accepted in Production;
-10. Phase 4F responsive Game Room video workspace — complete and accepted, with shared dice and the remaining workspace tools still planned and inactive.
-
-The next product stage has not yet been selected.
-
-Later:
-
-11. Milestone 5 Friend Campaign Alpha;
-12. visual identity;
-13. VtM Game Hub;
-14. Public Readiness;
-15. Call of Cthulhu 7e.
+6. Phase 4B Campaign Video Rooms Integration and responsive Game Room — complete and accepted in Production;
+7. Phase 4C1 Campaign Image Library — next;
+8. Phase 4C2 Game Room Image Presentation;
+9. Phase 4D1 CoC 7e Dice Roller;
+10. Phase 4D2 system-aware Game Room Dice Integration;
+11. Phase 4E Campaign & Game Room UX/UI Refinement;
+12. Phase 4F1 CoC 7e Character Sheets;
+13. Phase 4F2 system-aware linked-character Game Room integration;
+14. Phase 4G narrowly scoped Campaign Notes;
+15. Phase 5 site-wide UI Technical Refinement;
+16. Phase 6 Visual Identity;
+17. Phase 7 Delta Green system parity;
+18. Phase 8 Game System Hubs in CoC, Delta Green, then Vampire order;
+19. Phase 9 Public Readiness.
 
 ## Explicit non-goals for the current phase
 
@@ -491,4 +484,4 @@ Later:
 - final print/PDF;
 - universal dice expression language;
 - unrestricted public launch;
-- CoC implementation before the VtM platform flow is stable.
+- broad Handouts, NPCs, Sessions, Chronicle, standalone video, recording, transcription, or screen-sharing scope without a future explicit decision.

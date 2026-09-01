@@ -439,16 +439,14 @@ The security test exposed two issues that were corrected through new migrations 
 
 ## Future schema areas
 
-Not implemented:
+Approved but not implemented:
 
 ```text
-dice_rolls
-provider_room_mappings
-handouts
-npcs
-sessions
-campaign_notes
+campaign-authoritative dice persistence, only if approved by Phase 4D2
+campaign_notes for Phase 4G shared and GM-private scope
 ```
+
+The Phase 4C1 image library uses the existing campaign image tables and private Storage bucket; implementation must verify whether a forward migration is genuinely required rather than inventing new schema. General Handouts, NPCs, Sessions, Chronicle records, and standalone provider-room mappings are not active roadmap schema areas.
 
 Each future domain requires:
 

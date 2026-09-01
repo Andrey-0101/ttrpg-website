@@ -8,14 +8,15 @@
 | Document type | Current information architecture |
 | Status | Implemented snapshot |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
-| Current milestone | Milestone 4 — VtM Realtime Tools |
-| Completed milestones | Architecture Baseline, Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence |
+| Current phase | Phase 4 — Core Play & Campaign Tools |
+| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration |
+| Next work | Phase 4C1 Campaign Image Library |
 
 ## Purpose
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented shared campaign dice, standalone video, handout, NPC, session, notes, Public Readiness, or Call of Cthulhu character routes as current.
+It does not describe unimplemented campaign images/presentation, system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, general Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current.
 
 ## Current primary navigation
 
@@ -125,7 +126,7 @@ Current localized landing page.
 
 The Games catalogue and basic VtM area exist.
 
-The full VtM Game Hub remains planned.
+The Vampire Game System Hub remains planned for Phase 8C, after CoC and Delta Green hubs.
 
 ### Dice Rollers
 
@@ -318,7 +319,7 @@ The current foundation intentionally keeps these controls on the overview route 
 /[locale]/campaigns/[id]/game-room
 ```
 
-This authenticated participant-only route is the dedicated campaign virtual tabletop. Its active surface is the existing campaign-authorized video room: explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Campaign Dice, Handouts, a separate Participants panel, Quick Notes, and Session Context are present only as non-interactive planned structure. Completed campaigns cannot start a video connection.
+This authenticated participant-only route is the dedicated campaign virtual tabletop. Its active surface is the existing campaign-authorized video room: explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Campaign Dice, Handouts, Participants, Quick Notes, and Session Context labels are present only as non-interactive placeholders and do not define active roadmap scope. Completed campaigns cannot start a video connection.
 
 The accepted participant model is one GM plus up to six Players. The responsive layout keeps seven stable 16:9 slots, uses a compact Game Room header and final accepted video-card controls, and reflows with vertical scrolling where needed. The last human Production group test passed with one GM and four Players, without quantitative network or connection-quality telemetry; no additional acceptance retest is currently required.
 
@@ -346,14 +347,13 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- shared campaign dice;
-- campaign-authoritative persisted roll history;
-- realtime dice feed;
+- Campaign Image Library and Game Room image presentation;
+- CoC dice and system-aware Game Room dice;
+- CoC character sheets and system-aware linked-character integration;
+- campaign-authoritative persisted roll history or realtime feed unless approved within 4D2;
 - standalone Video Rooms;
-- campaign video moderation, image presentation, and later workspace expansion;
-- handouts;
-- NPCs;
-- sessions/Chronicle;
+- campaign video moderation and other uncommitted media expansion;
+- general Handouts, NPCs, Sessions, and Chronicle records;
 - campaign notes;
 - public character pages;
 - Public Readiness routes;
@@ -363,9 +363,6 @@ Not implemented:
 
 The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
 
-It has a working campaign authorization boundary and a Production-accepted campaign video workspace. The next product stage has not yet been selected. Remaining planned capabilities include:
+It has a working campaign authorization boundary and a Production-accepted campaign video workspace. Phase 4C1 Campaign Image Library is next. The approved forward sequence is 4C1/4C2 campaign images, 4D1/4D2 CoC and system-aware dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
 
-1. standalone Video Rooms with separate authorization and product decisions;
-2. any remaining Campaign Collaboration Contract work;
-3. Phase 4D persisted shared campaign dice;
-4. the inactive Game Room tools and broader campaign workspace.
+Standalone Video Rooms and broad Handouts/NPC/Sessions/Chronicle modules are uncommitted backlog possibilities, not current limitations that imply scheduled delivery.

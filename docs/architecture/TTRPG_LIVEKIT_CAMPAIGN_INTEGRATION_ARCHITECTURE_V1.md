@@ -351,7 +351,7 @@ LiveKit принят к интеграции после изолированно
 - Human group Production test: PASS.
 - Количественная телеметрия packet loss / latency / jitter / connection quality: NOT COLLECTED, не блокирует принятие.
 - Расширенные инструменты Game Room остаются запланированными и неактивными.
-- Standalone Video Rooms остаются отдельной будущей продуктовой возможностью; это решение не выбирает для неё провайдера автоматически.
+- Standalone Video Rooms остаются только неутверждённой идеей в backlog; это решение не выбирает для неё провайдера автоматически.
 - Следующий продуктовый этап ещё не выбран.
 
 `LIVEKIT_CAMPAIGN_INTEGRATION_ARCHITECTURE_V1_APPROVED`
