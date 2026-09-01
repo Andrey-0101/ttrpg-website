@@ -63,6 +63,6 @@ Rejected because the application must authorize access before issuing a short-li
 
 ## Accepted scope and future reconsideration
 
-The current campaign implementation passed the provider spike, Preview/Production rollout, responsive verification, authenticated visual review, and a human Production group test for one GM plus up to six Players. The human test did not collect quantitative packet-loss, latency, jitter, or connection-quality telemetry; that missing telemetry is a documented non-blocking evidence limit.
+The current campaign implementation passed the provider spike, Preview/Production rollout, responsive verification, authenticated visual review, and a human Production group test with one GM and four Players. The supported room capacity remains one GM plus up to six Players. The human test did not collect quantitative packet-loss, latency, jitter, or connection-quality telemetry; that missing telemetry is a documented non-blocking evidence limit.
 
 This acceptance applies only to managed infrastructure and LiveKit for the current campaign Game Room. It does not automatically settle a future standalone Video Rooms product, including its provider, pricing tier, data region, schema, RLS, ownership, invitation, retention, or deletion model. Future provider reconsideration requires new evidence or materially changed requirements.

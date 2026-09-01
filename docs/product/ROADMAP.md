@@ -31,12 +31,12 @@ Verified production baseline:
 
 ```text
 main
-b033b93b1993561cbdf349987aa37aaf83574108
+609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
-PRs #28–#34 are merged and accepted in Production at this commit. They delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation correction, dedicated Game Room, responsive seven-slot layout, and final video-card UX. The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
+PRs #28–#35 are merged and deployed at this consolidation baseline. PRs #28–#34 delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation correction, dedicated Game Room, responsive seven-slot layout, and final video-card UX; PR #35 published the H010 audit and synchronization. The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain, while Vercel URLs remain technical deployment addresses.
 
-Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign LiveKit integration, and the responsive Game Room are complete. The human Production group test passed without quantitative packet-loss, latency, jitter, or connection-quality telemetry; no additional acceptance retest is currently required. Standalone Video Rooms, shared campaign dice, and the remaining Game Room tools are not implemented; standalone authorization remains a separate future domain.
+Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign LiveKit integration, and the responsive Game Room are complete. The last human Production group test passed with one GM and four Players, without quantitative packet-loss, latency, jitter, or connection-quality telemetry; no additional acceptance retest is currently required. Standalone Video Rooms, shared campaign dice, and the remaining Game Room tools are not implemented; standalone authorization remains a separate future domain.
 
 ## Completed foundation
 

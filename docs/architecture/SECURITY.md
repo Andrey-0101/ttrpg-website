@@ -10,7 +10,7 @@ Synchronized snapshot:
 
 ```text
 main
-b033b93b1993561cbdf349987aa37aaf83574108
+609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
 ## Strategy
@@ -37,6 +37,15 @@ A trusted group reduces product scope. It does not make missing authorization sa
 - locale-aware confirmation callback;
 - login return-to-invitation flow;
 - safe localized authentication errors.
+
+### HTTP response security
+
+- HSTS is supplied by the Production platform;
+- the application supplies a site-wide Content Security Policy with no object embedding and no framing;
+- camera and microphone browser capabilities are restricted to the same origin for the Campaign Game Room;
+- MIME sniffing is disabled;
+- referrer disclosure is limited to the origin on cross-origin navigation;
+- external application connections remain limited to HTTPS and secure WebSocket transports required by Supabase and LiveKit.
 
 ### Profiles
 
@@ -245,7 +254,7 @@ The Stage 2 join endpoint accepts only the campaign route identifier and an empt
 
 The localized Game Room route loads only RLS-visible campaign and participant data. Opening either Campaign Overview or Game Room does not request credentials, connect to LiveKit, or request camera/microphone access. The browser constructs a provider session only after explicit Join; camera and microphone remain off until their own explicit controls are used, and Leave or component disposal tears down the temporary session.
 
-The Production human group test passed for the accepted current scope. Quantitative packet-loss, latency, jitter, reconnect-timeline, and per-participant connection-quality telemetry was not collected. That evidence boundary is non-blocking, and no additional media/layout/human acceptance retest is currently required unless a relevant regression is reported, the implementation changes materially, or the user explicitly requests it.
+The last Production human group test passed for the accepted current scope with one GM and four Players. Quantitative packet-loss, latency, jitter, reconnect-timeline, and per-participant connection-quality telemetry was not collected. That evidence boundary is non-blocking, and no additional media/layout/human acceptance retest is currently required unless a relevant regression is reported, the implementation changes materially, or the user explicitly requests it.
 
 ## Level A requirements for later campaign content
 
@@ -291,7 +300,6 @@ The Production human group test passed for the accepted current scope. Quantitat
 - dependency audit;
 - redirect review;
 - upload hardening;
-- security headers;
 - token lifetime review;
 - secret rotation procedure;
 - threat model;

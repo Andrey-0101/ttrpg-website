@@ -7,7 +7,7 @@
 | Project | TTRPG Hub |
 | Document type | Current information architecture |
 | Status | Implemented snapshot |
-| Repository snapshot | `main` at `b033b93b1993561cbdf349987aa37aaf83574108` |
+| H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
 | Current milestone | Milestone 4 — VtM Realtime Tools |
 | Completed milestones | Architecture Baseline, Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence |
 
@@ -320,7 +320,7 @@ The current foundation intentionally keeps these controls on the overview route 
 
 This authenticated participant-only route is the dedicated campaign virtual tabletop. Its active surface is the existing campaign-authorized video room: explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Campaign Dice, Handouts, a separate Participants panel, Quick Notes, and Session Context are present only as non-interactive planned structure. Completed campaigns cannot start a video connection.
 
-The accepted participant model is one GM plus up to six Players. The responsive layout keeps seven stable 16:9 slots, uses a compact Game Room header and final accepted video-card controls, and reflows with vertical scrolling where needed. The human Production group test passed without quantitative network or connection-quality telemetry; no additional acceptance retest is currently required.
+The accepted participant model is one GM plus up to six Players. The responsive layout keeps seven stable 16:9 slots, uses a compact Game Room header and final accepted video-card controls, and reflows with vertical scrolling where needed. The last human Production group test passed with one GM and four Players, without quantitative network or connection-quality telemetry; no additional acceptance retest is currently required.
 
 ## Current authorization shape
 

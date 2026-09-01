@@ -48,7 +48,7 @@ Not yet implemented:
 
 ## Technology
 
-- Next.js 16.2.9 App Router;
+- Next.js 16.3.3 App Router;
 - React 19.2.4;
 - TypeScript;
 - Tailwind CSS 4;
@@ -130,7 +130,7 @@ Start with:
 - [`docs/product/CAMPAIGNS.md`](docs/product/CAMPAIGNS.md);
 - [`docs/product/SITE_STRUCTURE_CURRENT.md`](docs/product/SITE_STRUCTURE_CURRENT.md);
 - [`docs/decisions/`](docs/decisions/);
-- [`docs/handoffs/H010_CURRENT_HANDOFF.md`](docs/handoffs/H010_CURRENT_HANDOFF.md), the current authoritative handoff. H001–H009 are historical records and cannot override current code, migrations, infrastructure evidence, or H010; H009 remains the detailed release record for the completed campaign-video and Game Room stage.
+- [`docs/handoffs/H011_CURRENT_HANDOFF.md`](docs/handoffs/H011_CURRENT_HANDOFF.md), the current authoritative handoff. H001–H010 are historical records and cannot override current code, migrations, infrastructure evidence, or H011; H009 remains the detailed release record for the completed campaign-video and Game Room stage.
 
 ## Current snapshot
 
@@ -138,12 +138,12 @@ Current production state:
 
 ```text
 main
-b033b93b1993561cbdf349987aa37aaf83574108
+609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
 PRs #28 through #34 are merged and accepted in Production. They delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation fix, dedicated Game Room, responsive seven-slot composition, and final video-card UX. The current verified deployment is `READY`. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the responsive dedicated Game Room are implemented. The Production human group test passed. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected; no additional media/layout/human acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain visibly planned and inactive.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the responsive dedicated Game Room are implemented. The last Production human group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected; no additional media/layout/human acceptance retest is currently required. Standalone Video Rooms and shared campaign dice remain unimplemented; the non-video Game Room tools remain visibly planned and inactive.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 

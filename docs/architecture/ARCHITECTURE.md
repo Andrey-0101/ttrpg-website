@@ -8,10 +8,10 @@ Verified production baseline:
 
 ```text
 main
-b033b93b1993561cbdf349987aa37aaf83574108
+609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
-PRs #28–#34 are merged and accepted in Production. The current campaign-video and Game Room scope passed human Production acceptance; no quantitative packet-loss, latency, jitter, or connection-quality telemetry was collected.
+PRs #28–#35 are merged and deployed at the H011 consolidation baseline. The current campaign-video and Game Room scope passed human Production acceptance with one GM and four Players; no quantitative packet-loss, latency, jitter, or connection-quality telemetry was collected.
 
 ## Architectural goals
 

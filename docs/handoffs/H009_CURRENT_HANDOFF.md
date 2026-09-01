@@ -8,7 +8,7 @@
 | Handoff | `H009_CURRENT_HANDOFF.md` |
 | Version | 1.0 |
 | Closure date | 2026-08-30 |
-| Scope | Production rollout of campaign video foundation, CoC campaign shell, dedicated responsive Game Room, final video-card UX, and successful human group acceptance test |
+| Scope | Production rollout of campaign video foundation, CoC campaign shell, dedicated responsive Game Room, final video-card UX, and successful human group acceptance test with one GM and four Players |
 | Repository | `https://github.com/Andrey-0101/ttrpg-website` |
 | Production canonical URL | `https://ttrpg.fans` |
 | Current verified `origin/main` | `b033b93b1993561cbdf349987aa37aaf83574108` |
@@ -35,7 +35,7 @@ The following capabilities are now live in Production:
 - final accepted video-card visual design;
 - safe EN/RU authentication and campaign routing.
 
-The final human Production group test was completed by the user without Codex monitoring. The user reported that everything worked correctly and accepted the stage as successful.
+The final human Production group test was completed by the user without Codex monitoring. The user confirmed that one GM and four Players participated, that everything worked correctly, and that the stage was accepted as successful. This observed count does not change the supported room capacity of one GM plus up to six Players.
 
 This acceptance confirms practical functionality and user-visible quality for the tested session. It does **not** include a quantitative packet-loss, latency, jitter, or `ConnectionQualityChanged` report because automated telemetry was not running during the test.
 
