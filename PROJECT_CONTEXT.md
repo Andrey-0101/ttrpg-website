@@ -7,7 +7,7 @@
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
 | Document status | Current synchronized project context |
-| Last reviewed | 2026-09-01 |
+| Last reviewed | 2026-09-02 |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
 | Verified release | PRs #28–#35 merged; Campaign Game Room accepted in Production and the H010 synchronization deployed `READY` |
 | Canonical production domain | `https://ttrpg.fans` |
@@ -85,9 +85,9 @@ A discussed or planned object is not implemented unless it exists in code, migra
 
 Vercel `*.vercel.app` URLs remain technical deployment addresses. Application-generated production links prefer the configured canonical public origin.
 
-### External production configuration
+### Production configuration
 
-The production Vercel, LiveKit, and hosted Supabase Auth settings were completed outside the repository and verified for the current PR #34 Production release.
+The production domains, environment variables, LiveKit settings, and hosted Supabase Auth settings were completed outside the repository and verified for the current PR #34 Production release. The Vercel Function region is now persisted in repository configuration.
 
 Required Production variable names, without values:
 
@@ -106,7 +106,11 @@ Vercel state:
 - `https://www.ttrpg.fans` permanently redirects to the apex domain;
 - TLS succeeds for both domains;
 - both addresses resolve successfully to the localized production site;
-- Vercel-generated domains remain technical deployment addresses.
+- Vercel-generated domains remain technical deployment addresses;
+- `vercel.json` pins Vercel Function compute to Tokyo (`hnd1`);
+- Supabase Production remains in Tokyo (`ap-northeast-1`).
+
+Vercel Function compute previously used the default Virginia region (`iad1`). After the Production project was changed and redeployed in Tokyo, a small low-volume comparison measured an overall median TTFB decrease from approximately 0.683 seconds to 0.477 seconds, about 30%.
 
 Hosted Supabase Auth state:
 
@@ -115,7 +119,7 @@ Hosted Supabase Auth state:
 - the canonical production callback is allowed;
 - arbitrary Vercel Preview authentication is not currently enabled.
 
-This hosted configuration is external to the repository and contains no repository-managed secret values.
+The hosted settings other than the Function region remain external to the repository. The region configuration contains no secret values.
 
 ### Locales
 

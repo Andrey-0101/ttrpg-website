@@ -98,8 +98,9 @@ Copy `.env.example` to `.env.local` and add the local public Supabase values. Do
 - Canonical production domain: `https://ttrpg.fans`.
 - `https://www.ttrpg.fans` permanently redirects to the apex domain.
 - Vercel `*.vercel.app` URLs remain technical deployment addresses and are not the canonical public domain.
+- Vercel Function compute is pinned to Tokyo (`hnd1`) by `vercel.json`.
 
-The external production configuration was completed manually outside this repository and manually verified. In Vercel, both domains are attached to the production project, TLS succeeds for both, and both resolve to the localized production site. In hosted Supabase Auth, the Site URL is `https://ttrpg.fans`, production and local redirect allowlist entries are configured, and the canonical production callback is allowed. Arbitrary Vercel Preview authentication is not currently enabled. These hosted settings are not implemented by this Git branch.
+The remaining hosted production configuration was completed manually outside this repository and manually verified. In Vercel, both domains are attached to the production project, TLS succeeds for both, and both resolve to the localized production site. In hosted Supabase Auth, the Site URL is `https://ttrpg.fans`, production and local redirect allowlist entries are configured, and the canonical production callback is allowed. Arbitrary Vercel Preview authentication is not currently enabled. These hosted settings remain external; only the Vercel Function region is persisted by repository configuration.
 
 Install and run:
 
