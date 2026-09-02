@@ -45,7 +45,7 @@ Current routes remain authoritative in [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCT
 Conceptual approved additions:
 
 ```text
-/[locale]/campaigns/[id]/images          Phase 4C1
+/[locale]/campaigns/[id]/handouts        Current image-only Phase 4C1 route
 /[locale]/campaigns/[id]/game-room       Existing route expanded by 4C2, 4D2, 4E, and 4F2
 /[locale]/campaigns/[id]/notes           Phase 4G, exact route subject to implementation review
 ```
@@ -57,7 +57,7 @@ CoC and Delta Green character, dice, and hub paths should follow the established
 The approved Game Room target combines only:
 
 - accepted campaign LiveKit video;
-- GM-controlled presentation of an image selected from the Campaign Image Library;
+- GM-controlled presentation of an image selected from Campaign Handouts;
 - system-aware dice appropriate to the campaign system;
 - linked participant characters appropriate to the campaign system;
 - technical Campaign/Game Room UX refinement.

@@ -187,7 +187,7 @@ Two defects found during testing were fixed through separate migrations:
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
 - no campaign-authoritative dice security model implemented yet;
-- no Campaign Image Library management or Game Room presentation UI yet;
+- no Game Room presentation UI for the implemented Campaign Handouts yet;
 - no standalone Video Rooms authorization model or route; standalone rooms are not active roadmap scope;
 - campaign video performs fresh authenticated authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens only after an explicit Join action.
 
@@ -260,18 +260,11 @@ The last Production human group test passed for the accepted current scope with 
 
 ## Level A requirements for approved later campaign content
 
-### Campaign Image Library and presentation — Phases 4C1 and 4C2
+### Campaign Handouts and presentation — Phases 4C1 and 4C2
 
-- private Storage;
-- reviewed image content-type and size limits;
-- safe campaign path policy;
-- filename/path sanitization;
-- campaign image and recipient visibility enforcement;
-- signed display access;
-- quota plan.
-- safe Storage-first deletion and orphan reconciliation;
-- GM-only presentation selection and stop controls;
-- removed-Player and Outsider tests.
+Phase 4C1 now implements private Storage, JPEG/PNG/WebP and 5 MiB limits, the exact represented campaign path, safe display names, campaign image/recipient visibility, signed display access, Storage-first deletion/orphan reconciliation, and removed-Player/Outsider denial. The active GM alone can create/change/delete individual Handouts; the completed GM is read-only, except for represented-object cleanup before final campaign deletion. Players receive no recipient/access UI metadata.
+
+Phase 4C2 still requires GM-only presentation selection and stop controls, shared current-image state, reconnect behavior, and direct authorization tests. Broader quota/abuse controls remain a Public Readiness concern rather than an unimplemented Phase 4C1 data feature.
 
 ### Campaign notes — Phase 4G
 

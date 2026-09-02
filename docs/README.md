@@ -14,8 +14,8 @@ Completed:
 
 Active:
 
-- Phase 4 — Core Play & Campaign Tools, with 4A and 4B complete;
-- next product stage — Phase 4C1 Campaign Image Library.
+- Phase 4 — Core Play & Campaign Tools, with 4A, 4B, and image-only 4C1 Campaign Handouts complete;
+- next product stage — Phase 4C2 Game Room Image Presentation.
 
 The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
@@ -26,7 +26,7 @@ main
 609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
 ```
 
-The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, and the accepted responsive Campaign Game Room. PRs #28–#35 are the completed release-and-audit sequence before H011 consolidation. The last Production human group test passed with one GM and four Players, without quantitative network/connection-quality telemetry, and no additional acceptance retest is currently required. Phase 4C1 Campaign Image Library is next. Standalone Video Rooms are retained only as an uncommitted backlog idea.
+The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the accepted responsive Campaign Game Room, and Phase 4C1 image-only Campaign Handouts. PRs #28–#35 are the completed release-and-audit sequence before H011 consolidation. The last Game Room Production human group test passed with one GM and four Players, without quantitative network/connection-quality telemetry, and no additional Game Room acceptance retest is currently required. Phase 4C2 Game Room Image Presentation is next. Standalone Video Rooms are retained only as an uncommitted backlog idea.
 
 ## Architecture
 

@@ -23,18 +23,19 @@ The current implementation connects:
 - members;
 - invitations;
 - characters;
-- a dedicated campaign Game Room with the basic LiveKit video experience.
+- a dedicated campaign Game Room with the basic LiveKit video experience;
+- private image-only Campaign Handouts with GM access controls and Player-filtered viewing.
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
 Approved later Phase 4 work will add:
 
-- Campaign Image Library and GM-controlled Game Room image presentation;
+- GM-controlled Game Room image presentation from existing Campaign Handouts;
 - system-aware campaign dice for VtM and CoC;
 - system-aware linked-character presentation in the Game Room;
 - shared notes for permitted participants and GM-private notes.
 
-General Handouts, NPCs, Sessions, Chronicle records, clues, and other broad campaign-content modules are not active roadmap commitments.
+Document/text Handouts, NPCs, Sessions, Chronicle records, clues, and other broad campaign-content modules are not active roadmap commitments.
 
 The application does not support public campaign discovery.
 
@@ -204,7 +205,7 @@ The current Production campaign-video foundation adds provider-neutral persisten
 - private campaign images visible to the GM, all active Players, or selected active Players;
 - immutable constrained administrative audit rows.
 
-The GM is never a media-group member. Removing a prohibition does not activate a microphone or camera. Session-only overrides, provider rooms, tokens, connections, and media tracks are not persisted by this foundation. All eight migrations, the campaign-video RLS policies, required foreign-key indexes, hardened grants, and private `campaign-images` Storage are current in Production.
+The GM is never a media-group member. Removing a prohibition does not activate a microphone or camera. Session-only overrides, provider rooms, tokens, connections, and media tracks are not persisted by this foundation. All nine migrations, the campaign-video RLS policies, required foreign-key indexes, hardened grants, and private `campaign-images` Storage are current in Production. Phase 4C1 uses that existing image foundation and adds only a narrow delete helper/policy migration for completed-campaign Storage cleanup.
 
 ## Character access
 
@@ -353,7 +354,7 @@ Deletion cascades campaign-owned records:
 - assignment records.
 - campaign video settings, groups, restrictions, image metadata/recipients, and audit rows.
 
-Campaign image objects are outside ordinary relational cascade behavior. Before remote image uploads are enabled, final deletion must use a Storage-first workflow and reconcile any orphan produced by an interrupted multi-step operation.
+Campaign image objects are outside ordinary relational cascade behavior. Implemented individual deletion removes and verifies the Storage object before deleting metadata. Implemented campaign deletion removes and verifies every represented object before deleting either an active or completed campaign. A missing object can be reconciled; an unverified remaining object keeps metadata/campaign rows for a safe retry.
 
 Player-owned character rows and portrait objects are not campaign-owned and remain intact.
 
@@ -428,7 +429,6 @@ ADR-008 defines the accepted boundary.
 
 Outside the completed Campaign Foundation:
 
-- Phase 4C1 campaign image-library UI;
 - Phase 4C2 Game Room image presentation;
 - Phase 4D1 CoC dice and Phase 4D2 system-aware Game Room dice;
 - Phase 4E Campaign & Game Room UX/UI refinement;

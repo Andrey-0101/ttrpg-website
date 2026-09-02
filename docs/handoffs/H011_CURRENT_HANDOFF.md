@@ -34,6 +34,7 @@ Implemented current capabilities include:
 - public personal VtM and Custom dice rollers, saved Custom presets, and private personal history;
 - campaign-authorized LiveKit video at `/{locale}/campaigns/{campaignId}/game-room`;
 - a responsive seven-slot Game Room layout with one GM slot and Player positions 1–6, explicit Join/Leave, local camera and microphone controls, stable participant placement, reconnect handling, and sanitized failure states.
+- image-only Campaign Handouts at `/{locale}/campaigns/{campaignId}/handouts`, with private signed delivery, active-GM upload/access/deletion controls, RLS-filtered Player viewing, and completed-campaign read-only/denial behavior.
 
 Supported Campaign Game Room capacity is one GM plus up to six Players. The last accepted Production human test involved one GM and four Players. It passed. No quantitative packet-loss, latency, jitter, reconnect timeline, or per-participant connection-quality telemetry was captured; do not invent such evidence.
 
@@ -51,7 +52,7 @@ Standalone Video Rooms are not implemented. LiveKit is accepted for the current 
 
 ## 4. Database and connected-project verification
 
-The repository contains eight ordered, forward-only migrations. Connected read-only inspection found exactly those eight versions applied, with no duplicate version and the expected latest migration `20260823143856`.
+The repository contains nine ordered, forward-only migrations. The Phase 4C1 release added `20260902132447_allow_completed_campaign_image_cleanup.sql` after connected inspection confirmed that the existing active-only upload helper could not authorize represented-object cleanup before completed-campaign deletion.
 
 Connected metadata verification found:
 
@@ -60,11 +61,11 @@ Connected metadata verification found:
 - 41 public-schema policies;
 - two private Storage buckets, zero public buckets, and eight Storage policies;
 - zero invalid indexes, zero unvalidated constraints, and no public views;
-- 38 `SECURITY DEFINER` functions, all with explicit `search_path`; none is executable by `anon`;
-- 22 authenticated-executable `SECURITY DEFINER` functions are the reviewed RPC or RLS-helper surface. Their grants are intentional, their functions bind identity directly or through reviewed identity helpers, and removing execution would break the implemented RLS/RPC contract;
+- 39 `SECURITY DEFINER` functions, all with explicit `search_path`; none is executable by `anon`;
+- 23 authenticated-executable `SECURITY DEFINER` functions are the reviewed RPC or RLS-helper surface. Their grants are intentional, their functions bind identity directly or through reviewed identity helpers, and removing execution would break the implemented RLS/RPC contract;
 - generated `public` schema TypeScript is an exact normalized match to `types/database.types.ts`. The checked-in file additionally retains the generated `graphql_public` schema surface.
 
-Supabase advisors reported 22 warnings for the intentional authenticated `SECURITY DEFINER` surface, one warning that leaked-password protection is disabled, 23 informational unused-index notices on the young/low-volume schema, and one multiple-permissive-policy warning for the intentionally separate character-owner and campaign-sharing SELECT paths. No advisor item demonstrated unauthorized access, missing RLS, unsafe search path, invalid index, or schema drift. Leaked-password protection remains a separately hosted Auth hardening setting and is not changed by repository publication.
+Supabase advisors report the intentional authenticated `SECURITY DEFINER` surface, one warning that leaked-password protection is disabled, informational unused-index notices on the young/low-volume schema, and one multiple-permissive-policy warning for the intentionally separate character-owner and campaign-sharing SELECT paths. No advisor item demonstrated unauthorized access, missing RLS, unsafe search path, invalid index, or schema drift. Leaked-password protection remains a separately hosted Auth hardening setting and is not changed by repository publication.
 
 Recent connected logs showed successful API responses, no Auth or Storage server errors, no Realtime errors, and one isolated failed database-password authentication event with no evidence that it came from this release.
 
@@ -119,6 +120,10 @@ Do not repeat the following merely to reconfirm historical state:
 
 Repeat only a gate affected by a relevant code, schema, dependency, provider, browser/device, or infrastructure change, or when a concrete regression is reported.
 
+### Phase 4C1 verification addition
+
+Phase 4C1 added focused upload validation/workflow tests, source privacy checks, and direct test-project RLS/Storage assertions. The direct transaction covered selected-Player access, outsider denial, completed-Player denial, completed-GM read-only metadata, represented-object cleanup, and final completed-campaign deletion; all temporary users, rows, and objects were rolled back. Local Docker was unavailable, so the repository pgTAP file was not rerun locally; the affected policy was instead exercised directly in the established non-Production Supabase test project.
+
 ## 8. Consolidation and cleanup decisions
 
 | Former resource | Decision and reason |
@@ -141,12 +146,13 @@ No backup, renamed, temporary, or just-in-case TTRPG project copy is required ou
 
 - standalone Video Rooms with a separately approved product, provider, schema, RLS, ownership, invitation, retention, and deletion contract;
 - shared server-authoritative campaign dice and Realtime feed;
-- active Game Room Handouts, Participants, Quick Notes, Session Context, Characters, NPCs, Selected Handouts, and image presentation;
+- Phase 4C2 GM-controlled Game Room presentation of existing Campaign Handouts;
+- Game Room Participants, Quick Notes, Session Context, Characters, NPCs, and Selected Handouts beyond that approved presentation slice;
 - campaign moderation, recording, transcription, and screen sharing;
 - Call of Cthulhu 7e characters, dice, Game Hub content, and Keeper tools;
 - print/PDF, independent sheet language, public sharing, and broader public-readiness work including abuse controls, monitoring, legal/privacy operations, and hosted leaked-password protection.
 
-Post-H011 roadmap amendment (2026-09-01): Phase 4C1 Campaign Image Library is the next approved product stage. The permanent roadmap in `docs/product/ROADMAP.md` supersedes the earlier unselected-stage statement and the obsolete H011 future-capability list; all H011 implementation, verification, cleanup, and Production-acceptance facts remain unchanged.
+Post-H011 roadmap amendment (2026-09-01): Phase 4C1 was selected as the next product stage. It is now implemented as image-only Campaign Handouts; the permanent roadmap in `docs/product/ROADMAP.md` makes Phase 4C2 Game Room Image Presentation next. All earlier H011 implementation, verification, cleanup, and Game Room Production-acceptance facts remain unchanged.
 
 ## 10. Exact starting procedure for the next stage
 
@@ -155,7 +161,7 @@ Post-H011 roadmap amendment (2026-09-01): Phase 4C1 Campaign Image Library is th
 3. Run `git fetch origin --prune`.
 4. Confirm `git branch --show-current` is `main`, `git status --short --branch` is clean, and `git rev-parse HEAD` equals `git rev-parse origin/main`.
 5. Inspect `package.json` and the installed Next.js 16.3.3 documentation before changing Next.js code.
-6. Begin from the approved Phase 4C1 Campaign Image Library scope in `docs/product/ROADMAP.md`; do not infer that standalone Video Rooms, broad Handouts, or the superseded shared-dice phase is next.
+6. Begin from the approved Phase 4C2 Game Room Image Presentation scope in `docs/product/ROADMAP.md`; reuse existing Campaign Handouts and do not infer that standalone Video Rooms, broad document Handouts, or the superseded shared-dice phase is next.
 7. Create a new isolated `codex/` branch or worktree from the verified `origin/main` and rerun only the gates proportionate to that change.
 
 Future work must not depend on any former external folder or historical handoff being treated as current.

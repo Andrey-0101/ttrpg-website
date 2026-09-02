@@ -9,14 +9,14 @@
 | Status | Implemented snapshot |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
 | Current phase | Phase 4 — Core Play & Campaign Tools |
-| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration |
-| Next work | Phase 4C1 Campaign Image Library |
+| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration, Phase 4C1 image-only Campaign Handouts |
+| Next work | Phase 4C2 Game Room Image Presentation |
 
 ## Purpose
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented campaign images/presentation, system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, general Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current.
+It does not describe unimplemented Game Room image presentation, system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, document Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current.
 
 ## Current primary navigation
 
@@ -95,6 +95,9 @@ The Dashboard is an accepted implemented personal overview route. It currently l
 │           ├── not-found.tsx
 │           ├── game-room
 │           │   └── page.tsx
+│           ├── handouts
+│           │   ├── page.tsx
+│           │   └── loading.tsx
 │           └── characters
 │               └── [characterId]
 │                   ├── page.tsx
@@ -308,10 +311,19 @@ Current integrated workspace sections:
 - linked characters;
 - owned eligible character linking;
 - campaign counts and navigation;
+- compact Handouts entry and current-user accessible count;
 - completion and deletion;
 - loading and unavailable states.
 
 The current foundation intentionally keeps these controls on the overview route rather than creating separate Members, Characters, or Settings routes.
+
+### Campaign Handouts
+
+```text
+/[locale]/campaigns/[id]/handouts
+```
+
+This campaign-scoped route implements Phase 4C1 image-only Handouts. It has no global or per-Handout detail route: enlarged viewing stays in an accessible page lightbox. The active GM can upload one JPEG/PNG/WebP image up to 5 MiB, view it, choose GM-only/all-Player/selected-Player visibility, see selected recipients by participant name, and delete it Storage-first. Active Players receive only RLS-authorized images through short-lived signed URLs and receive no access/recipient UI metadata. Completed GMs retain read-only viewing; completed Players receive no image access.
 
 ### Campaign Game Room
 
@@ -333,6 +345,7 @@ The accepted participant model is one GM plus up to six Players. The responsive 
 | Campaign shared character | active campaign GM or Player; read only |
 | My Campaigns | authenticated participant |
 | Campaign Overview | campaign GM or active Player |
+| Campaign Handouts | campaign GM; active Players see only RLS-authorized images; completed GM read-only; completed Players denied image access |
 | Campaign Game Room | campaign GM or Player through campaign RLS; active campaign required to Join video |
 | Invitation management | GM only |
 | Accept invitation | authenticated valid token holder |
@@ -347,7 +360,7 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- Campaign Image Library and Game Room image presentation;
+- Game Room image presentation from Campaign Handouts;
 - CoC dice and system-aware Game Room dice;
 - CoC character sheets and system-aware linked-character integration;
 - campaign-authoritative persisted roll history or realtime feed unless approved within 4D2;
@@ -363,6 +376,6 @@ Not implemented:
 
 The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
 
-It has a working campaign authorization boundary and a Production-accepted campaign video workspace. Phase 4C1 Campaign Image Library is next. The approved forward sequence is 4C1/4C2 campaign images, 4D1/4D2 CoC and system-aware dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
+It has a working campaign authorization boundary, a Production-accepted campaign video workspace, and image-only Campaign Handouts. Phase 4C2 Game Room Image Presentation is next. The approved forward sequence continues with 4D1/4D2 CoC and system-aware dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
 
 Standalone Video Rooms and broad Handouts/NPC/Sessions/Chronicle modules are uncommitted backlog possibilities, not current limitations that imply scheduled delivery.
