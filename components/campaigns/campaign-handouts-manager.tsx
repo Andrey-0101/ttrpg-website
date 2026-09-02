@@ -12,13 +12,16 @@ import { useTranslations } from "next-intl";
 import {
   CAMPAIGN_HANDOUT_ACCEPT,
   CAMPAIGN_HANDOUT_BUCKET,
-  createCampaignHandoutDisplayName,
-  createCampaignHandoutPath,
   isCampaignHandoutVisibility,
   validateCampaignHandoutFile,
   type CampaignHandoutVisibility,
 } from "@/lib/campaign-handouts/contracts";
 import { createCampaignHandoutStorageDependencies } from "@/lib/campaign-handouts/storage";
+import {
+  uploadCampaignHandoutBatch,
+  uploadCampaignHandoutFile,
+  type CampaignHandoutUploadFailure,
+} from "@/lib/campaign-handouts/upload";
 import {
   deleteCampaignHandoutStorageFirst,
   rollbackFailedCampaignHandoutUpload,
@@ -48,7 +51,12 @@ type ManagerMessage = {
   text: string;
 } | null;
 
-function CampaignHandoutAccessManager({
+type UploadFailureItem = {
+  fileName: string;
+  error: CampaignHandoutUploadFailure;
+};
+
+function CampaignHandoutCardControls({
   campaignId,
   handout,
   players,
@@ -80,7 +88,8 @@ function CampaignHandoutAccessManager({
   const initialRecipients = [...handout.recipientIds].sort().join(",");
   const currentRecipients = [...selectedIds].sort().join(",");
   const hasVisibilityChanges =
-    visibility !== handout.visibility || currentRecipients !== initialRecipients;
+    visibility !== handout.visibility ||
+    currentRecipients !== initialRecipients;
 
   function handleVisibilityChange(event: ChangeEvent<HTMLSelectElement>) {
     if (!isCampaignHandoutVisibility(event.target.value)) {
@@ -185,16 +194,14 @@ function CampaignHandoutAccessManager({
   }
 
   return (
-    <article className="min-w-0 rounded-lg border border-neutral-300 bg-neutral-50 p-4">
-      <h3 className="break-words text-lg font-bold">{handout.displayName}</h3>
-
-      <label className="mt-4 block font-medium">
+    <div className="min-w-0 border-t border-neutral-300 bg-neutral-50 px-3 py-3 text-sm">
+      <label className="block font-medium">
         {translations("visibilityLabel")}
         <select
           value={visibility}
           onChange={handleVisibilityChange}
           disabled={mutation !== null}
-          className="mt-1 w-full rounded border border-neutral-400 bg-white px-3 py-2"
+          className="mt-1 w-full min-w-0 rounded border border-neutral-400 bg-white px-2.5 py-2"
         >
           <option value="gm_only">{translations("visibility.gmOnly")}</option>
           <option value="all_active_players">
@@ -207,7 +214,7 @@ function CampaignHandoutAccessManager({
       </label>
 
       {visibility === "selected_active_players" && (
-        <fieldset className="mt-4 rounded border border-neutral-300 p-3">
+        <fieldset className="mt-3 min-w-0 rounded border border-neutral-300 p-2.5">
           <legend className="px-1 font-medium">
             {translations("selectedPlayers")}
           </legend>
@@ -216,9 +223,12 @@ function CampaignHandoutAccessManager({
               {translations("noActivePlayers")}
             </p>
           ) : (
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid min-w-0 gap-2">
               {players.map((player) => (
-                <label key={player.id} className="flex items-start gap-2">
+                <label
+                  key={player.id}
+                  className="flex min-w-0 items-start gap-2"
+                >
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(player.id)}
@@ -233,7 +243,7 @@ function CampaignHandoutAccessManager({
                     }}
                     className="mt-1"
                   />
-                  <span className="break-words">{player.name}</span>
+                  <span className="min-w-0 break-words">{player.name}</span>
                 </label>
               ))}
             </div>
@@ -258,12 +268,12 @@ function CampaignHandoutAccessManager({
         </p>
       )}
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-between">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-between">
         <button
           type="button"
           onClick={handleDelete}
           disabled={mutation !== null}
-          className="rounded border border-red-700 px-4 py-2 font-semibold text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded border border-red-700 px-3 py-2 font-semibold text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {mutation === "delete"
             ? translations("deleting")
@@ -273,14 +283,14 @@ function CampaignHandoutAccessManager({
           type="button"
           onClick={handleSaveVisibility}
           disabled={mutation !== null || !hasVisibilityChanges}
-          className="rounded bg-neutral-950 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded bg-neutral-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {mutation === "visibility"
             ? translations("saving")
             : translations("saveVisibility")}
         </button>
       </div>
-    </article>
+    </div>
   );
 }
 
@@ -300,11 +310,25 @@ export default function CampaignHandoutsManager({
   const translations = useTranslations("CampaignHandouts");
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [mutation, setMutation] = useState<"upload" | null>(null);
   const [message, setMessage] = useState<ManagerMessage>(null);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
+  const [uploadFailures, setUploadFailures] = useState<UploadFailureItem[]>([]);
   const mutationLockRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const selectionIssues = useMemo(
+    () =>
+      files.flatMap((selectedFile) => {
+        const error = validateCampaignHandoutFile(selectedFile);
+        return error ? [{ fileName: selectedFile.name, error }] : [];
+      }),
+    [files],
+  );
 
   useUnsavedChangesGuard({
     enabled: mutation === "upload",
@@ -312,163 +336,160 @@ export default function CampaignHandoutsManager({
   });
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const nextFile = event.target.files?.[0] ?? null;
-    setFile(nextFile);
+    setFiles(Array.from(event.target.files ?? []));
     setMessage(null);
-
-    if (!nextFile) {
-      return;
-    }
-
-    const validationError = validateCampaignHandoutFile(nextFile);
-    if (validationError) {
-      setMessage({
-        kind: "error",
-        text: translations(`validation.${validationError}`),
-      });
-    }
+    setUploadFailures([]);
   }
 
   async function handleUpload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!file || mutationLockRef.current || !campaignActive) {
-      return;
-    }
-
-    const validationError = validateCampaignHandoutFile(file);
-    if (validationError) {
-      setMessage({
-        kind: "error",
-        text: translations(`validation.${validationError}`),
-      });
+    if (files.length === 0 || mutationLockRef.current || !campaignActive) {
       return;
     }
 
     mutationLockRef.current = true;
     setMutation("upload");
-    setMessage({ kind: "status", text: translations("uploadingStatus") });
+    setMessage(null);
+    setUploadFailures([]);
+    setUploadProgress({ current: 1, total: files.length });
 
     const supabase = createClient();
-    let pendingUpload: { imageId: string; storagePath: string } | null = null;
 
     try {
-      const imageId = crypto.randomUUID();
-      const storagePath = createCampaignHandoutPath({
-        campaignId,
-        imageId,
-        objectId: crypto.randomUUID(),
-        mimeType: file.type,
+      const result = await uploadCampaignHandoutBatch({
+        files,
+        onProgress: ({ current, total }) => {
+          setUploadProgress({ current, total });
+        },
+        uploadFile: (selectedFile) =>
+          uploadCampaignHandoutFile({
+            file: selectedFile,
+            campaignId,
+            uploaderId: currentUserId,
+            dependencies: {
+              createId: () => crypto.randomUUID(),
+              insertMetadata: async (metadata) => {
+                const { error } = await supabase
+                  .from("campaign_images")
+                  .insert(metadata);
+                return !error;
+              },
+              uploadObject: async (storagePath, targetFile) => {
+                const { error } = await supabase.storage
+                  .from(CAMPAIGN_HANDOUT_BUCKET)
+                  .upload(storagePath, targetFile, {
+                    cacheControl: "3600",
+                    contentType: targetFile.type,
+                    upsert: false,
+                  });
+                return !error;
+              },
+              rollbackUpload: async (imageId, storagePath) => {
+                const cleanup = await rollbackFailedCampaignHandoutUpload({
+                  imageId,
+                  storagePath,
+                  storage: createCampaignHandoutStorageDependencies(supabase),
+                  deleteMetadata: async (targetImageId) => {
+                    const { error } = await supabase
+                      .from("campaign_images")
+                      .delete()
+                      .eq("campaign_id", campaignId)
+                      .eq("id", targetImageId);
+                    return !error;
+                  },
+                });
+                return cleanup.ok;
+              },
+            },
+          }),
       });
-      const { error: metadataError } = await supabase
-        .from("campaign_images")
-        .insert({
-          id: imageId,
-          campaign_id: campaignId,
-          uploader_id: currentUserId,
-          storage_object_name: storagePath,
-          display_name: createCampaignHandoutDisplayName(file.name),
-          mime_type: file.type,
-          byte_size: file.size,
-          visibility: "gm_only",
-        });
 
-      if (metadataError) {
-        setMessage({ kind: "error", text: translations("uploadError") });
-        return;
-      }
-
-      pendingUpload = { imageId, storagePath };
-
-      const { error: uploadError } = await supabase.storage
-        .from(CAMPAIGN_HANDOUT_BUCKET)
-        .upload(storagePath, file, {
-          cacheControl: "3600",
-          contentType: file.type,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        const cleanup = await rollbackFailedCampaignHandoutUpload({
-          imageId,
-          storagePath,
-          storage: createCampaignHandoutStorageDependencies(supabase),
-          deleteMetadata: async (targetImageId) => {
-            const { error } = await supabase
-              .from("campaign_images")
-              .delete()
-              .eq("campaign_id", campaignId)
-              .eq("id", targetImageId);
-            return !error;
-          },
-        });
-        pendingUpload = null;
-        setMessage({
-          kind: "error",
-          text: translations(
-            cleanup.ok ? "uploadError" : "uploadCleanupError",
-          ),
-        });
-        return;
-      }
-
-      pendingUpload = null;
-
-      setFile(null);
+      setUploadFailures(
+        result.failures.map(({ file, error }) => ({
+          fileName: file.name,
+          error,
+        })),
+      );
+      setFiles([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-      setMessage({ kind: "status", text: translations("uploadedStatus") });
-      router.refresh();
-    } catch {
-      if (pendingUpload) {
-        const cleanup = await rollbackFailedCampaignHandoutUpload({
-          ...pendingUpload,
-          storage: createCampaignHandoutStorageDependencies(supabase),
-          deleteMetadata: async (targetImageId) => {
-            const { error } = await supabase
-              .from("campaign_images")
-              .delete()
-              .eq("campaign_id", campaignId)
-              .eq("id", targetImageId);
-            return !error;
-          },
+
+      if (result.failures.length === 0) {
+        setMessage({
+          kind: "status",
+          text: translations("uploadBatchSuccess", {
+            count: result.successes.length,
+          }),
         });
+      } else if (result.successes.length > 0) {
         setMessage({
           kind: "error",
-          text: translations(
-            cleanup.ok ? "uploadError" : "uploadCleanupError",
-          ),
+          text: translations("uploadBatchPartial", {
+            successCount: result.successes.length,
+            failedCount: result.failures.length,
+          }),
         });
       } else {
-        setMessage({ kind: "error", text: translations("uploadError") });
+        setMessage({
+          kind: "error",
+          text: translations("uploadBatchFailed", {
+            failedCount: result.failures.length,
+          }),
+        });
       }
+
+      if (result.successes.length > 0) {
+        router.refresh();
+      }
+    } catch {
+      setMessage({
+        kind: "error",
+        text: translations("uploadBatchUnexpected"),
+      });
     } finally {
       mutationLockRef.current = false;
       setMutation(null);
+      setUploadProgress(null);
     }
   }
 
   const galleryItems = initialHandouts.map((handout) => ({
-    key: handout.id,
-    displayName: handout.displayName,
-    signedUrl: handout.signedUrl,
+    ...handout,
+    key: `${handout.id}:${handout.visibility}:${handout.recipientIds.join(",")}`,
   }));
+
+  const gallery =
+    initialHandouts.length === 0 ? (
+      <section className="rounded-lg border border-dashed border-white/40 bg-black/20 p-6 text-center sm:p-8">
+        <h2 className="text-2xl font-semibold">
+          {translations("emptyTitle")}
+        </h2>
+        <p className="mx-auto mt-2 max-w-xl text-white/75">
+          {translations("emptyGameMasterDescription")}
+        </p>
+      </section>
+    ) : (
+      <CampaignHandoutGallery
+        items={galleryItems}
+        renderCardFooter={
+          campaignActive
+            ? (handout) => (
+                <CampaignHandoutCardControls
+                  campaignId={campaignId}
+                  handout={handout}
+                  players={players}
+                />
+              )
+            : undefined
+        }
+      />
+    );
 
   return (
     <div className="grid min-w-0 gap-6">
-      {initialHandouts.length === 0 ? (
-        <section className="rounded-lg border border-dashed border-white/40 bg-black/20 p-6 text-center sm:p-8">
-          <h2 className="text-2xl font-semibold">
-            {translations("emptyTitle")}
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-white/75">
-            {translations("emptyGameMasterDescription")}
-          </p>
-        </section>
-      ) : (
-        <CampaignHandoutGallery items={galleryItems} />
-      )}
+      {gallery}
 
       {!campaignActive ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950">
@@ -480,71 +501,105 @@ export default function CampaignHandoutsManager({
           </p>
         </section>
       ) : (
-        <>
-          <section className="min-w-0 rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950 sm:p-6">
-            <h2 className="text-2xl font-bold">
-              {translations("uploadTitle")}
-            </h2>
-            <p className="mt-2 text-sm text-neutral-700">
-              {translations("uploadDescription")}
-            </p>
-            <form onSubmit={handleUpload} className="mt-5 min-w-0">
-              <label className="block min-w-0 font-medium">
-                {translations("chooseImage")}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept={CAMPAIGN_HANDOUT_ACCEPT}
-                  onChange={handleFileChange}
-                  disabled={mutation !== null}
-                  className="mt-2 block w-full min-w-0 max-w-full rounded border border-neutral-400 bg-white px-3 py-2 file:mr-3 file:rounded file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:font-semibold file:text-white"
-                />
-              </label>
-              {message && (
-                <p
-                  className={`mt-4 text-sm font-medium ${
-                    message.kind === "error"
-                      ? "text-red-700"
-                      : "text-neutral-700"
-                  }`}
-                  role={message.kind === "error" ? "alert" : "status"}
-                >
-                  {message.text}
-                </p>
-              )}
-              <button
-                type="submit"
-                disabled={!file || mutation !== null}
-                className="mt-5 w-full rounded bg-neutral-950 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-              >
-                {mutation === "upload"
-                  ? translations("uploading")
-                  : translations("upload")}
-              </button>
-            </form>
-          </section>
+        <section className="min-w-0 rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950 sm:p-6">
+          <h2 className="text-2xl font-bold">
+            {translations("uploadTitle")}
+          </h2>
+          <p className="mt-2 text-sm text-neutral-700">
+            {translations("uploadDescription")}
+          </p>
+          <form onSubmit={handleUpload} className="mt-5 min-w-0">
+            <label className="block min-w-0 font-medium">
+              {translations("chooseImages")}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={CAMPAIGN_HANDOUT_ACCEPT}
+                multiple
+                onChange={handleFileChange}
+                disabled={mutation !== null}
+                className="mt-2 block w-full min-w-0 max-w-full rounded border border-neutral-400 bg-white px-3 py-2 file:mr-3 file:rounded file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:font-semibold file:text-white"
+              />
+            </label>
 
-          {initialHandouts.length > 0 && (
-            <section className="min-w-0 rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950 sm:p-6">
-              <h2 className="text-2xl font-bold">
-                {translations("manageTitle")}
-              </h2>
-              <p className="mt-2 text-sm text-neutral-700">
-                {translations("manageDescription")}
+            {files.length > 0 && (
+              <p className="mt-3 text-sm text-neutral-700">
+                {translations("selectedFiles", { count: files.length })}
               </p>
-              <div className="mt-5 grid min-w-0 gap-4 lg:grid-cols-2">
-                {initialHandouts.map((handout) => (
-                  <CampaignHandoutAccessManager
-                    key={`${handout.id}:${handout.visibility}:${handout.recipientIds.join(",")}`}
-                    campaignId={campaignId}
-                    handout={handout}
-                    players={players}
-                  />
-                ))}
+            )}
+
+            {selectionIssues.length > 0 && (
+              <div
+                className="mt-3 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800"
+                role="alert"
+              >
+                <p className="font-semibold">
+                  {translations("invalidSelectionTitle")}
+                </p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {selectionIssues.map((issue, index) => (
+                    <li
+                      key={`${issue.fileName}:${issue.error}:${index}`}
+                      className="break-all"
+                    >
+                      {issue.fileName}: {" "}
+                      {translations(`validation.${issue.error}`)}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </section>
-          )}
-        </>
+            )}
+
+            {uploadProgress && (
+              <p
+                className="mt-4 text-sm font-medium text-neutral-700"
+                role="status"
+              >
+                {translations("uploadProgress", uploadProgress)}
+              </p>
+            )}
+
+            {message && (
+              <p
+                className={`mt-4 text-sm font-medium ${
+                  message.kind === "error" ? "text-red-700" : "text-neutral-700"
+                }`}
+                role={message.kind === "error" ? "alert" : "status"}
+              >
+                {message.text}
+              </p>
+            )}
+
+            {uploadFailures.length > 0 && (
+              <div className="mt-3 text-sm text-red-800">
+                <p className="font-semibold">
+                  {translations("failedFilesTitle")}
+                </p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {uploadFailures.map((failure, index) => (
+                    <li
+                      key={`${failure.fileName}:${failure.error}:${index}`}
+                      className="break-all"
+                    >
+                      {failure.fileName}: {" "}
+                      {translations(`failure.${failure.error}`)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={files.length === 0 || mutation !== null}
+              className="mt-5 w-full rounded bg-neutral-950 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              {mutation === "upload"
+                ? translations("uploading")
+                : translations("upload")}
+            </button>
+          </form>
+        </section>
       )}
     </div>
   );

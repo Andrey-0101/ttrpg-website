@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { useTranslations } from "next-intl";
 
 export type CampaignHandoutGalleryItem = {
@@ -10,10 +16,14 @@ export type CampaignHandoutGalleryItem = {
   signedUrl: string | null;
 };
 
-export default function CampaignHandoutGallery({
+export default function CampaignHandoutGallery<
+  TItem extends CampaignHandoutGalleryItem,
+>({
   items,
+  renderCardFooter,
 }: {
-  items: CampaignHandoutGalleryItem[];
+  items: TItem[];
+  renderCardFooter?: (item: TItem) => ReactNode;
 }) {
   const translations = useTranslations("CampaignHandouts");
   const [selectedItem, setSelectedItem] =
@@ -58,7 +68,11 @@ export default function CampaignHandoutGallery({
 
   return (
     <>
-      <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        className={`grid min-w-0 items-start gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${
+          renderCardFooter ? "grid-cols-1" : "grid-cols-2"
+        }`}
+      >
         {items.map((item, index) => (
           <article
             key={item.key}
@@ -73,27 +87,28 @@ export default function CampaignHandoutGallery({
                   name: item.displayName,
                 })}
               >
-                <span className="relative block aspect-[4/3] overflow-hidden bg-neutral-200">
+                <span className="relative block aspect-square overflow-hidden bg-neutral-200">
                   <Image
                     src={item.signedUrl}
                     alt={item.displayName}
                     fill
                     unoptimized
                     loading={index === 0 ? "eager" : undefined}
-                    sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw"
-                    className="object-cover transition-transform group-hover:scale-[1.02]"
+                    sizes="(min-width: 1024px) 22vw, (min-width: 768px) 30vw, (min-width: 640px) 45vw, 48vw"
+                    className="object-contain transition-opacity group-hover:opacity-95"
                   />
                 </span>
               </button>
             ) : (
-              <div className="flex aspect-[4/3] items-center justify-center bg-neutral-200 p-4 text-center text-sm text-neutral-600">
+              <div className="flex aspect-square items-center justify-center bg-neutral-200 p-3 text-center text-sm text-neutral-600">
                 {translations("imageUnavailable")}
               </div>
             )}
 
-            <h2 className="break-words border-t border-neutral-300 px-4 py-3 font-semibold">
+            <h2 className="break-words border-t border-neutral-300 px-3 py-2.5 text-sm font-semibold sm:text-base">
               {item.displayName}
             </h2>
+            {renderCardFooter?.(item)}
           </article>
         ))}
       </div>
@@ -135,7 +150,7 @@ export default function CampaignHandoutGallery({
                 unoptimized
                 sizes="100vw"
                 className="object-contain"
-                priority
+                loading="eager"
               />
             </div>
           </div>

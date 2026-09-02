@@ -323,7 +323,7 @@ The current foundation intentionally keeps these controls on the overview route 
 /[locale]/campaigns/[id]/handouts
 ```
 
-This campaign-scoped route implements Phase 4C1 image-only Handouts. It has no global or per-Handout detail route: enlarged viewing stays in an accessible page lightbox. The active GM can upload one JPEG/PNG/WebP image up to 5 MiB, view it, choose GM-only/all-Player/selected-Player visibility, see selected recipients by participant name, and delete it Storage-first. Active Players receive only RLS-authorized images through short-lived signed URLs and receive no access/recipient UI metadata. Completed GMs retain read-only viewing; completed Players receive no image access.
+This campaign-scoped route implements Phase 4C1 image-only Handouts. It has no global or per-Handout detail route: enlarged viewing stays in an accessible page lightbox. The active GM can select multiple JPEG/PNG/WebP images up to 5 MiB each for sequential upload, view compact full-image thumbnails without cropping, and manage GM-only/all-Player/selected-Player visibility, named recipients, and Storage-first deletion within each Handout card. Active Players receive only RLS-authorized images through short-lived signed URLs and receive no access/recipient UI metadata. Completed GMs retain read-only viewing; completed Players receive no image access.
 
 ### Campaign Game Room
 

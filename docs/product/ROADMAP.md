@@ -111,7 +111,7 @@ Provide private image-only Campaign Handouts for the existing campaign authoriza
 #### Scope
 
 - localized campaign-scoped route at `/{locale}/campaigns/{campaignId}/handouts`;
-- GM-managed single-image upload, listing, enlarged viewing, visibility, and removal;
+- GM-managed multi-image sequential upload, compact full-image thumbnails, enlarged viewing, per-card visibility controls, and removal;
 - RLS-filtered Player listing and viewing without recipient/access metadata;
 - the existing private `campaign-images` Storage bucket and campaign image metadata/recipient model;
 - current campaign membership, lifecycle, RLS, Storage, and visibility boundaries;
