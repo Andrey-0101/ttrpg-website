@@ -58,11 +58,11 @@ export default function CampaignHandoutGallery({
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => (
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item, index) => (
           <article
             key={item.key}
-            className="overflow-hidden rounded-lg border border-neutral-300 bg-white text-neutral-950 shadow-sm"
+            className="min-w-0 overflow-hidden rounded-lg border border-neutral-300 bg-white text-neutral-950 shadow-sm"
           >
             {item.signedUrl ? (
               <button
@@ -79,6 +79,7 @@ export default function CampaignHandoutGallery({
                     alt={item.displayName}
                     fill
                     unoptimized
+                    loading={index === 0 ? "eager" : undefined}
                     sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw"
                     className="object-cover transition-transform group-hover:scale-[1.02]"
                   />

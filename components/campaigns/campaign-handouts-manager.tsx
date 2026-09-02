@@ -185,7 +185,7 @@ function CampaignHandoutAccessManager({
   }
 
   return (
-    <article className="rounded-lg border border-neutral-300 bg-neutral-50 p-4">
+    <article className="min-w-0 rounded-lg border border-neutral-300 bg-neutral-50 p-4">
       <h3 className="break-words text-lg font-bold">{handout.displayName}</h3>
 
       <label className="mt-4 block font-medium">
@@ -238,7 +238,7 @@ function CampaignHandoutAccessManager({
               ))}
             </div>
           )}
-          <p className="mt-3 text-sm text-neutral-700">
+          <p className="mt-3 break-words text-sm text-neutral-700">
             {translations("selectedPlayerNames")}: {" "}
             {selectedNames.length > 0
               ? selectedNames.join(", ")
@@ -456,7 +456,7 @@ export default function CampaignHandoutsManager({
   }));
 
   return (
-    <div className="grid gap-6">
+    <div className="grid min-w-0 gap-6">
       {initialHandouts.length === 0 ? (
         <section className="rounded-lg border border-dashed border-white/40 bg-black/20 p-6 text-center sm:p-8">
           <h2 className="text-2xl font-semibold">
@@ -481,15 +481,15 @@ export default function CampaignHandoutsManager({
         </section>
       ) : (
         <>
-          <section className="rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950 sm:p-6">
+          <section className="min-w-0 rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950 sm:p-6">
             <h2 className="text-2xl font-bold">
               {translations("uploadTitle")}
             </h2>
             <p className="mt-2 text-sm text-neutral-700">
               {translations("uploadDescription")}
             </p>
-            <form onSubmit={handleUpload} className="mt-5">
-              <label className="block font-medium">
+            <form onSubmit={handleUpload} className="mt-5 min-w-0">
+              <label className="block min-w-0 font-medium">
                 {translations("chooseImage")}
                 <input
                   ref={fileInputRef}
@@ -497,7 +497,7 @@ export default function CampaignHandoutsManager({
                   accept={CAMPAIGN_HANDOUT_ACCEPT}
                   onChange={handleFileChange}
                   disabled={mutation !== null}
-                  className="mt-2 block w-full rounded border border-neutral-400 bg-white px-3 py-2 file:mr-3 file:rounded file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:font-semibold file:text-white"
+                  className="mt-2 block w-full min-w-0 max-w-full rounded border border-neutral-400 bg-white px-3 py-2 file:mr-3 file:rounded file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:font-semibold file:text-white"
                 />
               </label>
               {message && (
@@ -525,14 +525,14 @@ export default function CampaignHandoutsManager({
           </section>
 
           {initialHandouts.length > 0 && (
-            <section className="rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950 sm:p-6">
+            <section className="min-w-0 rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950 sm:p-6">
               <h2 className="text-2xl font-bold">
                 {translations("manageTitle")}
               </h2>
               <p className="mt-2 text-sm text-neutral-700">
                 {translations("manageDescription")}
               </p>
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="mt-5 grid min-w-0 gap-4 lg:grid-cols-2">
                 {initialHandouts.map((handout) => (
                   <CampaignHandoutAccessManager
                     key={`${handout.id}:${handout.visibility}:${handout.recipientIds.join(",")}`}
