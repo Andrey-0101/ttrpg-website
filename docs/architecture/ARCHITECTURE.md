@@ -2,7 +2,7 @@
 
 ## Status
 
-Current architecture for the implemented VtM character and campaign application, including the accepted campaign-authorized LiveKit Game Room.
+Current architecture for the implemented VtM character and campaign application, including the accepted campaign-authorized LiveKit Game Room and image-only Campaign Handouts.
 
 Verified production baseline:
 
@@ -84,6 +84,7 @@ Current user-facing route families:
 /[locale]/campaigns/join/[token]
 /[locale]/campaigns/[id]
 /[locale]/campaigns/[id]/game-room
+/[locale]/campaigns/[id]/handouts
 /[locale]/campaigns/[id]/characters/[characterId]
 /[locale]/characters
 /[locale]/characters/[id]
@@ -134,6 +135,7 @@ Prefer server-side code for:
 - RLS-protected initial data loading;
 - metadata generation;
 - signed portrait URL creation;
+- short-lived signed Campaign Handout URL creation after RLS-filtered metadata reads;
 - campaign participant and role-dependent initial rendering;
 - safe direct-route unavailable behavior;
 - current campaign-video token issuance after fresh campaign authorization;
@@ -154,6 +156,7 @@ Client components handle:
 - member leave/remove actions;
 - character link/unlink actions;
 - campaign edit/complete/delete actions;
+- image-only Campaign Handout upload, visibility, lightbox, and Storage-first delete actions;
 - responsive interaction.
 
 Client controls are usability aids. They are not authorization boundaries.
@@ -310,10 +313,15 @@ The current campaign Game Room is implemented at `/{locale}/campaigns/{campaignI
 
 ### Campaign-content domain
 
+Implemented scope:
+
+```text
+Image-only Campaign Handouts library
+```
+
 Approved planned scope:
 
 ```text
-Campaign Image Library
 Game Room current-image presentation
 Shared notes
 GM-private notes
@@ -405,6 +413,8 @@ An additional campaign-aware SELECT policy permits current campaign participants
 
 The database stores the object path in `characters.portrait_url`. Legacy external URLs remain readable for compatibility.
 
+Campaign Handout bytes are stored in the private `campaign-images` bucket under the exact represented path `CAMPAIGN_UUID/IMAGE_UUID/RANDOM_OBJECT_UUID.ext`. Server rendering creates short-lived signed URLs only after campaign-image RLS selects the current user's permitted metadata. Upload creates `gm_only` metadata before the exact object because the Storage INSERT policy requires representation. Individual deletion and final campaign deletion remove and verify represented objects before metadata or campaign rows. Completed GMs retain read access but no individual Handout mutation; the dedicated delete policy permits only represented-object cleanup required before final campaign deletion.
+
 ## State and persistence
 
 Current character and campaign forms use:
@@ -463,8 +473,8 @@ Completed:
 Approved sequence:
 
 6. Phase 4B Campaign Video Rooms Integration and responsive Game Room — complete and accepted in Production;
-7. Phase 4C1 Campaign Image Library — next;
-8. Phase 4C2 Game Room Image Presentation;
+7. Phase 4C1 image-only Campaign Handouts — complete;
+8. Phase 4C2 Game Room Image Presentation — next;
 9. Phase 4D1 CoC 7e Dice Roller;
 10. Phase 4D2 system-aware Game Room Dice Integration;
 11. Phase 4E Campaign & Game Room UX/UI Refinement;

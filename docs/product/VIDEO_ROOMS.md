@@ -47,7 +47,7 @@ ADR-009 is Accepted only for managed infrastructure and LiveKit in the current c
 
 ## Approved later campaign work
 
-Phase 4C2 may add GM-controlled presentation of an existing Campaign Image Library image in the shared Game Room Display. This is image selection, replacement, and stop-presentation behavior only. It does not add screen sharing, annotations, maps, drawing tools, or a general Handouts system.
+Phase 4C2 may add GM-controlled presentation of an existing image-only Campaign Handout in the shared Game Room Display. This is image selection, replacement, and stop-presentation behavior only. It does not add screen sharing, annotations, maps, drawing tools, or a general document Handouts system.
 
 Phase 4E may refine Campaign and Game Room layout, navigation, responsive behavior, accessibility, and usability without adding new media capabilities.
 

@@ -14,11 +14,12 @@ Completed foundation:
 - Milestone 2 — Character Friend Alpha;
 - Milestone 3 — Campaign Foundation;
 - Phase 4A — VtM Personal Dice & Personal Persistence;
-- Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room.
+- Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room;
+- Phase 4C1 — image-only Campaign Handouts.
 
 Next approved work:
 
-- Phase 4C1 — Campaign Image Library.
+- Phase 4C2 — Game Room Image Presentation.
 
 Current Production facts:
 
@@ -30,7 +31,7 @@ Current Production facts:
 - the generic Call of Cthulhu 7e campaign shell is implemented, but CoC character sheets and dice are not;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
-- Phase 4C1 and every later phase remain unimplemented.
+- Phase 4C1 is implemented; Phase 4C2 and every later phase remain unimplemented.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
@@ -99,27 +100,31 @@ The implementation:
 
 Recording, transcription, screen sharing, standalone rooms, and remote moderation are not delivered or committed by this phase. The accepted human test involved one GM and four Players; no quantitative network telemetry was collected.
 
-### Phase 4C1 — Campaign Image Library
+### Phase 4C1 — Campaign Handouts (image library)
 
-**Status: Planned / next**
+**Status: Complete**
 
 #### Goal
 
-Provide a private campaign image library for the existing campaign authorization domain.
+Provide private image-only Campaign Handouts for the existing campaign authorization domain.
 
 #### Scope
 
-- GM-managed campaign image upload, listing, viewing, and removal;
+- localized campaign-scoped route at `/{locale}/campaigns/{campaignId}/handouts`;
+- GM-managed single-image upload, listing, enlarged viewing, visibility, and removal;
+- RLS-filtered Player listing and viewing without recipient/access metadata;
 - the existing private `campaign-images` Storage bucket and campaign image metadata/recipient model;
 - current campaign membership, lifecycle, RLS, Storage, and visibility boundaries;
 - EN/RU, responsive, accessible loading, empty, success, and failure states;
-- safe deletion and orphan-handling behavior.
+- metadata-first/Storage-second upload with failure cleanup;
+- Storage-first individual and campaign deletion with absence verification;
+- completed GM read-only access and completed Player image denial.
 
-This is an image library, not a general Handouts system. It does not add documents, annotations, maps, clues, NPCs, sessions, Chronicle records, screen sharing, or presentation controls.
+This is an image-only Handouts library, not the previously discussed broad Handouts system. It does not add documents, annotations, maps, clues, NPCs, sessions, Chronicle records, screen sharing, or presentation controls.
 
 #### Exit criteria
 
-Authorized users see only images allowed by the accepted campaign visibility model, the GM can safely manage the library, and removed Players and Outsiders are denied.
+Delivered: authorized users see only images allowed by the accepted campaign visibility model, the active GM can safely manage the library, completed campaigns preserve the required read-only boundary, and removed Players and Outsiders are denied. Phase 4C2 presentation remains separate and planned.
 
 ### Phase 4C2 — Game Room Image Presentation
 
@@ -127,7 +132,7 @@ Authorized users see only images allowed by the accepted campaign visibility mod
 
 #### Goal
 
-Let the GM present an image from the Campaign Image Library in the shared Game Room Display.
+Let the GM present an image from Campaign Handouts in the shared Game Room Display.
 
 #### Scope
 

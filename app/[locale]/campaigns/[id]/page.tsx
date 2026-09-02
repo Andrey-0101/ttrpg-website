@@ -6,6 +6,7 @@ import { connection } from "next/server";
 
 import CampaignCharactersPanel from "@/components/campaigns/campaign-characters-panel";
 import CampaignGameRoomCard from "@/components/campaigns/campaign-game-room-card";
+import CampaignHandoutsCard from "@/components/campaigns/campaign-handouts-card";
 import CampaignInvitationManager from "@/components/campaigns/campaign-invitation-manager";
 import CampaignManagementPanel from "@/components/campaigns/campaign-management-panel";
 import CampaignMembersPanel from "@/components/campaigns/campaign-members-panel";
@@ -80,6 +81,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     locale,
     namespace: "CampaignVideoRoom",
   });
+  const handoutTranslations = await getTranslations({
+    locale,
+    namespace: "CampaignHandouts",
+  });
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
@@ -109,8 +114,12 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   }
 
   const isGameMaster = campaign.game_master_id === userId;
-  const [participantDirectoryResult, assignmentsResult, ownCharactersResult] =
-    await Promise.all([
+  const [
+    participantDirectoryResult,
+    assignmentsResult,
+    ownCharactersResult,
+    handoutCountResult,
+  ] = await Promise.all([
       loadCampaignParticipantDirectory({
         supabase,
         campaignId: campaign.id,
@@ -140,6 +149,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         .order("created_at", {
           ascending: false,
         }),
+      supabase
+        .from("campaign_images")
+        .select("id", { count: "exact", head: true })
+        .eq("campaign_id", campaign.id),
     ]);
 
   if (!participantDirectoryResult.ready) {
@@ -158,6 +171,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       "Failed to load owned campaign-compatible characters:",
       ownCharactersResult.error,
     );
+  }
+
+  if (handoutCountResult.error) {
+    console.error("Failed to count accessible Campaign Handouts.");
   }
 
   const members = participantDirectoryResult.members;
@@ -432,6 +449,15 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       </section>
 
       <div className="mt-6 grid gap-6">
+        <CampaignHandoutsCard
+          campaignId={campaign.id}
+          title={handoutTranslations("title")}
+          description={handoutTranslations("overview.description")}
+          countLabel={handoutTranslations("overview.accessibleCount")}
+          accessibleCount={handoutCountResult.count ?? 0}
+          openLabel={handoutTranslations("overview.open")}
+        />
+
         <CampaignGameRoomCard
           campaignId={campaign.id}
           campaignActive={campaign.status === "active"}

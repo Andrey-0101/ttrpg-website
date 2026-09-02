@@ -5,6 +5,8 @@ import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/navigation";
+import { createCampaignHandoutStorageDependencies } from "@/lib/campaign-handouts/storage";
+import { deleteCampaignWithHandoutsStorageFirst } from "@/lib/campaign-handouts/workflows";
 import { useUnsavedChangesGuard } from "@/lib/navigation/unsaved-changes";
 import { createClient } from "@/utils/supabase/client";
 
@@ -196,15 +198,33 @@ export default function CampaignManagementPanel({
     let releaseMutationLock = true;
 
     try {
-      const { data, error } = await supabase
-        .from("campaigns")
-        .delete()
-        .eq("id", campaignId)
-        .select("id")
-        .maybeSingle();
+      const { data: handouts, error: handoutLoadError } = await supabase
+        .from("campaign_images")
+        .select("storage_object_name")
+        .eq("campaign_id", campaignId);
 
-      if (error || !data) {
-        console.error("Failed to delete campaign:", error);
+      if (handoutLoadError) {
+        setMessage({ kind: "error", text: translations("deleteError") });
+        return;
+      }
+
+      const deletion = await deleteCampaignWithHandoutsStorageFirst({
+        storagePaths: (handouts ?? []).map(
+          (handout) => handout.storage_object_name,
+        ),
+        storage: createCampaignHandoutStorageDependencies(supabase),
+        deleteCampaign: async () => {
+          const { data, error } = await supabase
+            .from("campaigns")
+            .delete()
+            .eq("id", campaignId)
+            .select("id")
+            .maybeSingle();
+          return !error && Boolean(data);
+        },
+      });
+
+      if (!deletion.ok) {
         setMessage({ kind: "error", text: translations("deleteError") });
         return;
       }

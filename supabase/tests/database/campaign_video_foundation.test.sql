@@ -109,6 +109,24 @@ select is(
    where schemaname = 'storage' and tablename = 'objects'
      and policyname like '%campaign images%'),
   3::bigint, 'campaign image Storage has SELECT, INSERT, and DELETE policies only');
+select ok(
+  to_regprocedure('public.current_user_can_delete_campaign_image_object(text)')
+    is not null,
+  'campaign image Storage has a dedicated represented-object delete helper');
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.current_user_can_delete_campaign_image_object(text)',
+    'EXECUTE'
+  ),
+  'authenticated may execute the delete helper through the Storage policy');
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.current_user_can_delete_campaign_image_object(text)',
+    'EXECUTE'
+  ),
+  'anonymous cannot execute the campaign image delete helper');
 
 -- Two campaigns and six initial players in the primary campaign.
 insert into public.campaigns (
@@ -471,6 +489,37 @@ select lives_ok(
       array['10000000-0000-4000-8000-000000000003']::uuid[]
     )$$,
   'selected recipients reduce atomically');
+select lives_ok(
+  $$select public.set_campaign_image_visibility(
+      '60000000-0000-4000-8000-000000000001',
+      'all_active_players', array[]::uuid[]
+    )$$,
+  'GM may share an image with all active players');
+select is(
+  (select count(*) from public.campaign_image_recipients
+   where image_id = '60000000-0000-4000-8000-000000000001'),
+  0::bigint, 'all-player visibility retains no recipient metadata');
+reset role;
+
+set local role authenticated;
+set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000002';
+set local request.jwt.claim.role = 'authenticated';
+set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated"}';
+select is((select count(*) from public.campaign_images), 1::bigint,
+  'an active player reads all-player image metadata');
+select is((select count(*) from public.campaign_image_recipients), 0::bigint,
+  'a player never receives recipient metadata for all-player visibility');
+reset role;
+
+set local role authenticated;
+set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000001';
+set local request.jwt.claim.role = 'authenticated';
+set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
+select public.set_campaign_image_visibility(
+  '60000000-0000-4000-8000-000000000001',
+  'selected_active_players',
+  array['10000000-0000-4000-8000-000000000003']::uuid[]
+);
 reset role;
 
 set local role authenticated;
@@ -543,6 +592,12 @@ insert into public.campaign_images (
   '10000000-0000-4000-8000-000000000001',
   '20000000-0000-4000-8000-000000000001/60000000-0000-4000-8000-000000000004/70000000-0000-4000-8000-000000000004.jpg',
   'Removal cleanup', 'image/jpeg', 1024, 'gm_only'
+);
+insert into storage.objects (bucket_id, name, owner_id)
+values (
+  'campaign-images',
+  '20000000-0000-4000-8000-000000000001/60000000-0000-4000-8000-000000000004/70000000-0000-4000-8000-000000000004.jpg',
+  '10000000-0000-4000-8000-000000000001'
 );
 select public.set_campaign_image_visibility(
   '60000000-0000-4000-8000-000000000004',
@@ -659,13 +714,35 @@ select is((select count(*) from public.campaign_player_publication_permissions),
   'completed player loses publication-setting access');
 select is((select count(*) from public.campaign_images), 0::bigint,
   'completed player loses campaign image metadata access');
+set local storage.allow_delete_query = 'true';
+delete from storage.objects
+where bucket_id = 'campaign-images'
+  and name = '20000000-0000-4000-8000-000000000001/60000000-0000-4000-8000-000000000004/70000000-0000-4000-8000-000000000004.jpg';
+set local storage.allow_delete_query = 'false';
 reset role;
+select is(
+  (select count(*) from storage.objects
+   where bucket_id = 'campaign-images'
+     and name = '20000000-0000-4000-8000-000000000001/60000000-0000-4000-8000-000000000004/70000000-0000-4000-8000-000000000004.jpg'),
+  1::bigint, 'completed Player cannot delete a campaign image object');
 
 -- Campaign final deletion is still GM-authorized and cascades audit history.
 set local role authenticated;
 set local request.jwt.claim.sub = '10000000-0000-4000-8000-000000000001';
 set local request.jwt.claim.role = 'authenticated';
 set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
+set local storage.allow_delete_query = 'true';
+select lives_ok(
+  $$delete from storage.objects
+    where bucket_id = 'campaign-images'
+      and name = '20000000-0000-4000-8000-000000000001/60000000-0000-4000-8000-000000000004/70000000-0000-4000-8000-000000000004.jpg'$$,
+  'completed GM deletes a represented image object before campaign deletion');
+set local storage.allow_delete_query = 'false';
+select is(
+  (select count(*) from storage.objects
+   where bucket_id = 'campaign-images'
+     and name = '20000000-0000-4000-8000-000000000001/60000000-0000-4000-8000-000000000004/70000000-0000-4000-8000-000000000004.jpg'),
+  0::bigint, 'completed campaign image Storage is clean before cascade');
 select lives_ok(
   $$delete from public.campaigns
     where id = '20000000-0000-4000-8000-000000000001'$$,

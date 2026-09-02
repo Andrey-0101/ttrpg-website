@@ -21,6 +21,7 @@ flowchart TD
     CAMPAIGNS --> CAMPAIGN["Campaign Overview"]
     CAMPAIGN --> SHARED_CHARACTER["Read-only linked character"]
     CAMPAIGN --> GAME_ROOM["Campaign Game Room"]
+    CAMPAIGN --> HANDOUTS["Image-only Campaign Handouts"]
     GAME_ROOM --> VIDEO["Campaign-authorized LiveKit video"]
 ```
 
@@ -30,8 +31,7 @@ The catalogue includes a generic CoC 7e campaign shell. CoC character and dice r
 
 ```mermaid
 flowchart TD
-    CAMPAIGN["Campaign"] --> IMAGES["4C1 Campaign Image Library"]
-    IMAGES --> DISPLAY["4C2 Game Room Image Presentation"]
+    HANDOUTS["Current Campaign Handouts"] --> DISPLAY["4C2 Game Room Image Presentation"]
     CAMPAIGN --> GAME_ROOM["Game Room"]
     GAME_ROOM --> SYSTEM_DICE["4D2 System-aware Dice"]
     COC_DICE["4D1 CoC Dice Roller"] --> SYSTEM_DICE
@@ -42,7 +42,7 @@ flowchart TD
 
 Phase 4E refines Campaign and Game Room UX/UI without adding a route or product capability. Unavailable placeholders must remain visibly disabled and must not expose fake routes or behavior.
 
-The image phases are not a general Handouts feature. Notes do not imply Sessions, Chronicle, NPCs, clues, maps, or wiki modules.
+Campaign Handouts remain image-only. Phase 4C2 adds presentation, not a general document Handouts feature. Notes do not imply Sessions, Chronicle, NPCs, clues, maps, or wiki modules.
 
 ## Later approved areas
 
@@ -54,14 +54,14 @@ The image phases are not a general Handouts feature. Notes do not imply Sessions
 
 ## Explicit non-routes
 
-Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and related routes are not approved targets. General Handouts, NPCs, Sessions, Chronicle, recording, transcription, and screen-sharing routes are also not active commitments.
+Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and related routes are not approved targets. Global/document Handouts, NPCs, Sessions, Chronicle, recording, transcription, and screen-sharing routes are also not active commitments.
 
 ## Current versus planned
 
 | Area | Current | Approved forward state |
 |---|---|---|
 | Campaign video | Implemented and Production accepted | Retain; technical refinement only unless separately scoped |
-| Campaign images | Database/Storage foundation exists; no management UI | 4C1 library, then 4C2 presentation |
+| Campaign Handouts | Image-only private library implemented | 4C2 Game Room presentation |
 | VtM dice | Personal roller implemented | Use for VtM campaigns in 4D2 |
 | CoC dice | Not implemented | 4D1 personal roller, then 4D2 campaign integration |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |

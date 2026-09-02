@@ -7,7 +7,7 @@
 | Status | Current approved target structure |
 | Current source | [`ROADMAP.md`](ROADMAP.md) |
 | Current route reference | [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCTURE_CURRENT.md) |
-| Next product phase | 4C1 Campaign Image Library |
+| Next product phase | 4C2 Game Room Image Presentation |
 
 ## Purpose
 
@@ -18,8 +18,8 @@ Describe the intended structure without presenting speculative routes or uncommi
 1. Milestones 1–3 — complete;
 2. Phase 4A personal VtM dice — complete;
 3. Phase 4B Campaign Video Rooms Integration — complete and Production accepted;
-4. Phase 4C1 Campaign Image Library — next;
-5. Phase 4C2 Game Room Image Presentation;
+4. Phase 4C1 image-only Campaign Handouts — complete;
+5. Phase 4C2 Game Room Image Presentation — next;
 6. Phase 4D1 CoC 7e Dice Roller;
 7. Phase 4D2 system-aware Game Room Dice Integration;
 8. Phase 4E Campaign & Game Room UX/UI Refinement;
@@ -62,7 +62,7 @@ Campaign
 │   ├── Image presentation                     [4C2]
 │   ├── System-aware dice                      [4D2]
 │   └── Linked participant characters          [4F2]
-├── Campaign Image Library                     [4C1]
+├── Campaign Handouts (image-only)             [CURRENT]
 └── Campaign Notes                             [4G]
     ├── Shared notes for permitted participants
     └── GM-private notes
@@ -70,7 +70,7 @@ Campaign
 
 The existing Game Room may retain clearly disabled placeholders during transition, but placeholders do not approve product scope or routes. Phase 4E decides the clean technical presentation as capabilities arrive.
 
-General Handouts, NPCs, Sessions, Chronicle records, clues, maps, wikis, and similar campaign modules are not active roadmap scope.
+Global/document Handouts, NPCs, Sessions, Chronicle records, clues, maps, wikis, and similar campaign modules are not active roadmap scope.
 
 ## Game-system structure
 

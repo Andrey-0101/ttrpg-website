@@ -21,9 +21,9 @@ The checked-in application structure at the working commit is the source of trut
 
 ## Approved additions by phase
 
-### Phase 4C1 — Campaign Image Library
+### Phase 4C1 — image-only Campaign Handouts (implemented)
 
-Add only the route/UI, server operations, and tests required to manage the existing campaign image model and private Storage contract. Do not create a general `handouts` domain.
+The implemented campaign-scoped route, focused `campaign-handouts` workflow helpers, UI, and tests manage the existing campaign image model and private Storage contract. They do not create a global or general document-Handouts domain.
 
 ### Phase 4C2 — Game Room Image Presentation
 
