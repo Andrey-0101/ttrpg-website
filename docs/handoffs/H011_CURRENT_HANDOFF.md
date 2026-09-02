@@ -154,6 +154,8 @@ No backup, renamed, temporary, or just-in-case TTRPG project copy is required ou
 
 Post-H011 roadmap amendment (2026-09-01): Phase 4C1 was selected as the next product stage. It is now implemented as image-only Campaign Handouts; the permanent roadmap in `docs/product/ROADMAP.md` makes Phase 4C2 Game Room Image Presentation next. All earlier H011 implementation, verification, cleanup, and Game Room Production-acceptance facts remain unchanged.
 
+Post-4C1 UI refinement (2026-09-02): active GMs can select multiple image files for sequential, independently reported uploads; the gallery uses compact uncropped thumbnails; and visibility, recipient, save, and delete controls live inside each Handout card. This refinement did not change the Phase 4C1 privacy/lifecycle model, database schema, or Phase 4C2 roadmap boundary.
+
 ## 10. Exact starting procedure for the next stage
 
 1. Open PowerShell at `C:\Projects\ttrpg-website`.

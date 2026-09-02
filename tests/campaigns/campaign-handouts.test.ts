@@ -10,6 +10,12 @@ import {
   validateCampaignHandoutFile,
 } from "../../lib/campaign-handouts/contracts";
 import {
+  uploadCampaignHandoutBatch,
+  uploadCampaignHandoutFile,
+  type CampaignHandoutUploadFile,
+  type CampaignHandoutUploadMetadata,
+} from "../../lib/campaign-handouts/upload";
+import {
   deleteCampaignWithHandoutsStorageFirst,
   removeAndVerifyCampaignHandoutObjects,
   rollbackFailedCampaignHandoutUpload,
@@ -19,6 +25,14 @@ const campaignId = "20000000-0000-4000-8000-000000000001";
 const imageId = "60000000-0000-4000-8000-000000000001";
 const objectId = "70000000-0000-4000-8000-000000000001";
 const storagePath = `${campaignId}/${imageId}/${objectId}.webp`;
+
+function testFile(
+  name: string,
+  type = "image/webp",
+  size = 128,
+): CampaignHandoutUploadFile {
+  return { name, type, size };
+}
 
 test("handout file validation enforces image type, non-empty bytes, and 5 MiB", () => {
   assert.equal(
@@ -77,6 +91,160 @@ test("handout metadata uses a safe display name and exact represented path", () 
       mimeType: "image/gif",
     }),
   );
+});
+
+test("multiple handouts upload sequentially with independent private metadata", async () => {
+  const files = [
+    testFile("portrait.webp"),
+    testFile("landscape.png", "image/png"),
+  ];
+  const events: string[] = [];
+  const metadata: CampaignHandoutUploadMetadata[] = [];
+  const identifiers = [
+    "60000000-0000-4000-8000-000000000011",
+    "70000000-0000-4000-8000-000000000011",
+    "60000000-0000-4000-8000-000000000012",
+    "70000000-0000-4000-8000-000000000012",
+  ];
+  let activeUploads = 0;
+  let maximumActiveUploads = 0;
+
+  const result = await uploadCampaignHandoutBatch({
+    files,
+    uploadFile: (file) =>
+      uploadCampaignHandoutFile({
+        campaignId,
+        uploaderId: "10000000-0000-4000-8000-000000000001",
+        file,
+        dependencies: {
+          createId: () => identifiers.shift()!,
+          insertMetadata: async (entry) => {
+            metadata.push(entry);
+            events.push(`metadata:${file.name}`);
+            return true;
+          },
+          uploadObject: async () => {
+            activeUploads += 1;
+            maximumActiveUploads = Math.max(
+              maximumActiveUploads,
+              activeUploads,
+            );
+            events.push(`upload:${file.name}`);
+            await Promise.resolve();
+            activeUploads -= 1;
+            return true;
+          },
+          rollbackUpload: async () => {
+            assert.fail("successful uploads must not be rolled back");
+          },
+        },
+      }),
+  });
+
+  assert.equal(result.successes.length, 2);
+  assert.deepEqual(result.failures, []);
+  assert.equal(maximumActiveUploads, 1);
+  assert.deepEqual(events, [
+    "metadata:portrait.webp",
+    "upload:portrait.webp",
+    "metadata:landscape.png",
+    "upload:landscape.png",
+  ]);
+  assert.equal(
+    new Set(result.successes.map((entry) => entry.imageId)).size,
+    2,
+  );
+  assert.equal(
+    new Set(result.successes.map((entry) => entry.storagePath)).size,
+    2,
+  );
+  assert.ok(metadata.every((entry) => entry.visibility === "gm_only"));
+  assert.deepEqual(
+    metadata.map((entry) => entry.display_name),
+    ["portrait", "landscape"],
+  );
+});
+
+test("an invalid or failed handout does not block successful siblings", async () => {
+  const files = [
+    testFile("first.webp"),
+    testFile("animation.gif", "image/gif"),
+    testFile("third.webp"),
+  ];
+  const rollbackPaths: string[] = [];
+  let nextId = 0;
+
+  const result = await uploadCampaignHandoutBatch({
+    files,
+    uploadFile: (file) =>
+      uploadCampaignHandoutFile({
+        campaignId,
+        uploaderId: "10000000-0000-4000-8000-000000000001",
+        file,
+        dependencies: {
+          createId: () =>
+            `${nextId++}`.padStart(8, "0") +
+            "-0000-4000-8000-000000000099",
+          insertMetadata: async () => true,
+          uploadObject: async () => true,
+          rollbackUpload: async (_targetImageId, targetStoragePath) => {
+            rollbackPaths.push(targetStoragePath);
+            return true;
+          },
+        },
+      }),
+  });
+
+  assert.deepEqual(
+    result.successes.map((entry) => entry.file.name),
+    ["first.webp", "third.webp"],
+  );
+  assert.deepEqual(
+    result.failures.map((entry) => [entry.file.name, entry.error]),
+    [["animation.gif", "invalid_type"]],
+  );
+  assert.deepEqual(rollbackPaths, []);
+});
+
+test("a failed object upload rolls back only that handout", async () => {
+  const files = [
+    testFile("first.webp"),
+    testFile("second.webp"),
+    testFile("third.webp"),
+  ];
+  const rollbacks: string[] = [];
+  let nextId = 20;
+
+  const result = await uploadCampaignHandoutBatch({
+    files,
+    uploadFile: (file) =>
+      uploadCampaignHandoutFile({
+        campaignId,
+        uploaderId: "10000000-0000-4000-8000-000000000001",
+        file,
+        dependencies: {
+          createId: () =>
+            `${nextId++}`.padStart(8, "0") +
+            "-0000-4000-8000-000000000099",
+          insertMetadata: async () => true,
+          uploadObject: async () => file.name !== "second.webp",
+          rollbackUpload: async (_targetImageId, targetStoragePath) => {
+            rollbacks.push(targetStoragePath);
+            return true;
+          },
+        },
+      }),
+  });
+
+  assert.deepEqual(
+    result.successes.map((entry) => entry.file.name),
+    ["first.webp", "third.webp"],
+  );
+  assert.deepEqual(
+    result.failures.map((entry) => [entry.file.name, entry.error]),
+    [["second.webp", "upload_failed"]],
+  );
+  assert.equal(rollbacks.length, 1);
 });
 
 test("Storage cleanup tolerates already-absent objects and blocks unverifiable deletion", async () => {
@@ -188,6 +356,14 @@ test("route keeps recipient metadata on the Game Master-only data path", () => {
     resolve("components/campaigns/campaign-management-panel.tsx"),
     "utf8",
   );
+  const gallery = readFileSync(
+    resolve("components/campaigns/campaign-handout-gallery.tsx"),
+    "utf8",
+  );
+  const upload = readFileSync(
+    resolve("lib/campaign-handouts/upload.ts"),
+    "utf8",
+  );
 
   assert.ok(
     route.indexOf("if (!isGameMaster && !campaignActive)") <
@@ -206,14 +382,25 @@ test("route keeps recipient metadata on the Game Master-only data path", () => {
     /recipientIds:/u,
   );
   assert.ok(
-    manager.indexOf('.from("campaign_images")') <
-      manager.indexOf(".upload(storagePath, file"),
+    upload.indexOf("insertMetadata") < upload.indexOf("uploadObject"),
   );
-  assert.match(manager, /visibility: "gm_only"/u);
+  assert.match(upload, /visibility: "gm_only"/u);
   assert.match(manager, /upsert: false/u);
+  assert.match(manager, /multiple/u);
+  assert.match(manager, /uploadCampaignHandoutBatch/u);
+  assert.match(manager, /uploadProgress/u);
+  assert.match(manager, /renderCardFooter/u);
+  assert.doesNotMatch(manager, /manageTitle|manageDescription/u);
+  assert.match(gallery, /object-contain/u);
+  assert.doesNotMatch(gallery, /object-cover/u);
+  assert.match(gallery, /lg:grid-cols-4/u);
   assert.match(manager, /set_campaign_image_visibility/u);
   assert.match(manager, /mutationLockRef\.current/u);
   assert.match(manager, /enabled: mutation === "upload"/u);
+  assert.match(
+    manager,
+    /if \(files\.length === 0 \|\| mutationLockRef\.current \|\| !campaignActive\)/u,
+  );
   assert.match(manager, /selectedNames\.join\(", "\)/u);
   assert.match(management, /deleteCampaignWithHandoutsStorageFirst/u);
 
@@ -222,6 +409,17 @@ test("route keeps recipient metadata on the Game Master-only data path", () => {
     "utf8",
   );
   assert.doesNotMatch(playerViewer, /visibility|recipient|player\.id/iu);
+});
+
+test("completed campaigns render no Handout mutation controls", () => {
+  const manager = readFileSync(
+    resolve("components/campaigns/campaign-handouts-manager.tsx"),
+    "utf8",
+  );
+
+  assert.match(manager, /renderCardFooter=\{\s*campaignActive/u);
+  assert.match(manager, /!campaignActive \? \(/u);
+  assert.match(manager, /completedGameMasterDescription/u);
 });
 
 test("both locales expose Handouts with matching message contracts", () => {

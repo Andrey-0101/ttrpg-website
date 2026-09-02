@@ -22,6 +22,7 @@
     "lib/campaigns/creation.ts",
     "lib/campaigns/creation-navigation.ts",
     "lib/campaign-handouts/contracts.ts",
+    "lib/campaign-handouts/upload.ts",
     "lib/campaign-handouts/workflows.ts",
     "lib/game-systems/catalogue.ts",
     "lib/game-systems/vtm-v5/dice-engine.ts",
