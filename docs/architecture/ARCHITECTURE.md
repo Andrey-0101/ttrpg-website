@@ -32,6 +32,7 @@ Browser
   | HTTPS
   v
 Next.js App Router on Vercel
+  +-- Function compute: hnd1 (Tokyo), pinned in vercel.json
   |
   +-- Server Components
   +-- Client Components
@@ -41,6 +42,7 @@ Next.js App Router on Vercel
   |
   v
 Supabase
+  +-- Production region: ap-northeast-1 (Tokyo)
   +-- PostgreSQL
   +-- Auth
   +-- Row Level Security
@@ -48,7 +50,7 @@ Supabase
   +-- Realtime only where a later approved campaign capability requires it
 ```
 
-The canonical production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` permanently redirects to the apex domain. Vercel `*.vercel.app` URLs remain technical deployment addresses.
+The canonical production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` permanently redirects to the apex domain. Vercel `*.vercel.app` URLs remain technical deployment addresses. Vercel Function compute previously used the default Virginia region (`iad1`); after it moved to Tokyo (`hnd1`), a small Production comparison measured approximately 30% lower overall median TTFB. The region change aligns application compute with Supabase Production in Tokyo and does not change application behavior.
 
 Current managed-video service boundary:
 

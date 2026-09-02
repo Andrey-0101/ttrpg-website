@@ -23,6 +23,8 @@ The exact SHA of the commit containing this file cannot be embedded in that same
 
 The canonical Production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` redirects permanently to the apex domain. The application is a private friend-alpha bilingual TTRPG hub built with Next.js 16.3.3, React 19.2.4, TypeScript, Tailwind CSS 4, `next-intl`, Supabase PostgreSQL/Auth/RLS/Storage, LiveKit, Vercel, and GitHub.
 
+Post-H011 infrastructure synchronization (2026-09-02): Vercel Function compute is pinned by `vercel.json` to Tokyo (`hnd1`), alongside Supabase Production in Tokyo (`ap-northeast-1`). The Function region was changed from the previous Virginia default (`iad1`); a small Production comparison measured approximately 30% lower overall median TTFB after the change. No application, feature, or database behavior changed.
+
 Implemented current capabilities include:
 
 - localized English and Russian routes, authentication, profiles, Dashboard, and Account;
