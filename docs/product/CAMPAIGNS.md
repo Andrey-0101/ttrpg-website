@@ -24,13 +24,13 @@ The current implementation connects:
 - invitations;
 - characters;
 - a dedicated campaign Game Room with the basic LiveKit video experience;
-- private image-only Campaign Handouts with GM access controls and Player-filtered viewing.
+- a private image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other sections, GM access controls, and Player-filtered viewing.
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
 Approved later Phase 4 work will add:
 
-- GM-controlled Game Room image presentation from existing Campaign Handouts;
+- GM-controlled Game Room image presentation from the existing Campaign Gallery;
 - system-aware campaign dice for VtM and CoC;
 - system-aware linked-character presentation in the Game Room;
 - shared notes for permitted participants and GM-private notes.
@@ -205,7 +205,7 @@ The current Production campaign-video foundation adds provider-neutral persisten
 - private campaign images visible to the GM, all active Players, or selected active Players;
 - immutable constrained administrative audit rows.
 
-The GM is never a media-group member. Removing a prohibition does not activate a microphone or camera. Session-only overrides, provider rooms, tokens, connections, and media tracks are not persisted by this foundation. All nine migrations, the campaign-video RLS policies, required foreign-key indexes, hardened grants, and private `campaign-images` Storage are current in Production. Phase 4C1 uses that existing image foundation and adds only a narrow delete helper/policy migration for completed-campaign Storage cleanup.
+The GM is never a media-group member. Removing a prohibition does not activate a microphone or camera. Session-only overrides, provider rooms, tokens, connections, and media tracks are not persisted by this foundation. All ten migrations, the campaign-video RLS policies, required foreign-key indexes, hardened grants, and private `campaign-images` Storage are current in Production. Phase 4C1 uses that existing image foundation, adds a narrow delete helper/policy migration for completed-campaign Storage cleanup, and adds an immutable `campaign_images.category` field for the four Gallery sections. Category is organizational metadata only and does not affect authorization.
 
 ## Character access
 

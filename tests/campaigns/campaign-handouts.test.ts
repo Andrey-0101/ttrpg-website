@@ -4,9 +4,11 @@ import { resolve } from "node:path";
 import test from "node:test";
 
 import {
+  CAMPAIGN_GALLERY_CATEGORIES,
   CAMPAIGN_HANDOUT_MAX_BYTES,
   createCampaignHandoutDisplayName,
   createCampaignHandoutPath,
+  isCampaignGalleryCategory,
   validateCampaignHandoutFile,
 } from "../../lib/campaign-handouts/contracts";
 import {
@@ -93,6 +95,50 @@ test("handout metadata uses a safe display name and exact represented path", () 
   );
 });
 
+test("Campaign Gallery exposes exactly four fixed image categories", () => {
+  assert.deepEqual(CAMPAIGN_GALLERY_CATEGORIES, [
+    "handout",
+    "npc",
+    "maps_plans",
+    "other",
+  ]);
+  assert.ok(
+    CAMPAIGN_GALLERY_CATEGORIES.every((category) =>
+      isCampaignGalleryCategory(category),
+    ),
+  );
+  assert.equal(isCampaignGalleryCategory("maps"), false);
+});
+
+test("each Gallery section stores its active category with GM-only visibility", async () => {
+  for (const category of CAMPAIGN_GALLERY_CATEGORIES) {
+    const insertedMetadata: CampaignHandoutUploadMetadata[] = [];
+    let nextId = 0;
+    const result = await uploadCampaignHandoutFile({
+      campaignId,
+      uploaderId: "10000000-0000-4000-8000-000000000001",
+      category,
+      file: testFile(`${category}.webp`),
+      dependencies: {
+        createId: () =>
+          nextId++ === 0
+            ? imageId
+            : "70000000-0000-4000-8000-000000000001",
+        insertMetadata: async (metadata) => {
+          insertedMetadata.push(metadata);
+          return true;
+        },
+        uploadObject: async () => true,
+        rollbackUpload: async () => true,
+      },
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(insertedMetadata[0]?.category, category);
+    assert.equal(insertedMetadata[0]?.visibility, "gm_only");
+  }
+});
+
 test("multiple handouts upload sequentially with independent private metadata", async () => {
   const files = [
     testFile("portrait.webp"),
@@ -115,6 +161,7 @@ test("multiple handouts upload sequentially with independent private metadata", 
       uploadCampaignHandoutFile({
         campaignId,
         uploaderId: "10000000-0000-4000-8000-000000000001",
+        category: "npc",
         file,
         dependencies: {
           createId: () => identifiers.shift()!,
@@ -159,6 +206,7 @@ test("multiple handouts upload sequentially with independent private metadata", 
     2,
   );
   assert.ok(metadata.every((entry) => entry.visibility === "gm_only"));
+  assert.ok(metadata.every((entry) => entry.category === "npc"));
   assert.deepEqual(
     metadata.map((entry) => entry.display_name),
     ["portrait", "landscape"],
@@ -180,6 +228,7 @@ test("an invalid or failed handout does not block successful siblings", async ()
       uploadCampaignHandoutFile({
         campaignId,
         uploaderId: "10000000-0000-4000-8000-000000000001",
+        category: "handout",
         file,
         dependencies: {
           createId: () =>
@@ -221,6 +270,7 @@ test("a failed object upload rolls back only that handout", async () => {
       uploadCampaignHandoutFile({
         campaignId,
         uploaderId: "10000000-0000-4000-8000-000000000001",
+        category: "handout",
         file,
         dependencies: {
           createId: () =>
@@ -343,9 +393,9 @@ test("campaign deletion runs only after every represented object is absent", asy
   ]);
 });
 
-test("route keeps recipient metadata on the Game Master-only data path", () => {
+test("Gallery route keeps recipient metadata on the Game Master-only data path", () => {
   const route = readFileSync(
-    resolve("app/[locale]/campaigns/[id]/handouts/page.tsx"),
+    resolve("app/[locale]/campaigns/[id]/gallery/page.tsx"),
     "utf8",
   );
   const manager = readFileSync(
@@ -362,6 +412,10 @@ test("route keeps recipient metadata on the Game Master-only data path", () => {
   );
   const upload = readFileSync(
     resolve("lib/campaign-handouts/upload.ts"),
+    "utf8",
+  );
+  const tabs = readFileSync(
+    resolve("components/campaigns/campaign-gallery-tabs.tsx"),
     "utf8",
   );
 
@@ -385,6 +439,7 @@ test("route keeps recipient metadata on the Game Master-only data path", () => {
     upload.indexOf("insertMetadata") < upload.indexOf("uploadObject"),
   );
   assert.match(upload, /visibility: "gm_only"/u);
+  assert.match(upload, /category,/u);
   assert.match(manager, /upsert: false/u);
   assert.match(manager, /multiple/u);
   assert.match(manager, /uploadCampaignHandoutBatch/u);
@@ -403,6 +458,15 @@ test("route keeps recipient metadata on the Game Master-only data path", () => {
   );
   assert.match(manager, /selectedNames\.join\(", "\)/u);
   assert.match(management, /deleteCampaignWithHandoutsStorageFirst/u);
+  assert.match(manager, /useState<CampaignGalleryCategory>\("handout"\)/u);
+  assert.match(manager, /handout\.category === activeCategory/u);
+  assert.match(tabs, /role="tablist"/u);
+  assert.match(tabs, /aria-selected=\{active\}/u);
+  assert.match(tabs, /grid-cols-2/u);
+  assert.match(tabs, /sm:grid-cols-4/u);
+  for (const category of CAMPAIGN_GALLERY_CATEGORIES) {
+    assert.match(tabs, new RegExp(`\\b${category}\\b`, "u"));
+  }
 
   const playerViewer = readFileSync(
     resolve("components/campaigns/campaign-handouts-viewer.tsx"),
@@ -411,7 +475,7 @@ test("route keeps recipient metadata on the Game Master-only data path", () => {
   assert.doesNotMatch(playerViewer, /visibility|recipient|player\.id/iu);
 });
 
-test("completed campaigns render no Handout mutation controls", () => {
+test("completed campaigns render no Gallery mutation controls", () => {
   const manager = readFileSync(
     resolve("components/campaigns/campaign-handouts-manager.tsx"),
     "utf8",
@@ -422,7 +486,7 @@ test("completed campaigns render no Handout mutation controls", () => {
   assert.match(manager, /completedGameMasterDescription/u);
 });
 
-test("both locales expose Handouts with matching message contracts", () => {
+test("both locales expose Campaign Gallery with matching message contracts", () => {
   const english = JSON.parse(
     readFileSync(resolve("messages/en.json"), "utf8"),
   ) as Record<string, Record<string, unknown>>;
@@ -430,10 +494,51 @@ test("both locales expose Handouts with matching message contracts", () => {
     readFileSync(resolve("messages/ru.json"), "utf8"),
   ) as typeof english;
 
-  assert.equal(english.CampaignHandouts.title, "Handouts");
-  assert.equal(russian.CampaignHandouts.title, "Раздаточные материалы");
+  assert.equal(english.CampaignHandouts.title, "Campaign Gallery");
+  assert.equal(russian.CampaignHandouts.title, "Галерея кампании");
+  assert.deepEqual(english.CampaignHandouts.categories, {
+    handout: "Handouts",
+    npc: "NPC",
+    mapsPlans: "Maps & Plans",
+    other: "Other",
+  });
   assert.deepEqual(
     Object.keys(english.CampaignHandouts).sort(),
     Object.keys(russian.CampaignHandouts).sort(),
   );
+});
+
+test("old localized Handouts route redirects to the single Gallery route", () => {
+  const oldRoute = readFileSync(
+    resolve("app/[locale]/campaigns/[id]/handouts/page.tsx"),
+    "utf8",
+  );
+  const overviewCard = readFileSync(
+    resolve("components/campaigns/campaign-handouts-card.tsx"),
+    "utf8",
+  );
+
+  assert.match(
+    oldRoute,
+    /redirect\(\{ href: `\/campaigns\/\$\{id\}\/gallery`, locale \}\)/u,
+  );
+  assert.doesNotMatch(oldRoute, /campaign_images|CampaignHandoutsManager/u);
+  assert.match(overviewCard, /\/campaigns\/\$\{campaignId\}\/gallery/u);
+});
+
+test("Gallery migration backfills Handouts, validates categories, and keeps category immutable", () => {
+  const migration = readFileSync(
+    resolve(
+      "supabase/migrations/20260903000242_campaign_gallery_categories.sql",
+    ),
+    "utf8",
+  );
+
+  assert.match(migration, /category text not null default 'handout'/u);
+  assert.match(
+    migration,
+    /category in \('handout', 'npc', 'maps_plans', 'other'\)/u,
+  );
+  assert.match(migration, /new\.category is distinct from old\.category/u);
+  assert.doesNotMatch(migration, /create policy|drop policy|storage\.objects/iu);
 });

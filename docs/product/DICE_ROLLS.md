@@ -6,7 +6,7 @@
 
 The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and campaign-authoritative Game Room dice are not implemented.
 
-Campaign-authorized LiveKit video, the responsive Game Room, and Phase 4C1 image-only Campaign Handouts are complete. Phase 4C2 Game Room Image Presentation is next. Dice resumes in Phase 4D1 with the CoC 7e personal roller and in Phase 4D2 with system-aware Game Room integration.
+Campaign-authorized LiveKit video, the responsive Game Room, and the Phase 4C1 image-only Campaign Gallery are complete. Phase 4C2 Game Room Image Presentation is next. Dice resumes in Phase 4D1 with the CoC 7e personal roller and in Phase 4D2 with system-aware Game Room integration.
 
 Initial system:
 

@@ -174,7 +174,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   }
 
   if (handoutCountResult.error) {
-    console.error("Failed to count accessible Campaign Handouts.");
+    console.error("Failed to count accessible Campaign Gallery images.");
   }
 
   const members = participantDirectoryResult.members;

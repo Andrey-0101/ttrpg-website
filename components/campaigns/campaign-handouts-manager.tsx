@@ -14,6 +14,7 @@ import {
   CAMPAIGN_HANDOUT_BUCKET,
   isCampaignHandoutVisibility,
   validateCampaignHandoutFile,
+  type CampaignGalleryCategory,
   type CampaignHandoutVisibility,
 } from "@/lib/campaign-handouts/contracts";
 import { createCampaignHandoutStorageDependencies } from "@/lib/campaign-handouts/storage";
@@ -31,12 +32,14 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "@/i18n/navigation";
 
 import CampaignHandoutGallery from "./campaign-handout-gallery";
+import CampaignGalleryTabs from "./campaign-gallery-tabs";
 
 export type CampaignHandoutManagerItem = {
   id: string;
   displayName: string;
   storagePath: string;
   signedUrl: string | null;
+  category: CampaignGalleryCategory;
   visibility: CampaignHandoutVisibility;
   recipientIds: string[];
 };
@@ -311,6 +314,8 @@ export default function CampaignHandoutsManager({
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
+  const [activeCategory, setActiveCategory] =
+    useState<CampaignGalleryCategory>("handout");
   const [mutation, setMutation] = useState<"upload" | null>(null);
   const [message, setMessage] = useState<ManagerMessage>(null);
   const [uploadProgress, setUploadProgress] = useState<{
@@ -367,6 +372,7 @@ export default function CampaignHandoutsManager({
             file: selectedFile,
             campaignId,
             uploaderId: currentUserId,
+            category: activeCategory,
             dependencies: {
               createId: () => crypto.randomUUID(),
               insertMetadata: async (metadata) => {
@@ -455,13 +461,15 @@ export default function CampaignHandoutsManager({
     }
   }
 
-  const galleryItems = initialHandouts.map((handout) => ({
-    ...handout,
-    key: `${handout.id}:${handout.visibility}:${handout.recipientIds.join(",")}`,
-  }));
+  const galleryItems = initialHandouts
+    .filter((handout) => handout.category === activeCategory)
+    .map((handout) => ({
+      ...handout,
+      key: `${handout.id}:${handout.visibility}:${handout.recipientIds.join(",")}`,
+    }));
 
   const gallery =
-    initialHandouts.length === 0 ? (
+    galleryItems.length === 0 ? (
       <section className="rounded-lg border border-dashed border-white/40 bg-black/20 p-6 text-center sm:p-8">
         <h2 className="text-2xl font-semibold">
           {translations("emptyTitle")}
@@ -489,7 +497,20 @@ export default function CampaignHandoutsManager({
 
   return (
     <div className="grid min-w-0 gap-6">
-      {gallery}
+      <CampaignGalleryTabs
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+        panelId="campaign-gallery-panel"
+      />
+
+      <div
+        id="campaign-gallery-panel"
+        role="tabpanel"
+        aria-labelledby={`campaign-gallery-tab-${activeCategory}`}
+        className="min-w-0"
+      >
+        {gallery}
+      </div>
 
       {!campaignActive ? (
         <section className="rounded-lg border border-neutral-300 bg-white p-5 text-neutral-950">
@@ -506,7 +527,13 @@ export default function CampaignHandoutsManager({
             {translations("uploadTitle")}
           </h2>
           <p className="mt-2 text-sm text-neutral-700">
-            {translations("uploadDescription")}
+            {translations("uploadDescription", {
+              category: translations(
+                activeCategory === "maps_plans"
+                  ? "categories.mapsPlans"
+                  : `categories.${activeCategory}`,
+              ),
+            })}
           </p>
           <form onSubmit={handleUpload} className="mt-5 min-w-0">
             <label className="block min-w-0 font-medium">

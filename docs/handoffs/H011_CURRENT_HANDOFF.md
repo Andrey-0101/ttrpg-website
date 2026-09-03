@@ -34,7 +34,7 @@ Implemented current capabilities include:
 - public personal VtM and Custom dice rollers, saved Custom presets, and private personal history;
 - campaign-authorized LiveKit video at `/{locale}/campaigns/{campaignId}/game-room`;
 - a responsive seven-slot Game Room layout with one GM slot and Player positions 1–6, explicit Join/Leave, local camera and microphone controls, stable participant placement, reconnect handling, and sanitized failure states.
-- image-only Campaign Handouts at `/{locale}/campaigns/{campaignId}/handouts`, with private signed delivery, active-GM upload/access/deletion controls, RLS-filtered Player viewing, and completed-campaign read-only/denial behavior.
+- an image-only Campaign Gallery at `/{locale}/campaigns/{campaignId}/gallery`, with fixed Handouts, NPC, Maps & Plans, and Other sections, private signed delivery, active-GM upload/access/deletion controls, RLS-filtered Player viewing, and completed-campaign read-only/denial behavior. The former localized `/handouts` route redirects to `/gallery`.
 
 Supported Campaign Game Room capacity is one GM plus up to six Players. The last accepted Production human test involved one GM and four Players. It passed. No quantitative packet-loss, latency, jitter, reconnect timeline, or per-participant connection-quality telemetry was captured; do not invent such evidence.
 
@@ -52,7 +52,7 @@ Standalone Video Rooms are not implemented. LiveKit is accepted for the current 
 
 ## 4. Database and connected-project verification
 
-The repository contains nine ordered, forward-only migrations. The Phase 4C1 release added `20260902132447_allow_completed_campaign_image_cleanup.sql` after connected inspection confirmed that the existing active-only upload helper could not authorize represented-object cleanup before completed-campaign deletion.
+The repository contains ten ordered, forward-only migrations. The Phase 4C1 release added `20260902132447_allow_completed_campaign_image_cleanup.sql` after connected inspection confirmed that the existing active-only upload helper could not authorize represented-object cleanup before completed-campaign deletion. The final 4C1 refinement added `20260903000242_campaign_gallery_categories.sql`: `campaign_images.category` is constrained to `handout`, `npc`, `maps_plans`, or `other`, existing rows defaulted to `handout`, and the update trigger makes category immutable. Category is organizational metadata only; RLS and Storage authorization are unchanged.
 
 Connected metadata verification found:
 
@@ -124,6 +124,8 @@ Repeat only a gate affected by a relevant code, schema, dependency, provider, br
 
 Phase 4C1 added focused upload validation/workflow tests, source privacy checks, and direct test-project RLS/Storage assertions. The direct transaction covered selected-Player access, outsider denial, completed-Player denial, completed-GM read-only metadata, represented-object cleanup, and final completed-campaign deletion; all temporary users, rows, and objects were rolled back. Local Docker was unavailable, so the repository pgTAP file was not rerun locally; the affected policy was instead exercised directly in the established non-Production Supabase test project.
 
+The final Gallery refinement added focused category, shared-tab, privacy, lifecycle-source, migration, and redirect tests. Connected verification after the tenth migration confirmed all 11 pre-existing Production images as `handout`, zero invalid or null categories, a validated category constraint, category immutability, RLS still enabled, and unchanged image/Storage policy counts. No `(campaign_id, category)` index was added: the route performs one bounded campaign-image read and filters the four tabs client-side, while the current Production library contains 11 rows.
+
 ## 8. Consolidation and cleanup decisions
 
 | Former resource | Decision and reason |
@@ -146,15 +148,17 @@ No backup, renamed, temporary, or just-in-case TTRPG project copy is required ou
 
 - standalone Video Rooms with a separately approved product, provider, schema, RLS, ownership, invitation, retention, and deletion contract;
 - shared server-authoritative campaign dice and Realtime feed;
-- Phase 4C2 GM-controlled Game Room presentation of existing Campaign Handouts;
-- Game Room Participants, Quick Notes, Session Context, Characters, NPCs, and Selected Handouts beyond that approved presentation slice;
+- Phase 4C2 GM-controlled Game Room presentation of existing Campaign Gallery images;
+- Game Room Participants, Quick Notes, Session Context, Characters, structured NPCs, and selected Gallery images beyond that approved presentation slice;
 - campaign moderation, recording, transcription, and screen sharing;
 - Call of Cthulhu 7e characters, dice, Game Hub content, and Keeper tools;
 - print/PDF, independent sheet language, public sharing, and broader public-readiness work including abuse controls, monitoring, legal/privacy operations, and hosted leaked-password protection.
 
-Post-H011 roadmap amendment (2026-09-01): Phase 4C1 was selected as the next product stage. It is now implemented as image-only Campaign Handouts; the permanent roadmap in `docs/product/ROADMAP.md` makes Phase 4C2 Game Room Image Presentation next. All earlier H011 implementation, verification, cleanup, and Game Room Production-acceptance facts remain unchanged.
+Post-H011 roadmap amendment (2026-09-01): Phase 4C1 was selected as the next product stage. It is now implemented as an image-only Campaign Gallery; the permanent roadmap in `docs/product/ROADMAP.md` makes Phase 4C2 Game Room Image Presentation next. All earlier H011 implementation, verification, cleanup, and Game Room Production-acceptance facts remain unchanged.
 
-Post-4C1 UI refinement (2026-09-02): active GMs can select multiple image files for sequential, independently reported uploads; the gallery uses compact uncropped thumbnails; and visibility, recipient, save, and delete controls live inside each Handout card. This refinement did not change the Phase 4C1 privacy/lifecycle model, database schema, or Phase 4C2 roadmap boundary.
+Post-4C1 UI refinement (2026-09-02): active GMs can select multiple image files for sequential, independently reported uploads; the gallery uses compact uncropped thumbnails; and visibility, recipient, save, and delete controls live inside each image card. This refinement did not change the Phase 4C1 privacy/lifecycle model or Phase 4C2 roadmap boundary.
+
+Final 4C1 Gallery refinement (2026-09-03): the user-facing feature is Campaign Gallery / Галерея кампании. One shared responsive, keyboard-accessible tab interface filters the four fixed image-only sections; uploads inherit the active section. NPC means NPC images only and Maps & Plans means map/plan images only. No structured NPC, map, document, tag, folder, or category-permission system was added.
 
 ## 10. Exact starting procedure for the next stage
 
@@ -163,7 +167,7 @@ Post-4C1 UI refinement (2026-09-02): active GMs can select multiple image files 
 3. Run `git fetch origin --prune`.
 4. Confirm `git branch --show-current` is `main`, `git status --short --branch` is clean, and `git rev-parse HEAD` equals `git rev-parse origin/main`.
 5. Inspect `package.json` and the installed Next.js 16.3.3 documentation before changing Next.js code.
-6. Begin from the approved Phase 4C2 Game Room Image Presentation scope in `docs/product/ROADMAP.md`; reuse existing Campaign Handouts and do not infer that standalone Video Rooms, broad document Handouts, or the superseded shared-dice phase is next.
+6. Begin from the approved Phase 4C2 Game Room Image Presentation scope in `docs/product/ROADMAP.md`; reuse existing Campaign Gallery images and do not infer that standalone Video Rooms, broad document Handouts, structured NPCs/maps, or the superseded shared-dice phase is next.
 7. Create a new isolated `codex/` branch or worktree from the verified `origin/main` and rerun only the gates proportionate to that change.
 
 Future work must not depend on any former external folder or historical handoff being treated as current.

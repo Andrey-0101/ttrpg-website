@@ -15,7 +15,7 @@ Completed foundation:
 - Milestone 3 — Campaign Foundation;
 - Phase 4A — VtM Personal Dice & Personal Persistence;
 - Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room;
-- Phase 4C1 — image-only Campaign Handouts.
+- Phase 4C1 — image-only Campaign Gallery.
 
 Next approved work:
 
@@ -100,17 +100,18 @@ The implementation:
 
 Recording, transcription, screen sharing, standalone rooms, and remote moderation are not delivered or committed by this phase. The accepted human test involved one GM and four Players; no quantitative network telemetry was collected.
 
-### Phase 4C1 — Campaign Handouts (image library)
+### Phase 4C1 — Campaign Gallery (image library)
 
 **Status: Complete**
 
 #### Goal
 
-Provide private image-only Campaign Handouts for the existing campaign authorization domain.
+Provide a private image-only Campaign Gallery for the existing campaign authorization domain.
 
 #### Scope
 
-- localized campaign-scoped route at `/{locale}/campaigns/{campaignId}/handouts`;
+- localized campaign-scoped route at `/{locale}/campaigns/{campaignId}/gallery`, with the former `/handouts` route redirecting to it;
+- four fixed image-only sections: Handouts, NPC, Maps & Plans, and Other;
 - GM-managed multi-image sequential upload, compact full-image thumbnails, enlarged viewing, per-card visibility controls, and removal;
 - RLS-filtered Player listing and viewing without recipient/access metadata;
 - the existing private `campaign-images` Storage bucket and campaign image metadata/recipient model;
@@ -120,7 +121,7 @@ Provide private image-only Campaign Handouts for the existing campaign authoriza
 - Storage-first individual and campaign deletion with absence verification;
 - completed GM read-only access and completed Player image denial.
 
-This is an image-only Handouts library, not the previously discussed broad Handouts system. It does not add documents, annotations, maps, clues, NPCs, sessions, Chronicle records, screen sharing, or presentation controls.
+This is an image-only Gallery, not a broad Handouts, NPC, or Maps system. NPC means NPC images only; Maps & Plans means map/plan images only. It does not add documents, annotations, structured maps, clues, NPC records, sessions, Chronicle records, screen sharing, or presentation controls.
 
 #### Exit criteria
 
@@ -132,7 +133,7 @@ Delivered: authorized users see only images allowed by the accepted campaign vis
 
 #### Goal
 
-Let the GM present an image from Campaign Handouts in the shared Game Room Display.
+Let the GM present an image from the Campaign Gallery in the shared Game Room Display.
 
 #### Scope
 

@@ -99,7 +99,7 @@ A trusted group reduces product scope. It does not make missing authorization sa
 - immutable, constrained audit records with no object paths, tokens, media, or unrestricted JSON;
 - RLS plus database triggers enforcing fail-closed completed-campaign mutations.
 
-This foundation is current in Production. All seven campaign-video tables use RLS; the required foreign-key indexes, grants, and `handle_new_user()` execution hardening are current. The private `campaign-images` bucket remains current. Campaign image upload/presentation UI and remote moderation remain planned and inactive.
+This foundation is current in Production. All seven campaign-video tables use RLS; the required foreign-key indexes, grants, and `handle_new_user()` execution hardening are current. The private `campaign-images` bucket remains current. Campaign Gallery upload and access management are implemented; Game Room image presentation and remote moderation remain planned and inactive.
 
 ### Invitations
 
@@ -187,7 +187,7 @@ Two defects found during testing were fixed through separate migrations:
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
 - no campaign-authoritative dice security model implemented yet;
-- no Game Room presentation UI for the implemented Campaign Handouts yet;
+- no Game Room presentation UI for the implemented Campaign Gallery yet;
 - no standalone Video Rooms authorization model or route; standalone rooms are not active roadmap scope;
 - campaign video performs fresh authenticated authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens only after an explicit Join action.
 
@@ -260,9 +260,9 @@ The last Production human group test passed for the accepted current scope with 
 
 ## Level A requirements for approved later campaign content
 
-### Campaign Handouts and presentation — Phases 4C1 and 4C2
+### Campaign Gallery and presentation — Phases 4C1 and 4C2
 
-Phase 4C1 now implements private Storage, JPEG/PNG/WebP and 5 MiB limits, the exact represented campaign path, safe display names, campaign image/recipient visibility, signed display access, Storage-first deletion/orphan reconciliation, and removed-Player/Outsider denial. The active GM alone can create/change/delete individual Handouts; the completed GM is read-only, except for represented-object cleanup before final campaign deletion. Players receive no recipient/access UI metadata.
+Phase 4C1 now implements a private image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other categories; NPC and Maps & Plans are images only. It retains private Storage, JPEG/PNG/WebP and 5 MiB limits, the exact represented campaign path, safe display names, campaign image/recipient visibility, signed display access, Storage-first deletion/orphan reconciliation, and removed-Player/Outsider denial. Category is immutable organizational metadata and never grants access. The active GM alone can create/change/delete individual images; the completed GM is read-only, except for represented-object cleanup before final campaign deletion. Players receive no recipient/access UI metadata.
 
 Phase 4C2 still requires GM-only presentation selection and stop controls, shared current-image state, reconnect behavior, and direct authorization tests. Broader quota/abuse controls remain a Public Readiness concern rather than an unimplemented Phase 4C1 data feature.
 

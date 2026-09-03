@@ -32,7 +32,7 @@ export default function CampaignHandoutsCard({
           </p>
         </div>
         <Link
-          href={`/campaigns/${campaignId}/handouts`}
+          href={`/campaigns/${campaignId}/gallery`}
           className="inline-flex min-h-11 shrink-0 items-center justify-center rounded border border-amber-200 px-4 py-2 font-semibold text-amber-50 hover:bg-amber-900/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200"
         >
           {openLabel}

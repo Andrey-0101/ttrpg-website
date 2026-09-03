@@ -10,10 +10,13 @@ import {
 } from "react";
 import { useTranslations } from "next-intl";
 
+import type { CampaignGalleryCategory } from "@/lib/campaign-handouts/contracts";
+
 export type CampaignHandoutGalleryItem = {
   key: string;
   displayName: string;
   signedUrl: string | null;
+  category: CampaignGalleryCategory;
 };
 
 export default function CampaignHandoutGallery<
