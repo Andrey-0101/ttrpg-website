@@ -18,7 +18,7 @@ Describe the intended structure without presenting speculative routes or uncommi
 1. Milestones 1–3 — complete;
 2. Phase 4A personal VtM dice — complete;
 3. Phase 4B Campaign Video Rooms Integration — complete and Production accepted;
-4. Phase 4C1 image-only Campaign Handouts — complete;
+4. Phase 4C1 image-only Campaign Gallery — complete;
 5. Phase 4C2 Game Room Image Presentation — next;
 6. Phase 4D1 CoC 7e Dice Roller;
 7. Phase 4D2 system-aware Game Room Dice Integration;
@@ -62,7 +62,7 @@ Campaign
 │   ├── Image presentation                     [4C2]
 │   ├── System-aware dice                      [4D2]
 │   └── Linked participant characters          [4F2]
-├── Campaign Handouts (image-only)             [CURRENT]
+├── Campaign Gallery (four image-only sections) [CURRENT]
 └── Campaign Notes                             [4G]
     ├── Shared notes for permitted participants
     └── GM-private notes

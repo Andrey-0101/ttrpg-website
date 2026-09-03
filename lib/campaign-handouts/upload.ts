@@ -3,6 +3,7 @@ import {
   createCampaignHandoutPath,
   validateCampaignHandoutFile,
   type CampaignHandoutFileValidationError,
+  type CampaignGalleryCategory,
 } from "./contracts";
 
 export type CampaignHandoutUploadFile = Pick<
@@ -24,6 +25,7 @@ export type CampaignHandoutUploadMetadata = {
   display_name: string;
   mime_type: string;
   byte_size: number;
+  category: CampaignGalleryCategory;
   visibility: "gm_only";
 };
 
@@ -45,11 +47,13 @@ export async function uploadCampaignHandoutFile<
 >({
   campaignId,
   uploaderId,
+  category,
   file,
   dependencies,
 }: {
   campaignId: string;
   uploaderId: string;
+  category: CampaignGalleryCategory;
   file: TFile;
   dependencies: CampaignHandoutUploadDependencies<TFile>;
 }): Promise<CampaignHandoutUploadResult> {
@@ -76,6 +80,7 @@ export async function uploadCampaignHandoutFile<
       display_name: createCampaignHandoutDisplayName(file.name),
       mime_type: file.type,
       byte_size: file.size,
+      category,
       visibility: "gm_only",
     });
 

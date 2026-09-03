@@ -4,6 +4,16 @@ export const CAMPAIGN_HANDOUT_ACCEPT = "image/jpeg,image/png,image/webp";
 export const CAMPAIGN_HANDOUT_SIGNED_URL_TTL = 60 * 60;
 export const CAMPAIGN_HANDOUT_DISPLAY_NAME_MAX_LENGTH = 255;
 
+export const CAMPAIGN_GALLERY_CATEGORIES = [
+  "handout",
+  "npc",
+  "maps_plans",
+  "other",
+] as const;
+
+export type CampaignGalleryCategory =
+  (typeof CAMPAIGN_GALLERY_CATEGORIES)[number];
+
 export const CAMPAIGN_HANDOUT_VISIBILITIES = [
   "gm_only",
   "all_active_players",
@@ -103,4 +113,10 @@ export function isCampaignHandoutVisibility(
   return CAMPAIGN_HANDOUT_VISIBILITIES.some(
     (visibility) => visibility === value,
   );
+}
+
+export function isCampaignGalleryCategory(
+  value: string,
+): value is CampaignGalleryCategory {
+  return CAMPAIGN_GALLERY_CATEGORIES.some((category) => category === value);
 }

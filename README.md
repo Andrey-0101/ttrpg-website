@@ -31,13 +31,13 @@ Implemented:
 - a twelve-system planned catalogue across Games, Dice Rollers, character creation, and campaign creation;
 - campaign-authorized LiveKit video for one GM plus up to six Players;
 - a dedicated responsive Campaign Game Room at `/{locale}/campaigns/{campaignId}/game-room`;
-- image-only Campaign Handouts at `/{locale}/campaigns/{campaignId}/handouts`, with private signed delivery and GM-controlled Player visibility;
+- an image-only Campaign Gallery at `/{locale}/campaigns/{campaignId}/gallery`, with fixed Handouts, NPC, Maps & Plans, and Other sections, private signed delivery, and GM-controlled Player visibility;
 - loading, empty, retry, unavailable, and mutation states;
 - Vercel production deployment at `https://ttrpg.fans`.
 
 Not yet implemented:
 
-- Game Room image presentation from existing Campaign Handouts;
+- Game Room image presentation from the existing Campaign Gallery;
 - Call of Cthulhu 7e dice, character sheets, and system-aware Game Room integration;
 - campaign notes within the approved shared/GM-private scope;
 - general Handouts, NPCs, Sessions, Chronicle records, or clues;
@@ -145,7 +145,7 @@ main
 
 PRs #28 through #34 are merged and accepted in Production. They delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation fix, dedicated Game Room, responsive seven-slot composition, and final video-card UX. The current verified deployment is `READY`. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the responsive dedicated Game Room, and Phase 4C1 image-only Campaign Handouts are implemented. The last Game Room Production human group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected; no additional media/layout/human Game Room acceptance retest is currently required. Phase 4C2 Game Room Image Presentation is the next approved work. Standalone Video Rooms are no longer an active roadmap commitment.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the responsive dedicated Game Room, and the Phase 4C1 image-only Campaign Gallery are implemented. The Gallery's four fixed sections contain images only; NPC and Maps & Plans are not structured gameplay systems. The last Game Room Production human group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected; no additional media/layout/human Game Room acceptance retest is currently required. Phase 4C2 Game Room Image Presentation is the next approved work. Standalone Video Rooms are no longer an active roadmap commitment.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 

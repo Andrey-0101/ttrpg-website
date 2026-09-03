@@ -2,9 +2,9 @@
 
 ## Status
 
-Campaign Foundation, the campaign-video data foundation, and Phase 4C1 image-only Campaign Handouts are implemented and current in Production. H011 consolidation started from deployed `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`.
+Campaign Foundation, the campaign-video data foundation, and the Phase 4C1 image-only Campaign Gallery are implemented and current in Production. H011 consolidation started from deployed `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`.
 
-All nine repository migrations are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables, five required foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
+All ten repository migrations are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables, five required foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
 
 This matrix describes the current minimum access boundary for:
 
@@ -66,7 +66,7 @@ Rules are constrained to group-to-group, GM-to-group, and group-to-GM endpoints.
 | Delete represented objects before final campaign deletion | Allow, Storage first | Deny | Deny | Allow, Storage first | Deny | Deny |
 | Rename/upsert object | Deny | Deny | Deny | Deny | Deny | Deny |
 
-The private `campaign-images` bucket enforces JPEG/PNG/WebP and a maximum of `5,242,880` bytes. Exact metadata equality with `CAMPAIGN_UUID/IMAGE_UUID/RANDOM_OBJECT_UUID.ext` is required; guessed IDs and paths grant nothing.
+The private `campaign-images` bucket enforces JPEG/PNG/WebP and a maximum of `5,242,880` bytes. Exact metadata equality with `CAMPAIGN_UUID/IMAGE_UUID/RANDOM_OBJECT_UUID.ext` is required; guessed IDs and paths grant nothing. `campaign_images.category` is constrained, immutable organizational metadata and does not grant access or alter any row or Storage policy.
 
 ## Campaigns
 
@@ -261,7 +261,7 @@ Verify:
 
 The current Production campaign-video verification confirmed:
 
-- all nine migrations present;
+- all ten migrations present;
 - RLS enabled on all seven campaign-video tables;
 - all five required foreign-key indexes valid;
 - database grants hardened by `20260823143856_harden_campaign_database_grants.sql`;

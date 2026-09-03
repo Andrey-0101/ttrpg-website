@@ -365,7 +365,7 @@
     "campaignCreate": "Create Campaign",
     "campaignDetails": "Campaign",
     "campaignGameRoom": "Campaign Game Room",
-    "campaignHandouts": "Campaign Handouts",
+    "campaignGallery": "Campaign Gallery",
     "campaignJoin": "Join Campaign"
   },
   "AuthErrors": {
@@ -480,8 +480,8 @@
         "description": "Shared campaign rolls and their authoritative history will be added later."
       },
       "handouts": {
-        "title": "Handout Preview",
-        "description": "Images selected from the campaign Handouts library will be presented here in a later phase."
+        "title": "Gallery Image Preview",
+        "description": "Images selected from the Campaign Gallery will be presented here in a later phase."
       },
       "participants": {
         "title": "Participants",
@@ -496,7 +496,7 @@
         "description": "The session workspace will later bring together the approved campaign context.",
         "activeCharacters": "Active Characters",
         "currentNpcs": "Current NPCs",
-        "selectedHandouts": "Selected Handouts"
+        "selectedHandouts": "Selected Gallery Images"
       }
     }
   },
@@ -592,31 +592,38 @@
     "deleteError": "Unable to delete the campaign."
   },
   "CampaignHandouts": {
-    "title": "Handouts",
+    "title": "Campaign Gallery",
     "back": "Back to Campaign Overview",
-    "loading": "Loading campaign handouts...",
-    "gameMasterDescription": "Upload campaign images and control which active Players may view each handout.",
-    "playerDescription": "Browse the handout images the Game Master has shared with you.",
+    "loading": "Loading Campaign Gallery...",
+    "gameMasterDescription": "Organize campaign images and control which active Players may view each one.",
+    "playerDescription": "Browse campaign images the Game Master has shared with you.",
+    "categoryTabsLabel": "Gallery sections",
+    "categories": {
+      "handout": "Handouts",
+      "npc": "NPC",
+      "mapsPlans": "Maps & Plans",
+      "other": "Other"
+    },
     "completedTitle": "Completed campaign",
-    "completedGameMasterDescription": "This library is read-only because the campaign is completed. Existing handouts remain available to the Game Master.",
-    "completedPlayerDescription": "Handout images are unavailable to Players after a campaign is completed.",
-    "loadErrorTitle": "Handouts unavailable",
-    "loadError": "The handout library could not be loaded. Please try again.",
-    "emptyTitle": "No handouts available",
-    "emptyGameMasterDescription": "Upload the first image for this campaign.",
-    "emptyPlayerDescription": "The Game Master has not shared any handouts with you.",
+    "completedGameMasterDescription": "The Campaign Gallery is read-only because the campaign is completed. Existing images remain available to the Game Master.",
+    "completedPlayerDescription": "Campaign Gallery images are unavailable to Players after a campaign is completed.",
+    "loadErrorTitle": "Campaign Gallery unavailable",
+    "loadError": "The Campaign Gallery could not be loaded. Please try again.",
+    "emptyTitle": "No images in this section yet",
+    "emptyGameMasterDescription": "Upload the first image to this Gallery section.",
+    "emptyPlayerDescription": "The Game Master has not shared any images in this section with you.",
     "openImage": "Open {name}",
     "imageUnavailable": "Image unavailable. The Game Master can delete this incomplete entry and upload it again.",
     "close": "Close",
-    "uploadTitle": "Upload handouts",
-    "uploadDescription": "Select one or more JPEG, PNG, or WebP images, up to 5 MiB each. Files upload one at a time and are visible only to the Game Master until access is changed.",
+    "uploadTitle": "Upload images",
+    "uploadDescription": "Upload to {category}. Select one or more JPEG, PNG, or WebP images, up to 5 MiB each. Files upload one at a time and are visible only to the Game Master until access is changed.",
     "chooseImages": "Image files",
     "selectedFiles": "{count, plural, one {# file selected} other {# files selected}}",
     "invalidSelectionTitle": "These files cannot be uploaded:",
     "upload": "Upload images",
     "uploading": "Uploading...",
     "uploadProgress": "Uploading {current} of {total}...",
-    "uploadBatchSuccess": "{count, plural, one {# handout was uploaded} other {# handouts were uploaded}} for the Game Master only.",
+    "uploadBatchSuccess": "{count, plural, one {# image was uploaded} other {# images were uploaded}} for the Game Master only.",
     "uploadBatchPartial": "Uploaded {successCount}. {failedCount} could not be uploaded.",
     "uploadBatchFailed": "{failedCount, plural, one {# file could not be uploaded} other {# files could not be uploaded}}.",
     "uploadBatchUnexpected": "The upload could not be completed. Review the refreshed library before retrying.",
@@ -630,7 +637,7 @@
       "empty": "Choose a non-empty image file.",
       "invalid_type": "Choose a JPEG, PNG, or WebP image.",
       "too_large": "The image must be 5 MiB or smaller.",
-      "metadata_failed": "The private handout entry could not be created.",
+      "metadata_failed": "The private image entry could not be created.",
       "upload_failed": "The image upload failed; its incomplete entry was cleaned up.",
       "cleanup_unverified": "The upload failed and cleanup could not be verified. Refresh the library before retrying this file."
     },
@@ -640,7 +647,7 @@
       "allPlayers": "All Players",
       "selectedPlayers": "Selected Players"
     },
-    "selectedPlayers": "Players who can view this handout",
+    "selectedPlayers": "Players who can view this image",
     "selectedPlayerNames": "Selected Players",
     "selectedPlayersRequired": "Select at least one active Player.",
     "noActivePlayers": "This campaign has no active Players to select.",
@@ -648,19 +655,19 @@
     "playerFallback": "Player {position}",
     "saveVisibility": "Save visibility",
     "saving": "Saving...",
-    "savingVisibility": "Saving handout visibility. Please wait.",
-    "visibilitySaved": "Handout visibility was saved.",
-    "visibilityError": "Unable to save handout visibility.",
-    "delete": "Delete handout",
+    "savingVisibility": "Saving image visibility. Please wait.",
+    "visibilitySaved": "Image visibility was saved.",
+    "visibilityError": "Unable to save image visibility.",
+    "delete": "Delete image",
     "deleting": "Deleting...",
     "deleteConfirm": "Permanently delete {name}? This removes the private image and cannot be undone.",
-    "deletingStatus": "Deleting the private image and handout. Please wait.",
-    "deletedStatus": "The handout was deleted.",
-    "deleteError": "Unable to verify private image cleanup, so the handout was not deleted.",
+    "deletingStatus": "Deleting the private image. Please wait.",
+    "deletedStatus": "The image was deleted.",
+    "deleteError": "Unable to verify private image cleanup, so the image was not deleted.",
     "overview": {
-      "description": "Open the campaign's private image library and view the handouts available to you.",
+      "description": "Open the campaign's private image library with Handouts, NPC images, Maps & Plans, and Other images.",
       "accessibleCount": "Available",
-      "open": "Open Handouts"
+      "open": "Open Campaign Gallery"
     }
   },
   "CampaignInvitations": {

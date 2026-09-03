@@ -124,6 +124,7 @@ export type Database = {
         Row: {
           byte_size: number
           campaign_id: string
+          category: string
           created_at: string
           display_name: string
           id: string
@@ -136,6 +137,7 @@ export type Database = {
         Insert: {
           byte_size: number
           campaign_id: string
+          category?: string
           created_at?: string
           display_name: string
           id?: string
@@ -148,6 +150,7 @@ export type Database = {
         Update: {
           byte_size?: number
           campaign_id?: string
+          category?: string
           created_at?: string
           display_name?: string
           id?: string

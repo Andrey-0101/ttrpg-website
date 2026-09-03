@@ -9,7 +9,7 @@
 | Status | Implemented snapshot |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
 | Current phase | Phase 4 — Core Play & Campaign Tools |
-| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration, Phase 4C1 image-only Campaign Handouts |
+| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration, Phase 4C1 image-only Campaign Gallery |
 | Next work | Phase 4C2 Game Room Image Presentation |
 
 ## Purpose
@@ -95,7 +95,8 @@ The Dashboard is an accepted implemented personal overview route. It currently l
 │           ├── not-found.tsx
 │           ├── game-room
 │           │   └── page.tsx
-│           ├── handouts
+│           ├── gallery
+│           ├── handouts (redirect to gallery)
 │           │   ├── page.tsx
 │           │   └── loading.tsx
 │           └── characters
@@ -311,19 +312,19 @@ Current integrated workspace sections:
 - linked characters;
 - owned eligible character linking;
 - campaign counts and navigation;
-- compact Handouts entry and current-user accessible count;
+- compact Campaign Gallery entry and current-user accessible count across all four sections;
 - completion and deletion;
 - loading and unavailable states.
 
 The current foundation intentionally keeps these controls on the overview route rather than creating separate Members, Characters, or Settings routes.
 
-### Campaign Handouts
+### Campaign Gallery
 
 ```text
-/[locale]/campaigns/[id]/handouts
+/[locale]/campaigns/[id]/gallery
 ```
 
-This campaign-scoped route implements Phase 4C1 image-only Handouts. It has no global or per-Handout detail route: enlarged viewing stays in an accessible page lightbox. The active GM can select multiple JPEG/PNG/WebP images up to 5 MiB each for sequential upload, view compact full-image thumbnails without cropping, and manage GM-only/all-Player/selected-Player visibility, named recipients, and Storage-first deletion within each Handout card. Active Players receive only RLS-authorized images through short-lived signed URLs and receive no access/recipient UI metadata. Completed GMs retain read-only viewing; completed Players receive no image access.
+This campaign-scoped route implements the Phase 4C1 image-only Campaign Gallery. Four keyboard-accessible tabs select the fixed Handouts, NPC, Maps & Plans, and Other categories; the former localized `/handouts` route redirects to `/gallery`. NPC and Maps & Plans contain images only, not structured records. Enlarged viewing stays in an accessible page lightbox. The active GM can select multiple JPEG/PNG/WebP images up to 5 MiB each for sequential upload into the active category, view compact full-image thumbnails without cropping, and manage GM-only/all-Player/selected-Player visibility, named recipients, and Storage-first deletion within each image card. Active Players receive only RLS-authorized images through short-lived signed URLs and receive no access/recipient UI metadata. Completed GMs retain read-only viewing and category switching; completed Players receive no image access.
 
 ### Campaign Game Room
 
@@ -345,7 +346,7 @@ The accepted participant model is one GM plus up to six Players. The responsive 
 | Campaign shared character | active campaign GM or Player; read only |
 | My Campaigns | authenticated participant |
 | Campaign Overview | campaign GM or active Player |
-| Campaign Handouts | campaign GM; active Players see only RLS-authorized images; completed GM read-only; completed Players denied image access |
+| Campaign Gallery | campaign GM; active Players see only RLS-authorized images; completed GM read-only; completed Players denied image access |
 | Campaign Game Room | campaign GM or Player through campaign RLS; active campaign required to Join video |
 | Invitation management | GM only |
 | Accept invitation | authenticated valid token holder |
@@ -360,7 +361,7 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- Game Room image presentation from Campaign Handouts;
+- Game Room image presentation from Campaign Gallery;
 - CoC dice and system-aware Game Room dice;
 - CoC character sheets and system-aware linked-character integration;
 - campaign-authoritative persisted roll history or realtime feed unless approved within 4D2;
@@ -376,6 +377,6 @@ Not implemented:
 
 The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
 
-It has a working campaign authorization boundary, a Production-accepted campaign video workspace, and image-only Campaign Handouts. Phase 4C2 Game Room Image Presentation is next. The approved forward sequence continues with 4D1/4D2 CoC and system-aware dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
+It has a working campaign authorization boundary, a Production-accepted campaign video workspace, and an image-only Campaign Gallery. Phase 4C2 Game Room Image Presentation is next. The approved forward sequence continues with 4D1/4D2 CoC and system-aware dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
 
 Standalone Video Rooms and broad Handouts/NPC/Sessions/Chronicle modules are uncommitted backlog possibilities, not current limitations that imply scheduled delivery.

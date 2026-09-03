@@ -13,7 +13,7 @@
 | Canonical production domain | `https://ttrpg.fans` |
 | Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
 | Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Phase 4C1 image-only Campaign Handouts complete; Phase 4C2 Game Room Image Presentation is next |
+| Current delivery stage | Phase 4C1 image-only Campaign Gallery complete; Phase 4C2 Game Room Image Presentation is next |
 | Current audience | Small invited group of friends |
 
 ## Release-state boundaries
@@ -22,7 +22,7 @@
 
 H011 consolidation started from the clean, deployed `main` baseline at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`. PRs #28 through #34 delivered the campaign-video data foundation, CoC campaign shell, campaign creation fix, dedicated Game Room, responsive seven-slot layout, and final video-card UX; PR #35 published the H010 audit, dependency remediation, documentation synchronization, and CI expansion. The current authoritative publication state is recorded in `docs/handoffs/H011_CURRENT_HANDOFF.md`.
 
-The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the dedicated responsive Campaign Game Room, and Phase 4C1 image-only Campaign Handouts are implemented. The last human Game Room Production group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional media, layout, or human Game Room acceptance retest is currently required. Phase 4C2 Game Room Image Presentation is the next approved product work. Standalone Video Rooms have been removed from the active roadmap and retained only as an uncommitted backlog idea.
+The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the dedicated responsive Campaign Game Room, and the Phase 4C1 image-only Campaign Gallery are implemented. The Gallery has four fixed image-only sections: Handouts, NPC, Maps & Plans, and Other. The last human Game Room Production group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional media, layout, or human Game Room acceptance retest is currently required. Phase 4C2 Game Room Image Presentation is the next approved product work. Standalone Video Rooms have been removed from the active roadmap and retained only as an uncommitted backlog idea.
 
 Release history relevant to the current baseline:
 
@@ -241,7 +241,7 @@ public.campaign_image_recipients
 public.campaign_video_audit_log
 ```
 
-All nine repository migrations are current in Production. The seven campaign-video tables use RLS; the five required foreign-key indexes, database grants, and `handle_new_user()` hardening are current. The private `campaign-images` Storage bucket is current. Phase 4C1 uses the existing `campaign_images` and `campaign_image_recipients` tables rather than adding a broad handout table. No campaign-authoritative dice-roll, provider-room-mapping, document-handout, NPC, session, or campaign-notes table is implemented. Personal dice history is private per owner and is not campaign evidence.
+All ten repository migrations are current in Production. The seven campaign-video tables use RLS; the five required foreign-key indexes, database grants, and `handle_new_user()` hardening are current. The private `campaign-images` Storage bucket is current. Phase 4C1 uses the existing `campaign_images` and `campaign_image_recipients` tables rather than adding broad Handout, NPC, or Maps tables. `campaign_images.category` is fixed to `handout`, `npc`, `maps_plans`, or `other`; it is immutable organizational metadata and grants no access. No campaign-authoritative dice-roll, provider-room-mapping, document-handout, structured NPC, session, or campaign-notes table is implemented. Personal dice history is private per owner and is not campaign evidence.
 
 Generated types:
 
@@ -344,7 +344,7 @@ Approved later Phase 4 work is limited to Game Room image presentation, CoC dice
 
 Implemented:
 
-- Phase 4C1 private image-only Campaign Handouts at `/{locale}/campaigns/{campaignId}/handouts`, with GM upload/access management and RLS-filtered Player viewing.
+- Phase 4C1 private image-only Campaign Gallery at `/{locale}/campaigns/{campaignId}/gallery`, with four fixed sections, GM upload/access management, and RLS-filtered Player viewing. The former `/handouts` route redirects to `/gallery`.
 
 Planned, not implemented:
 
@@ -377,4 +377,4 @@ Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal di
 
 Campaign-authorized LiveKit video and the responsive Game Room at `/{locale}/campaigns/{campaignId}/game-room` are complete and accepted for one GM plus up to six Players. LiveKit is the accepted provider for this current campaign implementation. The final card design uses responsive 16:9 media, stable participant slots, a compact upper-right label, local-only lower-left media controls, and a header-level Leave action.
 
-Phase 4C1 image-only Campaign Handouts are complete. Phase 4C2 Game Room Image Presentation is next. Later approved Phase 4 work is 4D1 CoC 7e Dice Roller, 4D2 system-aware Game Room Dice Integration, 4E Campaign & Game Room UX/UI Refinement, 4F1 CoC 7e Character Sheets, 4F2 system-aware linked-character Game Room integration, and 4G narrowly scoped campaign notes. Phase 5 is site-wide UI Technical Refinement, Phase 6 is deliberately undecided Visual Identity, Phase 7 adds Delta Green system parity, Phase 8 adds CoC/Delta Green/Vampire hubs in that order, and Phase 9 is Public Readiness. Standalone Video Rooms and broad document/NPC/Sessions/Chronicle capabilities are not active roadmap commitments.
+The Phase 4C1 image-only Campaign Gallery is complete. Its Handouts, NPC, Maps & Plans, and Other sections categorize private images only. Phase 4C2 Game Room Image Presentation is next. Later approved Phase 4 work is 4D1 CoC 7e Dice Roller, 4D2 system-aware Game Room Dice Integration, 4E Campaign & Game Room UX/UI Refinement, 4F1 CoC 7e Character Sheets, 4F2 system-aware linked-character Game Room integration, and 4G narrowly scoped campaign notes. Phase 5 is site-wide UI Technical Refinement, Phase 6 is deliberately undecided Visual Identity, Phase 7 adds Delta Green system parity, Phase 8 adds CoC/Delta Green/Vampire hubs in that order, and Phase 9 is Public Readiness. Standalone Video Rooms and broad document/NPC/Sessions/Chronicle capabilities are not active roadmap commitments.

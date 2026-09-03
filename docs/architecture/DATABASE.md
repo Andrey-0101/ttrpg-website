@@ -21,9 +21,10 @@ supabase/migrations/20260722103835_personal_dice_persistence.sql
 supabase/migrations/20260822190351_campaign_video_data_foundation.sql
 supabase/migrations/20260823143856_harden_campaign_database_grants.sql
 supabase/migrations/20260902132447_allow_completed_campaign_image_cleanup.sql
+supabase/migrations/20260903000242_campaign_gallery_categories.sql
 ```
 
-All nine migrations are current in Production. The campaign-video data foundation, grant hardening, and completed-campaign image-cleanup policy are applied.
+All ten migrations are current in Production. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, and Campaign Gallery category migration are applied.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
@@ -169,7 +170,7 @@ Historical unlinked rows may remain.
 | `campaign_media_groups` | persistent ordered Player-only groups |
 | `campaign_media_group_members` | zero-or-one group assignment for each Player in a campaign |
 | `campaign_media_restrictions` | directed `audio` or `video` blocks between groups and the separate GM endpoint |
-| `campaign_images` | private image metadata, exact object name, MIME, byte size, and visibility |
+| `campaign_images` | private image metadata, immutable Gallery category, exact object name, MIME, byte size, and visibility |
 | `campaign_image_recipients` | selected active Player recipients for an image |
 | `campaign_video_audit_log` | immutable, constrained administrative audit records |
 
@@ -382,7 +383,7 @@ CAMPAIGN_UUID/IMAGE_UUID/RANDOM_OBJECT_UUID.ext
 
 Storage policies require an exact matching `campaign_images.storage_object_name`; path possession is never authorization. Active GMs may insert and delete represented objects. Completed GMs may delete a represented object only as the Storage-cleanup prerequisite to final campaign deletion; image metadata itself remains read-only until the campaign cascade. There is no object UPDATE policy, so rename and upsert are unavailable. Active Players may read only all-player images or selected images addressed to them. Completed or removed Players lose access, while the GM retains read-only completed access.
 
-Selected visibility and recipients change through one atomic function. Metadata cannot be deleted while the represented Storage object exists. Phase 4C1 creates `gm_only` metadata before upload, cleans failed uploads, verifies Storage absence before individual metadata deletion, and verifies every represented object is absent before active or completed campaign deletion. Missing objects are reconcilable; an unverified remaining object prevents relational deletion and leaves a safe retry path.
+Selected visibility and recipients change through one atomic function. Gallery category is fixed at upload and constrained to `handout`, `npc`, `maps_plans`, or `other`; existing rows were backfilled to `handout`. Category grants no access and cannot be changed after insertion. Metadata cannot be deleted while the represented Storage object exists. Phase 4C1 creates `gm_only` metadata before upload, cleans failed uploads, verifies Storage absence before individual metadata deletion, and verifies every represented object is absent before active or completed campaign deletion. Missing objects are reconcilable; an unverified remaining object prevents relational deletion and leaves a safe retry path.
 
 ## Portrait lifecycle
 
@@ -449,7 +450,7 @@ campaign-authoritative dice persistence, only if approved by Phase 4D2
 campaign_notes for Phase 4G shared and GM-private scope
 ```
 
-Phase 4C1 image-only Campaign Handouts use the existing campaign image tables and private Storage bucket. No broad handout table was added. General document Handouts, NPCs, Sessions, Chronicle records, and standalone provider-room mappings are not active roadmap schema areas.
+The Phase 4C1 image-only Campaign Gallery uses the existing campaign image tables and private Storage bucket. Its four fixed categories are metadata on `campaign_images`; no broad Handout, NPC, or Maps table was added. General document Handouts, structured NPCs or maps, Sessions, Chronicle records, and standalone provider-room mappings are not active roadmap schema areas.
 
 Each future domain requires:
 
