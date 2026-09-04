@@ -1,4 +1,13 @@
-import type { CampaignVideoJoinResult } from "../contracts";
+import {
+  parseCampaignId,
+  type CampaignVideoJoinResult,
+} from "../contracts";
+import {
+  CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  isCampaignVideoPresentationResult,
+  parseCampaignVideoPresentationPacket,
+  type CampaignVideoPresentationCommand,
+} from "../presentation";
 import type {
   CampaignVideoClientErrorCode,
   CampaignVideoConnectionCredentials,
@@ -18,6 +27,7 @@ export type CampaignVideoRoomControllerOptions = {
   campaignId: string;
   campaignActive: boolean;
   directoryReady: boolean;
+  isGameMaster?: boolean;
   participantDirectory: CampaignVideoParticipantDirectoryEntry[];
   createSession: CampaignVideoRoomSessionFactory;
   fetcher?: CampaignVideoFetch;
@@ -36,6 +46,11 @@ export function createInitialCampaignVideoRoomSnapshot(): CampaignVideoRoomSnaps
     audioBlocked: false,
     restored: false,
     error: null,
+    isPresenting: false,
+    presentationExpanded: false,
+    sharedPresentation: null,
+    presentationBusy: false,
+    presentationError: null,
   };
 }
 
@@ -103,14 +118,85 @@ export function createCampaignVideoRoomController(
   let credentialRequest: AbortController | null = null;
   let joinOperation: Promise<void> | null = null;
   let mediaOperation: Promise<void> | null = null;
+  let presentationQueue = Promise.resolve();
+  let activePresentationImageId: string | null = null;
+  let activePresentationRevision = 0;
+  let lastReceivedPresentationRevision = 0;
+  const presentationRequests = new Set<AbortController>();
   let generation = 0;
   let disposed = false;
+  const gameMasterIdentity = options.participantDirectory.find(
+    (participant) => participant.role === "game_master",
+  )?.providerIdentity;
+  const playerIdentities = new Set(
+    options.participantDirectory
+      .filter((participant) => participant.role === "player")
+      .map((participant) => participant.providerIdentity),
+  );
 
   const publish = (change: Partial<CampaignVideoRoomSnapshot>) => {
     snapshot = { ...snapshot, ...change };
     options.onChange(snapshot);
   };
   const isCurrent = (value: number) => !disposed && value === generation;
+
+  const clearPresentation = () => {
+    activePresentationImageId = null;
+    publish({
+      isPresenting: false,
+      presentationExpanded: false,
+      sharedPresentation: null,
+      presentationBusy: false,
+    });
+  };
+
+  function enqueuePresentation<T>(operation: () => Promise<T>): Promise<T> {
+    const queued = presentationQueue.then(operation, operation);
+    presentationQueue = queued.then(
+      () => undefined,
+      () => undefined,
+    );
+    return queued;
+  }
+
+  async function requestPresentation(
+    command: CampaignVideoPresentationCommand,
+  ) {
+    const request = new AbortController();
+    presentationRequests.add(request);
+    try {
+      const response = await (options.fetcher ?? fetch)(
+        `/api/campaigns/${encodeURIComponent(options.campaignId)}/video/presentation`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify(command),
+          signal: request.signal,
+        },
+      );
+      const body = (await response.json().catch(() => null)) as unknown;
+      if (!response.ok || !isCampaignVideoPresentationResult(body) || !body.ok) {
+        throw new Error("presentation_unavailable");
+      }
+      if (
+        body.action !== command.action ||
+        body.revision !== command.revision
+      ) {
+        throw new Error("presentation_unavailable");
+      }
+      if (
+        command.action === "show" &&
+        (body.action !== "show" ||
+          body.expanded !== command.expanded)
+      ) {
+        throw new Error("presentation_unavailable");
+      }
+      return body;
+    } finally {
+      presentationRequests.delete(request);
+    }
+  }
 
   async function requestCredentials(signal: AbortSignal) {
     const response = await (options.fetcher ?? fetch)(
@@ -187,7 +273,15 @@ export function createCampaignVideoRoomController(
       audioBlocked: false,
       restored: false,
       error: null,
+      isPresenting: false,
+      presentationExpanded: false,
+      sharedPresentation: null,
+      presentationBusy: false,
+      presentationError: null,
     });
+    activePresentationImageId = null;
+    activePresentationRevision = 0;
+    lastReceivedPresentationRevision = 0;
     try {
       const credentials = await requestCredentials(credentialRequest.signal);
       if (!isCurrent(currentGeneration)) return;
@@ -204,6 +298,84 @@ export function createCampaignVideoRoomController(
                 ),
               });
             }
+          },
+          onParticipantConnected(identity) {
+            if (
+              !isCurrent(currentGeneration) ||
+              !options.isGameMaster ||
+              !playerIdentities.has(identity) ||
+              !activePresentationImageId
+            ) {
+              return;
+            }
+            const imageId = activePresentationImageId;
+            void enqueuePresentation(async () => {
+              if (
+                !isCurrent(currentGeneration) ||
+                !session ||
+                snapshot.phase !== "connected" ||
+                activePresentationImageId !== imageId
+              ) {
+                return;
+              }
+              try {
+                await requestPresentation({
+                  action: "show",
+                  imageId,
+                  expanded: snapshot.presentationExpanded,
+                  revision: activePresentationRevision,
+                  destinationIdentity: identity,
+                });
+                if (isCurrent(currentGeneration)) {
+                  publish({ presentationError: null });
+                }
+              } catch {
+                if (isCurrent(currentGeneration)) {
+                  publish({ presentationError: "presentation_unavailable" });
+                }
+              }
+            });
+          },
+          onParticipantDisconnected(identity) {
+            if (
+              isCurrent(currentGeneration) &&
+              !options.isGameMaster &&
+              identity === gameMasterIdentity
+            ) {
+              lastReceivedPresentationRevision = 0;
+              clearPresentation();
+              publish({ presentationError: null });
+            }
+          },
+          onPresentationPacket(payload, senderIdentity, topic) {
+            if (!isCurrent(currentGeneration) || options.isGameMaster) return;
+            if (
+              senderIdentity !== null ||
+              topic !== CAMPAIGN_VIDEO_PRESENTATION_TOPIC
+            ) {
+              return;
+            }
+            const message = parseCampaignVideoPresentationPacket(payload);
+            if (!message) {
+              clearPresentation();
+              publish({ presentationError: "presentation_unavailable" });
+              return;
+            }
+            if (message.revision <= lastReceivedPresentationRevision) return;
+            lastReceivedPresentationRevision = message.revision;
+            if (message.action === "clear") {
+              clearPresentation();
+              publish({ presentationError: null });
+              return;
+            }
+            publish({
+              isPresenting: true,
+              presentationExpanded: message.expanded,
+              sharedPresentation: {
+                signedUrl: message.signedUrl,
+              },
+              presentationError: null,
+            });
           },
           onReconnecting() {
             if (isCurrent(currentGeneration)) {
@@ -226,7 +398,15 @@ export function createCampaignVideoRoomController(
               audioBlocked: false,
               restored: false,
               error: "connection_failed",
+              isPresenting: false,
+              presentationExpanded: false,
+              sharedPresentation: null,
+              presentationBusy: false,
+              presentationError: null,
             });
+            activePresentationImageId = null;
+            activePresentationRevision = 0;
+            lastReceivedPresentationRevision = 0;
           },
           onAudioBlocked(blocked) {
             if (isCurrent(currentGeneration)) publish({ audioBlocked: blocked });
@@ -253,7 +433,15 @@ export function createCampaignVideoRoomController(
         audioBlocked: false,
         restored: false,
         error: clientError(error),
+        isPresenting: false,
+        presentationExpanded: false,
+        sharedPresentation: null,
+        presentationBusy: false,
+        presentationError: null,
       });
+      activePresentationImageId = null;
+      activePresentationRevision = 0;
+      lastReceivedPresentationRevision = 0;
     } finally {
       if (isCurrent(currentGeneration)) credentialRequest = null;
     }
@@ -274,6 +462,10 @@ export function createCampaignVideoRoomController(
     generation += 1;
     credentialRequest?.abort();
     credentialRequest = null;
+    for (const request of presentationRequests) request.abort();
+    activePresentationImageId = null;
+    activePresentationRevision = 0;
+    lastReceivedPresentationRevision = 0;
     const currentSession = session;
     session = null;
     if (currentSession) await currentSession.disconnect();
@@ -287,6 +479,11 @@ export function createCampaignVideoRoomController(
         audioBlocked: false,
         restored: false,
         error: null,
+        isPresenting: false,
+        presentationExpanded: false,
+        sharedPresentation: null,
+        presentationBusy: false,
+        presentationError: null,
       });
     }
   }
@@ -325,6 +522,167 @@ export function createCampaignVideoRoomController(
     return wrapped;
   }
 
+  async function shareImage(imageId: string): Promise<boolean> {
+    if (
+      !options.isGameMaster ||
+      !session ||
+      snapshot.phase !== "connected" ||
+      snapshot.isPresenting ||
+      snapshot.presentationBusy ||
+      !parseCampaignId(imageId)
+    ) {
+      return false;
+    }
+    const currentGeneration = generation;
+    const revision = activePresentationRevision + 1;
+    activePresentationRevision = revision;
+    activePresentationImageId = imageId;
+    publish({ presentationBusy: true, presentationError: null });
+    try {
+      await enqueuePresentation(async () => {
+        if (
+          !isCurrent(currentGeneration) ||
+          !session ||
+          snapshot.phase !== "connected"
+        ) {
+          throw new Error("presentation_unavailable");
+        }
+        try {
+          await requestPresentation({
+            action: "show",
+            imageId,
+            expanded: false,
+            revision,
+          });
+        } catch (error) {
+          if (isCurrent(currentGeneration) && session) {
+            const recoveryRevision = activePresentationRevision + 1;
+            activePresentationRevision = recoveryRevision;
+            await requestPresentation({
+              action: "clear",
+              revision: recoveryRevision,
+            }).catch(() => undefined);
+          }
+          throw error;
+        }
+      });
+      if (!isCurrent(currentGeneration) || !session) return false;
+      publish({
+        isPresenting: true,
+        presentationExpanded: false,
+        sharedPresentation: null,
+        presentationBusy: false,
+        presentationError: null,
+      });
+      return true;
+    } catch {
+      if (isCurrent(currentGeneration)) {
+        activePresentationImageId = null;
+        publish({
+          isPresenting: false,
+          presentationExpanded: false,
+          sharedPresentation: null,
+          presentationBusy: false,
+          presentationError: "presentation_unavailable",
+        });
+      }
+      return false;
+    }
+  }
+
+  async function setPresentationExpanded(expanded: boolean): Promise<boolean> {
+    if (
+      !options.isGameMaster ||
+      !session ||
+      snapshot.phase !== "connected" ||
+      !snapshot.isPresenting ||
+      !activePresentationImageId ||
+      snapshot.presentationBusy
+    ) {
+      return false;
+    }
+    if (snapshot.presentationExpanded === expanded) return true;
+
+    const currentGeneration = generation;
+    const imageId = activePresentationImageId;
+    const revision = activePresentationRevision + 1;
+    activePresentationRevision = revision;
+    publish({ presentationBusy: true, presentationError: null });
+    try {
+      await enqueuePresentation(async () => {
+        if (
+          !isCurrent(currentGeneration) ||
+          !session ||
+          snapshot.phase !== "connected" ||
+          activePresentationImageId !== imageId
+        ) {
+          throw new Error("presentation_unavailable");
+        }
+        await requestPresentation({
+          action: "show",
+          imageId,
+          expanded,
+          revision,
+        });
+      });
+      if (!isCurrent(currentGeneration) || !session) return false;
+      publish({
+        presentationExpanded: expanded,
+        presentationBusy: false,
+        presentationError: null,
+      });
+      return true;
+    } catch {
+      if (isCurrent(currentGeneration)) {
+        publish({
+          presentationBusy: false,
+          presentationError: "presentation_unavailable",
+        });
+      }
+      return false;
+    }
+  }
+
+  async function stopPresentation(): Promise<boolean> {
+    if (!options.isGameMaster) return false;
+    if (!snapshot.isPresenting) return true;
+    if (
+      !session ||
+      snapshot.phase !== "connected" ||
+      snapshot.presentationBusy
+    ) {
+      return false;
+    }
+    const currentGeneration = generation;
+    const revision = activePresentationRevision + 1;
+    activePresentationRevision = revision;
+    publish({ presentationBusy: true, presentationError: null });
+    try {
+      await enqueuePresentation(async () => {
+        if (
+          !isCurrent(currentGeneration) ||
+          !session ||
+          snapshot.phase !== "connected"
+        ) {
+          throw new Error("presentation_unavailable");
+        }
+        await requestPresentation({ action: "clear", revision });
+      });
+      if (!isCurrent(currentGeneration) || !session) return false;
+      clearPresentation();
+      publish({ presentationError: null });
+      return true;
+    } catch {
+      if (isCurrent(currentGeneration)) {
+        publish({
+          presentationBusy: false,
+          presentationError: "presentation_unavailable",
+        });
+      }
+      return false;
+    }
+  }
+
   async function enableSound() {
     if (!session || !snapshot.audioBlocked) return;
     const currentSession = session;
@@ -346,6 +704,10 @@ export function createCampaignVideoRoomController(
     disposed = true;
     generation += 1;
     credentialRequest?.abort();
+    for (const request of presentationRequests) request.abort();
+    activePresentationImageId = null;
+    activePresentationRevision = 0;
+    lastReceivedPresentationRevision = 0;
     const currentSession = session;
     session = null;
     if (currentSession) await currentSession.disconnect();
@@ -358,6 +720,9 @@ export function createCampaignVideoRoomController(
     setCameraEnabled: (enabled: boolean) => runMediaOperation("camera", enabled),
     setMicrophoneEnabled: (enabled: boolean) =>
       runMediaOperation("microphone", enabled),
+    shareImage,
+    setPresentationExpanded,
+    stopPresentation,
     enableSound,
     dispose,
   };

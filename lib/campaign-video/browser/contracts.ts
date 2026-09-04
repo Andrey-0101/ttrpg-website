@@ -65,6 +65,13 @@ export type CampaignVideoRoomSnapshot = {
   audioBlocked: boolean;
   restored: boolean;
   error: CampaignVideoClientErrorCode | null;
+  isPresenting: boolean;
+  presentationExpanded: boolean;
+  sharedPresentation: {
+    signedUrl: string;
+  } | null;
+  presentationBusy: boolean;
+  presentationError: "presentation_unavailable" | null;
 };
 
 export type CampaignVideoConnectionCredentials = {
@@ -76,6 +83,13 @@ export type CampaignVideoConnectionCredentials = {
 
 export type CampaignVideoRoomSessionCallbacks = {
   onParticipants(participants: CampaignVideoProviderParticipant[]): void;
+  onParticipantConnected(identity: string): void;
+  onParticipantDisconnected(identity: string): void;
+  onPresentationPacket(
+    payload: Uint8Array,
+    senderIdentity: string | null,
+    topic: string | null,
+  ): void;
   onReconnecting(): void;
   onReconnected(): void;
   onTerminalDisconnect(): void;

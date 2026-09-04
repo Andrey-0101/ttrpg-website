@@ -5,7 +5,9 @@ import { createPortal } from "react-dom";
 
 import { useTranslations } from "next-intl";
 
-import CampaignGameRoomPlannedTools from "@/components/campaigns/campaign-game-room-planned-tools";
+import CampaignGameRoomWorkspace, {
+  type CampaignGameRoomGalleryItem,
+} from "@/components/campaigns/campaign-game-room-workspace";
 import {
   createCampaignVideoRoomController,
   createInitialCampaignVideoRoomSnapshot,
@@ -25,18 +27,13 @@ type CampaignVideoRoomController = ReturnType<
   typeof createCampaignVideoRoomController
 >;
 
-type PlannedWorkspaceLabels = {
-  displayHeading: string;
-  toolsHeading: string;
-  status: string;
-};
-
 type CampaignVideoRoomProps = {
   campaignId: string;
   campaignStatus: string;
   directoryReady: boolean;
+  isGameMaster: boolean;
+  galleryItems: CampaignGameRoomGalleryItem[];
   participantDirectory: CampaignVideoParticipantDirectoryEntry[];
-  plannedWorkspace: PlannedWorkspaceLabels;
 };
 
 type CampaignVideoRoomLayoutProps = Omit<
@@ -50,6 +47,9 @@ type CampaignVideoRoomLayoutProps = Omit<
   onCameraChange(enabled: boolean): void;
   onMicrophoneChange(enabled: boolean): void;
   onEnableSound(): void;
+  onShareImage(imageId: string): Promise<boolean>;
+  onSetPresentationExpanded(expanded: boolean): Promise<boolean>;
+  onStopShare(): Promise<boolean>;
 };
 
 function CameraIcon({ enabled }: { enabled: boolean }) {
@@ -371,8 +371,9 @@ function phaseMessage(
 export function CampaignVideoRoomLayout({
   campaignStatus,
   directoryReady,
+  isGameMaster,
+  galleryItems,
   participantDirectory,
-  plannedWorkspace,
   snapshot,
   seenParticipantIdentities,
   onJoin,
@@ -380,6 +381,9 @@ export function CampaignVideoRoomLayout({
   onCameraChange,
   onMicrophoneChange,
   onEnableSound,
+  onShareImage,
+  onSetPresentationExpanded,
+  onStopShare,
 }: CampaignVideoRoomLayoutProps) {
   const translations = useTranslations("CampaignVideoRoom");
   const statusMessage =
@@ -408,7 +412,13 @@ export function CampaignVideoRoomLayout({
         compactLabel={translations("leaveCompact")}
         onLeave={onLeave}
       />
-      <section className="game-room-grid" aria-label={translations("title")}>
+      <section
+        className="game-room-grid"
+        aria-label={translations("title")}
+        data-presentation-expanded={
+          snapshot.presentationExpanded ? "true" : "false"
+        }
+      >
         <p
           className="sr-only"
           role={snapshot.error || !directoryReady ? "alert" : "status"}
@@ -439,7 +449,19 @@ export function CampaignVideoRoomLayout({
             />
           </div>
         ))}
-        <CampaignGameRoomPlannedTools {...plannedWorkspace} />
+        <CampaignGameRoomWorkspace
+          isGameMaster={isGameMaster}
+          galleryItems={galleryItems}
+          connected={connected}
+          isPresenting={snapshot.isPresenting}
+          presentationExpanded={snapshot.presentationExpanded}
+          sharedPresentationUrl={snapshot.sharedPresentation?.signedUrl ?? null}
+          presentationBusy={snapshot.presentationBusy}
+          presentationError={snapshot.presentationError !== null}
+          onShareImage={onShareImage}
+          onSetPresentationExpanded={onSetPresentationExpanded}
+          onStopShare={onStopShare}
+        />
       </section>
     </>
   );
@@ -449,8 +471,9 @@ function CampaignVideoRoomInstance({
   campaignId,
   campaignStatus,
   directoryReady,
+  isGameMaster,
+  galleryItems,
   participantDirectory,
-  plannedWorkspace,
 }: CampaignVideoRoomProps) {
   const controllerRef = useRef<CampaignVideoRoomController | null>(null);
   const participantDirectoryJson = JSON.stringify(participantDirectory);
@@ -464,6 +487,7 @@ function CampaignVideoRoomInstance({
       campaignId,
       campaignActive: campaignStatus === "active",
       directoryReady,
+      isGameMaster,
       participantDirectory: JSON.parse(
         participantDirectoryJson,
       ) as CampaignVideoParticipantDirectoryEntry[],
@@ -484,14 +508,21 @@ function CampaignVideoRoomInstance({
       controllerRef.current = null;
       void controller.dispose();
     };
-  }, [campaignId, campaignStatus, directoryReady, participantDirectoryJson]);
+  }, [
+    campaignId,
+    campaignStatus,
+    directoryReady,
+    isGameMaster,
+    participantDirectoryJson,
+  ]);
 
   return (
     <CampaignVideoRoomLayout
       campaignStatus={campaignStatus}
       directoryReady={directoryReady}
+      isGameMaster={isGameMaster}
+      galleryItems={galleryItems}
       participantDirectory={participantDirectory}
-      plannedWorkspace={plannedWorkspace}
       snapshot={snapshot}
       seenParticipantIdentities={seenParticipantIdentities}
       onJoin={() => void controllerRef.current?.join()}
@@ -503,6 +534,16 @@ function CampaignVideoRoomInstance({
         void controllerRef.current?.setMicrophoneEnabled(enabled)
       }
       onEnableSound={() => void controllerRef.current?.enableSound()}
+      onShareImage={(imageId) =>
+        controllerRef.current?.shareImage(imageId) ?? Promise.resolve(false)
+      }
+      onSetPresentationExpanded={(expanded) =>
+        controllerRef.current?.setPresentationExpanded(expanded) ??
+        Promise.resolve(false)
+      }
+      onStopShare={() =>
+        controllerRef.current?.stopPresentation() ?? Promise.resolve(false)
+      }
     />
   );
 }

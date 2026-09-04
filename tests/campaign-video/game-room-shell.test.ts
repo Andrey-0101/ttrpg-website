@@ -182,16 +182,170 @@ test("LiveKit keeps adaptive subscriptions and 720p simulcast publication", () =
   assert.doesNotMatch(liveKit, /simulcast:\s*false/u);
 });
 
-test("planned display and compact tools panel are localized and non-interactive", () => {
-  const planned = source(
+test("Game Room loads the GM Gallery through the same ordered server loader as the main Gallery", () => {
+  const route = source(
+    "app",
+    "[locale]",
+    "campaigns",
+    "[id]",
+    "game-room",
+    "page.tsx",
+  );
+  const galleryRoute = source(
+    "app",
+    "[locale]",
+    "campaigns",
+    "[id]",
+    "gallery",
+    "page.tsx",
+  );
+  const loader = source("lib", "campaign-handouts", "gallery.server.ts");
+
+  assert.match(route, /const isGameMaster = campaign\.game_master_id === userId/u);
+  assert.match(
+    route,
+    /isGameMaster\s*\? loadCampaignGalleryImages\([\s\S]*?: Promise\.resolve\(\{ images: \[\], loadError: false \}/u,
+  );
+  assert.match(route, /isCampaignGalleryCategory\(image\.category\)/u);
+  assert.match(route, /imageId: image\.id/u);
+  assert.match(route, /localSignedUrl: image\.signedUrl/u);
+  assert.match(galleryRoute, /loadCampaignGalleryImages/u);
+  assert.match(loader, /\.from\("campaign_images"\)/u);
+  assert.match(loader, /\.eq\("campaign_id", campaignId\)/u);
+  assert.match(loader, /\.order\("created_at", \{ ascending: false \}\)/u);
+  assert.match(loader, /CAMPAIGN_HANDOUT_SIGNED_URL_TTL/u);
+});
+
+test("Game Room workspace preserves the role-specific tool shell", () => {
+  const workspace = source(
     "components",
     "campaigns",
-    "campaign-game-room-planned-tools.tsx",
+    "campaign-game-room-workspace.tsx",
   );
-  assert.match(planned, /data-handout-display/u);
-  assert.match(planned, /data-game-tools-panel/u);
-  assert.doesNotMatch(planned, /<button|<a\s|\bLink\b|onClick|href=/u);
 
+  assert.match(workspace, /data-game-room-root-tools/u);
+  assert.match(workspace, /grid grid-cols-3 gap-2/u);
+  assert.match(workspace, /disabled=\{!isGameMaster\}/u);
+  assert.match(
+    workspace,
+    /translations\(isGameMaster \? "tools\.gallery" : "tools\.display"\)/u,
+  );
+  assert.match(workspace, /translations\("tools\.dice"\)/u);
+  assert.match(workspace, /translations\("tools\.character"\)/u);
+  assert.match(workspace, /data-game-room-gallery-tools/u);
+  assert.match(workspace, /CAMPAIGN_GALLERY_CATEGORIES\.map/u);
+  assert.match(workspace, /aria-pressed=\{active\}/u);
+  assert.match(
+    workspace,
+    /border-amber-200 bg-amber-100 text-amber-950 shadow-sm/u,
+  );
+  assert.doesNotMatch(
+    workspace,
+    /upload|delete|rename|visibility|recipient|createLiveKit|data message/iu,
+  );
+});
+
+test("Game Room Gallery list and local image follow the approved interactions", () => {
+  const workspace = source(
+    "components",
+    "campaigns",
+    "campaign-game-room-workspace.tsx",
+  );
+
+  assert.match(workspace, /data-game-room-gallery-list/u);
+  assert.match(workspace, /overflow-y-auto/u);
+  assert.match(workspace, /grid grid-cols-3 gap-2/u);
+  assert.match(workspace, /line-clamp-3/u);
+  assert.match(workspace, /onDoubleClick=\{\(\) => openImage\(item\)\}/u);
+  assert.match(workspace, /event\.pointerType === "touch"/u);
+  assert.match(workspace, /event\.key !== "Enter" && event\.key !== " "/u);
+  assert.match(workspace, /data-game-room-local-image/u);
+  assert.match(workspace, /data-game-room-shared-image/u);
+  assert.match(workspace, /className="object-contain"/u);
+  assert.match(workspace, /data-game-room-image-tools/u);
+  assert.match(workspace, /isPresenting \? "tools\.stopShare" : "tools\.share"/u);
+  assert.match(workspace, /onShareImage\(selectedImage\.imageId\)/u);
+  assert.match(workspace, /isPresenting && !\(await onStopShare\(\)\)/u);
+  assert.match(workspace, /onSetPresentationExpanded\(!presentationExpanded\)/u);
+  assert.match(workspace, /!connected \|\| !isPresenting \|\| presentationBusy/u);
+  assert.match(workspace, /presentationExpanded \? "tools\.collapse" : "tools\.expand"/u);
+  assert.match(workspace, /aria-pressed=\{presentationExpanded\}/u);
+});
+
+test("expanded presentation uses one synchronized state and the approved responsive composition", () => {
+  const room = source("components", "campaigns", "campaign-video-room.tsx");
+  const workspace = source(
+    "components",
+    "campaigns",
+    "campaign-game-room-workspace.tsx",
+  );
+  const controller = source("lib", "campaign-video", "browser", "controller.ts");
+  const protocol = source("lib", "campaign-video", "presentation.ts");
+  const styles = source("app", "globals.css");
+
+  assert.match(room, /data-presentation-expanded=/u);
+  assert.match(room, /snapshot\.presentationExpanded/u);
+  assert.match(workspace, /data-game-room-expanded-presentation/u);
+  assert.match(workspace, /className="object-contain"/u);
+  assert.match(
+    workspace,
+    /async function closeSelectedImage\(\)[\s\S]*?await onStopShare\(\)[\s\S]*?setSelectedImage\(null\)/u,
+  );
+  assert.match(controller, /setPresentationExpanded/u);
+  assert.match(controller, /message\.revision <= lastReceivedPresentationRevision/u);
+  assert.match(controller, /expanded: snapshot\.presentationExpanded/u);
+  assert.match(protocol, /action: "show";[\s\S]*expanded: boolean;[\s\S]*revision: number/u);
+  assert.doesNotMatch(protocol, /action: "expand"|action: "collapse"/u);
+
+  assert.match(styles, /"gm expanded player-1"/u);
+  assert.match(styles, /"display expanded player-2"/u);
+  assert.match(styles, /"display expanded player-3"/u);
+  assert.match(styles, /"display expanded player-4"/u);
+  assert.match(styles, /"tools expanded player-5"/u);
+  assert.match(styles, /"tools expanded player-6"/u);
+  assert.match(styles, /grid-template-rows: repeat\(6, var\(--game-room-expanded-row-height\)\)/u);
+  assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\] \.game-room-participant \{\s*width: 100%;\s*height: 100%;/u);
+  assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\][\s\S]*?\.game-room-slot,[\s\S]*?\.game-room-display \{\s*display: none;/u);
+  assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\] \[data-game-tools-panel\] \{\s*grid-row: 2;/u);
+  assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\][\s\S]*?\[data-game-room-image-tools\] \{\s*grid-template-columns: repeat\(2/u);
+});
+
+test("Game Room sharing uses the trusted Gallery signing policy behind a GM-authorized server packet", () => {
+  const controller = source("lib", "campaign-video", "browser", "controller.ts");
+  const handler = source("lib", "campaign-video", "presentation-handler.ts");
+  const galleryLoader = source("lib", "campaign-handouts", "gallery.server.ts");
+  const dataSource = source(
+    "lib",
+    "campaign-video",
+    "supabase-data-source.server.ts",
+  );
+  const provider = source(
+    "lib",
+    "campaign-video",
+    "providers",
+    "livekit-presentation.ts",
+  );
+
+  assert.match(controller, /video\/presentation/u);
+  assert.match(controller, /JSON\.stringify\(command\)/u);
+  assert.doesNotMatch(controller, /CAMPAIGN_HANDOUT_SIGNED_URL_TTL/u);
+  assert.doesNotMatch(controller, /setInterval/u);
+  assert.match(handler, /authorization\.participant\.role !== "game_master"/u);
+  assert.match(handler, /destinationIdentity/u);
+  assert.match(provider, /DataPacket_Kind\.RELIABLE/u);
+  assert.match(dataSource, /createCampaignGallerySignedUrl/u);
+  assert.match(
+    galleryLoader,
+    /createCampaignGallerySignedUrl[\s\S]*?CAMPAIGN_HANDOUT_SIGNED_URL_TTL/u,
+  );
+  assert.match(dataSource, /\.eq\("campaign_id", campaignId\)[\s\S]*?\.eq\("id", imageId\)/u);
+  assert.doesNotMatch(
+    dataSource.match(/async findCampaignImageStoragePath[\s\S]*?\n  \}/u)?.[0] ?? "",
+    /visibility/u,
+  );
+});
+
+test("Game Room workspace messages are localized with the required empty copy", () => {
   const english = JSON.parse(source("messages", "en.json")) as Record<
     string,
     Record<string, unknown>
@@ -200,6 +354,15 @@ test("planned display and compact tools panel are localized and non-interactive"
     string,
     Record<string, unknown>
   >;
+  const englishGallery = english.CampaignGameRoom.gallery as Record<
+    string,
+    unknown
+  >;
+  const russianGallery = russian.CampaignGameRoom.gallery as Record<
+    string,
+    unknown
+  >;
+
   assert.deepEqual(
     messageKeys(english.CampaignGameRoom).sort(),
     messageKeys(russian.CampaignGameRoom).sort(),
@@ -210,6 +373,19 @@ test("planned display and compact tools panel are localized and non-interactive"
   );
   assert.equal(english.CampaignGameRoom.workspace instanceof Object, true);
   assert.equal(russian.CampaignGameRoom.workspace instanceof Object, true);
+  assert.equal(englishGallery.emptyCategory, "No images in this category");
+  assert.equal(
+    (english.CampaignGameRoom.tools as Record<string, unknown>).stopShare,
+    "Stop Share",
+  );
+  assert.equal(
+    (english.CampaignGameRoom.tools as Record<string, unknown>).collapse,
+    "Collapse",
+  );
+  assert.equal(
+    russianGallery.emptyCategory,
+    "В этой категории нет изображений",
+  );
 });
 
 test("Game Room uses a compact header slot while the default site header stays intact", () => {

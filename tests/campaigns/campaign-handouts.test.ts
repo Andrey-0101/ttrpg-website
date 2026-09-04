@@ -418,11 +418,16 @@ test("Gallery route keeps recipient metadata on the Game Master-only data path",
     resolve("components/campaigns/campaign-gallery-tabs.tsx"),
     "utf8",
   );
+  const loader = readFileSync(
+    resolve("lib/campaign-handouts/gallery.server.ts"),
+    "utf8",
+  );
 
   assert.ok(
     route.indexOf("if (!isGameMaster && !campaignActive)") <
-      route.indexOf('.from("campaign_images")'),
+      route.indexOf("await loadCampaignGalleryImages"),
   );
+  assert.match(loader, /\.from\("campaign_images"\)/u);
   assert.ok(
     route.indexOf("if (isGameMaster && !imageError)") <
       route.indexOf('.from("campaign_image_recipients")'),

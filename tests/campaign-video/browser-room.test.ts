@@ -14,8 +14,18 @@ import type {
 import { classifyCampaignVideoMediaError } from "../../lib/campaign-video/browser/errors";
 import { attachCampaignVideoTrack } from "../../lib/campaign-video/browser/media";
 import { getCampaignVideoParticipantSlots } from "../../lib/campaign-video/browser/presentation";
+import {
+  CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  createCampaignVideoPresentationPacket,
+  parseCampaignVideoPresentationPacket,
+  type CampaignVideoPresentationCommand,
+} from "../../lib/campaign-video/presentation";
 
 const CAMPAIGN_ID = "a1000000-0000-4000-8000-000000000001";
+const IMAGE_ID = "a1000000-0000-4000-8000-000000000004";
+const PRESENTATION_URL =
+  "https://storage.test.invalid/storage/v1/object/sign/campaign-images/" +
+  `${CAMPAIGN_ID}/${IMAGE_ID}/image.webp?token=temporary`;
 const DIRECTORY = [
   {
     providerIdentity: "gm-safe",
@@ -62,6 +72,22 @@ function joinResponse(
   );
 }
 
+function presentationResponse(command: CampaignVideoPresentationCommand) {
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      action: command.action,
+      revision: command.revision,
+      ...(command.action === "show"
+        ? {
+            expanded: command.expanded,
+          }
+        : {}),
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } },
+  );
+}
+
 function createSessionHarness() {
   let callbacks: CampaignVideoRoomSessionCallbacks | null = null;
   let credentials: { token: string } | null = null;
@@ -100,6 +126,21 @@ function createSessionHarness() {
     audioStarts: () => audioStarts,
   };
 }
+
+test("presentation packets reject unsupported fields", () => {
+  const packet = new TextEncoder().encode(
+    JSON.stringify({
+      version: 1,
+      action: "show",
+      signedUrl: PRESENTATION_URL,
+      unsupported: true,
+      expanded: false,
+      revision: 1,
+    }),
+  );
+
+  assert.equal(parseCampaignVideoPresentationPacket(packet), null);
+});
 
 test("join requests fresh scoped credentials with the exact empty JSON contract", async () => {
   const session = createSessionHarness();
@@ -321,6 +362,398 @@ test("sound unlock and leave dispose only the current temporary session", async 
   assert.equal(session.disconnects(), 1);
   assert.equal(controller.getSnapshot().phase, "disconnected");
   assert.deepEqual(controller.getSnapshot().participants, []);
+});
+
+test("only the GM can share and Stop Share clears Players without closing the GM image state", async () => {
+  const session = createSessionHarness();
+  const commands: unknown[] = [];
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    isGameMaster: true,
+    participantDirectory: DIRECTORY,
+    createSession: session.factory,
+    fetcher: async (input, init) => {
+      if (String(input).endsWith("/video/join")) return joinResponse();
+      const command = JSON.parse(
+        String(init?.body),
+      ) as CampaignVideoPresentationCommand;
+      commands.push(command);
+      return presentationResponse(command);
+    },
+    onChange: () => undefined,
+  });
+  await controller.join();
+  assert.equal(await controller.shareImage(IMAGE_ID), true);
+  assert.equal(controller.getSnapshot().isPresenting, true);
+  assert.deepEqual(commands, [
+    {
+      action: "show",
+      imageId: IMAGE_ID,
+      expanded: false,
+      revision: 1,
+    },
+  ]);
+  assert.equal(JSON.stringify(commands).includes(PRESENTATION_URL), false);
+
+  assert.equal(await controller.stopPresentation(), true);
+  assert.equal(controller.getSnapshot().isPresenting, false);
+  assert.equal(controller.getSnapshot().sharedPresentation, null);
+  assert.deepEqual(commands, [
+    {
+      action: "show",
+      imageId: IMAGE_ID,
+      expanded: false,
+      revision: 1,
+    },
+    { action: "clear", revision: 2 },
+  ]);
+
+  const playerController = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    isGameMaster: false,
+    participantDirectory: DIRECTORY,
+    createSession: createSessionHarness().factory,
+    fetcher: async () => joinResponse(),
+    onChange: () => undefined,
+  });
+  await playerController.join();
+  assert.equal(await playerController.shareImage(IMAGE_ID), false);
+  assert.equal(await playerController.setPresentationExpanded(true), false);
+  assert.equal(await playerController.stopPresentation(), false);
+});
+
+test("Expand and Collapse synchronize as ordered states while Share remains active", async () => {
+  const session = createSessionHarness();
+  const commands: CampaignVideoPresentationCommand[] = [];
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    isGameMaster: true,
+    participantDirectory: DIRECTORY,
+    createSession: session.factory,
+    fetcher: async (input, init) => {
+      if (String(input).endsWith("/video/join")) return joinResponse();
+      const command = JSON.parse(
+        String(init?.body),
+      ) as CampaignVideoPresentationCommand;
+      commands.push(command);
+      return presentationResponse(command);
+    },
+    onChange: () => undefined,
+  });
+
+  await controller.join();
+  assert.equal(await controller.shareImage(IMAGE_ID), true);
+  assert.equal(controller.getSnapshot().presentationExpanded, false);
+  assert.equal(await controller.setPresentationExpanded(true), true);
+  assert.equal(controller.getSnapshot().presentationExpanded, true);
+  assert.equal(controller.getSnapshot().isPresenting, true);
+  assert.equal(await controller.setPresentationExpanded(false), true);
+  assert.equal(controller.getSnapshot().presentationExpanded, false);
+  assert.equal(controller.getSnapshot().isPresenting, true);
+  assert.deepEqual(commands, [
+    {
+      action: "show",
+      imageId: IMAGE_ID,
+      expanded: false,
+      revision: 1,
+    },
+    {
+      action: "show",
+      imageId: IMAGE_ID,
+      expanded: true,
+      revision: 2,
+    },
+    {
+      action: "show",
+      imageId: IMAGE_ID,
+      expanded: false,
+      revision: 3,
+    },
+  ]);
+
+  await controller.setPresentationExpanded(true);
+  assert.equal(await controller.stopPresentation(), true);
+  assert.equal(controller.getSnapshot().isPresenting, false);
+  assert.equal(controller.getSnapshot().presentationExpanded, false);
+});
+
+test("presentation failures leave the GM image workflow retryable without rejoining", async () => {
+  const session = createSessionHarness();
+  let failNextExpand = true;
+  let failNextStop = true;
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    isGameMaster: true,
+    participantDirectory: DIRECTORY,
+    createSession: session.factory,
+    fetcher: async (input, init) => {
+      if (String(input).endsWith("/video/join")) return joinResponse();
+      const command = JSON.parse(
+        String(init?.body),
+      ) as CampaignVideoPresentationCommand;
+      if (command.action === "show" && command.expanded && failNextExpand) {
+        failNextExpand = false;
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: { code: "presentation_unavailable" },
+          }),
+          { status: 503, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (command.action === "clear" && failNextStop) {
+        failNextStop = false;
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: { code: "presentation_unavailable" },
+          }),
+          { status: 503, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return presentationResponse(command);
+    },
+    onChange: () => undefined,
+  });
+  await controller.join();
+  assert.equal(await controller.shareImage(IMAGE_ID), true);
+  assert.equal(await controller.setPresentationExpanded(true), false);
+  assert.equal(controller.getSnapshot().isPresenting, true);
+  assert.equal(controller.getSnapshot().presentationExpanded, false);
+  assert.equal(await controller.setPresentationExpanded(true), true);
+  assert.equal(controller.getSnapshot().presentationExpanded, true);
+  assert.equal(await controller.stopPresentation(), false);
+  assert.equal(controller.getSnapshot().isPresenting, true);
+  assert.equal(controller.getSnapshot().presentationExpanded, true);
+  assert.equal(controller.getSnapshot().presentationBusy, false);
+  assert.equal(
+    controller.getSnapshot().presentationError,
+    "presentation_unavailable",
+  );
+  assert.equal(await controller.stopPresentation(), true);
+  assert.equal(controller.getSnapshot().isPresenting, false);
+});
+
+test("an active GM sends a fresh targeted presentation when a Player joins or rejoins", async () => {
+  const session = createSessionHarness();
+  const destinationIdentity = `participant-${"a".repeat(48)}`;
+  const commands: Array<Record<string, unknown>> = [];
+  let resolveLateRequest!: () => void;
+  const lateRequest = new Promise<void>((resolve) => {
+    resolveLateRequest = resolve;
+  });
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    isGameMaster: true,
+    participantDirectory: DIRECTORY.map((participant) =>
+      participant.providerIdentity === "player-2-safe"
+        ? { ...participant, providerIdentity: destinationIdentity }
+        : participant,
+    ),
+    createSession: session.factory,
+    fetcher: async (input, init) => {
+      if (String(input).endsWith("/video/join")) return joinResponse();
+      const command = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      commands.push(command);
+      if (command.destinationIdentity) resolveLateRequest();
+      return presentationResponse(
+        command as CampaignVideoPresentationCommand,
+      );
+    },
+    onChange: () => undefined,
+  });
+  await controller.join();
+  await controller.shareImage(IMAGE_ID);
+  await controller.setPresentationExpanded(true);
+  session.callbacks().onParticipantConnected(destinationIdentity);
+  await lateRequest;
+  assert.deepEqual(commands[2], {
+    action: "show",
+    imageId: IMAGE_ID,
+    expanded: true,
+    revision: 2,
+    destinationIdentity,
+  });
+});
+
+test("a Player joining while Share completes receives the pending presentation", async () => {
+  const session = createSessionHarness();
+  const destinationIdentity = `participant-${"b".repeat(48)}`;
+  const commands: CampaignVideoPresentationCommand[] = [];
+  let markBroadcastSent!: () => void;
+  let releaseBroadcastResponse!: () => void;
+  let markTargetedSent!: () => void;
+  const broadcastSent = new Promise<void>((resolve) => {
+    markBroadcastSent = resolve;
+  });
+  const broadcastResponse = new Promise<void>((resolve) => {
+    releaseBroadcastResponse = resolve;
+  });
+  const targetedSent = new Promise<void>((resolve) => {
+    markTargetedSent = resolve;
+  });
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    isGameMaster: true,
+    participantDirectory: DIRECTORY.map((participant) =>
+      participant.providerIdentity === "player-2-safe"
+        ? { ...participant, providerIdentity: destinationIdentity }
+        : participant,
+    ),
+    createSession: session.factory,
+    fetcher: async (input, init) => {
+      if (String(input).endsWith("/video/join")) return joinResponse();
+      const command = JSON.parse(
+        String(init?.body),
+      ) as CampaignVideoPresentationCommand;
+      commands.push(command);
+      if (command.action === "show" && !command.destinationIdentity) {
+        markBroadcastSent();
+        await broadcastResponse;
+      } else if (command.action === "show") {
+        markTargetedSent();
+      }
+      return presentationResponse(command);
+    },
+    onChange: () => undefined,
+  });
+
+  await controller.join();
+  const share = controller.shareImage(IMAGE_ID);
+  await broadcastSent;
+  session.callbacks().onParticipantConnected(destinationIdentity);
+  releaseBroadcastResponse();
+  assert.equal(await share, true);
+  await targetedSent;
+  assert.deepEqual(commands, [
+    {
+      action: "show",
+      imageId: IMAGE_ID,
+      expanded: false,
+      revision: 1,
+    },
+    {
+      action: "show",
+      imageId: IMAGE_ID,
+      expanded: false,
+      revision: 1,
+      destinationIdentity,
+    },
+  ]);
+});
+
+test("Players accept only valid server presentation packets and clear immediately when the GM departs", async () => {
+  const session = createSessionHarness();
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID,
+    campaignActive: true,
+    directoryReady: true,
+    isGameMaster: false,
+    participantDirectory: DIRECTORY,
+    createSession: session.factory,
+    fetcher: async () => joinResponse(),
+    onChange: () => undefined,
+  });
+  await controller.join();
+  const show = createCampaignVideoPresentationPacket({
+    version: 1,
+    action: "show",
+    signedUrl: PRESENTATION_URL,
+    expanded: true,
+    revision: 2,
+  });
+  const clear = createCampaignVideoPresentationPacket({
+    version: 1,
+    action: "clear",
+    revision: 3,
+  });
+  const staleClear = createCampaignVideoPresentationPacket({
+    version: 1,
+    action: "clear",
+    revision: 1,
+  });
+
+  session.callbacks().onPresentationPacket(
+    show,
+    null,
+    CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  );
+  assert.equal(controller.getSnapshot().sharedPresentation?.signedUrl, PRESENTATION_URL);
+  assert.equal(controller.getSnapshot().presentationExpanded, true);
+
+  session.callbacks().onPresentationPacket(
+    staleClear,
+    null,
+    CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  );
+  assert.equal(controller.getSnapshot().isPresenting, true);
+  assert.equal(controller.getSnapshot().presentationExpanded, true);
+
+  session.callbacks().onPresentationPacket(
+    clear,
+    "player-2-safe",
+    CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  );
+  session.callbacks().onPresentationPacket(clear, null, "untrusted-topic");
+  session.callbacks().onParticipantDisconnected("player-2-safe");
+  assert.equal(controller.getSnapshot().isPresenting, true);
+
+  session.callbacks().onPresentationPacket(
+    clear,
+    null,
+    CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  );
+  assert.equal(controller.getSnapshot().isPresenting, false);
+  assert.equal(controller.getSnapshot().presentationExpanded, false);
+
+  const reshared = createCampaignVideoPresentationPacket({
+    version: 1,
+    action: "show",
+    signedUrl: PRESENTATION_URL,
+    expanded: true,
+    revision: 4,
+  });
+  session.callbacks().onPresentationPacket(
+    reshared,
+    null,
+    CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  );
+  assert.equal(controller.getSnapshot().presentationExpanded, true);
+
+  session.callbacks().onParticipantDisconnected("gm-safe");
+  assert.equal(controller.getSnapshot().isPresenting, false);
+  assert.equal(controller.getSnapshot().presentationExpanded, false);
+  assert.equal(controller.getSnapshot().sharedPresentation, null);
+
+  session.callbacks().onPresentationPacket(
+    show,
+    null,
+    CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  );
+  session.callbacks().onPresentationPacket(
+    new TextEncoder().encode(
+      '{"version":1,"action":"show","expanded":true,"revision":3,"signedUrl":"https://untrusted.invalid"}',
+    ),
+    null,
+    CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  );
+  assert.equal(controller.getSnapshot().sharedPresentation, null);
+  assert.equal(
+    controller.getSnapshot().presentationError,
+    "presentation_unavailable",
+  );
 });
 
 test("track attachment has symmetric cleanup and no-op empty behavior", () => {

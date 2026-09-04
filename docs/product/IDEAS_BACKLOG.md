@@ -34,6 +34,7 @@ Items in this document are not commitments and are not automatically part of the
 | IDEA-004 | Interactive character portrait preparation | Characters / Portraits / Image upload | Deferred | Phase 6 — Visual Identity, subject to review |
 | IDEA-005 | AI-assisted character generation | Characters / AI assistance | Inbox | Unassigned; not committed roadmap scope |
 | IDEA-006 | Standalone Video Rooms | Video / Separate product | Deferred | Unassigned; removed from active roadmap |
+| IDEA-007 | Campaign Wallpaper | Campaigns / Game Room / Presentation | Inbox | Unassigned; explicitly outside Phase 4C2 |
 
 ---
 
@@ -368,6 +369,48 @@ Provide an optional AI-assisted character-generation flow:
 #### Decision
 
 Not reviewed. This is a future backlog idea, not approved or committed roadmap scope.
+
+---
+
+## Campaign presentation
+
+### IDEA-007 — Campaign Wallpaper
+
+- **Status:** Inbox
+- **Area:** Campaigns / Game Room / Presentation
+- **Added:** 2026-09-04
+- **Suggested milestone:** Unassigned; explicitly outside Phase 4C2
+- **Priority:** Unassigned
+- **Source:** Product decision during Phase 4C2 planning
+- **Related documents:**
+  - `docs/product/ROADMAP.md`
+
+#### Problem
+
+When no image is being shared, the participant Display has no persistent campaign-specific visual.
+
+#### Idea
+
+Allow the Game Master to choose a persistent campaign wallpaper from campaign management. The wallpaper would appear in each participant's Display whenever no image is being shared. An active Share would temporarily replace it; after Stop Share or closing the shared image, the Display would return to the wallpaper.
+
+This is a future idea, not part of Phase 4C2. It does not authorize any wallpaper schema, Storage, settings, interface, or runtime behavior now.
+
+#### Why it may be useful
+
+- Gives an idle Game Room a campaign-specific visual identity.
+- Provides a predictable fallback after a shared image is closed.
+- Keeps temporary presentation separate from persistent campaign appearance.
+
+#### Risks or questions
+
+- Should wallpaper selection reuse Campaign Gallery images or use separate campaign media?
+- Which campaign lifecycle and access rules should apply?
+- What responsive crop, contain, and fallback behavior is appropriate?
+- Should completed campaigns retain the selected wallpaper in read-only form?
+
+#### Decision
+
+Not reviewed. Explicitly excluded from Phase 4C2 and retained only as a future backlog idea.
 
 ---
 
