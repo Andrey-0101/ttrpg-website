@@ -284,6 +284,10 @@ select option {
     align-content: center;
   }
 
+  .game-room-grid[data-presentation-expanded="true"] .game-room-slot {
+    display: grid;
+  }
+
   .game-room-grid[data-presentation-expanded="true"] .game-room-participant {
     width: 100%;
     height: 100%;

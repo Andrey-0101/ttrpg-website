@@ -282,6 +282,19 @@ test("expanded presentation uses one synchronized state and the approved respons
   const controller = source("lib", "campaign-video", "browser", "controller.ts");
   const protocol = source("lib", "campaign-video", "presentation.ts");
   const styles = source("app", "globals.css");
+  const tabletMediaStart = styles.indexOf(
+    "@media (min-width: 48rem) and (max-width: 74.999rem)",
+  );
+  const desktopMediaStart = styles.indexOf(
+    "@media (min-width: 75rem) and (min-height: 43.75rem)",
+  );
+
+  assert.notEqual(tabletMediaStart, -1);
+  assert.notEqual(desktopMediaStart, -1);
+
+  const mobileStyles = styles.slice(0, tabletMediaStart);
+  const tabletStyles = styles.slice(tabletMediaStart, desktopMediaStart);
+  const desktopStyles = styles.slice(desktopMediaStart);
 
   assert.match(room, /data-presentation-expanded=/u);
   assert.match(room, /snapshot\.presentationExpanded/u);
@@ -305,7 +318,9 @@ test("expanded presentation uses one synchronized state and the approved respons
   assert.match(styles, /"tools expanded player-6"/u);
   assert.match(styles, /grid-template-rows: repeat\(6, var\(--game-room-expanded-row-height\)\)/u);
   assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\] \.game-room-participant \{\s*width: 100%;\s*height: 100%;/u);
-  assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\][\s\S]*?\.game-room-slot,[\s\S]*?\.game-room-display \{\s*display: none;/u);
+  assert.match(mobileStyles, /\.game-room-grid\[data-presentation-expanded="true"\][\s\S]*?\.game-room-slot,[\s\S]*?\.game-room-display \{\s*display: none;/u);
+  assert.match(tabletStyles, /\.game-room-grid\[data-presentation-expanded="true"\] \.game-room-slot \{\s*display: grid;/u);
+  assert.match(desktopStyles, /\.game-room-grid\[data-presentation-expanded="true"\] \.game-room-slot \{\s*display: grid;/u);
   assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\] \[data-game-tools-panel\] \{\s*grid-row: 2;/u);
   assert.match(styles, /\.game-room-grid\[data-presentation-expanded="true"\][\s\S]*?\[data-game-room-image-tools\] \{\s*grid-template-columns: repeat\(2/u);
 });
