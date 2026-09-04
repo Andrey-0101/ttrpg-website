@@ -4,11 +4,11 @@
 
 **Implemented and verified.**
 
-Campaign Foundation is complete in the synchronized repository snapshot:
+Campaign Foundation and Phase 4C2 are complete in the accepted Production code baseline:
 
 ```text
 main
-609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
+0796cf737e4253ae38631ec807c416c17da10dbc
 ```
 
 It includes the database schema, RLS, invitation lifecycle, membership controls, campaign character sharing, campaign management UI, EN/RU localization, mobile layouts, and multi-user security testing.
@@ -24,13 +24,13 @@ The current implementation connects:
 - invitations;
 - characters;
 - a dedicated campaign Game Room with the basic LiveKit video experience;
-- a private image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other sections, GM access controls, and Player-filtered viewing.
+- a private image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other sections, GM access controls, and Player-filtered viewing;
+- GM-controlled Game Room image presentation from that Gallery, including Share / Stop Share and synchronized Expand / Collapse.
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
 Approved later Phase 4 work will add:
 
-- GM-controlled Game Room image presentation from the existing Campaign Gallery;
 - system-aware campaign dice for VtM and CoC;
 - system-aware linked-character presentation in the Game Room;
 - shared notes for permitted participants and GM-private notes.
@@ -429,7 +429,6 @@ ADR-008 defines the accepted boundary.
 
 Outside the completed Campaign Foundation:
 
-- Phase 4C2 Game Room image presentation;
 - Phase 4D1 CoC dice and Phase 4D2 system-aware Game Room dice;
 - Phase 4E Campaign & Game Room UX/UI refinement;
 - Phase 4F1 CoC character sheets and Phase 4F2 system-aware linked-character integration;

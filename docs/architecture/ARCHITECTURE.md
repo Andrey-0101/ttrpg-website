@@ -475,8 +475,8 @@ Approved sequence:
 
 6. Phase 4B Campaign Video Rooms Integration and responsive Game Room — complete and accepted in Production;
 7. Phase 4C1 image-only Campaign Gallery — complete;
-8. Phase 4C2 Game Room Image Presentation — next;
-9. Phase 4D1 CoC 7e Dice Roller;
+8. Phase 4C2 Game Room Image Presentation — complete and accepted in Production;
+9. Phase 4D1 CoC 7e Dice Roller — next;
 10. Phase 4D2 system-aware Game Room Dice Integration;
 11. Phase 4E Campaign & Game Room UX/UI Refinement;
 12. Phase 4F1 CoC 7e Character Sheets;

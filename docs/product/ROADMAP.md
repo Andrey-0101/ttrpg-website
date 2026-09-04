@@ -15,11 +15,12 @@ Completed foundation:
 - Milestone 3 — Campaign Foundation;
 - Phase 4A — VtM Personal Dice & Personal Persistence;
 - Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room;
-- Phase 4C1 — image-only Campaign Gallery.
+- Phase 4C1 — image-only Campaign Gallery;
+- Phase 4C2 — Game Room Image Presentation.
 
 Next approved work:
 
-- Phase 4C2 — Game Room Image Presentation.
+- Phase 4D1 — CoC 7e Dice Roller.
 
 Current Production facts:
 
@@ -31,7 +32,7 @@ Current Production facts:
 - the generic Call of Cthulhu 7e campaign shell is implemented, but CoC character sheets and dice are not;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
-- Phase 4C1 is implemented; Phase 4C2 is in development but remains unimplemented in Production, and every later phase remains unimplemented.
+- Phase 4C2 is implemented and accepted in Production; Phase 4D1 and every later phase remain unimplemented.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
@@ -125,11 +126,11 @@ This is an image-only Gallery, not a broad Handouts, NPC, or Maps system. NPC me
 
 #### Exit criteria
 
-Delivered: authorized users see only images allowed by the accepted campaign visibility model, the active GM can safely manage the library, completed campaigns preserve the required read-only boundary, and removed Players and Outsiders are denied. Phase 4C2 presentation remains separate and planned.
+Delivered: authorized users see only images allowed by the accepted campaign visibility model, the active GM can safely manage the library, completed campaigns preserve the required read-only boundary, and removed Players and Outsiders are denied. Game Room presentation was delivered separately in Phase 4C2.
 
 ### Phase 4C2 — Game Room Image Presentation
 
-**Status: In progress**
+**Status: Complete / accepted in Production**
 
 #### Goal
 

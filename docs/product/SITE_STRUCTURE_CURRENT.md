@@ -9,14 +9,14 @@
 | Status | Implemented snapshot |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
 | Current phase | Phase 4 — Core Play & Campaign Tools |
-| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration, Phase 4C1 image-only Campaign Gallery |
-| Next work | Phase 4C2 Game Room Image Presentation |
+| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration, Phase 4C1 Campaign Gallery, Phase 4C2 Game Room Image Presentation |
+| Next work | Phase 4D1 CoC 7e Dice Roller |
 
 ## Purpose
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented Game Room image presentation, system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, document Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current.
+It does not describe unimplemented system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, document Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current.
 
 ## Current primary navigation
 
@@ -332,9 +332,9 @@ This campaign-scoped route implements the Phase 4C1 image-only Campaign Gallery.
 /[locale]/campaigns/[id]/game-room
 ```
 
-This authenticated participant-only route is the dedicated campaign virtual tabletop. Its active surface is the existing campaign-authorized video room: explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Campaign Dice, Handouts, Participants, Quick Notes, and Session Context labels are present only as non-interactive placeholders and do not define active roadmap scope. Completed campaigns cannot start a video connection.
+This authenticated participant-only route is the dedicated campaign virtual tabletop. It provides campaign-authorized video with explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Phase 4C2 adds a GM-only browser for existing Campaign Gallery images, local viewing, Share / Stop Share, synchronized Expand / Collapse, and late join/rejoin presentation. Player Display is empty when nothing is shared; Dice and Character controls remain disabled. Completed campaigns cannot start a video connection.
 
-The accepted participant model is one GM plus up to six Players. The responsive layout keeps seven stable 16:9 slots, uses a compact Game Room header and final accepted video-card controls, and reflows with vertical scrolling where needed. The last human Production group test passed with one GM and four Players, without quantitative network or connection-quality telemetry; no additional acceptance retest is currently required.
+The accepted participant model is one GM plus up to six Players. The responsive layout keeps seven stable 16:9 slots, uses a compact Game Room header and final accepted video-card controls, and reflows with vertical scrolling where needed. The last human Production group test passed with one GM and four Players, without quantitative network or connection-quality telemetry. The Phase 4C2 presentation flow and corrected desktop Expand layout were also manually accepted in Production.
 
 ## Current authorization shape
 
@@ -347,7 +347,7 @@ The accepted participant model is one GM plus up to six Players. The responsive 
 | My Campaigns | authenticated participant |
 | Campaign Overview | campaign GM or active Player |
 | Campaign Gallery | campaign GM; active Players see only RLS-authorized images; completed GM read-only; completed Players denied image access |
-| Campaign Game Room | campaign GM or Player through campaign RLS; active campaign required to Join video |
+| Campaign Game Room | campaign GM or Player through campaign RLS; active campaign required to Join video; only the active GM controls presentation |
 | Invitation management | GM only |
 | Accept invitation | authenticated valid token holder |
 | Remove Player | GM only |
@@ -361,7 +361,6 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- Game Room image presentation from Campaign Gallery;
 - CoC dice and system-aware Game Room dice;
 - CoC character sheets and system-aware linked-character integration;
 - campaign-authoritative persisted roll history or realtime feed unless approved within 4D2;
@@ -377,6 +376,6 @@ Not implemented:
 
 The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
 
-It has a working campaign authorization boundary, a Production-accepted campaign video workspace, and an image-only Campaign Gallery. Phase 4C2 Game Room Image Presentation is next. The approved forward sequence continues with 4D1/4D2 CoC and system-aware dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
+It has a working campaign authorization boundary, a Production-accepted campaign video workspace, an image-only Campaign Gallery, and Production-accepted Game Room Image Presentation. Phase 4D1 CoC 7e Dice Roller is next. The approved forward sequence continues with 4D2 system-aware Game Room dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
 
 Standalone Video Rooms and broad Handouts/NPC/Sessions/Chronicle modules are uncommitted backlog possibilities, not current limitations that imply scheduled delivery.

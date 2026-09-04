@@ -45,9 +45,9 @@ Current tokens permit only the reviewed camera/microphone publication and subscr
 
 ADR-009 is Accepted only for managed infrastructure and LiveKit in the current campaign Game Room.
 
-## Approved later campaign work
+## Current presentation and approved later campaign work
 
-Phase 4C2 may add GM-controlled presentation of an existing Campaign Gallery image in the shared Game Room Display. This is image selection, replacement, and stop-presentation behavior only. It does not add screen sharing, annotations, structured maps, drawing tools, or a general document Handouts system.
+Phase 4C2 implements GM-controlled presentation of an existing Campaign Gallery image in the shared Game Room Display, including image selection, replacement, stop presentation, synchronized Expand / Collapse, and late join/rejoin behavior. It does not add persistence, screen sharing, annotations, structured maps, drawing tools, or a general document Handouts system.
 
 Phase 4E may refine Campaign and Game Room layout, navigation, responsive behavior, accessibility, and usability without adding new media capabilities.
 
