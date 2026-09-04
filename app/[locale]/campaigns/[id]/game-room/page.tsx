@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import CampaignVideoRoom from "@/components/campaigns/campaign-video-room";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { isCampaignGalleryCategory } from "@/lib/campaign-handouts/contracts";
+import { loadCampaignGalleryImages } from "@/lib/campaign-handouts/gallery.server";
 import { loadCampaignParticipantDirectory } from "@/lib/campaign-video/participant-directory.server";
 import { createClient } from "@/utils/supabase/server";
 
@@ -68,19 +70,47 @@ export default async function CampaignGameRoomPage({
     notFound();
   }
 
-  const participantDirectoryResult = await loadCampaignParticipantDirectory({
-    supabase,
-    campaignId: campaign.id,
-    campaignGameSystem: campaign.game_system,
-    gameMasterId: campaign.game_master_id,
-    currentUserId: userId,
-    labels: {
-      you: campaignTranslations("you"),
-      gameMasterRole: videoTranslations("roles.gameMaster"),
-      gameMasterFallback: campaignTranslations("gameMasterFallback"),
-      playerFallback: campaignTranslations("playerFallback"),
-    },
-  });
+  const isGameMaster = campaign.game_master_id === userId;
+  const [galleryResult, participantDirectoryResult] = await Promise.all([
+    isGameMaster
+      ? loadCampaignGalleryImages({
+          supabase,
+          campaignId: campaign.id,
+        })
+      : Promise.resolve({ images: [], loadError: false } as const),
+    loadCampaignParticipantDirectory({
+      supabase,
+      campaignId: campaign.id,
+      campaignGameSystem: campaign.game_system,
+      gameMasterId: campaign.game_master_id,
+      currentUserId: userId,
+      labels: {
+        you: campaignTranslations("you"),
+        gameMasterRole: videoTranslations("roles.gameMaster"),
+        gameMasterFallback: campaignTranslations("gameMasterFallback"),
+        playerFallback: campaignTranslations("playerFallback"),
+      },
+    }),
+  ]);
+
+  if (galleryResult.loadError) {
+    console.error("Failed to load Campaign Gallery images for the Game Room.");
+  }
+
+  const galleryItems = galleryResult.images.flatMap((image, index) =>
+    isCampaignGalleryCategory(image.category)
+      ? [
+          {
+            key: `gallery-image-${index}`,
+            imageId: image.id,
+            displayName: image.display_name,
+            localSignedUrl: image.signedUrl,
+            category: image.category,
+          },
+        ]
+      : [],
+  );
+
   if (!participantDirectoryResult.ready) {
     console.error("Failed to load the campaign Game Room participant directory.");
   }
@@ -94,12 +124,9 @@ export default async function CampaignGameRoomPage({
         campaignId={campaign.id}
         campaignStatus={campaign.status}
         directoryReady={participantDirectoryResult.ready}
+        isGameMaster={isGameMaster}
+        galleryItems={galleryItems}
         participantDirectory={participantDirectoryResult.participantDirectory}
-        plannedWorkspace={{
-          displayHeading: translations("workspace.display"),
-          toolsHeading: translations("workspace.tools"),
-          status: translations("planned.status"),
-        }}
       />
     </main>
   );

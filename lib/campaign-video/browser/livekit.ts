@@ -108,10 +108,28 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       callbacks.onAudioBlocked(!room.canPlaybackAudio);
     const onMediaDevicesError = (error: Error) =>
       callbacks.onMediaError(classifyCampaignVideoMediaError(error));
+    const onParticipantConnected = (participant: { identity: string }) => {
+      emitParticipants();
+      callbacks.onParticipantConnected(participant.identity);
+    };
+    const onParticipantDisconnected = (participant: { identity: string }) => {
+      emitParticipants();
+      callbacks.onParticipantDisconnected(participant.identity);
+    };
+    const onDataReceived = (
+      payload: Uint8Array,
+      participant?: { identity: string },
+      _kind?: unknown,
+      topic?: string,
+    ) => {
+      callbacks.onPresentationPacket(
+        payload,
+        participant?.identity ?? null,
+        topic ?? null,
+      );
+    };
 
     const participantEvents = [
-      RoomEvent.ParticipantConnected,
-      RoomEvent.ParticipantDisconnected,
       RoomEvent.TrackPublished,
       RoomEvent.TrackSubscribed,
       RoomEvent.TrackUnpublished,
@@ -122,6 +140,9 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       RoomEvent.LocalTrackUnpublished,
     ] as const;
     for (const event of participantEvents) room.on(event, emitParticipants);
+    room.on(RoomEvent.ParticipantConnected, onParticipantConnected);
+    room.on(RoomEvent.ParticipantDisconnected, onParticipantDisconnected);
+    room.on(RoomEvent.DataReceived, onDataReceived);
     room.on(RoomEvent.Reconnecting, onReconnecting);
     room.on(RoomEvent.Reconnected, onReconnected);
     room.on(RoomEvent.Disconnected, onDisconnected);
@@ -130,6 +151,9 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
 
     function removeListeners() {
       for (const event of participantEvents) room.off(event, emitParticipants);
+      room.off(RoomEvent.ParticipantConnected, onParticipantConnected);
+      room.off(RoomEvent.ParticipantDisconnected, onParticipantDisconnected);
+      room.off(RoomEvent.DataReceived, onDataReceived);
       room.off(RoomEvent.Reconnecting, onReconnecting);
       room.off(RoomEvent.Reconnected, onReconnected);
       room.off(RoomEvent.Disconnected, onDisconnected);

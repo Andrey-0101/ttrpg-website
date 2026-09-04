@@ -11,11 +11,10 @@ import CampaignHandoutsViewer from "@/components/campaigns/campaign-handouts-vie
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import {
-  CAMPAIGN_HANDOUT_BUCKET,
-  CAMPAIGN_HANDOUT_SIGNED_URL_TTL,
   isCampaignGalleryCategory,
   isCampaignHandoutVisibility,
 } from "@/lib/campaign-handouts/contracts";
+import { loadCampaignGalleryImages } from "@/lib/campaign-handouts/gallery.server";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignGalleryPageProps = {
@@ -91,37 +90,15 @@ export default async function CampaignGalleryPage({
     );
   }
 
-  const { data: imageRows, error: imageError } = await supabase
-    .from("campaign_images")
-    .select(
-      "id, display_name, storage_object_name, visibility, category, created_at",
-    )
-    .eq("campaign_id", campaign.id)
-    .order("created_at", { ascending: false });
+  const { images: imagesWithUrls, loadError: imageError } =
+    await loadCampaignGalleryImages({
+      supabase,
+      campaignId: campaign.id,
+    });
 
   if (imageError) {
     console.error("Failed to load Campaign Gallery images.");
   }
-
-  const imagesWithUrls = await Promise.all(
-    (imageRows ?? []).map(async (image) => {
-      const { data, error } = await supabase.storage
-        .from(CAMPAIGN_HANDOUT_BUCKET)
-        .createSignedUrl(
-          image.storage_object_name,
-          CAMPAIGN_HANDOUT_SIGNED_URL_TTL,
-        );
-
-      if (error) {
-        console.error("Failed to create a Campaign Gallery display URL.");
-      }
-
-      return {
-        ...image,
-        signedUrl: error ? null : data.signedUrl,
-      };
-    }),
-  );
 
   let managerItems: CampaignHandoutManagerItem[] = [];
   let playerOptions: CampaignHandoutPlayerOption[] = [];

@@ -31,7 +31,7 @@ Current Production facts:
 - the generic Call of Cthulhu 7e campaign shell is implemented, but CoC character sheets and dice are not;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
-- Phase 4C1 is implemented; Phase 4C2 and every later phase remain unimplemented.
+- Phase 4C1 is implemented; Phase 4C2 is in development but remains unimplemented in Production, and every later phase remains unimplemented.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
@@ -129,7 +129,7 @@ Delivered: authorized users see only images allowed by the accepted campaign vis
 
 ### Phase 4C2 — Game Room Image Presentation
 
-**Status: Planned**
+**Status: In progress**
 
 #### Goal
 
@@ -137,13 +137,15 @@ Let the GM present an image from the Campaign Gallery in the shared Game Room Di
 
 #### Scope
 
-- GM selects an existing campaign-library image;
-- all authorized Game Room participants see the same selected image;
-- the GM can replace the displayed image or stop presentation;
-- presentation reuses campaign authorization and image visibility rules;
+- one stable three-control Tools layout for the GM and Players;
+- a GM-only browser for the four existing Campaign Gallery sections, using the Gallery's established ordering and private signed image delivery;
+- local GM image viewing before presentation, without Gallery management controls;
+- explicit GM Share / Stop Share behavior that temporarily places one selected image in every active participant's Display;
+- synchronized Expand / Collapse presentation controls and safe ephemeral in-room state;
+- an empty Player Display when no image is being shared;
 - EN/RU, responsive, reconnect, and safe failure behavior.
 
-No annotations, maps, screen sharing, general Handouts system, drawing tools, or presentation history are included.
+No annotations, drawing tools, screen sharing, general Handouts system, presentation persistence/history, or campaign wallpaper are included.
 
 ### Phase 4D1 — CoC 7e Dice Roller
 

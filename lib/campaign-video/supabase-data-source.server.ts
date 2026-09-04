@@ -3,6 +3,7 @@ import "server-only";
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 
 import { createClient } from "../../utils/supabase/server";
+import { createCampaignGallerySignedUrl } from "../campaign-handouts/gallery.server";
 import type {
   CampaignVideoAuthorizationDataSource,
   CampaignVideoCampaignRecord,
@@ -75,6 +76,27 @@ export class SupabaseCampaignVideoAuthorizationDataSource
           videoAllowed: data.video_allowed,
         }
       : null;
+  }
+
+  async findCampaignImageStoragePath(
+    campaignId: string,
+    imageId: string,
+  ): Promise<string | null> {
+    const { data, error } = await this.client
+      .from("campaign_images")
+      .select("storage_object_name")
+      .eq("campaign_id", campaignId)
+      .eq("id", imageId)
+      .maybeSingle();
+    requireNoError(error);
+    return data?.storage_object_name ?? null;
+  }
+
+  createCampaignImageSignedUrl(storagePath: string): Promise<string | null> {
+    return createCampaignGallerySignedUrl({
+      supabase: this.client,
+      storageObjectName: storagePath,
+    });
   }
 }
 

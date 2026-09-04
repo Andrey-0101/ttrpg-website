@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ServerError, TokenVerifier } from "livekit-server-sdk";
+import {
+  DataPacket_Kind,
+  ServerError,
+  TokenVerifier,
+} from "livekit-server-sdk";
 
 import {
   authorizeCampaignVideoJoin,
@@ -28,6 +32,19 @@ import {
   InMemoryCampaignVideoProvider,
 } from "../../lib/campaign-video/provider";
 import {
+  CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  parseCampaignVideoPresentationPacket,
+} from "../../lib/campaign-video/presentation";
+import {
+  createCampaignVideoPresentationHandler,
+  type CampaignVideoPresentationDataSource,
+  type CampaignVideoPresentationPublishRequest,
+} from "../../lib/campaign-video/presentation-handler";
+import {
+  LiveKitCampaignVideoPresentationPublisher,
+  type LiveKitPresentationRoomService,
+} from "../../lib/campaign-video/providers/livekit-presentation";
+import {
   LiveKitCampaignVideoProvider,
   type LiveKitRoomService,
 } from "../../lib/campaign-video/providers/livekit";
@@ -40,6 +57,7 @@ const PLAYER_IDS = Array.from(
   (_, index) => `a1000000-0000-4000-8000-00000000000${index + 4}`,
 );
 const OUTSIDER_ID = "a1000000-0000-4000-8000-000000000010";
+const IMAGE_ID = "a1000000-0000-4000-8000-000000000011";
 const TEST_API_KEY = "synthetic-livekit-api-key";
 const TEST_API_SECRET = "synthetic-livekit-api-secret-at-least-32-chars";
 const TEST_CONFIGURATION: LiveKitServerConfiguration = {
@@ -78,6 +96,46 @@ class FakeDataSource implements CampaignVideoAuthorizationDataSource {
   async findPlayerPublication(): Promise<CampaignVideoPublicationRecord | null> {
     this.calls.push("publication");
     return this.data.publication;
+  }
+}
+
+class FakePresentationDataSource
+  extends FakeDataSource
+  implements CampaignVideoPresentationDataSource
+{
+  storagePath: string | null = `${CAMPAIGN_ID}/${IMAGE_ID}/image.webp`;
+  signedUrl: string | null =
+    `https://storage.test.invalid/storage/v1/object/sign/campaign-images/` +
+    `${CAMPAIGN_ID}/${IMAGE_ID}/image.webp?token=temporary`;
+  presentationCalls: Array<{ name: string; values: unknown[] }> = [];
+
+  async findCampaignImageStoragePath(
+    campaignId: string,
+    imageId: string,
+  ): Promise<string | null> {
+    this.presentationCalls.push({
+      name: "image",
+      values: [campaignId, imageId],
+    });
+    return this.storagePath;
+  }
+
+  async createCampaignImageSignedUrl(
+    storagePath: string,
+  ): Promise<string | null> {
+    this.presentationCalls.push({
+      name: "sign",
+      values: [storagePath],
+    });
+    return this.signedUrl;
+  }
+}
+
+class FakePresentationPublisher {
+  readonly requests: CampaignVideoPresentationPublishRequest[] = [];
+
+  async publish(request: CampaignVideoPresentationPublishRequest) {
+    this.requests.push(request);
   }
 }
 
@@ -512,6 +570,193 @@ test("publication restrictions become source-specific fail-closed LiveKit grants
     assert.deepEqual(video.canPublishSources, entry.sources);
     assert.equal(video.canPublishData, false);
   }
+});
+
+test("authorized active GM presentation uses the trusted Gallery signing path regardless of Gallery visibility", async () => {
+  const dataSource = new FakePresentationDataSource({
+    userId: GM_ID,
+    campaign: activeCampaign(),
+    player: null,
+    publication: null,
+  });
+  const publisher = new FakePresentationPublisher();
+  const handler = createCampaignVideoPresentationHandler({
+    createDataSource: async () => dataSource,
+    getConfiguration: () => ({ ok: true, configuration: TEST_CONFIGURATION }),
+    createPublisher: () => publisher,
+  });
+  const response = await handler(
+    new Request(
+      `https://application.test/api/campaigns/${CAMPAIGN_ID}/video/presentation`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "show",
+          imageId: IMAGE_ID,
+          expanded: true,
+          revision: 4,
+        }),
+      },
+    ),
+    { params: Promise.resolve({ campaignId: CAMPAIGN_ID }) },
+  );
+  const body = (await response.json()) as Record<string, unknown>;
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(body, {
+    ok: true,
+    action: "show",
+    expanded: true,
+    revision: 4,
+  });
+  assert.equal(JSON.stringify(body).includes("signedUrl"), false);
+  assert.deepEqual(dataSource.presentationCalls, [
+    { name: "image", values: [CAMPAIGN_ID, IMAGE_ID] },
+    {
+      name: "sign",
+      values: [`${CAMPAIGN_ID}/${IMAGE_ID}/image.webp`],
+    },
+  ]);
+  assert.equal(publisher.requests.length, 1);
+  assert.equal(publisher.requests[0]?.topic, CAMPAIGN_VIDEO_PRESENTATION_TOPIC);
+  assert.equal(publisher.requests[0]?.destinationIdentity, undefined);
+  assert.deepEqual(
+    parseCampaignVideoPresentationPacket(publisher.requests[0]!.payload),
+    {
+      version: 1,
+      action: "show",
+      signedUrl: dataSource.signedUrl,
+      expanded: true,
+      revision: 4,
+    },
+  );
+});
+
+test("presentation access is GM-only, validates commands, and clear performs no image lookup", async () => {
+  const cases = [
+    { body: "{", userId: GM_ID, status: 400 },
+    {
+      body: JSON.stringify({ action: "show", imageId: "not-an-id" }),
+      userId: GM_ID,
+      status: 400,
+    },
+    {
+      body: JSON.stringify({
+        action: "show",
+        imageId: IMAGE_ID,
+        expanded: false,
+        revision: 1,
+        signedUrl: "https://forbidden.invalid",
+      }),
+      userId: GM_ID,
+      status: 400,
+    },
+    {
+      body: JSON.stringify({
+        action: "show",
+        imageId: IMAGE_ID,
+        expanded: false,
+        revision: 1,
+      }),
+      userId: PLAYER_IDS[0]!,
+      status: 403,
+    },
+  ];
+  for (const entry of cases) {
+    const dataSource = new FakePresentationDataSource({
+      userId: entry.userId,
+      campaign: activeCampaign(),
+      player:
+        entry.userId === GM_ID ? null : { displayOrder: 1 },
+      publication: null,
+    });
+    const publisher = new FakePresentationPublisher();
+    const handler = createCampaignVideoPresentationHandler({
+      createDataSource: async () => dataSource,
+      getConfiguration: () => ({ ok: true, configuration: TEST_CONFIGURATION }),
+      createPublisher: () => publisher,
+    });
+    const response = await handler(
+      new Request("https://application.test/presentation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: entry.body,
+      }),
+      { params: Promise.resolve({ campaignId: CAMPAIGN_ID }) },
+    );
+    assert.equal(response.status, entry.status);
+    assert.equal(publisher.requests.length, 0);
+  }
+
+  const dataSource = new FakePresentationDataSource({
+    userId: GM_ID,
+    campaign: activeCampaign(),
+    player: null,
+    publication: null,
+  });
+  const publisher = new FakePresentationPublisher();
+  const handler = createCampaignVideoPresentationHandler({
+    createDataSource: async () => dataSource,
+    getConfiguration: () => ({ ok: true, configuration: TEST_CONFIGURATION }),
+    createPublisher: () => publisher,
+  });
+  const clear = await handler(
+    new Request("https://application.test/presentation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "clear", revision: 7 }),
+    }),
+    { params: Promise.resolve({ campaignId: CAMPAIGN_ID }) },
+  );
+  assert.equal(clear.status, 200);
+  assert.deepEqual(await clear.json(), {
+    ok: true,
+    action: "clear",
+    revision: 7,
+  });
+  assert.deepEqual(dataSource.presentationCalls, []);
+  assert.deepEqual(
+    parseCampaignVideoPresentationPacket(publisher.requests[0]!.payload),
+    { version: 1, action: "clear", revision: 7 },
+  );
+});
+
+test("late-join presentation dispatch is reliable, topic-scoped, and identity-targeted", async () => {
+  const calls: Array<{
+    room: string;
+    kind: DataPacket_Kind;
+    options: { destinationIdentities?: string[]; topic?: string };
+  }> = [];
+  const service: LiveKitPresentationRoomService = {
+    async sendData(room, _data, kind, options) {
+      calls.push({ room, kind, options });
+    },
+  };
+  const publisher = new LiveKitCampaignVideoPresentationPublisher(
+    TEST_CONFIGURATION,
+    service,
+  );
+  const destinationIdentity = deriveCampaignVideoParticipantIdentity(
+    CAMPAIGN_ID,
+    PLAYER_IDS[0]!,
+  );
+  await publisher.publish({
+    roomName: deriveCampaignVideoRoomName(CAMPAIGN_ID),
+    payload: new Uint8Array([1]),
+    topic: CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+    destinationIdentity,
+  });
+  assert.deepEqual(calls, [
+    {
+      room: deriveCampaignVideoRoomName(CAMPAIGN_ID),
+      kind: DataPacket_Kind.RELIABLE,
+      options: {
+        topic: CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+        destinationIdentities: [destinationIdentity],
+      },
+    },
+  ]);
 });
 
 test("missing configuration fails after authorization and before provider creation", async () => {
