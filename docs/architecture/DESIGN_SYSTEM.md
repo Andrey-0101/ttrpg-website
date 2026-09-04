@@ -136,7 +136,7 @@ Video-card rules:
 - disabled media uses only the crossed-out icon, without a color or size change;
 - Leave is a room-level action in the compact header, never a video overlay.
 
-The Display and Game Tools areas remain presentational placeholders. They do not establish product scope. Phase 4C2 may activate image presentation, Phase 4D2 may activate system-aware dice, and Phase 4F2 may activate linked characters. General Handouts, NPCs, Sessions/Chronicle, and other placeholder labels are not active roadmap commitments.
+Phase 4C2 activates the Display for GM-controlled Campaign Gallery image presentation and keeps a stable three-control Tools layout. Share / Stop Share and Expand / Collapse are implemented; unavailable Dice and Character controls remain visibly disabled until their approved phases. General Handouts, structured NPCs, Sessions/Chronicle, and other placeholder labels are not active roadmap commitments.
 
 ## Accessibility baseline
 

@@ -10,23 +10,26 @@ Completed:
 - Milestone 2 — Character Friend Alpha;
 - Milestone 3 — Campaign Foundation;
 - Phase 4A — VtM personal dice and personal persistence;
-- planned game-system catalogue across Games, Dice Rollers, character creation, and campaign creation.
+- planned game-system catalogue across Games, Dice Rollers, character creation, and campaign creation;
+- Phase 4B — Campaign Video Rooms Integration;
+- Phase 4C1 — image-only Campaign Gallery;
+- Phase 4C2 — Game Room Image Presentation.
 
 Active:
 
-- Phase 4 — Core Play & Campaign Tools, with 4A, 4B, and image-only 4C1 Campaign Handouts complete;
-- next product stage — Phase 4C2 Game Room Image Presentation.
+- Phase 4 — Core Play & Campaign Tools, with 4A through 4C2 complete;
+- next product stage — Phase 4D1 CoC 7e Dice Roller.
 
 The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
-Verified production baseline:
+Accepted Phase 4C2 Production code baseline:
 
 ```text
 main
-609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
+0796cf737e4253ae38631ec807c416c17da10dbc
 ```
 
-The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the accepted responsive Campaign Game Room, and Phase 4C1 image-only Campaign Handouts. PRs #28–#35 are the completed release-and-audit sequence before H011 consolidation. The last Game Room Production human group test passed with one GM and four Players, without quantitative network/connection-quality telemetry, and no additional Game Room acceptance retest is currently required. Phase 4C2 Game Room Image Presentation is next. Standalone Video Rooms are retained only as an uncommitted backlog idea.
+The implemented product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the accepted responsive Campaign Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation. PR #43 delivered presentation and PR #44 corrected the desktop Expand participant layout; the corrected feature was manually accepted in Production. The last broader Game Room Production group test passed with one GM and four Players, without quantitative network/connection-quality telemetry. Phase 4D1 CoC 7e Dice Roller is next. Standalone Video Rooms are retained only as an uncommitted backlog idea.
 
 ## Architecture
 

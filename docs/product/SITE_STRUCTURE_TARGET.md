@@ -7,7 +7,7 @@
 | Status | Current approved target structure |
 | Current source | [`ROADMAP.md`](ROADMAP.md) |
 | Current route reference | [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCTURE_CURRENT.md) |
-| Next product phase | 4C2 Game Room Image Presentation |
+| Next product phase | 4D1 CoC 7e Dice Roller |
 
 ## Purpose
 
@@ -19,8 +19,8 @@ Describe the intended structure without presenting speculative routes or uncommi
 2. Phase 4A personal VtM dice — complete;
 3. Phase 4B Campaign Video Rooms Integration — complete and Production accepted;
 4. Phase 4C1 image-only Campaign Gallery — complete;
-5. Phase 4C2 Game Room Image Presentation — next;
-6. Phase 4D1 CoC 7e Dice Roller;
+5. Phase 4C2 Game Room Image Presentation — complete and Production accepted;
+6. Phase 4D1 CoC 7e Dice Roller — next;
 7. Phase 4D2 system-aware Game Room Dice Integration;
 8. Phase 4E Campaign & Game Room UX/UI Refinement;
 9. Phase 4F1 CoC 7e Character Sheets;

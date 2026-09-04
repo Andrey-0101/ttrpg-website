@@ -25,9 +25,9 @@ The checked-in application structure at the working commit is the source of trut
 
 The implemented campaign-scoped Gallery route, focused `campaign-handouts` workflow helpers, shared four-section UI, and tests manage the existing campaign image model and private Storage contract. Handouts, NPC, Maps & Plans, and Other are fixed image-only categories; they do not create global or structured content domains.
 
-### Phase 4C2 — Game Room Image Presentation
+### Phase 4C2 — Game Room Image Presentation (implemented)
 
-Extend the existing Game Room and campaign-video/controller boundaries only as required for GM selection, shared current display, replacement, and stop-presentation behavior. Do not create map, annotation, drawing, or screen-sharing modules.
+The existing Game Room and campaign-video/controller boundaries now provide GM selection, shared current display, replacement, stop-presentation, synchronized Expand / Collapse, and late join/rejoin behavior without map, annotation, drawing, screen-sharing, or persistence modules.
 
 ### Phase 4D1 and 4D2 — Dice
 

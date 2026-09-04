@@ -32,12 +32,12 @@ Implemented:
 - campaign-authorized LiveKit video for one GM plus up to six Players;
 - a dedicated responsive Campaign Game Room at `/{locale}/campaigns/{campaignId}/game-room`;
 - an image-only Campaign Gallery at `/{locale}/campaigns/{campaignId}/gallery`, with fixed Handouts, NPC, Maps & Plans, and Other sections, private signed delivery, and GM-controlled Player visibility;
+- GM-controlled Game Room presentation of Campaign Gallery images, with Share / Stop Share, synchronized Expand / Collapse, and responsive participant layouts;
 - loading, empty, retry, unavailable, and mutation states;
 - Vercel production deployment at `https://ttrpg.fans`.
 
 Not yet implemented:
 
-- Game Room image presentation from the existing Campaign Gallery;
 - Call of Cthulhu 7e dice, character sheets, and system-aware Game Room integration;
 - campaign notes within the approved shared/GM-private scope;
 - general Handouts, NPCs, Sessions, Chronicle records, or clues;
@@ -136,16 +136,16 @@ Start with:
 
 ## Current snapshot
 
-Current production state:
+Accepted Phase 4C2 Production code baseline:
 
 ```text
 main
-609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
+0796cf737e4253ae38631ec807c416c17da10dbc
 ```
 
-PRs #28 through #34 are merged and accepted in Production. They delivered the campaign-video foundation and LiveKit rollout, CoC campaign shell, campaign-creation fix, dedicated Game Room, responsive seven-slot composition, and final video-card UX. The current verified deployment is `READY`. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
+PRs #43 and #44 delivered Phase 4C2 Game Room Image Presentation and corrected the desktop Expand participant layout. The feature and correction were manually accepted in Production. The current verified deployment is `READY`. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the responsive dedicated Game Room, and the Phase 4C1 image-only Campaign Gallery are implemented. The Gallery's four fixed sections contain images only; NPC and Maps & Plans are not structured gameplay systems. The last Game Room Production human group test passed with one GM and four Players. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected; no additional media/layout/human Game Room acceptance retest is currently required. Phase 4C2 Game Room Image Presentation is the next approved work. Standalone Video Rooms are no longer an active roadmap commitment.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the responsive dedicated Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation are implemented. The Gallery's four fixed sections contain images only; NPC and Maps & Plans are not structured gameplay systems. The last Game Room Production group test passed with one GM and four Players, and the Phase 4C2 presentation flow plus corrected desktop Expand layout were manually accepted in Production. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred. Phase 4D1 CoC 7e Dice Roller is the next approved work. Standalone Video Rooms are no longer an active roadmap commitment.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 
@@ -154,7 +154,7 @@ If the repository advances, inspect the newer code, migrations, generated types,
 The agreed delivery strategy is:
 
 1. completed Milestones 1–3: architecture, character friend-alpha, and Campaign Foundation;
-2. complete Phase 4 Core Play & Campaign Tools, continuing next with 4C2 Game Room Image Presentation;
+2. complete Phase 4 Core Play & Campaign Tools, continuing next with 4D1 CoC 7e Dice Roller;
 3. complete Phase 5 site-wide UI Technical Refinement;
 4. define and apply Phase 6 Visual Identity after the technical UI baseline is stable;
 5. add Delta Green system parity in Phase 7;

@@ -99,7 +99,7 @@ A trusted group reduces product scope. It does not make missing authorization sa
 - immutable, constrained audit records with no object paths, tokens, media, or unrestricted JSON;
 - RLS plus database triggers enforcing fail-closed completed-campaign mutations.
 
-This foundation is current in Production. All seven campaign-video tables use RLS; the required foreign-key indexes, grants, and `handle_new_user()` execution hardening are current. The private `campaign-images` bucket remains current. Campaign Gallery upload and access management are implemented; Game Room image presentation and remote moderation remain planned and inactive.
+This foundation is current in Production. All seven campaign-video tables use RLS; the required foreign-key indexes, grants, and `handle_new_user()` execution hardening are current. The private `campaign-images` bucket remains current. Campaign Gallery upload/access management and Game Room image presentation are implemented; remote moderation remains uncommitted and inactive.
 
 ### Invitations
 
@@ -264,7 +264,7 @@ The last Production human group test passed for the accepted current scope with 
 
 Phase 4C1 now implements a private image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other categories; NPC and Maps & Plans are images only. It retains private Storage, JPEG/PNG/WebP and 5 MiB limits, the exact represented campaign path, safe display names, campaign image/recipient visibility, signed display access, Storage-first deletion/orphan reconciliation, and removed-Player/Outsider denial. Category is immutable organizational metadata and never grants access. The active GM alone can create/change/delete individual images; the completed GM is read-only, except for represented-object cleanup before final campaign deletion. Players receive no recipient/access UI metadata.
 
-Phase 4C2 still requires GM-only presentation selection and stop controls, shared current-image state, reconnect behavior, and direct authorization tests. Broader quota/abuse controls remain a Public Readiness concern rather than an unimplemented Phase 4C1 data feature.
+Phase 4C2 implements GM-only presentation selection and stop controls, server-origin LiveKit presentation messages, monotonic revision handling, late join/rejoin synchronization, and immediate presentation clearing when the GM leaves. The server authorizes the active campaign GM, resolves the campaign-owned image, and reuses the ordinary private Gallery signed-delivery path; Players cannot publish presentation data. Presentation remains ephemeral and adds no database table or Storage-policy change. Broader quota/abuse controls remain a Public Readiness concern.
 
 ### Campaign notes — Phase 4G
 
