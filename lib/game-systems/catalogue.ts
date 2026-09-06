@@ -84,6 +84,10 @@ export const GAME_SYSTEM_CATALOGUE = [
         status: "available",
         route: "/campaigns/new",
       },
+      diceRoller: {
+        status: "available",
+        route: "/games/call-of-cthulhu/tools/dice",
+      },
     },
   },
   {

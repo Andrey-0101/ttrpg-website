@@ -251,6 +251,38 @@
     "customPoolDescription": "Объедините Монету (d2), d4, d6, d8, d10, d12, d20 и d100 в одном локальном броске без сохранения.",
     "openCustomPool": "Открыть собственный пул"
   },
+  "PersonalRollHistory": {
+    "title": "История личных бросков",
+    "description": "Ваши последние 11 личных неофициальных бросков во всех поддерживаемых инструментах.",
+    "empty": "Сохранённых личных бросков пока нет.",
+    "delete": "Удалить",
+    "clear": "Очистить историю",
+    "confirmClear": "Очистить всю историю личных бросков?",
+    "error": "Не удалось изменить историю личных бросков. Попробуйте снова.",
+    "kinds": {
+      "vtm_v5": "Vampire: The Masquerade 5-я редакция",
+      "custom_dice_pool": "Пользовательский пул кубиков",
+      "coc_7e_percentile": "Call of Cthulhu 7e · Процентная проверка",
+      "coc_7e_other_dice": "Call of Cthulhu 7e · Прочие кубики"
+    },
+    "vtm": {
+      "successes": "Успехи: {count}"
+    },
+    "custom": {
+      "total": "Сумма числовых кубиков: {total}",
+      "heads": "Орёл",
+      "tails": "Решка"
+    },
+    "coc": {
+      "percentile": {
+        "inputs": "Цель: {target} · Бонус/Штраф: {bonusPenalty}",
+        "noTarget": "—"
+      },
+      "other": {
+        "total": "Итого {total}"
+      }
+    }
+  },
   "CustomDicePool": {
     "metadataTitle": "Собственный пул кубиков",
     "metadataDescription": "Соберите и бросьте пул распространённых настольных кубиков прямо в браузере.",
@@ -332,6 +364,63 @@
         "persistenceUnavailable": "Сохранённые наборы временно недоступны. Бросок кубиков продолжает работать.",
         "unexpected": "Не удалось изменить набор. Состояние броска кубиков сохранено."
       }
+    }
+  },
+  "Coc7eDiceRoller": {
+    "metadataTitle": "Бросок кубиков Call of Cthulhu 7-я редакция",
+    "metadataDescription": "Процентные проверки и другие кубики для Call of Cthulhu 7-й редакции.",
+    "back": "Назад к броскам кубиков",
+    "title": "Бросок кубиков Call of Cthulhu 7-я редакция",
+    "percentile": {
+      "title": "Процентная проверка",
+      "target": "Цель",
+      "bonusPenalty": "Бонус / Штраф",
+      "options": {
+        "penalty3": "3 штрафных",
+        "penalty2": "2 штрафных",
+        "penalty1": "1 штрафной",
+        "bonus1": "1 бонусный",
+        "bonus2": "2 бонусных",
+        "bonus3": "3 бонусных"
+      },
+      "thresholds": "Цель {target} · Трудный {hard} · Экстремальный {extreme}"
+    },
+    "other": {
+      "title": "Прочие кубики",
+      "dieType": "Тип кубика",
+      "quantity": "Количество кубиков",
+      "modifier": "Модификатор",
+      "total": "Итого {total}"
+    },
+    "roll": "Бросить",
+    "outcomes": {
+      "critical": "Критический успех",
+      "extreme": "Экстремальный успех",
+      "hard": "Трудный успех",
+      "regular": "Обычный успех",
+      "failure": "Неудача",
+      "fumble": "Провал"
+    },
+    "accessibility": {
+      "percentileDice": "Процентные кубики",
+      "baseTens": "Основной кубик десятков: {value}",
+      "bonusTens": "Бонусный кубик десятков {number}: {value}",
+      "penaltyTens": "Штрафной кубик десятков {number}: {value}",
+      "selectedTens": "Выбранный кубик десятков",
+      "units": "Кубик единиц: {value}",
+      "decreaseQuantity": "Уменьшить количество кубиков",
+      "increaseQuantity": "Увеличить количество кубиков",
+      "decreaseModifier": "Уменьшить модификатор",
+      "increaseModifier": "Увеличить модификатор",
+      "otherDiceResults": "Результаты отдельных кубиков и модификатор",
+      "otherDie": "Кубик {number}: {value}",
+      "resultModifier": "Модификатор: {value}"
+    },
+    "errors": {
+      "target": "Введите целое число от 1 до 100 или оставьте поле «Цель» пустым.",
+      "percentileRequest": "Проверьте параметры процентной проверки и попробуйте снова.",
+      "otherRequest": "Проверьте параметры прочих кубиков и попробуйте снова.",
+      "randomUnavailable": "В этом браузере недоступен безопасный локальный генератор случайных чисел."
     }
   },
   "VampireGamePage": {

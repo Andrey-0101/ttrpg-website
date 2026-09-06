@@ -1,10 +1,17 @@
+import {
+  DICE_ROLL_LABEL_MAX_CODE_POINTS,
+  isRecord,
+  validateIntegerInRange,
+  validateOptionalDiceRollLabel,
+} from "../../dice/validation";
+
 export const VTM_V5_DICE_GAME_SYSTEM = "vtm-v5" as const;
 
 export const VTM_V5_DICE_LIMITS = {
   pool: { minimum: 1, maximum: 50 },
   hungerDice: { minimum: 0, maximum: 5 },
   difficulty: { minimum: 1, maximum: 20 },
-  labelCodePoints: 120,
+  labelCodePoints: DICE_ROLL_LABEL_MAX_CODE_POINTS,
   die: { minimum: 1, maximum: 10 },
 } as const;
 
@@ -123,14 +130,6 @@ const REQUEST_FIELDS = new Set([
   "label",
 ]);
 
-function isRecord(value: unknown): value is UnknownRecord {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value)
-  );
-}
-
 function hasOwn(
   value: UnknownRecord,
   key: string,
@@ -163,66 +162,51 @@ function validateBoundedInteger(
   maximum: number,
   errors: VtmV5DiceValidationError[],
 ): ValidatedNumber {
-  if (typeof value !== "number") {
-    errors.push({ code: "invalid-type", path });
+  const validation = validateIntegerInRange(value, minimum, maximum);
+
+  if (!validation.ok) {
+    errors.push(
+      validation.reason === "out-of-range"
+        ? {
+            code: validation.reason,
+            path,
+            details: { minimum, maximum },
+          }
+        : { code: validation.reason, path },
+    );
     return { isValid: false, value: null };
   }
 
-  if (!Number.isFinite(value)) {
-    errors.push({ code: "not-finite", path });
-    return { isValid: false, value: null };
-  }
-
-  if (!Number.isInteger(value)) {
-    errors.push({ code: "not-integer", path });
-    return { isValid: false, value: null };
-  }
-
-  if (value < minimum || value > maximum) {
-    errors.push({
-      code: "out-of-range",
-      path,
-      details: { minimum, maximum },
-    });
-    return { isValid: false, value: null };
-  }
-
-  return { isValid: true, value };
+  return { isValid: true, value: validation.value };
 }
 
 function normalizeLabel(
   value: unknown,
+  isPresent: boolean,
   errors: VtmV5DiceValidationError[],
 ): string | null {
-  if (typeof value !== "string") {
-    errors.push({
-      code: "invalid-type",
-      path: "request.label",
-    });
+  const validation = validateOptionalDiceRollLabel(value, isPresent);
+
+  if (!validation.ok) {
+    errors.push(
+      validation.reason === "too-long"
+        ? {
+            code: "label-too-long",
+            path: "request.label",
+            details: {
+              maximum: VTM_V5_DICE_LIMITS.labelCodePoints,
+              actual: validation.actualCodePoints,
+            },
+          }
+        : {
+            code: "invalid-type",
+            path: "request.label",
+          },
+    );
     return null;
   }
 
-  const normalized = value.trim().replace(/\s+/gu, " ");
-
-  if (!normalized) {
-    return null;
-  }
-
-  const codePointCount = [...normalized].length;
-
-  if (codePointCount > VTM_V5_DICE_LIMITS.labelCodePoints) {
-    errors.push({
-      code: "label-too-long",
-      path: "request.label",
-      details: {
-        maximum: VTM_V5_DICE_LIMITS.labelCodePoints,
-        actual: codePointCount,
-      },
-    });
-    return null;
-  }
-
-  return normalized;
+  return validation.value;
 }
 
 function validateDiceArray(
@@ -417,9 +401,11 @@ export function evaluateVtmV5Dice(
       );
     }
 
-    if (hasOwn(requestValue, "label")) {
-      label = normalizeLabel(requestValue.label, errors);
-    }
+    label = normalizeLabel(
+      requestValue.label,
+      hasOwn(requestValue, "label"),
+      errors,
+    );
 
     if (
       pool.isValid &&

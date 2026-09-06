@@ -49,9 +49,10 @@ Conceptual approved additions:
 /[locale]/campaigns/[id]/handouts        Compatibility redirect to Gallery
 /[locale]/campaigns/[id]/game-room       Existing route expanded by 4C2, 4D2, 4E, and 4F2
 /[locale]/campaigns/[id]/notes           Phase 4G, exact route subject to implementation review
+/[locale]/games/call-of-cthulhu/tools/dice  Local Phase 4D1 route, pending publication
 ```
 
-CoC and Delta Green character, dice, and hub paths should follow the established game-system routing convention when those capabilities are implemented. Planned catalogue entries must not expose controls or routes before capability support exists.
+Later CoC and Delta Green character, dice, and hub paths should follow the established game-system routing convention when those capabilities are implemented. Planned catalogue entries must not expose controls or routes before capability support exists.
 
 ## Game Room target
 

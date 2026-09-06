@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  PERSONAL_ROLLER_KINDS,
+  PERSONAL_ROLLER_REGISTRY,
   validatePersonalRollForPersistence,
   type PersonalRollPersistencePayload,
 } from "../../lib/dice/personal-dice-persistence";
@@ -84,6 +86,54 @@ function validCustomInput() {
       headsCount: 0,
       tailsCount: 999,
     },
+  };
+}
+
+function validCocPercentileInput(
+  overrides: {
+    target?: number | null;
+    bonusPenalty?: number;
+    units?: number;
+    tensDice?: readonly number[];
+  } = {},
+) {
+  return {
+    clientRollId: CLIENT_ROLL_ID,
+    rollerKind: "coc_7e_percentile",
+    schemaVersion: 1,
+    requestData: {
+      request: {
+        target: overrides.target ?? null,
+        bonusPenalty: overrides.bonusPenalty ?? 0,
+      },
+      units: overrides.units ?? 7,
+      tensDice: overrides.tensDice ? [...overrides.tensDice] : [20],
+    },
+    resultData: {},
+  };
+}
+
+function validCocOtherDiceInput(
+  overrides: {
+    sides?: number;
+    quantity?: number;
+    modifier?: number;
+    results?: number[];
+  } = {},
+) {
+  return {
+    clientRollId: CLIENT_ROLL_ID,
+    rollerKind: "coc_7e_other_dice",
+    schemaVersion: 1,
+    requestData: {
+      request: {
+        sides: overrides.sides ?? 6,
+        quantity: overrides.quantity ?? 2,
+        modifier: overrides.modifier ?? 0,
+      },
+      results: overrides.results ?? [2, 5],
+    },
+    resultData: {},
   };
 }
 
@@ -595,6 +645,154 @@ test("custom validation isolates source and returned nested data", () => {
   assert.deepEqual(input.resultData.groups[1].results, [3, 4]);
 });
 
+test("the personal roller registry is the single four-kind version authority", () => {
+  assert.deepEqual(PERSONAL_ROLLER_KINDS, [
+    "vtm_v5",
+    "custom_dice_pool",
+    "coc_7e_percentile",
+    "coc_7e_other_dice",
+  ]);
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(PERSONAL_ROLLER_REGISTRY).map(([kind, entry]) => [
+        kind,
+        entry.schemaVersion,
+      ]),
+    ),
+    {
+      vtm_v5: 1,
+      custom_dice_pool: 1,
+      coc_7e_percentile: 1,
+      coc_7e_other_dice: 1,
+    },
+  );
+});
+
+test("CoC percentile persistence preserves physical dice and canonical outcomes", () => {
+  const cases = [
+    { target: null, bonusPenalty: 0, units: 7, tensDice: [20], result: 27, outcome: null, selected: 0 },
+    { target: 1, bonusPenalty: 0, units: 1, tensDice: [0], result: 1, outcome: "critical", selected: 0 },
+    { target: 40, bonusPenalty: 0, units: 8, tensDice: [0], result: 8, outcome: "extreme", selected: 0 },
+    { target: 40, bonusPenalty: 0, units: 5, tensDice: [10], result: 15, outcome: "hard", selected: 0 },
+    { target: 65, bonusPenalty: 0, units: 0, tensDice: [40], result: 40, outcome: "regular", selected: 0 },
+    { target: 40, bonusPenalty: 0, units: 0, tensDice: [50], result: 50, outcome: "failure", selected: 0 },
+    { target: 40, bonusPenalty: 0, units: 6, tensDice: [90], result: 96, outcome: "fumble", selected: 0 },
+    { target: 65, bonusPenalty: 0, units: 9, tensDice: [90], result: 99, outcome: "failure", selected: 0 },
+    { target: 65, bonusPenalty: 0, units: 0, tensDice: [0], result: 100, outcome: "fumble", selected: 0 },
+    { target: 100, bonusPenalty: 0, units: 0, tensDice: [0], result: 100, outcome: "fumble", selected: 0 },
+    { target: 40, bonusPenalty: 1, units: 0, tensDice: [0, 50], result: 50, outcome: "failure", selected: 1 },
+    { target: 40, bonusPenalty: 3, units: 2, tensDice: [50, 20, 20, 80], result: 22, outcome: "regular", selected: 1 },
+    { target: 65, bonusPenalty: -1, units: 4, tensDice: [10, 70], result: 74, outcome: "failure", selected: 1 },
+    { target: 65, bonusPenalty: -3, units: 3, tensDice: [20, 80, 80, 40], result: 83, outcome: "failure", selected: 1 },
+  ] as const;
+
+  for (const expected of cases) {
+    const payload = requirePayload(validCocPercentileInput(expected));
+    assert.equal(payload.p_roller_kind, "coc_7e_percentile");
+    assert.deepEqual(payload.p_request_data.tensDice, expected.tensDice);
+    assert.equal(payload.p_result_data.percentileResult, expected.result);
+    assert.equal(payload.p_result_data.outcome, expected.outcome);
+    assert.equal(payload.p_result_data.selectedTensIndex, expected.selected);
+  }
+});
+
+test("CoC percentile persistence canonicalizes result data and rejects invalid snapshots", () => {
+  const input = validCocPercentileInput({
+    target: 40,
+    bonusPenalty: 1,
+    units: 0,
+    tensDice: [0, 20],
+  });
+  input.resultData = {
+    percentileResult: 99,
+    selectedTensIndex: 0,
+  };
+  const payload = requirePayload(input);
+  assert.equal(payload.p_roller_kind, "coc_7e_percentile");
+  assert.equal(payload.p_result_data.percentileResult, 20);
+  assert.equal(payload.p_result_data.selectedTensIndex, 1);
+
+  for (const invalid of [
+    validCocPercentileInput({ target: 0 }),
+    validCocPercentileInput({ bonusPenalty: 4 }),
+    validCocPercentileInput({ units: 10 }),
+    validCocPercentileInput({ bonusPenalty: 1, tensDice: [10] }),
+    validCocPercentileInput({ tensDice: [15] }),
+  ]) {
+    assert.equal(validatePersonalRollForPersistence(invalid).ok, false);
+  }
+
+  const unexpected = validCocPercentileInput() as ReturnType<
+    typeof validCocPercentileInput
+  > & { requestData: { debug?: boolean } };
+  unexpected.requestData.debug = true;
+  assert.equal(validatePersonalRollForPersistence(unexpected).ok, false);
+});
+
+test("CoC Other Dice persistence supports every die and canonical formulas", () => {
+  for (const sides of [2, 3, 4, 6, 8, 10, 20, 100]) {
+    const payload = requirePayload(
+      validCocOtherDiceInput({ sides, quantity: 1, results: [sides] }),
+    );
+    assert.equal(payload.p_roller_kind, "coc_7e_other_dice");
+    assert.equal(payload.p_result_data.formula, `1D${sides}`);
+    assert.equal(payload.p_result_data.total, sides);
+  }
+
+  const positive = requirePayload(
+    validCocOtherDiceInput({
+      sides: 6,
+      quantity: 10,
+      modifier: 10,
+      results: [1, 2, 3, 4, 5, 6, 1, 2, 3, 4],
+    }),
+  );
+  assert.equal(positive.p_roller_kind, "coc_7e_other_dice");
+  assert.equal(positive.p_result_data.formula, "10D6 + 10");
+  assert.deepEqual(positive.p_result_data.results, [1, 2, 3, 4, 5, 6, 1, 2, 3, 4]);
+
+  const negative = requirePayload(
+    validCocOtherDiceInput({ sides: 2, quantity: 1, modifier: -10, results: [1] }),
+  );
+  assert.equal(negative.p_roller_kind, "coc_7e_other_dice");
+  assert.equal(negative.p_result_data.formula, "1D2 - 10");
+  assert.equal(negative.p_result_data.total, -9);
+});
+
+test("CoC Other Dice persistence canonicalizes totals and rejects invalid snapshots", () => {
+  const input = validCocOtherDiceInput({ modifier: 3 });
+  input.resultData = { formula: "forged", subtotal: 99, total: 102 };
+  const payload = requirePayload(input);
+  assert.equal(payload.p_roller_kind, "coc_7e_other_dice");
+  assert.equal(payload.p_result_data.formula, "2D6 + 3");
+  assert.equal(payload.p_result_data.subtotal, 7);
+  assert.equal(payload.p_result_data.total, 10);
+
+  for (const invalid of [
+    validCocOtherDiceInput({ sides: 5 }),
+    validCocOtherDiceInput({ quantity: 0, results: [] }),
+    validCocOtherDiceInput({ modifier: 11 }),
+    validCocOtherDiceInput({ quantity: 2, results: [1] }),
+    validCocOtherDiceInput({ sides: 6, results: [0, 7] }),
+  ]) {
+    assert.equal(validatePersonalRollForPersistence(invalid).ok, false);
+  }
+});
+
+test("every supported kind rejects unsupported application schema versions", () => {
+  for (const input of [
+    validVtmInput(),
+    validCustomInput(),
+    validCocPercentileInput(),
+    validCocOtherDiceInput(),
+  ]) {
+    input.schemaVersion = 2;
+    assert.deepEqual(requireIssuePairs(input).filter((issue) => issue.path === "schemaVersion"), [
+      { code: "unsupported-schema-version", path: "schemaVersion" },
+    ]);
+  }
+});
+
 test("validation never invokes cryptographic randomness", () => {
   const cryptoObject = globalThis.crypto;
   const ownDescriptor = Object.getOwnPropertyDescriptor(
@@ -614,6 +812,8 @@ test("validation never invokes cryptographic randomness", () => {
   try {
     requirePayload(validVtmInput());
     requirePayload(validCustomInput());
+    requirePayload(validCocPercentileInput());
+    requirePayload(validCocOtherDiceInput());
   } finally {
     if (ownDescriptor) {
       Object.defineProperty(

@@ -1,10 +1,20 @@
+import {
+  isRecord,
+  validateIntegerInRange,
+} from "./validation";
+import {
+  cryptoUint32RandomSource,
+  generateUnbiasedInteger,
+  type Uint32RandomSource,
+} from "./secure-random";
+
 export const CUSTOM_DIE_SIDES = [4, 6, 8, 10, 12, 20, 100] as const;
 export const CUSTOM_POOL_ITEM_KEYS = ["coin", ...CUSTOM_DIE_SIDES] as const;
 
 export type CustomDieSides = (typeof CUSTOM_DIE_SIDES)[number];
 export type CustomPoolItemKey = (typeof CUSTOM_POOL_ITEM_KEYS)[number];
 export type CustomCoinOutcome = "heads" | "tails";
-export type CustomDiceRandomSource = (target: Uint32Array) => void;
+export type CustomDiceRandomSource = Uint32RandomSource;
 export type CustomDiceQuantities = Record<CustomPoolItemKey, number>;
 
 export const CUSTOM_DICE_POOL_LIMITS = {
@@ -41,16 +51,10 @@ export type CustomDicePoolEvaluation =
   | { ok: true; result: CustomDicePoolResult }
   | { ok: false; errors: CustomDicePoolError[] };
 
-const UINT32_RANGE = 0x1_0000_0000;
-export const CUSTOM_COIN_OUTCOME_SPLIT = UINT32_RANGE / 2;
+export const CUSTOM_COIN_OUTCOME_SPLIT = 0x8000_0000;
 
-export const cryptoCustomDiceRandomSource: CustomDiceRandomSource = (target) => {
-  globalThis.crypto.getRandomValues(target);
-};
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+export const cryptoCustomDiceRandomSource: CustomDiceRandomSource =
+  cryptoUint32RandomSource;
 
 function validateRequest(input: unknown):
   | { ok: true; quantities: CustomDiceQuantities; totalDice: number }
@@ -72,13 +76,13 @@ function validateRequest(input: unknown):
 
   for (const item of CUSTOM_POOL_ITEM_KEYS) {
     const quantity = input.quantities[String(item)];
+    const validation = validateIntegerInRange(
+      quantity,
+      0,
+      CUSTOM_DICE_POOL_LIMITS.quantityPerType,
+    );
 
-    if (
-      typeof quantity !== "number" ||
-      !Number.isInteger(quantity) ||
-      quantity < 0 ||
-      quantity > CUSTOM_DICE_POOL_LIMITS.quantityPerType
-    ) {
+    if (!validation.ok) {
       errors.push({
         code: "invalid-quantity",
         path: `request.quantities.${item}`,
@@ -86,8 +90,8 @@ function validateRequest(input: unknown):
       continue;
     }
 
-    quantities[item] = quantity;
-    totalDice += quantity;
+    quantities[item] = validation.value;
+    totalDice += validation.value;
   }
 
   if (errors.length > 0) {
@@ -109,22 +113,6 @@ function validateRequest(input: unknown):
   }
 
   return { ok: true, quantities, totalDice };
-}
-
-function generateDie(
-  sides: CustomDieSides,
-  randomSource: CustomDiceRandomSource,
-): number {
-  const acceptanceLimit = UINT32_RANGE - (UINT32_RANGE % sides);
-  const sample = new Uint32Array(1);
-
-  while (true) {
-    randomSource(sample);
-
-    if (sample[0] < acceptanceLimit) {
-      return (sample[0] % sides) + 1;
-    }
-  }
 }
 
 function generateCoin(randomSource: CustomDiceRandomSource): CustomCoinOutcome {
@@ -159,7 +147,7 @@ export function rollCustomDicePool(
       {
         sides,
         results: Array.from({ length: quantity }, () =>
-          generateDie(sides, randomSource),
+          generateUnbiasedInteger(1, sides + 1, randomSource),
         ),
       },
     ];

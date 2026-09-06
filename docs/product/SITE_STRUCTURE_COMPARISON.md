@@ -2,7 +2,7 @@
 
 ## Summary
 
-The current application is a bilingual private TTRPG hub with implemented VtM V5 characters and personal dice, a generic CoC campaign shell, secure Campaign Foundation, a Production-accepted campaign LiveKit Game Room, and an image-only Campaign Gallery. The approved target adds narrowly scoped remaining core play tools, technical refinement, Delta Green parity, ordered game-system hubs, and Public Readiness.
+The current Production application is a bilingual private TTRPG hub with implemented VtM V5 characters and personal dice, a generic CoC campaign shell, secure Campaign Foundation, a Production-accepted campaign LiveKit Game Room, and an image-only Campaign Gallery. The local working tree additionally contains the verified Phase 4D1 CoC 7e personal roller pending publication. The approved target adds narrowly scoped remaining core play tools, technical refinement, Delta Green parity, ordered game-system hubs, and Public Readiness.
 
 ## Structural comparison
 
@@ -10,9 +10,9 @@ The current application is a bilingual private TTRPG hub with implemented VtM V5
 |---|---|---|
 | Campaign authorization | Implemented | Retain |
 | Campaign video | Implemented and accepted | Retain; Phase 4E technical refinement |
-| Campaign Gallery | Four fixed image-only sections implemented | 4C2 Game Room presentation |
+| Campaign Gallery | Four fixed image-only sections and 4C2 Game Room presentation implemented | Retain |
 | VtM dice | Personal roller implemented | 4D2 VtM Game Room integration |
-| CoC dice | Not implemented | 4D1 roller, then 4D2 integration |
+| CoC dice | Phase 4D1 personal roller implemented locally, pending publication | 4D2 Game Room integration after publication |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |

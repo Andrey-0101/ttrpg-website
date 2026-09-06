@@ -18,9 +18,13 @@ Completed foundation:
 - Phase 4C1 — image-only Campaign Gallery;
 - Phase 4C2 — Game Room Image Presentation.
 
-Next approved work:
+Locally complete and verified, pending publication:
 
 - Phase 4D1 — CoC 7e Dice Roller.
+
+Next approved work after Phase 4D1 publication:
+
+- Phase 4D2 — Game Room Dice Integration.
 
 Current Production facts:
 
@@ -29,10 +33,10 @@ Current Production facts:
 - supported capacity is one GM plus up to six Players;
 - the last human Production group test passed with one GM and four Players;
 - quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred;
-- the generic Call of Cthulhu 7e campaign shell is implemented, but CoC character sheets and dice are not;
+- the generic Call of Cthulhu 7e campaign shell is implemented, but CoC character sheets and dice are not yet in Production;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
-- Phase 4C2 is implemented and accepted in Production; Phase 4D1 and every later phase remain unimplemented.
+- Phase 4C2 is implemented and accepted in Production; the locally verified Phase 4D1 working-tree implementation and its migration remain unpublished and unapplied remotely.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
@@ -150,9 +154,18 @@ No annotations, drawing tools, screen sharing, general Handouts system, presenta
 
 ### Phase 4D1 — CoC 7e Dice Roller
 
-**Status: Planned**
+**Status: Implemented and verified locally; pending publication**
 
-Deliver a tested Call of Cthulhu 7e dice engine and personal roller with system-accurate interpretation, EN/RU presentation, and responsive controls. This phase does not create campaign-authoritative history.
+Delivered in the working tree:
+
+- shared strict dice-validation primitives and unbiased `crypto.getRandomValues` integer generation with rejection sampling;
+- deterministic and generated CoC 7e percentile rolls with an optional target, one base tens die, and up to three bonus or penalty dice;
+- deterministic and generated CoC Other Dice for D2, D3, D4, D6, D8, D10, D20, and D100, with quantity and modifier bounds;
+- a responsive two-panel EN/RU personal roller at `/{locale}/games/call-of-cthulhu/tools/dice` and Dice Rollers catalogue integration;
+- local guest results and best-effort owner-private persistence for authenticated users through the shared personal-history surface;
+- an extensible personal-history envelope whose database constraints accept syntactically valid future kinds and positive schema versions while the application registry remains authoritative for supported contracts.
+
+The `20260905171520_make_personal_roll_history_extensible.sql` migration passed local reset, 154/154 pgTAP assertions, and concurrency verification. It has not been applied to remote or Production Supabase. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
 
 ### Phase 4D2 — Game Room Dice Integration
 

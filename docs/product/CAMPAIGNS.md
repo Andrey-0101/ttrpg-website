@@ -429,7 +429,7 @@ ADR-008 defines the accepted boundary.
 
 Outside the completed Campaign Foundation:
 
-- Phase 4D1 CoC dice and Phase 4D2 system-aware Game Room dice;
+- Phase 4D2 server-authoritative, system-aware campaign and Game Room dice;
 - Phase 4E Campaign & Game Room UX/UI refinement;
 - Phase 4F1 CoC character sheets and Phase 4F2 system-aware linked-character integration;
 - Phase 4G shared notes and GM-private notes;
@@ -440,7 +440,7 @@ Outside the completed Campaign Foundation:
 - Game Master editing of Player characters;
 - public campaign pages.
 
-The Call of Cthulhu 7th Edition campaign shell is implemented. Its character sheets and dice mechanics remain planned in Phases 4D1 and 4F1. Keeper-specific tools, NPCs, clues, Handouts, Sessions, and Chronicle records are not active roadmap commitments.
+The Call of Cthulhu 7th Edition campaign shell is implemented. Phase 4D1 CoC personal dice functionality is implemented and verified locally, pending publication, and not yet deployed to Production. CoC character sheets remain planned for Phase 4F1, while Phase 4D2 server-authoritative campaign and Game Room dice remain future work. Keeper-specific tools, NPCs, clues, Handouts, Sessions, and Chronicle records are not active roadmap commitments.
 
 ## Open questions for later milestones
 

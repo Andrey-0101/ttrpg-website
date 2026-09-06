@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import test from "node:test";
 
@@ -164,7 +164,7 @@ test("systems without implemented features expose only planned capabilities", ()
   }
 });
 
-test("Call of Cthulhu 7e is available only for campaign creation", () => {
+test("Call of Cthulhu 7e exposes only its implemented capabilities", () => {
   const callOfCthulhu = getGameSystem("call-of-cthulhu-7e");
 
   assert.ok(callOfCthulhu);
@@ -172,16 +172,68 @@ test("Call of Cthulhu 7e is available only for campaign creation", () => {
     status: "available",
     route: "/campaigns/new",
   });
+  assert.deepEqual(callOfCthulhu.capabilities.diceRoller, {
+    status: "available",
+    route: "/games/call-of-cthulhu/tools/dice",
+  });
 
   for (const capabilityName of [
     "gameArea",
     "characterCreation",
-    "diceRoller",
   ] as const) {
     assert.deepEqual(callOfCthulhu.capabilities[capabilityName], {
       status: "planned",
     });
   }
+});
+
+test("only VtM V5 and Call of Cthulhu 7e expose dice rollers", () => {
+  assert.deepEqual(
+    GAME_SYSTEM_CATALOGUE.filter(
+      (system) => system.capabilities.diceRoller.status === "available",
+    ).map((system) => system.id),
+    ["vtm-v5", "call-of-cthulhu-7e"],
+  );
+});
+
+test("CoC dice route renders the authenticated persistence-enabled reusable roller", () => {
+  const routePath = resolve(
+    "app/[locale]/games/call-of-cthulhu/tools/dice/page.tsx",
+  );
+  const routeSource = readFileSync(routePath, "utf8");
+
+  assert.match(
+    routeSource,
+    /import CallOfCthulhu7eDiceRoller from "@\/components\/games\/call-of-cthulhu-7e\/dice-roller"/u,
+  );
+  assert.match(
+    routeSource,
+    /<CallOfCthulhu7eDiceRoller authenticated=\{authenticated\} \/>/u,
+  );
+  assert.match(routeSource, /namespace: "Coc7eDiceRoller"/u);
+  assert.match(routeSource, /auth\.getClaims\(\)/u);
+  assert.doesNotMatch(routeSource, /GameRoom|campaign_id|Realtime/u);
+  assert.equal(
+    existsSync("app/[locale]/games/call-of-cthulhu/page.tsx"),
+    false,
+  );
+});
+
+test("Dice Rollers catalogue uses the shared localized capability link", () => {
+  const pageSource = readFileSync(
+    resolve("app/[locale]/dice-rollers/page.tsx"),
+    "utf8",
+  );
+  const cardSource = readFileSync(
+    resolve("components/game-systems/system-card.tsx"),
+    "utf8",
+  );
+
+  assert.match(pageSource, /system\.capabilities\.diceRoller/u);
+  assert.match(pageSource, /href: capability\.route/u);
+  assert.doesNotMatch(pageSource, /call-of-cthulhu/iu);
+  assert.match(cardSource, /import \{ Link \} from "@\/i18n\/navigation"/u);
+  assert.match(cardSource, /href=\{action\.href\}/u);
 });
 
 test("only VtM V5 and Call of Cthulhu 7e allow campaign creation", () => {

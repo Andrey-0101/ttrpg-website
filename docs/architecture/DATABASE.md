@@ -2,7 +2,7 @@
 
 ## Status
 
-Current applied repository-backed database state for the synchronized snapshot:
+Current applied Production database state for the synchronized snapshot:
 
 ```text
 main
@@ -24,7 +24,15 @@ supabase/migrations/20260902132447_allow_completed_campaign_image_cleanup.sql
 supabase/migrations/20260903000242_campaign_gallery_categories.sql
 ```
 
-All ten migrations are current in Production. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, and Campaign Gallery category migration are applied.
+All ten listed migrations are current in Production. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, and Campaign Gallery category migration are applied.
+
+The Phase 4D1 working tree adds this forward migration:
+
+```text
+supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
+```
+
+It has passed local reset, 154/154 pgTAP assertions, and concurrency verification. It has **not** been applied to remote or Production Supabase. Locally it replaces the closed two-kind `personal_roll_history.roller_kind` check with `^[a-z][a-z0-9_]{0,63}$` and replaces the fixed `schema_version = 1` check with `schema_version > 0`. The application registry, not these envelope constraints, remains authoritative for supported kinds and versions.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
@@ -161,6 +169,33 @@ Terminal-state constraints prevent an invitation from being both accepted and re
 A partial unique index allows only one active campaign assignment per character.
 
 Historical unlinked rows may remain.
+
+### `public.personal_roll_history`
+
+| Column | State |
+|---|---|
+| `id` | UUID primary key |
+| `owner_id` | non-null Auth user; cascade delete |
+| `client_roll_id` | non-null client-generated UUID; unique per owner |
+| `sequence_number` | unique generated identity used for stable newest-first ordering |
+| `roller_kind` | non-null text envelope discriminator |
+| `schema_version` | non-null positive smallint envelope version after the pending migration |
+| `request_data` | non-null JSON object; maximum serialized size 16 KiB |
+| `result_data` | non-null JSON object; maximum serialized size 64 KiB |
+| `created_at` | non-null timestamptz |
+
+The owner-scoped recording function is idempotent for an identical `client_roll_id` payload, serializes writes per owner, and retains the current roll plus ten previous rolls. Delete-one and clear-all functions are generic and owner-scoped. RLS keeps history private to its owner.
+
+Production currently constrains `roller_kind` to `vtm_v5` or `custom_dice_pool` and `schema_version` to 1. After the pending local migration is published and applied, the database envelope can accept syntactically valid future kinds and positive versions without another constraint-only migration. The current application registry supports only version 1 of:
+
+```text
+vtm_v5
+custom_dice_pool
+coc_7e_percentile
+coc_7e_other_dice
+```
+
+Application persistence revalidates and canonicalizes supported payloads. Malformed, unknown-kind, or unsupported-version rows are skipped safely rather than rendered or trusted.
 
 ### Campaign video foundation tables
 
@@ -416,13 +451,14 @@ Known limitation:
 
 Current database verification recorded:
 
-- nine synchronized repository/Production migration versions;
+- ten synchronized repository/Production migration versions;
 - RLS on all fifteen public tables, including all seven campaign-video tables;
 - all five required foreign-key indexes valid;
 - hardened table/function grants and restricted `handle_new_user()` execution;
 - private `campaign-images` Storage;
 - the recorded Campaign Foundation GM/Player/Outsider transaction test, with all test data rolled back.
 - a Phase 4C1 test-project transaction covering selected/outsider/completed access and completed-GM Storage cleanup, with all temporary rows rolled back.
+- local-only verification of the pending Phase 4D1 constraint migration through a clean local reset, 154/154 pgTAP assertions, and the personal-history concurrency suite.
 
 Security and lifecycle verification exposed three issues that were corrected through new migrations rather than editing applied migrations:
 

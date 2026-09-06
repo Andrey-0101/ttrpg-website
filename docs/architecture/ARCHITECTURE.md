@@ -4,6 +4,8 @@
 
 Current architecture for the implemented VtM character and campaign application, including the accepted campaign-authorized LiveKit Game Room and image-only Campaign Gallery.
 
+Phase 4D1 extends this architecture in the local working tree with a CoC 7e personal dice domain and an extensible personal-history envelope. It is locally verified and pending publication; Production remains at the accepted Phase 4C2 release.
+
 Verified production baseline:
 
 ```text
@@ -95,6 +97,7 @@ Current user-facing route families:
 /[locale]/dice-rollers
 /[locale]/dice-rollers/custom
 /[locale]/games
+/[locale]/games/call-of-cthulhu/tools/dice (local Phase 4D1; pending publication)
 /[locale]/games/vampire-the-masquerade
 /[locale]/games/vampire-the-masquerade/tools/dice
 /[locale]/login
@@ -140,6 +143,7 @@ Prefer server-side code for:
 - campaign participant and role-dependent initial rendering;
 - safe direct-route unavailable behavior;
 - current campaign-video token issuance after fresh campaign authorization;
+- owner-scoped best-effort personal-roll persistence after application revalidation;
 - future persisted campaign dice execution.
 
 ### Client responsibilities
@@ -158,6 +162,7 @@ Client components handle:
 - character link/unlink actions;
 - campaign edit/complete/delete actions;
 - image-only Campaign Gallery upload, category filtering, visibility, lightbox, and Storage-first delete actions;
+- VtM, Custom, and locally implemented CoC personal dice generation and immediate result presentation;
 - responsive interaction.
 
 Client controls are usability aids. They are not authorization boundaries.
@@ -215,13 +220,13 @@ Game-hub content
 System campaign settings
 ```
 
-Implemented system:
+Implemented Production system with all current catalogue capabilities:
 
 ```text
 vtm-v5
 ```
 
-The typed catalogue at `lib/game-systems/catalogue.ts` enables campaign creation for `call-of-cthulhu-7e` while keeping its character creation, dice roller, and game area planned. It also contains these fully planned systems:
+The local Phase 4D1 typed catalogue enables both campaign creation and the personal dice roller for `call-of-cthulhu-7e`; character creation and its game area remain planned. The CoC dice capability is pending publication and is not yet a Production claim. The catalogue also contains these fully planned systems:
 
 ```text
 alien
@@ -236,7 +241,7 @@ paranoia
 traveller-mongoose
 ```
 
-Capability status is tracked separately for game area, character creation, campaign creation, and dice roller. VtM V5 is available for all four capabilities; Call of Cthulhu 7e is available only for the generic campaign shell. Planned capabilities expose no route. The catalogue is rendered across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool is not a game-system entry.
+Capability status is tracked separately for game area, character creation, campaign creation, and dice roller. VtM V5 is available for all four capabilities; the local Phase 4D1 state makes Call of Cthulhu 7e available for its generic campaign shell and personal dice route. Planned capabilities expose no route. The catalogue is rendered across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool is not a game-system entry.
 
 ADR-008 is Accepted. The project must not create a complete universal rules engine before CoC exposes real shared interfaces.
 
@@ -258,6 +263,15 @@ It produces unbiased d10 values with `crypto.getRandomValues`, accepts an inject
 
 The public `/[locale]/dice-rollers` hub is a platform navigation surface. It links to implemented system rollers and the generic Custom Dice Pool at `/[locale]/dice-rollers/custom`. Official VtM dice presentation is isolated in `lib/game-systems/vtm-v5/dice-symbols.ts`; it maps numeric results to documented official assets without interpreting or changing the roll.
 
+Shared validation and secure-random boundaries are located at:
+
+```text
+lib/dice/validation.ts
+lib/dice/secure-random.ts
+```
+
+They contain only proven cross-system primitives: record/range/allowed-value/optional-label validation and unbiased integer generation over `crypto.getRandomValues` with rejection sampling. VtM, Custom, and CoC retain their own request contracts, error mapping, validation order, and rules interpretation.
+
 The generic custom dice boundary is located at:
 
 ```text
@@ -267,6 +281,16 @@ lib/dice/custom-dice-pool.ts
 It is platform-owned rather than game-system-owned. It validates quantities for Coin (d2), d4, d6, d8, d10, d12, d20, and d100, and enforces a 100-item total limit. It generates each result independently with `crypto.getRandomValues` and one injectable random source. Coin results use the stable typed outcomes `heads` and `tails`, selected from equal halves of the uint32 range; numeric dice use rejection sampling. Returned quantities, Coin outcomes, and numeric result arrays are copied snapshots. Coins count as rolled items but never receive numeric scores or contribute to the numeric-dice total. The generator does not interpret named-game rules or depend on campaigns or Realtime.
 
 Registered users may save up to 5 private Custom Dice Pool presets and retain the current personal roll plus 10 previous rolls. VtM and Custom results are revalidated and canonicalized at the persistence boundary. Guest rolls remain non-persistent. Personal history remains distinct from server-authoritative campaign roll history and is not campaign evidence.
+
+The local CoC 7e dice boundary is located under:
+
+```text
+lib/game-systems/call-of-cthulhu-7e/
+```
+
+Its deterministic evaluator and random generator cover percentile rolls plus CoC Other Dice. Percentile rolls use one units die, a base tens die, and up to three bonus or penalty tens dice; target is optional, and interpretation is omitted without one. Other Dice supports D2, D3, D4, D6, D8, D10, D20, and D100 with one die type per roll. Both tools are personal and client-generated.
+
+The personal-history application registry now supports version 1 of `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`. It revalidates and canonicalizes writes and safely skips malformed, unknown-kind, or unsupported-version reads. The pending local migration broadens only the database envelope to syntactically valid kinds and positive versions; it has not been applied remotely. Delete-one, clear-all, latest-11 retention, owner RLS, and best-effort semantics remain shared and generic.
 
 The same pure evaluator can later be called by server-authoritative campaign execution. That execution layer remains responsible for randomness, authorization, transport, and persistence.
 
@@ -323,7 +347,6 @@ Image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other se
 Approved planned scope:
 
 ```text
-Game Room current-image presentation
 Shared notes
 GM-private notes
 ```
@@ -476,8 +499,8 @@ Approved sequence:
 6. Phase 4B Campaign Video Rooms Integration and responsive Game Room — complete and accepted in Production;
 7. Phase 4C1 image-only Campaign Gallery — complete;
 8. Phase 4C2 Game Room Image Presentation — complete and accepted in Production;
-9. Phase 4D1 CoC 7e Dice Roller — next;
-10. Phase 4D2 system-aware Game Room Dice Integration;
+9. Phase 4D1 CoC 7e Dice Roller — implemented and verified locally, pending publication;
+10. Phase 4D2 system-aware Game Room Dice Integration — next after publication;
 11. Phase 4E Campaign & Game Room UX/UI Refinement;
 12. Phase 4F1 CoC 7e Character Sheets;
 13. Phase 4F2 system-aware linked-character Game Room integration;

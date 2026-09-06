@@ -325,7 +325,11 @@ select 'RESULT|' || public.delete_custom_dice_preset(
 function recordRoll(
   ownerId: string,
   clientRollId: string,
-  rollerKind: "vtm_v5" | "custom_dice_pool",
+  rollerKind:
+    | "vtm_v5"
+    | "custom_dice_pool"
+    | "coc_7e_percentile"
+    | "coc_7e_other_dice",
   requestData: Record<string, unknown>,
   resultData: Record<string, unknown>,
 ): Promise<PsqlResult> {
@@ -700,7 +704,13 @@ where owner_id = ${quoteLiteral(USER_A)}::uuid;
         12,
         "0",
       )}`;
-      const kind = ordinal % 2 === 0 ? "custom_dice_pool" : "vtm_v5";
+      const kinds = [
+        "vtm_v5",
+        "custom_dice_pool",
+        "coc_7e_percentile",
+        "coc_7e_other_dice",
+      ] as const;
+      const kind = kinds[ordinal % kinds.length];
       return recordRoll(
         USER_A,
         clientRollId,
@@ -726,7 +736,12 @@ where owner_id = ${quoteLiteral(USER_A)}::uuid;
   const summary = await getHistorySummary(USER_A);
   assert.equal(summary.total, 11);
   assert.deepEqual(summary.sequenceNumbers, expectedRetained);
-  assert.deepEqual(summary.kinds, ["custom_dice_pool", "vtm_v5"]);
+  assert.deepEqual(summary.kinds, [
+    "coc_7e_other_dice",
+    "coc_7e_percentile",
+    "custom_dice_pool",
+    "vtm_v5",
+  ]);
   assert.deepEqual(summary.owners, [USER_A]);
 
   return {
@@ -779,10 +794,16 @@ async function testPerUserIsolation() {
       const clientRollId = `${prefix}-0000-4000-8000-${String(
         ordinal,
       ).padStart(12, "0")}`;
+      const kinds = [
+        "vtm_v5",
+        "custom_dice_pool",
+        "coc_7e_percentile",
+        "coc_7e_other_dice",
+      ] as const;
       return recordRoll(
         ownerId,
         clientRollId,
-        ordinal % 2 === 0 ? "custom_dice_pool" : "vtm_v5",
+        kinds[ordinal % kinds.length],
         { ownerLabel, ordinal },
         { ownerLabel, shown: ordinal },
       );
