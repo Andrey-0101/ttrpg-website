@@ -1,6 +1,6 @@
 begin;
 
-select plan(145);
+select plan(154);
 
 -- Deterministic Auth owners used throughout the transaction.
 insert into auth.users (
@@ -1209,11 +1209,75 @@ set local request.jwt.claims =
   '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
 
 -- Structural history validation.
-select throws_ok(
+select lives_ok(
   $test$
     select public.record_personal_roll(
       '10000000-0000-4000-8000-000000000101',
-      'unsupported',
+      'coc_7e_percentile',
+      1::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  'CoC percentile kind is accepted at the database envelope'
+);
+select lives_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000102',
+      'coc_7e_other_dice',
+      1::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  'CoC Other Dice kind is accepted at the database envelope'
+);
+select lives_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000103',
+      'delta_green_percentile',
+      1::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  'a syntactically valid future roller kind is accepted'
+);
+select lives_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000104',
+      'vtm_v5',
+      2::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  'positive future schema version is accepted at the database envelope'
+);
+
+reset role;
+delete from public.personal_roll_history
+where client_roll_id in (
+  '10000000-0000-4000-8000-000000000101',
+  '10000000-0000-4000-8000-000000000102',
+  '10000000-0000-4000-8000-000000000103',
+  '10000000-0000-4000-8000-000000000104'
+);
+set local role authenticated;
+set local request.jwt.claim.sub =
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+set local request.jwt.claim.role = 'authenticated';
+set local request.jwt.claims =
+  '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+
+select throws_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000111',
+      '',
       1::smallint,
       '{}'::jsonb,
       '{}'::jsonb
@@ -1221,21 +1285,91 @@ select throws_ok(
   $test$,
   '23514',
   null,
-  'unsupported roller kind is rejected'
+  'empty roller kind is rejected'
 );
 select throws_ok(
   $test$
     select public.record_personal_roll(
-      '10000000-0000-4000-8000-000000000102',
-      'vtm_v5',
-      2::smallint,
+      '10000000-0000-4000-8000-000000000112',
+      'VTM_V5',
+      1::smallint,
       '{}'::jsonb,
       '{}'::jsonb
     )
   $test$,
   '23514',
   null,
-  'schema version other than 1 is rejected'
+  'uppercase roller kind is rejected'
+);
+select throws_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000113',
+      'vtm v5',
+      1::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  '23514',
+  null,
+  'roller kind whitespace is rejected'
+);
+select throws_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000114',
+      'vtm-v5',
+      1::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  '23514',
+  null,
+  'hyphenated roller kind is rejected'
+);
+select throws_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000115',
+      '7e_coc',
+      1::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  '23514',
+  null,
+  'leading-number roller kind is rejected'
+);
+select throws_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000116',
+      ('a' || repeat('b', 64))::text,
+      1::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  '23514',
+  null,
+  'roller kind longer than 64 characters is rejected'
+);
+select throws_ok(
+  $test$
+    select public.record_personal_roll(
+      '10000000-0000-4000-8000-000000000117',
+      'vtm_v5',
+      0::smallint,
+      '{}'::jsonb,
+      '{}'::jsonb
+    )
+  $test$,
+  '23514',
+  null,
+  'schema version zero is rejected'
 );
 select throws_ok(
   $test$
@@ -1437,9 +1571,11 @@ select lives_ok(
           '10000000-0000-4000-8000-'
           || pg_catalog.lpad(roll_index::text, 12, '0')
         )::uuid;
-        roll_kind := case
-          when roll_index % 2 = 0 then 'vtm_v5'
-          else 'custom_dice_pool'
+        roll_kind := case roll_index % 4
+          when 0 then 'vtm_v5'
+          when 1 then 'custom_dice_pool'
+          when 2 then 'coc_7e_percentile'
+          else 'coc_7e_other_dice'
         end;
 
         perform public.record_personal_roll(
@@ -1453,7 +1589,7 @@ select lives_ok(
     end;
     $block$
   $test$,
-  'mixed VtM and Custom rolls can be recorded through the twelfth distinct roll'
+  'mixed personal roller kinds can be recorded through the twelfth distinct roll'
 );
 select is(
   (select count(*) from public.personal_roll_history),
@@ -1497,8 +1633,8 @@ select is(
     select count(distinct roller_kind)
     from public.personal_roll_history
   ),
-  2::bigint,
-  'retained history combines both roller kinds'
+  4::bigint,
+  'retained history combines all four current roller kinds'
 );
 
 reset role;

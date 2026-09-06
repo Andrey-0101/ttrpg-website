@@ -132,6 +132,41 @@ test("invalid requests are rejected without consuming randomness", () => {
   assert.equal(calls(), 0);
 });
 
+test("invalid quantity number forms preserve one Custom error contract", () => {
+  const invalidQuantities = [
+    "1",
+    1.5,
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+  ];
+  const { source, calls } = createSequenceSource([0]);
+
+  for (const quantity of invalidQuantities) {
+    const evaluation = rollCustomDicePool(
+      {
+        quantities: {
+          ...emptyQuantities(),
+          6: quantity,
+        },
+      },
+      source,
+    );
+
+    assert.deepEqual(evaluation, {
+      ok: false,
+      errors: [
+        {
+          code: "invalid-quantity",
+          path: "request.quantities.6",
+        },
+      ],
+    });
+  }
+
+  assert.equal(calls(), 0);
+});
+
 test("later request changes cannot mutate a generated result", () => {
   const quantities = { ...emptyQuantities(), 8: 2 };
   const { source } = createSequenceSource([0, 7]);

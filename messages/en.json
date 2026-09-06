@@ -251,6 +251,38 @@
     "customPoolDescription": "Combine a Coin (d2), d4, d6, d8, d10, d12, d20, and d100 in one local, non-persistent roll.",
     "openCustomPool": "Open Custom Dice Pool"
   },
+  "PersonalRollHistory": {
+    "title": "Personal roll history",
+    "description": "Your latest 11 private, non-authoritative rolls across supported personal dice tools.",
+    "empty": "No personal rolls saved yet.",
+    "delete": "Delete",
+    "clear": "Clear history",
+    "confirmClear": "Clear your entire personal roll history?",
+    "error": "Personal roll history could not be changed. Try again.",
+    "kinds": {
+      "vtm_v5": "Vampire: The Masquerade 5th Edition",
+      "custom_dice_pool": "Custom Dice Pool",
+      "coc_7e_percentile": "Call of Cthulhu 7e · Percentile Test",
+      "coc_7e_other_dice": "Call of Cthulhu 7e · Other Dice"
+    },
+    "vtm": {
+      "successes": "Successes: {count}"
+    },
+    "custom": {
+      "total": "Numeric dice total: {total}",
+      "heads": "Heads",
+      "tails": "Tails"
+    },
+    "coc": {
+      "percentile": {
+        "inputs": "Target: {target} · Bonus/Penalty: {bonusPenalty}",
+        "noTarget": "—"
+      },
+      "other": {
+        "total": "Total {total}"
+      }
+    }
+  },
   "CustomDicePool": {
     "metadataTitle": "Custom Dice Pool",
     "metadataDescription": "Build and roll a custom pool of common tabletop dice in your browser.",
@@ -332,6 +364,63 @@
         "persistenceUnavailable": "Saved presets are temporarily unavailable. The dice roller still works normally.",
         "unexpected": "The preset could not be changed. The dice roller state was preserved."
       }
+    }
+  },
+  "Coc7eDiceRoller": {
+    "metadataTitle": "Call of Cthulhu 7th Edition Dice Roller",
+    "metadataDescription": "Roll percentile tests and other dice for Call of Cthulhu 7th Edition.",
+    "back": "Back to Dice Rollers",
+    "title": "Call of Cthulhu 7th Edition Dice Roller",
+    "percentile": {
+      "title": "Percentile Test",
+      "target": "Target",
+      "bonusPenalty": "Bonus / Penalty",
+      "options": {
+        "penalty3": "3 Penalty",
+        "penalty2": "2 Penalty",
+        "penalty1": "1 Penalty",
+        "bonus1": "1 Bonus",
+        "bonus2": "2 Bonus",
+        "bonus3": "3 Bonus"
+      },
+      "thresholds": "Target {target} · Hard {hard} · Extreme {extreme}"
+    },
+    "other": {
+      "title": "Other Dice",
+      "dieType": "Die Type",
+      "quantity": "Number of Dice",
+      "modifier": "Modifier",
+      "total": "Total {total}"
+    },
+    "roll": "Roll",
+    "outcomes": {
+      "critical": "Critical Success",
+      "extreme": "Extreme Success",
+      "hard": "Hard Success",
+      "regular": "Regular Success",
+      "failure": "Failure",
+      "fumble": "Fumble"
+    },
+    "accessibility": {
+      "percentileDice": "Percentile dice",
+      "baseTens": "Base Tens die: {value}",
+      "bonusTens": "Bonus Tens die {number}: {value}",
+      "penaltyTens": "Penalty Tens die {number}: {value}",
+      "selectedTens": "Selected Tens die",
+      "units": "Units die: {value}",
+      "decreaseQuantity": "Decrease number of dice",
+      "increaseQuantity": "Increase number of dice",
+      "decreaseModifier": "Decrease modifier",
+      "increaseModifier": "Increase modifier",
+      "otherDiceResults": "Individual dice results and modifier",
+      "otherDie": "Die {number}: {value}",
+      "resultModifier": "Modifier: {value}"
+    },
+    "errors": {
+      "target": "Enter a whole number from 1 through 100, or leave Target empty.",
+      "percentileRequest": "Check the Percentile Test controls and try again.",
+      "otherRequest": "Check the Other Dice controls and try again.",
+      "randomUnavailable": "Secure local randomness is unavailable in this browser."
     }
   },
   "VampireGamePage": {

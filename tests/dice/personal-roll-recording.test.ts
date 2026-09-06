@@ -7,8 +7,12 @@ import {
   type CustomDicePoolResult,
 } from "../../lib/dice/custom-dice-pool";
 import {
+  type Coc7eOtherDicePersonalRollRecordingInput,
+  type Coc7ePercentilePersonalRollRecordingInput,
   type CustomPersonalRollRecordingInput,
   type VtmV5PersonalRollRecordingInput,
+  recordCoc7eOtherDiceRollBestEffort,
+  recordCoc7ePercentileRollBestEffort,
   recordCustomRollBestEffort,
   recordVtmV5RollBestEffort,
 } from "../../lib/dice/personal-roll-recording";
@@ -16,9 +20,17 @@ import {
   evaluateVtmV5Dice,
   type VtmV5DiceResult,
 } from "../../lib/game-systems/vtm-v5/dice-engine";
+import {
+  evaluateCoc7eOtherDice,
+  evaluateCoc7ePercentileTest,
+  type Coc7eOtherDiceResult,
+  type Coc7ePercentileTestResult,
+} from "../../lib/game-systems/call-of-cthulhu-7e/dice-engine";
 
 const VTM_UUID = "0a2c08cb-df4f-48a8-bb5e-b79a32782b18";
 const CUSTOM_UUID = "a13ffde0-cab3-455f-8181-a1dbc21c25f5";
+const COC_PERCENTILE_UUID = "246da861-79fb-403d-9576-82c86cf53068";
+const COC_OTHER_UUID = "6bb91e61-bf25-4e96-a623-cfb60c78541d";
 
 function createVtmSnapshot(): VtmV5DiceResult {
   const evaluation = evaluateVtmV5Dice({
@@ -62,6 +74,25 @@ function createCustomSnapshot(): CustomDicePoolResult {
   };
 }
 
+function createCocPercentileSnapshot(): Coc7ePercentileTestResult {
+  const evaluation = evaluateCoc7ePercentileTest({
+    request: { target: 40, bonusPenalty: 1 },
+    units: 0,
+    tensDice: [0, 20],
+  });
+  assert.equal(evaluation.ok, true);
+  return evaluation.result;
+}
+
+function createCocOtherSnapshot(): Coc7eOtherDiceResult {
+  const evaluation = evaluateCoc7eOtherDice({
+    request: { sides: 6, quantity: 2, modifier: -10 },
+    results: [1, 2],
+  });
+  assert.equal(evaluation.ok, true);
+  return evaluation.result;
+}
+
 test("guest VtM rolls do not create an id or call the action", async () => {
   let uuidCalls = 0;
   let actionCalls = 0;
@@ -96,6 +127,33 @@ test("guest Custom rolls do not create an id or call the action", async () => {
     async recordAction() {
       actionCalls += 1;
     },
+  });
+
+  assert.equal(uuidCalls, 0);
+  assert.equal(actionCalls, 0);
+});
+
+test("guest CoC rolls do not create ids or call the action", async () => {
+  let uuidCalls = 0;
+  let actionCalls = 0;
+  const options = {
+    authenticated: false,
+    uuidFactory() {
+      uuidCalls += 1;
+      return COC_PERCENTILE_UUID;
+    },
+    async recordAction() {
+      actionCalls += 1;
+    },
+  };
+
+  await recordCoc7ePercentileRollBestEffort({
+    ...options,
+    snapshot: createCocPercentileSnapshot(),
+  });
+  await recordCoc7eOtherDiceRollBestEffort({
+    ...options,
+    snapshot: createCocOtherSnapshot(),
   });
 
   assert.equal(uuidCalls, 0);
@@ -200,6 +258,62 @@ test("authenticated Custom rolls copy quantities, coins, and every group", async
     assert.notStrictEqual(group, snapshot.groups[index]);
     assert.notStrictEqual(group.results, snapshot.groups[index].results);
   });
+});
+
+test("authenticated CoC rolls copy canonical deterministic snapshots", async () => {
+  const percentile = createCocPercentileSnapshot();
+  const other = createCocOtherSnapshot();
+  const actionInputs: unknown[] = [];
+
+  await recordCoc7ePercentileRollBestEffort({
+    authenticated: true,
+    snapshot: percentile,
+    uuidFactory: () => COC_PERCENTILE_UUID,
+    async recordAction(input) {
+      actionInputs.push(input);
+    },
+  });
+  await recordCoc7eOtherDiceRollBestEffort({
+    authenticated: true,
+    snapshot: other,
+    uuidFactory: () => COC_OTHER_UUID,
+    async recordAction(input) {
+      actionInputs.push(input);
+    },
+  });
+
+  const percentileInput =
+    actionInputs[0] as Coc7ePercentilePersonalRollRecordingInput;
+  assert.deepEqual(percentileInput, {
+    clientRollId: COC_PERCENTILE_UUID,
+    rollerKind: "coc_7e_percentile",
+    schemaVersion: 1,
+    requestData: {
+      request: percentile.request,
+      units: percentile.units,
+      tensDice: percentile.tensDice,
+    },
+    resultData: percentile,
+  });
+  assert.notStrictEqual(percentileInput.requestData.request, percentile.request);
+  assert.notStrictEqual(percentileInput.requestData.tensDice, percentile.tensDice);
+  assert.notStrictEqual(percentileInput.resultData.candidates, percentile.candidates);
+
+  const otherInput =
+    actionInputs[1] as Coc7eOtherDicePersonalRollRecordingInput;
+  assert.deepEqual(otherInput, {
+    clientRollId: COC_OTHER_UUID,
+    rollerKind: "coc_7e_other_dice",
+    schemaVersion: 1,
+    requestData: {
+      request: other.request,
+      results: other.results,
+    },
+    resultData: other,
+  });
+  assert.notStrictEqual(otherInput.requestData.request, other.request);
+  assert.notStrictEqual(otherInput.requestData.results, other.results);
+  assert.notStrictEqual(otherInput.resultData.results, other.results);
 });
 
 test("VtM action payload is isolated from later snapshot mutations", async () => {
@@ -367,6 +481,22 @@ test("recording failures and safe failures never reject the helper", async () =>
         recordAction,
       }),
     );
+    await assert.doesNotReject(
+      recordCoc7ePercentileRollBestEffort({
+        authenticated: true,
+        snapshot: createCocPercentileSnapshot(),
+        uuidFactory: () => COC_PERCENTILE_UUID,
+        recordAction,
+      }),
+    );
+    await assert.doesNotReject(
+      recordCoc7eOtherDiceRollBestEffort({
+        authenticated: true,
+        snapshot: createCocOtherSnapshot(),
+        uuidFactory: () => COC_OTHER_UUID,
+        recordAction,
+      }),
+    );
   }
 });
 
@@ -509,4 +639,46 @@ test("Custom roller records only the successful local snapshot", () => {
   assert.match(pageSource, /privacyNoteAuthenticated/u);
   assert.match(pageSource, /privacyNoteGuest/u);
   assert.match(pageSource, /privacyNoteUnavailable/u);
+});
+
+test("CoC roller records successful snapshots after updating local results", () => {
+  const pageSource = readFileSync(
+    resolve(
+      process.cwd(),
+      "app/[locale]/games/call-of-cthulhu/tools/dice/page.tsx",
+    ),
+    "utf8",
+  );
+  const rollerSource = readFileSync(
+    resolve(
+      process.cwd(),
+      "components/games/call-of-cthulhu-7e/dice-roller.tsx",
+    ),
+    "utf8",
+  );
+
+  assert.match(pageSource, /auth\.getClaims\(\)/u);
+  assert.match(
+    pageSource,
+    /<CallOfCthulhu7eDiceRoller authenticated=\{authenticated\}/u,
+  );
+  assert.match(rollerSource, /recordCoc7ePercentileRollBestEffort/u);
+  assert.match(rollerSource, /recordCoc7eOtherDiceRollBestEffort/u);
+  assert.match(rollerSource, /recordPersonalRollAction/u);
+
+  const percentileSet = rollerSource.indexOf("setResult(evaluation.result);");
+  const percentileRecord = rollerSource.indexOf(
+    "void recordCoc7ePercentileRollBestEffort({",
+  );
+  const otherSet = rollerSource.indexOf(
+    "setResult(evaluation.result);",
+    percentileSet + 1,
+  );
+  const otherRecord = rollerSource.indexOf(
+    "void recordCoc7eOtherDiceRollBestEffort({",
+  );
+  assert.ok(percentileSet >= 0 && percentileSet < percentileRecord);
+  assert.ok(otherSet >= 0 && otherSet < otherRecord);
+  assert.doesNotMatch(rollerSource, /@supabase|createClient\s*\(/u);
+  assert.doesNotMatch(rollerSource, /GameRoom|campaign_id|Realtime/u);
 });

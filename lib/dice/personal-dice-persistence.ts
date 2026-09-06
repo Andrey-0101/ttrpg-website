@@ -13,15 +13,54 @@ import {
   type VtmV5DiceResult,
   type VtmV5DiceValidationError,
 } from "../game-systems/vtm-v5/dice-engine";
+import {
+  evaluateCoc7eOtherDice,
+  evaluateCoc7ePercentileTest,
+  type Coc7eOtherDiceInput,
+  type Coc7eOtherDiceResult,
+  type Coc7ePercentileTestInput,
+  type Coc7ePercentileTestResult,
+  type Coc7ePercentileValidationError,
+  type Coc7eOtherDiceValidationError,
+} from "../game-systems/call-of-cthulhu-7e/dice-engine";
 import type { Database } from "../../types/database.types";
 
 export const PERSONAL_ROLL_SCHEMA_VERSION = 1 as const;
-export const PERSONAL_ROLLER_KINDS = [
-  "vtm_v5",
-  "custom_dice_pool",
-] as const;
 
-export type PersonalRollerKind = (typeof PERSONAL_ROLLER_KINDS)[number];
+type PersonalRollSnapshotValidator = (
+  envelope: ValidatedEnvelope,
+  issues: PersonalRollPersistenceIssue[],
+) => PersonalRollPersistencePayload | null;
+
+export const PERSONAL_ROLLER_REGISTRY = {
+  vtm_v5: {
+    schemaVersion: PERSONAL_ROLL_SCHEMA_VERSION,
+    validate: validateVtmSnapshot,
+  },
+  custom_dice_pool: {
+    schemaVersion: PERSONAL_ROLL_SCHEMA_VERSION,
+    validate: validateCustomSnapshot,
+  },
+  coc_7e_percentile: {
+    schemaVersion: PERSONAL_ROLL_SCHEMA_VERSION,
+    validate: validateCoc7ePercentileSnapshot,
+  },
+  coc_7e_other_dice: {
+    schemaVersion: PERSONAL_ROLL_SCHEMA_VERSION,
+    validate: validateCoc7eOtherDiceSnapshot,
+  },
+} as const satisfies Record<
+  string,
+  {
+    schemaVersion: number;
+    validate: PersonalRollSnapshotValidator;
+  }
+>;
+
+export type PersonalRollerKind = keyof typeof PERSONAL_ROLLER_REGISTRY;
+export const PERSONAL_ROLLER_KINDS = Object.freeze(
+  Object.keys(PERSONAL_ROLLER_REGISTRY) as PersonalRollerKind[],
+);
 
 export type PersonalRollPersistenceIssueCode =
   | "required"
@@ -92,6 +131,32 @@ export type CustomPersonalRollResultData = {
   tailsCount: number;
 };
 
+export type Coc7ePercentilePersonalRollRequestData = {
+  request: Coc7ePercentileTestInput["request"];
+  units: number;
+  tensDice: number[];
+};
+
+export type Coc7ePercentilePersonalRollResultData = Omit<
+  Coc7ePercentileTestResult,
+  "tensDice" | "candidates"
+> & {
+  tensDice: number[];
+  candidates: number[];
+};
+
+export type Coc7eOtherDicePersonalRollRequestData = {
+  request: Coc7eOtherDiceInput["request"];
+  results: number[];
+};
+
+export type Coc7eOtherDicePersonalRollResultData = Omit<
+  Coc7eOtherDiceResult,
+  "results"
+> & {
+  results: number[];
+};
+
 type RecordPersonalRollArgs =
   Database["public"]["Functions"]["record_personal_roll"]["Args"];
 
@@ -126,9 +191,25 @@ export type CustomPersonalRollPersistencePayload =
     CustomPersonalRollResultData
   >;
 
+export type Coc7ePercentilePersonalRollPersistencePayload =
+  DatabaseReadyPersonalRollPayload<
+    "coc_7e_percentile",
+    Coc7ePercentilePersonalRollRequestData,
+    Coc7ePercentilePersonalRollResultData
+  >;
+
+export type Coc7eOtherDicePersonalRollPersistencePayload =
+  DatabaseReadyPersonalRollPayload<
+    "coc_7e_other_dice",
+    Coc7eOtherDicePersonalRollRequestData,
+    Coc7eOtherDicePersonalRollResultData
+  >;
+
 export type PersonalRollPersistencePayload =
   | VtmV5PersonalRollPersistencePayload
-  | CustomPersonalRollPersistencePayload;
+  | CustomPersonalRollPersistencePayload
+  | Coc7ePercentilePersonalRollPersistencePayload
+  | Coc7eOtherDicePersonalRollPersistencePayload;
 
 export type PersonalRollPersistenceValidation =
   | {
@@ -195,6 +276,26 @@ const CUSTOM_RESULT_FIELDS = new Set([
   "tailsCount",
 ]);
 const CUSTOM_GROUP_FIELDS = new Set(["sides", "results"]);
+const COC_PERCENTILE_RESULT_FIELDS = new Set([
+  "gameSystem",
+  "request",
+  "units",
+  "tensDice",
+  "candidates",
+  "selectedTensIndex",
+  "percentileResult",
+  "hardThreshold",
+  "extremeThreshold",
+  "outcome",
+]);
+const COC_OTHER_DICE_RESULT_FIELDS = new Set([
+  "gameSystem",
+  "request",
+  "results",
+  "formula",
+  "subtotal",
+  "total",
+]);
 const CUSTOM_QUANTITY_FIELDS = new Set(
   CUSTOM_POOL_ITEM_KEYS.map(String),
 );
@@ -308,11 +409,7 @@ function validateEnvelope(
     issues.push({ code: "required", path: "rollerKind" });
   } else if (typeof input.rollerKind !== "string") {
     issues.push({ code: "invalid-type", path: "rollerKind" });
-  } else if (
-    !PERSONAL_ROLLER_KINDS.includes(
-      input.rollerKind as PersonalRollerKind,
-    )
-  ) {
+  } else if (!hasOwn(PERSONAL_ROLLER_REGISTRY, input.rollerKind)) {
     issues.push({
       code: "unsupported-roller-kind",
       path: "rollerKind",
@@ -327,12 +424,27 @@ function validateEnvelope(
     const schemaVersion = validateInteger(
       input.schemaVersion,
       "schemaVersion",
-      PERSONAL_ROLL_SCHEMA_VERSION,
-      PERSONAL_ROLL_SCHEMA_VERSION,
+      1,
+      Number.MAX_SAFE_INTEGER,
       issues,
     );
-    if (schemaVersion.valid) {
+    const supportedVersion = rollerKind
+      ? PERSONAL_ROLLER_REGISTRY[rollerKind].schemaVersion
+      : PERSONAL_ROLL_SCHEMA_VERSION;
+    if (
+      schemaVersion.valid &&
+      schemaVersion.value === supportedVersion
+    ) {
       schemaVersionValid = true;
+    } else if (
+      schemaVersion.valid &&
+      schemaVersion.value !== supportedVersion
+    ) {
+      issues.push({
+        code: "unsupported-schema-version",
+        path: "schemaVersion",
+        details: { supported: supportedVersion },
+      });
     } else if (
       typeof input.schemaVersion === "number" &&
       Number.isFinite(input.schemaVersion) &&
@@ -347,7 +459,9 @@ function validateEnvelope(
         issues.splice(outOfRangeIndex, 1, {
           code: "unsupported-schema-version",
           path: "schemaVersion",
-          details: { supported: PERSONAL_ROLL_SCHEMA_VERSION },
+          details: {
+            supported: supportedVersion,
+          },
         });
       }
     }
@@ -887,6 +1001,150 @@ function validateCustomSnapshot(
   return payload;
 }
 
+function mapCocIssue(
+  error:
+    | Coc7ePercentileValidationError
+    | Coc7eOtherDiceValidationError,
+): PersonalRollPersistenceIssue {
+  const path =
+    error.path === "$"
+      ? "requestData"
+      : `requestData.${error.path}`;
+
+  return {
+    code:
+      error.code === "invalid-tens-value"
+        ? "invalid-die-value"
+        : error.code === "unsupported-sides"
+          ? "unsupported-die"
+          : error.code,
+    path,
+    ...(error.details ? { details: { ...error.details } } : {}),
+  };
+}
+
+function copyCoc7ePercentileResult(
+  result: Coc7ePercentileTestResult,
+): Coc7ePercentilePersonalRollResultData {
+  return {
+    ...result,
+    request: { ...result.request },
+    tensDice: [...result.tensDice],
+    candidates: [...result.candidates],
+  };
+}
+
+function validateCoc7ePercentileSnapshot(
+  envelope: ValidatedEnvelope,
+  issues: PersonalRollPersistenceIssue[],
+): Coc7ePercentilePersonalRollPersistencePayload | null {
+  if (envelope.resultData) {
+    addUnexpectedFieldIssues(
+      envelope.resultData,
+      COC_PERCENTILE_RESULT_FIELDS,
+      "resultData",
+      issues,
+    );
+  }
+
+  if (!envelope.requestData) {
+    return null;
+  }
+
+  const evaluation = evaluateCoc7ePercentileTest(
+    envelope.requestData,
+  );
+  if (!evaluation.ok) {
+    issues.push(...evaluation.errors.map(mapCocIssue));
+    return null;
+  }
+
+  if (
+    issues.length > 0 ||
+    !envelope.clientRollId ||
+    !envelope.schemaVersionValid
+  ) {
+    return null;
+  }
+
+  const canonicalResult = copyCoc7ePercentileResult(
+    evaluation.result,
+  );
+  const payload: Coc7ePercentilePersonalRollPersistencePayload = {
+    p_client_roll_id: envelope.clientRollId,
+    p_roller_kind: "coc_7e_percentile",
+    p_schema_version: PERSONAL_ROLL_SCHEMA_VERSION,
+    p_request_data: {
+      request: { ...canonicalResult.request },
+      units: canonicalResult.units,
+      tensDice: [...canonicalResult.tensDice],
+    },
+    p_result_data: canonicalResult,
+  };
+
+  payload satisfies RecordPersonalRollArgs;
+  return payload;
+}
+
+function copyCoc7eOtherDiceResult(
+  result: Coc7eOtherDiceResult,
+): Coc7eOtherDicePersonalRollResultData {
+  return {
+    ...result,
+    request: { ...result.request },
+    results: [...result.results],
+  };
+}
+
+function validateCoc7eOtherDiceSnapshot(
+  envelope: ValidatedEnvelope,
+  issues: PersonalRollPersistenceIssue[],
+): Coc7eOtherDicePersonalRollPersistencePayload | null {
+  if (envelope.resultData) {
+    addUnexpectedFieldIssues(
+      envelope.resultData,
+      COC_OTHER_DICE_RESULT_FIELDS,
+      "resultData",
+      issues,
+    );
+  }
+
+  if (!envelope.requestData) {
+    return null;
+  }
+
+  const evaluation = evaluateCoc7eOtherDice(envelope.requestData);
+  if (!evaluation.ok) {
+    issues.push(...evaluation.errors.map(mapCocIssue));
+    return null;
+  }
+
+  if (
+    issues.length > 0 ||
+    !envelope.clientRollId ||
+    !envelope.schemaVersionValid
+  ) {
+    return null;
+  }
+
+  const canonicalResult = copyCoc7eOtherDiceResult(
+    evaluation.result,
+  );
+  const payload: Coc7eOtherDicePersonalRollPersistencePayload = {
+    p_client_roll_id: envelope.clientRollId,
+    p_roller_kind: "coc_7e_other_dice",
+    p_schema_version: PERSONAL_ROLL_SCHEMA_VERSION,
+    p_request_data: {
+      request: { ...canonicalResult.request },
+      results: [...canonicalResult.results],
+    },
+    p_result_data: canonicalResult,
+  };
+
+  payload satisfies RecordPersonalRollArgs;
+  return payload;
+}
+
 /**
  * Personal history is non-authoritative. This pure boundary validates semantic
  * coherence before a later caller invokes the owner-scoped database RPC.
@@ -904,13 +1162,12 @@ export function validatePersonalRollForPersistence(
 
   const issues: PersonalRollPersistenceIssue[] = [];
   const envelope = validateEnvelope(input, issues);
-  let payload: PersonalRollPersistencePayload | null = null;
-
-  if (envelope.rollerKind === "vtm_v5") {
-    payload = validateVtmSnapshot(envelope, issues);
-  } else if (envelope.rollerKind === "custom_dice_pool") {
-    payload = validateCustomSnapshot(envelope, issues);
-  }
+  const payload = envelope.rollerKind
+    ? PERSONAL_ROLLER_REGISTRY[envelope.rollerKind].validate(
+        envelope,
+        issues,
+      )
+    : null;
 
   if (!payload || issues.length > 0) {
     return {

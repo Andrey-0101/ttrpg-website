@@ -6,17 +6,17 @@
 |---|---|
 | Project | TTRPG Hub |
 | Document type | Current information architecture |
-| Status | Implemented snapshot |
+| Status | Working-tree implementation snapshot; Phase 4D1 pending publication |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
 | Current phase | Phase 4 — Core Play & Campaign Tools |
-| Completed work | Milestones 1–3, Phase 4A personal dice and persistence, Phase 4B Campaign Video Rooms Integration, Phase 4C1 Campaign Gallery, Phase 4C2 Game Room Image Presentation |
-| Next work | Phase 4D1 CoC 7e Dice Roller |
+| Completed work | Milestones 1–3 and Phases 4A–4C2 in Production; Phase 4D1 implemented and verified locally |
+| Next work | Publish Phase 4D1, then begin Phase 4D2 Game Room Dice Integration |
 
 ## Purpose
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, document Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current.
+It does not describe unimplemented system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, document Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current. The CoC personal dice route described here exists only in the locally verified working tree until Phase 4D1 is published.
 
 ## Current primary navigation
 
@@ -52,6 +52,10 @@ The Dashboard is an accepted implemented personal overview route. It currently l
 │   │       └── page.tsx
 │   ├── games
 │   │   ├── page.tsx
+│   │   ├── call-of-cthulhu
+│   │   │   └── tools
+│   │   │       └── dice
+│   │   │           └── page.tsx
 │   │   └── vampire-the-masquerade
 │   │       ├── page.tsx
 │   │       └── tools
@@ -137,10 +141,11 @@ The Vampire Game System Hub remains planned for Phase 8C, after CoC and Delta Gr
 ```text
 /[locale]/dice-rollers
 /[locale]/dice-rollers/custom
+/[locale]/games/call-of-cthulhu/tools/dice
 /[locale]/games/vampire-the-masquerade/tools/dice
 ```
 
-The public hub links to the implemented VtM V5 roller and system-neutral Custom Dice Pool. Registered users may save up to five Custom Dice Pool presets and retain private personal VtM and Custom roll history; guest rolls remain local and non-persistent. Personal history is non-authoritative and separate from future campaign history.
+The Production hub links to the implemented VtM V5 roller and system-neutral Custom Dice Pool. The local Phase 4D1 hub additionally links to the CoC 7e personal roller, pending publication. Its Percentile and Other Dice panels are public, localized, responsive, and client-generated. Registered users may save up to five Custom Dice Pool presets and retain the latest 11 private personal VtM, Custom, and locally supported CoC results; guest rolls remain local and non-persistent. Personal history is non-authoritative and separate from future campaign history.
 
 ### Authentication
 
@@ -361,7 +366,7 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- CoC dice and system-aware Game Room dice;
+- system-aware Game Room dice;
 - CoC character sheets and system-aware linked-character integration;
 - campaign-authoritative persisted roll history or realtime feed unless approved within 4D2;
 - standalone Video Rooms;
@@ -374,8 +379,8 @@ Not implemented:
 
 ## Current structural conclusion
 
-The site is now a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
+The Production site is a bilingual VtM character and campaign manager with public personal VtM and Custom dice tools, saved Custom presets, private personal history, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room. The local working tree also contains the complete verified Phase 4D1 CoC 7e personal roller pending publication.
 
-It has a working campaign authorization boundary, a Production-accepted campaign video workspace, an image-only Campaign Gallery, and Production-accepted Game Room Image Presentation. Phase 4D1 CoC 7e Dice Roller is next. The approved forward sequence continues with 4D2 system-aware Game Room dice, 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
+It has a working campaign authorization boundary, a Production-accepted campaign video workspace, an image-only Campaign Gallery, and Production-accepted Game Room Image Presentation. Phase 4D2 system-aware Game Room dice is next after Phase 4D1 publication. The approved forward sequence then continues with 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
 
 Standalone Video Rooms and broad Handouts/NPC/Sessions/Chronicle modules are uncommitted backlog possibilities, not current limitations that imply scheduled delivery.

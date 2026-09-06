@@ -1,11 +1,9 @@
 import {
-  PERSONAL_ROLL_SCHEMA_VERSION,
   validatePersonalRollForPersistence,
   type PersonalRollPersistenceIssue,
   type PersonalRollPersistencePayload,
-  type PersonalRollerKind,
 } from "./personal-dice-persistence";
-import type { Database, Json } from "../../types/database.types";
+import type { Database } from "../../types/database.types";
 
 export const SAVED_CUSTOM_DICE_PRESET_LIMITS = {
   nameCodePoints: 80,
@@ -41,16 +39,23 @@ export type SavedCustomDicePreset = {
   updatedAt: string;
 };
 
-export type PersonalRollHistoryEntry = {
-  id: string;
-  clientRollId: string;
-  rollerKind: PersonalRollerKind;
-  schemaVersion: typeof PERSONAL_ROLL_SCHEMA_VERSION;
-  requestData: Json;
-  resultData: Json;
-  sequenceNumber: number;
-  createdAt: string;
-};
+type PersonalRollHistoryEntryFor<
+  Payload extends PersonalRollPersistencePayload,
+> = Payload extends PersonalRollPersistencePayload
+  ? {
+      id: string;
+      clientRollId: string;
+      rollerKind: Payload["p_roller_kind"];
+      schemaVersion: Payload["p_schema_version"];
+      requestData: Payload["p_request_data"];
+      resultData: Payload["p_result_data"];
+      sequenceNumber: number;
+      createdAt: string;
+    }
+  : never;
+
+export type PersonalRollHistoryEntry =
+  PersonalRollHistoryEntryFor<PersonalRollPersistencePayload>;
 
 export type PersonalDiceActionErrorCode =
   | "authentication_required"
@@ -701,7 +706,8 @@ export function mapPersonalRollHistoryRow(
     !isRecord(input.result_data) ||
     sequenceNumber === null ||
     sequenceNumber < 1 ||
-    !createdAt
+    !createdAt ||
+    !Number.isFinite(Date.parse(createdAt))
   ) {
     return null;
   }
@@ -735,11 +741,11 @@ export function mapPersonalRollHistoryRow(
     clientRollId: validation.payload.p_client_roll_id,
     rollerKind: validation.payload.p_roller_kind,
     schemaVersion: validation.payload.p_schema_version,
-    requestData: validation.payload.p_request_data as Json,
-    resultData: validation.payload.p_result_data as Json,
+    requestData: validation.payload.p_request_data,
+    resultData: validation.payload.p_result_data,
     sequenceNumber,
     createdAt,
-  };
+  } as PersonalRollHistoryEntry;
 }
 
 function safeDatabaseCode(error: unknown): string | undefined {
@@ -1111,11 +1117,16 @@ export function createPersonalDicePersistenceService(
         for (const row of response.data) {
           const entry = mapPersonalRollHistoryRow(row);
           if (!entry) {
-            return invalidPersistedDataFailure(
+            logger({
               operation,
-              logger,
-              isRecord(row) ? readOwnString(row, "id") ?? undefined : undefined,
-            );
+              errorCode: "invalid_persisted_data",
+              ...(isRecord(row) &&
+              readOwnString(row, "id") &&
+              UUID_PATTERN.test(readOwnString(row, "id")!)
+                ? { recordId: readOwnString(row, "id")!.toLowerCase() }
+                : {}),
+            });
+            continue;
           }
           history.push(entry);
         }

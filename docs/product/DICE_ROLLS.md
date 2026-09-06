@@ -2,11 +2,13 @@
 
 ## Status
 
-**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history implemented; Phase 4D1 CoC dice and Phase 4D2 system-aware Game Room dice planned.**
+**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice is implemented and verified locally, pending publication; Phase 4D2 system-aware Game Room dice remains planned.**
 
-The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and campaign-authoritative Game Room dice are not implemented.
+The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. Shared strict validation primitives live at `lib/dice/validation.ts`, and shared unbiased secure integer generation lives at `lib/dice/secure-random.ts`. Phase 4D1 adds the CoC evaluators and generators under `lib/game-systems/call-of-cthulhu-7e/`.
 
-Campaign-authorized LiveKit video, the responsive Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation are complete. Dice resumes next in Phase 4D1 with the CoC 7e personal roller and in Phase 4D2 with system-aware Game Room integration.
+The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, and the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`. The local Phase 4D1 route is `/[locale]/games/call-of-cthulhu/tools/dice`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and campaign-authoritative Game Room dice are not implemented.
+
+Campaign-authorized LiveKit video, the responsive Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation are complete in Production. Phase 4D1 is locally complete and pending publication. Dice resumes afterward in Phase 4D2 with system-aware Game Room integration.
 
 Initial system:
 
@@ -19,7 +21,7 @@ Implementation order:
 1. complete the reviewed VtM result contract, pure deterministic evaluator, client-side random generation, personal roller UI, EN/RU, and mobile support in Phase 4A;
 2. complete reviewed owner-scoped personal persistence, saved Custom Dice Pool presets, and private personal history in Phase 4A;
 3. preserve the completed campaign Game Room and keep unavailable controls visibly disabled;
-4. implement the CoC 7e personal dice engine and roller in Phase 4D1;
+4. publish the locally complete CoC 7e personal dice engine and roller from Phase 4D1;
 5. integrate the correct system roller into the Game Room in Phase 4D2: VtM for VtM campaigns and CoC for CoC campaigns;
 6. add persisted or realtime campaign history only if the Phase 4D2 design approves a server-authoritative schema, execution boundary, and RLS contract.
 
@@ -64,6 +66,8 @@ The VtM system owns:
 - messy critical;
 - bestial failure;
 - readable VtM result terminology.
+
+The locally implemented CoC 7e system owns its percentile and Other Dice request contracts, validation/error mapping, deterministic interpretation, result structures, and localized terminology. Shared validation and secure-random helpers contain only behavior proven common across VtM, Custom, and CoC; they do not form a universal rules engine.
 
 ## Phase 1 request contract
 
@@ -203,13 +207,14 @@ Public hub:
 /[locale]/dice-rollers
 ```
 
-The hub links to the implemented VtM V5 roller and Custom Dice Pool.
+The Production hub links to the implemented VtM V5 roller and Custom Dice Pool. The local Phase 4D1 catalogue also links to the CoC 7e roller, pending publication.
 
 Implemented:
 
 ```text
 /[locale]/games/vampire-the-masquerade/tools/dice
 /[locale]/dice-rollers/custom
+/[locale]/games/call-of-cthulhu/tools/dice  (local Phase 4D1; pending publication)
 ```
 
 Personal dice behavior:
@@ -261,9 +266,50 @@ The UI:
 - personal records are not campaign evidence and must not be reused as the Phase 4D2 campaign execution path;
 - persistence was delivered through its reviewed schema, migration, RLS, and UI phase.
 
+The local Phase 4D1 extension records and renders four supported schema-version-1 kinds in the same latest-11 owner-private timeline:
+
+```text
+vtm_v5
+custom_dice_pool
+coc_7e_percentile
+coc_7e_other_dice
+```
+
+Delete-one and clear-all remain generic owner-scoped actions. The database envelope is extensible: after the pending migration, `roller_kind` must match `^[a-z][a-z0-9_]{0,63}$` and `schema_version` must be positive. Those database constraints do not declare application support. The application registry is authoritative for supported kind/version pairs, revalidates each payload, and safely skips malformed or unknown rows.
+
 ## Phase 4D1 — CoC 7e Dice Roller
 
-Planned Phase 4D1 adds a system-accurate Call of Cthulhu 7e personal roller, deterministic evaluation, EN/RU presentation, responsive controls, and tests. It does not create campaign-authoritative history.
+**Implemented and verified locally; pending publication.**
+
+The standalone EN/RU route presents two responsive panels: Percentile and Other Dice. Guest rolls remain local and non-persistent. Authenticated rolls display immediately and are then recorded asynchronously through the existing best-effort personal-history path; a persistence failure does not remove or invalidate the local result.
+
+### Percentile contract
+
+- target is optional; without it the roller reports the raw percentile result and no success interpretation;
+- a supplied target is an integer from 1 through 100; there is no separate Difficulty or Label input;
+- bonus/penalty is an integer from -3 through +3; support for three dice in either direction is an intentional product extension;
+- the physical model uses one units die, one base tens die, and one additional tens die per absolute bonus/penalty value;
+- tens faces are `00`, `10`, ..., `90`, and `00` with units `0` means 100;
+- bonus selects the lowest complete percentile candidate and penalty selects the highest;
+- `tensDice[0]` records the base die's identity only and receives no tie priority; `selectedTensIndex` preserves the selected die index;
+- with a target, outcome precedence is Critical, Fumble, Extreme, Hard, Regular, then Failure;
+- 01 is Critical;
+- Fumble is 96–100 when the target is below 50, and 100 when the target is 50 or greater.
+
+### Other Dice contract
+
+- supported dice are D2, D3, D4, D6, D8, D10, D20, and D100; D12 is deliberately not included;
+- quantity is an integer from 1 through 10;
+- modifier is an integer from -10 through +10;
+- each roll uses one die type and returns the canonical formula, ordered die results, the modifier when nonzero, and Total;
+- negative totals are valid;
+- this is a CoC tool and is not the system-neutral Custom Dice Pool.
+
+Both generators use `crypto.getRandomValues` through the shared unbiased rejection-sampling helper and pass generated values into deterministic evaluators. Expected invalid input returns typed validation results rather than being coerced, clamped, or interpreted from display text.
+
+Phase 4D1 extends only personal, client-generated convenience history. It does not create campaign-authoritative history, campaign-scoped execution, Realtime delivery, or Game Room integration.
+
+Local verification includes 246/246 dice tests plus passing ESLint, TypeScript, EN/RU parity, and production build. Guest EN/RU browser acceptance passed. Authenticated local browser smoke remains deferred because automation produced a separate local Auth request; no product defect was demonstrated.
 
 ## Phase 4D2 — System-aware Game Room dice
 

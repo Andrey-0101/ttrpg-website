@@ -6,7 +6,7 @@ This document records implemented friend-alpha controls and the remaining Public
 
 It is not a claim that the application has completed a public security audit.
 
-Synchronized snapshot:
+H011 Production baseline:
 
 ```text
 main
@@ -187,7 +187,6 @@ Two defects found during testing were fixed through separate migrations:
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
 - no campaign-authoritative dice security model implemented yet;
-- no Game Room presentation UI for the implemented Campaign Gallery yet;
 - no standalone Video Rooms authorization model or route; standalone rooms are not active roadmap scope;
 - campaign video performs fresh authenticated authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens only after an explicit Join action.
 
@@ -203,9 +202,25 @@ Even without persistence:
 - cover messy critical, bestial failure, critical, and failure cases;
 - use safe bounds to prevent accidental UI or performance abuse.
 
-### CoC and Game Room dice — Phases 4D1 and 4D2
+### CoC personal dice — Phase 4D1 local implementation
 
-Required before persistence:
+Phase 4D1 is implemented and verified locally, pending publication. It preserves the personal-tool security boundary:
+
+- randomness is generated in the browser with `crypto.getRandomValues` through shared unbiased rejection sampling;
+- deterministic evaluators strictly validate supplied values without coercion, truncation, clamping, or display-text trust;
+- guest rolls remain local and non-persistent;
+- authenticated results are shown locally before an asynchronous best-effort recording attempt;
+- persistence failure does not remove or invalidate the local result;
+- personal history is owner-private under RLS, non-authoritative, and not campaign evidence;
+- supported persistence kinds and schema versions are controlled by the application registry, and malformed or unknown rows fail closed by being skipped.
+
+The forward migration that relaxes only the personal-history envelope constraints passed local reset, 154/154 pgTAP assertions, and concurrency verification. It has not been applied to remote or Production Supabase. Phase 4D1 adds no campaign-scoped authorization, campaign result table, Realtime feed, or Game Room dice behavior.
+
+The Phase 4D1 dependency closeout records zero known npm vulnerabilities in both the production-only and full local dependency audits after the lockfile-only Browserslist update from 4.28.4 to 4.28.9.
+
+### Game Room dice — Phase 4D2
+
+Required before campaign persistence or sharing:
 
 - reviewed `dice_rolls` schema;
 - campaign membership check;

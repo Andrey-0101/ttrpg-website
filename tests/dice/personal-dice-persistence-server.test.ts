@@ -133,6 +133,33 @@ function validCustomCandidate() {
   };
 }
 
+function validCocPercentileCandidate() {
+  return {
+    clientRollId: CLIENT_ROLL_ID,
+    rollerKind: "coc_7e_percentile",
+    schemaVersion: 1,
+    requestData: {
+      request: { target: 40, bonusPenalty: 1 },
+      units: 0,
+      tensDice: [0, 20],
+    },
+    resultData: {},
+  };
+}
+
+function validCocOtherDiceCandidate() {
+  return {
+    clientRollId: CLIENT_ROLL_ID,
+    rollerKind: "coc_7e_other_dice",
+    schemaVersion: 1,
+    requestData: {
+      request: { sides: 6, quantity: 2, modifier: -10 },
+      results: [1, 2],
+    },
+    resultData: {},
+  };
+}
+
 function canonicalPayload(
   candidate: unknown,
 ): PersonalRollPersistencePayload {
@@ -491,6 +518,28 @@ test("history row mapping strips owner identity and is serializable", () => {
   assert.deepEqual(originalNormalDice, [10, 6]);
 });
 
+test("history row mapping returns typed canonical CoC entries", () => {
+  const percentile = mapPersonalRollHistoryRow(
+    historyRow(validCocPercentileCandidate()),
+  );
+  assert.ok(percentile);
+  assert.equal(percentile.rollerKind, "coc_7e_percentile");
+  if (percentile.rollerKind === "coc_7e_percentile") {
+    assert.equal(percentile.resultData.percentileResult, 20);
+    assert.equal(percentile.resultData.outcome, "hard");
+  }
+
+  const other = mapPersonalRollHistoryRow(
+    historyRow(validCocOtherDiceCandidate()),
+  );
+  assert.ok(other);
+  assert.equal(other.rollerKind, "coc_7e_other_dice");
+  if (other.rollerKind === "coc_7e_other_dice") {
+    assert.equal(other.resultData.formula, "2D6 - 10");
+    assert.equal(other.resultData.total, -7);
+  }
+});
+
 test("history row mapping rejects stored data that needs repair", () => {
   const row = historyRow();
   row.result_data = {
@@ -517,6 +566,13 @@ test("history row mapping rejects stored data that needs repair", () => {
     mapPersonalRollHistoryRow({
       ...historyRow(),
       sequence_number: Number.MAX_SAFE_INTEGER + 1,
+    }),
+    null,
+  );
+  assert.equal(
+    mapPersonalRollHistoryRow({
+      ...historyRow(),
+      created_at: "not-a-timestamp",
     }),
     null,
   );
@@ -1018,6 +1074,38 @@ test("Custom recording rebuilds forged totals before RPC", async () => {
   });
 });
 
+test("CoC recording sends evaluator-canonical payloads through the generic RPC", async () => {
+  for (const candidate of [
+    validCocPercentileCandidate(),
+    validCocOtherDiceCandidate(),
+  ]) {
+    const expected = canonicalPayload(candidate);
+    const { source, calls } = createFakeDataSource({
+      async recordRoll(args) {
+        calls.push({ method: "recordRoll", value: args });
+        return { data: historyRow(candidate), error: null };
+      },
+    });
+    const service = createPersonalDicePersistenceService(
+      source,
+      () => undefined,
+    );
+    const entry = requireSuccess(await service.recordPersonalRoll(candidate));
+
+    assert.equal(entry.rollerKind, candidate.rollerKind);
+    assert.deepEqual(calls[1], {
+      method: "recordRoll",
+      value: {
+        p_client_roll_id: expected.p_client_roll_id,
+        p_roller_kind: expected.p_roller_kind,
+        p_schema_version: expected.p_schema_version,
+        p_request_data: expected.p_request_data,
+        p_result_data: expected.p_result_data,
+      },
+    });
+  }
+});
+
 test("idempotent record responses map to sanitized history", async () => {
   const row = historyRow();
   const { source } = createFakeDataSource({
@@ -1060,7 +1148,7 @@ test("history list requests newest eleven rows and sanitizes models", async () =
   assert.equal("owner_id" in entries[0], false);
 });
 
-test("malformed stored history returns invalid_persisted_data", async () => {
+test("malformed and unsupported stored history is skipped without hiding valid rows", async () => {
   const row = historyRow();
   row.result_data = {
     ...(row.result_data as Record<string, unknown>),
@@ -1069,7 +1157,25 @@ test("malformed stored history returns invalid_persisted_data", async () => {
   const diagnostics: PersonalDiceDiagnostic[] = [];
   const { source } = createFakeDataSource({
     async listHistoryRows() {
-      return { data: [row], error: null };
+      return {
+        data: [
+          row,
+          {
+            ...historyRow(validCocPercentileCandidate()),
+            id: "30000000-0000-4000-8000-000000000002",
+            client_roll_id: "40000000-0000-4000-8000-000000000002",
+            sequence_number: 41,
+          },
+          {
+            ...historyRow(),
+            id: "30000000-0000-4000-8000-000000000003",
+            roller_kind: "delta_green_percentile",
+            schema_version: 2,
+            sequence_number: 40,
+          },
+        ],
+        error: null,
+      };
     },
   });
   const service = createPersonalDicePersistenceService(
@@ -1077,20 +1183,68 @@ test("malformed stored history returns invalid_persisted_data", async () => {
     (diagnostic) => diagnostics.push(diagnostic),
   );
 
-  assert.deepEqual(await service.listPersonalRollHistory(), {
-    ok: false,
-    error: { code: "invalid_persisted_data" },
-  });
-  assert.deepEqual(diagnostics, [
-    {
-      operation: "list_history",
-      errorCode: "invalid_persisted_data",
-      recordId: ROLL_ID,
-    },
-  ]);
+  const result = await service.listPersonalRollHistory();
+  assert.equal(result.ok, true);
+  assert.deepEqual(
+    result.ok ? result.data.map((entry) => entry.rollerKind) : [],
+    ["coc_7e_percentile"],
+  );
+  assert.deepEqual(
+    diagnostics.map(({ operation, errorCode, recordId }) => ({
+      operation,
+      errorCode,
+      recordId,
+    })),
+    [
+      {
+        operation: "list_history",
+        errorCode: "invalid_persisted_data",
+        recordId: ROLL_ID,
+      },
+      {
+        operation: "list_history",
+        errorCode: "invalid_persisted_data",
+        recordId: "30000000-0000-4000-8000-000000000003",
+      },
+    ],
+  );
   assert.equal(
     JSON.stringify(diagnostics).includes("request_data"),
     false,
+  );
+});
+
+test("mixed personal history keeps newest-first ordering across all roller kinds", async () => {
+  const candidates = [
+    validVtmCandidate(),
+    validCustomCandidate(),
+    validCocPercentileCandidate(),
+    validCocOtherDiceCandidate(),
+  ];
+  const rows = candidates.map((candidate, index) => ({
+    ...historyRow(candidate),
+    id: `30000000-0000-4000-8000-00000000000${index + 1}`,
+    client_roll_id: `40000000-0000-4000-8000-00000000000${index + 1}`,
+    sequence_number: 44 - index,
+  }));
+  const { source } = createFakeDataSource({
+    async listHistoryRows() {
+      return { data: rows, error: null };
+    },
+  });
+  const service = createPersonalDicePersistenceService(
+    source,
+    () => undefined,
+  );
+  const result = requireSuccess(await service.listPersonalRollHistory());
+  assert.deepEqual(
+    result.map((entry) => entry.rollerKind),
+    [
+      "vtm_v5",
+      "custom_dice_pool",
+      "coc_7e_percentile",
+      "coc_7e_other_dice",
+    ],
   );
 });
 

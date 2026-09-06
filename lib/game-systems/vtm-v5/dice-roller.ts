@@ -3,16 +3,16 @@ import {
   VTM_V5_DICE_LIMITS,
   type VtmV5DiceEvaluation,
 } from "./dice-engine";
+import {
+  cryptoUint32RandomSource,
+  generateUnbiasedInteger,
+  type Uint32RandomSource,
+} from "../../dice/secure-random";
 
-export type VtmV5RandomSource = (target: Uint32Array) => void;
+export type VtmV5RandomSource = Uint32RandomSource;
 
-const UINT32_RANGE = 0x1_0000_0000;
-const D10_ACCEPTANCE_LIMIT =
-  UINT32_RANGE - (UINT32_RANGE % VTM_V5_DICE_LIMITS.die.maximum);
-
-export const cryptoVtmV5RandomSource: VtmV5RandomSource = (target) => {
-  globalThis.crypto.getRandomValues(target);
-};
+export const cryptoVtmV5RandomSource: VtmV5RandomSource =
+  cryptoUint32RandomSource;
 
 function getGenerationCounts(
   request: unknown,
@@ -51,26 +51,17 @@ function getGenerationCounts(
   };
 }
 
-function generateD10(randomSource: VtmV5RandomSource): number {
-  const sample = new Uint32Array(1);
-
-  while (true) {
-    randomSource(sample);
-
-    if (sample[0] < D10_ACCEPTANCE_LIMIT) {
-      return (
-        (sample[0] % VTM_V5_DICE_LIMITS.die.maximum) +
-        VTM_V5_DICE_LIMITS.die.minimum
-      );
-    }
-  }
-}
-
 function generateDice(
   count: number,
   randomSource: VtmV5RandomSource,
 ): number[] {
-  return Array.from({ length: count }, () => generateD10(randomSource));
+  return Array.from({ length: count }, () =>
+    generateUnbiasedInteger(
+      VTM_V5_DICE_LIMITS.die.minimum,
+      VTM_V5_DICE_LIMITS.die.maximum + 1,
+      randomSource,
+    ),
+  );
 }
 
 export function rollVtmV5Dice(
