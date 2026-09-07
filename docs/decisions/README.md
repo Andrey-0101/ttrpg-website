@@ -48,7 +48,7 @@ ADR-008 is accepted and governs the implemented dice boundaries:
 - only proven validation and secure-random primitives are shared;
 - no universal dice-expression engine is introduced.
 
-The deployed Phase 4D1 implementation and pending UX follow-up preserve this decision. Phase 4D2 campaign dice must remain separate from non-authoritative personal history.
+The deployed Phase 4D1 implementation and UX follow-up preserve this decision. Phase 4D2 campaign dice must remain separate from non-authoritative personal history.
 
 ### Video
 

@@ -17,13 +17,9 @@ Completed foundation:
 - Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room;
 - Phase 4C1 — image-only Campaign Gallery;
 - Phase 4C2 — Game Room Image Presentation;
-- Phase 4D1 — CoC 7e Dice Roller core.
+- Phase 4D1 — CoC 7e Dice Roller, including contextual Back navigation, roller-scoped history, and live CoC Target bands.
 
-Locally implemented, pending final verification and publication:
-
-- Phase 4D1 UX follow-up — contextual Back navigation, roller-scoped history, and live CoC Target bands.
-
-Next approved work after Phase 4D1 publication:
+Next approved work:
 
 - Phase 4D2 — Game Room Dice Integration.
 
@@ -37,7 +33,7 @@ Current Production facts:
 - the generic Call of Cthulhu 7e campaign shell and personal Dice Roller are deployed, but CoC character sheets are not yet in Production;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
-- Phase 4C2 is implemented and accepted in Production; Phase 4D1 core and its extensible-history migration are deployed, while the focused UX follow-up and per-kind-retention migration remain unpublished.
+- Phase 4C2 is implemented and accepted in Production; Phase 4D1, its focused UX follow-up, and both personal-history migrations are deployed.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
@@ -85,7 +81,7 @@ Delivered:
 - public VtM and Custom Dice Pool rollers;
 - EN/RU and responsive interfaces;
 - up to five saved Custom Dice Pool presets for registered users;
-- private personal history, with the pending follow-up retaining six rows per owner per roller kind and showing the current result plus up to five previous results;
+- private personal history, retaining six rows per owner per roller kind and showing the current result plus up to five previous results;
 - non-persistent guest rolls.
 
 Personal history is owner-scoped, best-effort, and non-authoritative. It is not campaign evidence and must not be reused as the campaign dice execution path.
@@ -155,7 +151,7 @@ No annotations, drawing tools, screen sharing, general Handouts system, presenta
 
 ### Phase 4D1 — CoC 7e Dice Roller
 
-**Status: Core deployed; UX follow-up implemented locally pending publication**
+**Status: Deployed in Production, including UX follow-up**
 
 Deployed in Production:
 
@@ -166,7 +162,7 @@ Deployed in Production:
 - local guest results and best-effort owner-private persistence for authenticated users through the shared personal-history surface;
 - an extensible personal-history envelope whose database constraints accept syntactically valid future kinds and positive schema versions while the application registry remains authoritative for supported contracts.
 
-The `20260905171520_make_personal_roll_history_extensible.sql` migration is applied in Production. The pending focused follow-up adds validated contextual Back destinations, moves history from the generic catalogue to the matching roller pages, shows up to five previous entries per kind without duplicating the current result, scopes Clear History, and adds a live six-band CoC Target guide using official floor rounding. Its forward `20260907114535_scope_personal_roll_history_by_kind.sql` migration retains six rows per owner per kind. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
+Both Phase 4D1 migrations are applied in Production. The focused follow-up adds validated contextual Back destinations, moves history from the generic catalogue to the matching roller pages, shows up to five previous entries per kind without duplicating the current result, scopes Clear History, and adds a live six-band CoC Target guide using official floor rounding. Its forward `20260907114535_scope_personal_roll_history_by_kind.sql` migration retains six rows per owner per kind. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
 
 ### Phase 4D2 — Game Room Dice Integration
 

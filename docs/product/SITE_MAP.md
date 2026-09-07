@@ -27,7 +27,7 @@ flowchart TD
     GAME_ROOM --> DISPLAY["GM-controlled Gallery image presentation"]
 ```
 
-The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D1 CoC personal dice route. CoC character routes do not exist. Delta Green is a catalogue entry only. No complete game-system hub exists. The contextual-navigation, scoped-history, and live Target-band follow-up is implemented locally and pending publication.
+The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D1 CoC personal dice route with contextual navigation, scoped history, and live Target bands. CoC character routes do not exist. Delta Green is a catalogue entry only. No complete game-system hub exists.
 
 ## Approved Phase 4 additions
 
@@ -64,7 +64,7 @@ Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and
 | Campaign video | Implemented and Production accepted | Retain; technical refinement only unless separately scoped |
 | Campaign Gallery | Four-section private image library and Game Room presentation implemented | Retain; Campaign Wallpaper remains uncommitted `IDEA-007` only |
 | VtM dice | Personal roller implemented | Use for VtM campaigns in 4D2 |
-| CoC dice | Personal roller deployed; UX follow-up pending publication | 4D2 campaign integration after the follow-up |
+| CoC dice | Personal roller and UX follow-up deployed | 4D2 campaign integration next |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |
