@@ -47,11 +47,11 @@ Not yet implemented in Production:
 - CoC, Delta Green, and Vampire Game System Hubs;
 - public-readiness security, monitoring, legal, and operational work.
 
-## Local Phase 4D1 UX follow-up
+## Phase 4D1 UX follow-up
 
 Phase 4D1 Call of Cthulhu 7e personal dice is deployed in Production. It provides the public localized route `/{locale}/games/call-of-cthulhu/tools/dice`, catalogue integration, Percentile and Other Dice tools, and best-effort authenticated personal-history support. Guest rolls remain local and non-persistent.
 
-The current working tree contains a locally verified UX follow-up that adds safe contextual Back destinations, moves scoped history from the generic catalogue to each roller page, displays up to five previous entries per kind without duplicating the current result, and adds live CoC Target success bands. Its forward migration `20260907114535_scope_personal_roll_history_by_kind.sql` changes prospective retention to six rows per owner and kind and adds scoped clearing. The already-deployed `20260905171520_make_personal_roll_history_extensible.sql` migration remains the Production baseline until this follow-up is published. Campaign-authoritative and Game Room dice remain planned for Phase 4D2 and are not implemented by Phase 4D1.
+The deployed Phase 4D1 UX follow-up adds safe contextual Back destinations, moves scoped history from the generic catalogue to each roller page, displays up to five previous entries per kind without duplicating the current result, and adds live CoC Target success bands. Its applied forward migration `20260907114535_scope_personal_roll_history_by_kind.sql` changes prospective retention to six rows per owner and kind and adds scoped clearing. Campaign-authoritative and Game Room dice remain planned for Phase 4D2 and are not implemented by Phase 4D1.
 
 ## Technology
 
@@ -146,12 +146,12 @@ Accepted Phase 4C2 Production code baseline:
 
 ```text
 main
-d5473a3ca4be02a73004647864fcfca039917a53
+abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6
 ```
 
 PRs #43 and #44 delivered Phase 4C2 Game Room Image Presentation and corrected the desktop Expand participant layout. The feature and correction were manually accepted in Production. The current verified deployment is `READY`. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell and Phase 4D1 personal dice, campaign-authorized LiveKit video, the responsive dedicated Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation are implemented in Production. The Gallery's four fixed sections contain images only; NPC and Maps & Plans are not structured gameplay systems. The last Game Room Production group test passed with one GM and four Players, and the Phase 4C2 presentation flow plus corrected desktop Expand layout were manually accepted in Production. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred. The focused Phase 4D1 UX follow-up is implemented locally and pending publication; Phase 4D2 system-aware Game Room dice is next afterward. Standalone Video Rooms are no longer an active roadmap commitment.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell and Phase 4D1 personal dice with its focused UX follow-up, campaign-authorized LiveKit video, the responsive dedicated Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation are implemented in Production. The Gallery's four fixed sections contain images only; NPC and Maps & Plans are not structured gameplay systems. The last Game Room Production group test passed with one GM and four Players, and the Phase 4C2 presentation flow plus corrected desktop Expand layout were manually accepted in Production. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred. Phase 4D1 follow-up guest/runtime acceptance passed; authenticated Production history acceptance remains pending. Phase 4D2 system-aware Game Room dice is next. Standalone Video Rooms are no longer an active roadmap commitment.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 
@@ -160,7 +160,7 @@ If the repository advances, inspect the newer code, migrations, generated types,
 The agreed delivery strategy is:
 
 1. completed Milestones 1–3: architecture, character friend-alpha, and Campaign Foundation;
-2. complete Phase 4 Core Play & Campaign Tools, publishing the locally complete Phase 4D1 UX follow-up before continuing with 4D2 system-aware Game Room dice;
+2. continue Phase 4 Core Play & Campaign Tools with 4D2 system-aware Game Room dice after the deployed Phase 4D1 UX follow-up;
 3. complete Phase 5 site-wide UI Technical Refinement;
 4. define and apply Phase 6 Visual Identity after the technical UI baseline is stable;
 5. add Delta Green system parity in Phase 7;

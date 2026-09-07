@@ -2,11 +2,11 @@
 
 ## Status
 
-Current applied Production database state before this follow-up:
+Current applied Production database state:
 
 ```text
 main
-d5473a3ca4be02a73004647864fcfca039917a53
+abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6
 ```
 
 Applied migrations:
@@ -27,7 +27,7 @@ supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
 
 All eleven listed migrations are current in Production. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, Campaign Gallery category migration, and Phase 4D1 extensible personal-history envelope are applied.
 
-The Phase 4D1 UX follow-up adds one pending forward migration:
+The Phase 4D1 UX follow-up deployed one forward migration:
 
 ```text
 supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql
@@ -185,7 +185,7 @@ Historical unlinked rows may remain.
 | `result_data` | non-null JSON object; maximum serialized size 64 KiB |
 | `created_at` | non-null timestamptz |
 
-The owner-scoped recording function is idempotent for an identical `client_roll_id` payload and serializes writes per owner. The pending follow-up changes prospective retention from the newest eleven combined owner rows to the newest six rows independently for each `roller_kind`, supporting one current result plus five previous results. Delete-one, deployed clear-all, and pending scoped-clear functions are generic and owner-scoped. RLS keeps history private to its owner.
+The owner-scoped recording function is idempotent for an identical `client_roll_id` payload and serializes writes per owner. The deployed follow-up changes prospective retention from the newest eleven combined owner rows to the newest six rows independently for each `roller_kind`, supporting one current result plus five previous results. Delete-one, clear-all, and scoped-clear functions are generic and owner-scoped. RLS keeps history private to its owner.
 
 Production accepts syntactically valid future `roller_kind` values and positive schema versions through the deployed Phase 4D1 envelope migration. The current application registry supports only version 1 of:
 
@@ -452,14 +452,14 @@ Known limitation:
 
 Current database verification recorded:
 
-- eleven synchronized repository/Production migration versions before this follow-up;
+- twelve synchronized repository/Production migration versions after this follow-up;
 - RLS on all fifteen public tables, including all seven campaign-video tables;
 - all five required foreign-key indexes valid;
 - hardened table/function grants and restricted `handle_new_user()` execution;
 - private `campaign-images` Storage;
 - the recorded Campaign Foundation GM/Player/Outsider transaction test, with all test data rolled back.
 - a Phase 4C1 test-project transaction covering selected/outsider/completed access and completed-GM Storage cleanup, with all temporary rows rolled back.
-- deployed verification of the Phase 4D1 envelope migration; the pending per-kind retention/scoped-clear migration has passed local reset, pgTAP, and concurrency verification and awaits publication.
+- deployed verification of both Phase 4D1 migrations; the per-kind retention/scoped-clear migration passed local reset, pgTAP, and concurrency verification before application, and Production migration history is synchronized at 12/12.
 
 Security and lifecycle verification exposed three issues that were corrected through new migrations rather than editing applied migrations:
 

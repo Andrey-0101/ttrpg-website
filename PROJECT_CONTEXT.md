@@ -9,11 +9,11 @@
 | Document status | Current synchronized project context |
 | Last reviewed | 2026-09-07 |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
-| Verified release | PRs #28–#35 merged; Phase 4C2 shipped in PR #43 with its accepted PR #44 fix; Phase 4D1 core shipped in PR #46 at `d5473a3ca4be02a73004647864fcfca039917a53` |
+| Verified release | PRs #28–#35 merged; Phase 4C2 shipped in PR #43 with its accepted PR #44 fix; Phase 4D1 core shipped in PR #46 and its UX follow-up shipped in PR #47 at `abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6` |
 | Canonical production domain | `https://ttrpg.fans` |
 | Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
 | Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Phase 4D1 core is deployed; its contextual-navigation, scoped-history, and CoC Target-band UX follow-up is implemented locally pending publication; Phase 4D2 remains next afterward |
+| Current delivery stage | Phase 4D1 and its contextual-navigation, scoped-history, and CoC Target-band UX follow-up are deployed; Phase 4D2 remains next |
 | Current audience | Small invited group of friends |
 
 ## Release-state boundaries
@@ -22,15 +22,15 @@
 
 H011 consolidation started from the clean, deployed `main` baseline at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`. PRs #28 through #34 delivered the campaign-video data foundation, CoC campaign shell, campaign creation fix, dedicated Game Room, responsive seven-slot layout, and final video-card UX; PR #35 published the H010 audit, dependency remediation, documentation synchronization, and CI expansion. The current authoritative publication state is recorded in `docs/handoffs/H011_CURRENT_HANDOFF.md`.
 
-The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the planned game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the dedicated responsive Campaign Game Room, the Phase 4C1 image-only Campaign Gallery, Phase 4C2 Game Room Image Presentation, and the Phase 4D1 CoC 7e personal Dice Roller are deployed. The Gallery has four fixed image-only sections: Handouts, NPC, Maps & Plans, and Other. The last human Game Room Production group test passed with one GM and four Players. Phase 4C2 and its desktop Expand correction were also manually accepted in Production. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred. Phase 4D1 guest/runtime acceptance passed; authenticated Production persistence acceptance remains pending. Standalone Video Rooms have been removed from the active roadmap and retained only as an uncommitted backlog idea.
+The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A, personal dice persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the dedicated responsive Campaign Game Room, the Phase 4C1 image-only Campaign Gallery, Phase 4C2 Game Room Image Presentation, and the Phase 4D1 CoC 7e personal Dice Roller with its UX follow-up are deployed. The Gallery has four fixed image-only sections: Handouts, NPC, Maps & Plans, and Other. The last human Game Room Production group test passed with one GM and four Players. Phase 4C2 and its desktop Expand correction were also manually accepted in Production. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred. Phase 4D1 follow-up guest/runtime acceptance passed; authenticated Production persistence acceptance remains pending. Standalone Video Rooms have been removed from the active roadmap and retained only as an uncommitted backlog idea.
 
-### Local Phase 4D1 UX follow-up pending publication
+### Phase 4D1 UX follow-up release
 
-The focused `codex/phase-4d1-ux-followup` working branch starts from deployed `main` at `d5473a3ca4be02a73004647864fcfca039917a53`. It adds validated, reload-safe contextual Back destinations for personal roller routes; moves personal history from the generic catalogue to its VtM, Custom, or combined CoC roller page; exposes up to five previous results per roller kind without duplicating the current result; scopes Clear History to the current roller; and adds a live deterministic CoC Target success-range guide. This follow-up remains pending publication and does not change the verified Production state above.
+PR #47 deployed validated, reload-safe contextual Back destinations for personal roller routes; moved personal history from the generic catalogue to its VtM, Custom, or combined CoC roller page; exposed up to five previous results per roller kind without duplicating the current result; scoped Clear History to the current roller; and added a live deterministic CoC Target success-range guide. Production guest and runtime verification passed at `abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6`; authenticated Production history acceptance remains pending because no authorized signed-in Production browser session was available.
 
-The Phase 4D1 envelope migration `supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql` is applied in Production. The follow-up adds one forward migration, `supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql`, which has passed local reset, pgTAP, and concurrency verification and is pending publication. It changes prospective retention to six rows per owner per roller kind, adds an owner-and-kind query index, and adds authenticated owner-scoped clearing by a validated set of roller kinds. The generic table, RLS, idempotency, and existing RPC signatures remain intact.
+Both Phase 4D1 migrations are applied in Production. The forward migration `supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql` changes prospective retention to six rows per owner per roller kind, adds an owner-and-kind query index, and adds authenticated owner-scoped clearing by a validated set of roller kinds. It passed local reset, pgTAP, and concurrency verification before controlled application; post-apply migration history is synchronized at 12/12. The generic table, RLS, idempotency, and existing RPC signatures remain intact.
 
-Phase 4D1 core release evidence records 246/246 dice tests, 13/13 site-URL tests, 40/40 Campaign/Gallery/catalogue tests, 53/53 Campaign Video/Game Room tests, ESLint, TypeScript, EN/RU key parity, and a 38/38-page production build as passing. Guest EN/RU browser acceptance passed. The authenticated Production browser smoke remains pending; no application defect was demonstrated. The dependency closeout updated the transitive Browserslist lock entry from 4.28.4 to 4.28.9, and both production-only and full npm audits reported zero vulnerabilities. Follow-up verification evidence will replace this paragraph's local follow-up status after publication.
+Phase 4D1 follow-up evidence records 260/260 dice tests, 13/13 site-URL tests, 40/40 Campaign/Gallery/catalogue tests, 53/53 Campaign Video/Game Room tests, 273 local database assertions, the required concurrency checks, ESLint, TypeScript, EN/RU key parity, and a 38/38-page production build as passing. Preview and Production guest EN/RU browser acceptance passed, including contextual navigation, target bands, and mobile containment. Production runtime logs showed no current 500-level or error-level entries attributable to the release. Authenticated Production history acceptance remains pending; no application defect was demonstrated. Both production-only and full npm audits reported zero vulnerabilities.
 
 Release history relevant to the current baseline:
 
@@ -54,7 +54,7 @@ The project is a bilingual TTRPG hub. Its first complete game-system implementat
 The intended progression is:
 
 1. completed architecture, character, and campaign foundations;
-2. Phase 4 Core Play & Campaign Tools, with Phase 4D1 core deployed, its UX follow-up pending publication, and Phase 4D2 next afterward;
+2. Phase 4 Core Play & Campaign Tools, with Phase 4D1 and its UX follow-up deployed and Phase 4D2 next;
 3. Phase 5 site-wide UI Technical Refinement;
 4. Phase 6 Visual Identity;
 5. Phase 7 Delta Green system parity;
@@ -232,7 +232,7 @@ supabase/migrations/20260823143856_harden_campaign_database_grants.sql
 supabase/migrations/20260902132447_allow_completed_campaign_image_cleanup.sql
 supabase/migrations/20260903000242_campaign_gallery_categories.sql
 supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
-supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql  (follow-up pending publication)
+supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql
 ```
 
 Current public tables:
@@ -255,7 +255,7 @@ public.campaign_image_recipients
 public.campaign_video_audit_log
 ```
 
-The first eleven repository migrations are current in Production. The eleventh migration, `20260905171520_make_personal_roll_history_extensible.sql`, replaced the two-value `personal_roll_history.roller_kind` constraint with the syntax check `^[a-z][a-z0-9_]{0,63}$` and changed the schema-version constraint to require a positive value; it does not make arbitrary payloads application-supported. The pending twelfth follow-up migration scopes prospective retention to six rows per owner and roller kind and adds scoped clearing. The application registry supports schema version 1 for `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`, and safely skips malformed or unsupported history rows.
+All twelve repository migrations are current in Production. The eleventh migration, `20260905171520_make_personal_roll_history_extensible.sql`, replaced the two-value `personal_roll_history.roller_kind` constraint with the syntax check `^[a-z][a-z0-9_]{0,63}$` and changed the schema-version constraint to require a positive value; it does not make arbitrary payloads application-supported. The twelfth migration scopes prospective retention to six rows per owner and roller kind and adds scoped clearing. The application registry supports schema version 1 for `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`, and safely skips malformed or unsupported history rows.
 
 The seven campaign-video tables use RLS; the five required foreign-key indexes, database grants, and `handle_new_user()` hardening are current. The private `campaign-images` Storage bucket is current. Phase 4C1 uses the existing `campaign_images` and `campaign_image_recipients` tables rather than adding broad Handout, NPC, or Maps tables. `campaign_images.category` is fixed to `handout`, `npc`, `maps_plans`, or `other`; it is immutable organizational metadata and grants no access. No campaign-authoritative dice-roll, provider-room-mapping, document-handout, structured NPC, session, or campaign-notes table is implemented. Personal dice history is private per owner, non-authoritative, and not campaign evidence.
 
@@ -309,7 +309,7 @@ Implemented system-specific character, dice, and game-area support:
 vtm-v5
 ```
 
-The shared typed catalogue enables campaign creation and the locally implemented personal dice roller for this system, while its character creation and game area remain planned:
+The shared typed catalogue enables campaign creation and the deployed personal dice roller for this system, while its character creation and game area remain planned:
 
 ```text
 call-of-cthulhu-7e
@@ -346,15 +346,15 @@ Owns:
 - campaign lifecycle;
 - RLS-backed access checks and read-only character sharing.
 
-Campaign creation supports `vtm-v5` and the system-neutral `call-of-cthulhu-7e` shell. Character assignments remain game-system exact; VtM characters cannot be linked to CoC campaigns. CoC personal dice is deployed in Phase 4D1; its UX follow-up is pending publication. CoC character sheets remain planned for Phase 4F1, with the CoC Game System Hub planned for Phase 8A. Keeper-specific tools are not an active roadmap commitment.
+Campaign creation supports `vtm-v5` and the system-neutral `call-of-cthulhu-7e` shell. Character assignments remain game-system exact; VtM characters cannot be linked to CoC campaigns. CoC personal dice and its Phase 4D1 UX follow-up are deployed. CoC character sheets remain planned for Phase 4F1, with the CoC Game System Hub planned for Phase 8A. Keeper-specific tools are not an active roadmap commitment.
 
 ### Core play and campaign tools
 
-Phase 4A personal dice is implemented in Production, including the deterministic VtM evaluator, public VtM and Custom rollers, saved Custom presets, and private personal history. Phase 4D1 extends that deployed personal-only boundary with a CoC 7e percentile tool, CoC Other Dice, shared validation and secure randomness, and best-effort authenticated history. The pending follow-up makes Back navigation contextual, places scoped history on each roller, and adds live CoC Target bands. Phase 4B campaign-authorized LiveKit video runs in a dedicated localized Game Room; no standalone Video Room or campaign-authoritative Realtime dice feed is implemented.
+Phase 4A personal dice is implemented in Production, including the deterministic VtM evaluator, public VtM and Custom rollers, saved Custom presets, and private personal history. Phase 4D1 extends that deployed personal-only boundary with a CoC 7e percentile tool, CoC Other Dice, shared validation and secure randomness, best-effort authenticated history, contextual Back navigation, roller-scoped history, and live CoC Target bands. Phase 4B campaign-authorized LiveKit video runs in a dedicated localized Game Room; no standalone Video Room or campaign-authoritative Realtime dice feed is implemented.
 
 The reusable video core owns the implemented campaign provider integration and media-room behavior behind a campaign-derived authorization adapter. Any future standalone product would require a separate product and authorization review and must not depend on campaigns.
 
-Phase 4C2 Game Room image presentation is implemented. After the Phase 4D1 UX follow-up is published, approved later Phase 4 work is limited to system-aware Game Room dice, campaign/Game Room technical UX refinement, CoC character sheets and linked-character presentation, and narrowly scoped shared plus GM-private notes. Every campaign capability depends on verified campaign access. Personal dice history remains separate and non-authoritative.
+Phase 4C2 Game Room image presentation and the Phase 4D1 UX follow-up are implemented. Approved later Phase 4 work is limited to system-aware Game Room dice, campaign/Game Room technical UX refinement, CoC character sheets and linked-character presentation, and narrowly scoped shared plus GM-private notes. Every campaign capability depends on verified campaign access. Personal dice history remains separate and non-authoritative.
 
 ### Campaign content
 
@@ -389,8 +389,8 @@ Public or generally accessible game-system information must remain separate from
 
 ## Current phase and next task
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal dice persistence, the game-system catalogue, and Phase 4D1 CoC 7e personal dice are deployed. The Phase 4D1 UX follow-up is implemented locally and pending publication.
+Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal dice persistence, the game-system catalogue, Phase 4D1 CoC 7e personal dice, and its UX follow-up are deployed.
 
 Campaign-authorized LiveKit video and the responsive Game Room at `/{locale}/campaigns/{campaignId}/game-room` are complete and accepted for one GM plus up to six Players. LiveKit is the accepted provider for this current campaign implementation. The final card design uses responsive 16:9 media, stable participant slots, a compact upper-right label, local-only lower-left media controls, and a header-level Leave action.
 
-The Phase 4C1 image-only Campaign Gallery and Phase 4C2 Game Room Image Presentation are complete and accepted in Production. The corrected desktop Expand layout was manually re-tested successfully after PR #44. Phase 4D1 CoC 7e Dice Roller is deployed through PR #46; guest/runtime acceptance passed and authenticated Production history acceptance remains pending. Its focused UX follow-up is pending publication. Phase 4D2 system-aware Game Room Dice Integration is next afterward. Later approved Phase 4 work is 4E Campaign & Game Room UX/UI Refinement, 4F1 CoC 7e Character Sheets, 4F2 system-aware linked-character Game Room integration, and 4G narrowly scoped campaign notes. Phase 5 is site-wide UI Technical Refinement, Phase 6 is deliberately undecided Visual Identity, Phase 7 adds Delta Green system parity, Phase 8 adds CoC/Delta Green/Vampire hubs in that order, and Phase 9 is Public Readiness. Standalone Video Rooms and broad document/NPC/Sessions/Chronicle capabilities are not active roadmap commitments.
+The Phase 4C1 image-only Campaign Gallery and Phase 4C2 Game Room Image Presentation are complete and accepted in Production. The corrected desktop Expand layout was manually re-tested successfully after PR #44. Phase 4D1 CoC 7e Dice Roller is deployed through PR #46, and its focused UX follow-up is deployed through PR #47; guest/runtime acceptance passed and authenticated Production history acceptance remains pending. Phase 4D2 system-aware Game Room Dice Integration is next. Later approved Phase 4 work is 4E Campaign & Game Room UX/UI Refinement, 4F1 CoC 7e Character Sheets, 4F2 system-aware linked-character Game Room integration, and 4G narrowly scoped campaign notes. Phase 5 is site-wide UI Technical Refinement, Phase 6 is deliberately undecided Visual Identity, Phase 7 adds Delta Green system parity, Phase 8 adds CoC/Delta Green/Vampire hubs in that order, and Phase 9 is Public Readiness. Standalone Video Rooms and broad document/NPC/Sessions/Chronicle capabilities are not active roadmap commitments.

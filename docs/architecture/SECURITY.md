@@ -202,9 +202,9 @@ Even without persistence:
 - cover messy critical, bestial failure, critical, and failure cases;
 - use safe bounds to prevent accidental UI or performance abuse.
 
-### CoC personal dice — Phase 4D1 deployed core and pending UX follow-up
+### CoC personal dice — Phase 4D1 deployed core and UX follow-up
 
-Phase 4D1 core is deployed. Its focused UX follow-up is implemented locally pending publication and preserves the personal-tool security boundary:
+Phase 4D1 core and its focused UX follow-up are deployed and preserve the personal-tool security boundary:
 
 - randomness is generated in the browser with `crypto.getRandomValues` through shared unbiased rejection sampling;
 - deterministic evaluators strictly validate supplied values without coercion, truncation, clamping, or display-text trust;
@@ -216,7 +216,7 @@ Phase 4D1 core is deployed. Its focused UX follow-up is implemented locally pend
 - contextual Back destinations accept only validated same-site routes and fall back to the localized Dice Rollers catalogue;
 - history listing and clearing are restricted to validated registered roller kinds, while ownership remains derived from the authenticated server session.
 
-The forward migration that relaxes only the personal-history envelope constraints is applied in Production. The pending follow-up migration preserves owner RLS and idempotency, scopes prospective six-row retention by kind, adds a matching index, and exposes scoped clearing only to `authenticated`; the application rejects empty or unsupported scope inputs before calling it. Phase 4D1 adds no campaign-scoped authorization, campaign result table, Realtime feed, or Game Room dice behavior.
+Both Phase 4D1 forward migrations are applied in Production. The follow-up migration preserves owner RLS and idempotency, scopes prospective six-row retention by kind, adds a matching index, and exposes scoped clearing only to `authenticated`; the application rejects empty or unsupported scope inputs before calling it. Phase 4D1 adds no campaign-scoped authorization, campaign result table, Realtime feed, or Game Room dice behavior.
 
 The Phase 4D1 dependency closeout records zero known npm vulnerabilities in both the production-only and full local dependency audits after the lockfile-only Browserslist update from 4.28.4 to 4.28.9.
 

@@ -7,7 +7,7 @@
 | Status | Current approved target structure |
 | Current source | [`ROADMAP.md`](ROADMAP.md) |
 | Current route reference | [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCTURE_CURRENT.md) |
-| Next product phase | Publish the locally complete 4D1 UX follow-up, then 4D2 Game Room Dice Integration |
+| Next product phase | 4D2 Game Room Dice Integration |
 
 ## Purpose
 
@@ -20,8 +20,8 @@ Describe the intended structure without presenting speculative routes or uncommi
 3. Phase 4B Campaign Video Rooms Integration — complete and Production accepted;
 4. Phase 4C1 image-only Campaign Gallery — complete;
 5. Phase 4C2 Game Room Image Presentation — complete and Production accepted;
-6. Phase 4D1 CoC 7e Dice Roller — deployed; UX follow-up implemented locally and pending publication;
-7. Phase 4D2 system-aware Game Room Dice Integration — next after the follow-up;
+6. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
+7. Phase 4D2 system-aware Game Room Dice Integration — next;
 8. Phase 4E Campaign & Game Room UX/UI Refinement;
 9. Phase 4F1 CoC 7e Character Sheets;
 10. Phase 4F2 system-aware linked-character Game Room integration;
@@ -77,7 +77,7 @@ Global/document Handouts, NPCs, Sessions, Chronicle records, clues, maps, wikis,
 The shared catalogue tracks capability availability independently. A system route or control is exposed only when that capability is implemented.
 
 - VtM V5: current character, dice, campaign, and basic game-area capabilities;
-- CoC 7e: current generic campaign shell and deployed 4D1 personal dice; UX follow-up pending publication; characters planned in 4F1;
+- CoC 7e: current generic campaign shell and deployed 4D1 personal dice with its UX follow-up; characters planned in 4F1;
 - Delta Green: catalogue only until Phase 7;
 - other catalogue systems: planned placeholders only.
 
