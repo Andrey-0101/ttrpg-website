@@ -142,7 +142,7 @@ Start with:
 
 ## Current snapshot
 
-Accepted Phase 4C2 Production code baseline:
+Accepted Phase 4D1 application Production baseline:
 
 ```text
 main
