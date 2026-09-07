@@ -18,7 +18,7 @@ flowchart TD
     LOCALE --> PROFILE["Profile / Account"]
     DICE --> VTM_DICE["VtM V5 Roller"]
     DICE --> CUSTOM_DICE["Custom Dice Pool"]
-    DICE --> COC_DICE["CoC 7e Roller — local, pending publication"]
+    DICE --> COC_DICE["CoC 7e Roller"]
     CAMPAIGNS --> CAMPAIGN["Campaign Overview"]
     CAMPAIGN --> SHARED_CHARACTER["Read-only linked character"]
     CAMPAIGN --> GAME_ROOM["Campaign Game Room"]
@@ -27,7 +27,7 @@ flowchart TD
     GAME_ROOM --> DISPLAY["GM-controlled Gallery image presentation"]
 ```
 
-The catalogue includes a generic CoC 7e campaign shell. The local Phase 4D1 working tree adds the CoC personal dice route; it is verified but pending publication. CoC character routes do not exist. Delta Green is a catalogue entry only. No complete game-system hub exists.
+The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D1 CoC personal dice route. CoC character routes do not exist. Delta Green is a catalogue entry only. No complete game-system hub exists. The contextual-navigation, scoped-history, and live Target-band follow-up is implemented locally and pending publication.
 
 ## Approved Phase 4 additions
 
@@ -35,7 +35,7 @@ The catalogue includes a generic CoC 7e campaign shell. The local Phase 4D1 work
 flowchart TD
     CAMPAIGN --> GAME_ROOM["Game Room"]
     GAME_ROOM --> SYSTEM_DICE["4D2 System-aware Dice"]
-    COC_DICE["4D1 CoC Dice Roller — local, pending publication"] --> SYSTEM_DICE
+    COC_DICE["4D1 CoC Dice Roller"] --> SYSTEM_DICE
     GAME_ROOM --> LINKED_CHARACTERS["4F2 Linked Participant Characters"]
     COC_CHARACTERS["4F1 CoC Character Sheets"] --> LINKED_CHARACTERS
     CAMPAIGN --> NOTES["4G Shared and GM-private Notes"]
@@ -64,7 +64,7 @@ Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and
 | Campaign video | Implemented and Production accepted | Retain; technical refinement only unless separately scoped |
 | Campaign Gallery | Four-section private image library and Game Room presentation implemented | Retain; Campaign Wallpaper remains uncommitted `IDEA-007` only |
 | VtM dice | Personal roller implemented | Use for VtM campaigns in 4D2 |
-| CoC dice | Personal roller implemented locally, pending publication | 4D2 campaign integration after publication |
+| CoC dice | Personal roller deployed; UX follow-up pending publication | 4D2 campaign integration after the follow-up |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |

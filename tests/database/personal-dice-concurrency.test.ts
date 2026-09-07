@@ -40,6 +40,7 @@ type HistorySummary = {
   total: number;
   sequenceNumbers: string[];
   kinds: string[];
+  kindCounts: Record<string, number>;
   owners: string[];
 };
 
@@ -424,6 +425,18 @@ select 'RESULT|' || pg_catalog.json_build_object(
     pg_catalog.array_agg(distinct roller_kind order by roller_kind),
     array[]::text[]
   ),
+  'kindCounts', coalesce(
+    (
+      select pg_catalog.jsonb_object_agg(kind_totals.roller_kind, kind_totals.total)
+      from (
+        select roller_kind, pg_catalog.count(*) as total
+        from public.personal_roll_history
+        where owner_id = ${quoteLiteral(ownerId)}::uuid
+        group by roller_kind
+      ) as kind_totals
+    ),
+    '{}'::jsonb
+  ),
   'owners', coalesce(
     pg_catalog.array_agg(distinct owner_id::text),
     array[]::text[]
@@ -698,7 +711,7 @@ where owner_id = ${quoteLiteral(USER_A)}::uuid;
   );
 
   const results = await Promise.all(
-    Array.from({ length: 20 }, (_, index) => {
+    Array.from({ length: 40 }, (_, index) => {
       const ordinal = index + 1;
       const clientRollId = `c0a20000-0000-4000-8000-${String(ordinal).padStart(
         12,
@@ -726,16 +739,14 @@ where owner_id = ${quoteLiteral(USER_A)}::uuid;
       `retention call ${index + 1}`,
     ),
   );
-  const createdSequenceNumbers = records
-    .map((record) => BigInt(record.sequence_number))
-    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
-  const expectedRetained = createdSequenceNumbers
-    .slice(-11)
-    .map((value) => value.toString());
-
   const summary = await getHistorySummary(USER_A);
-  assert.equal(summary.total, 11);
-  assert.deepEqual(summary.sequenceNumbers, expectedRetained);
+  assert.equal(summary.total, 24);
+  assert.deepEqual(summary.kindCounts, {
+    coc_7e_other_dice: 6,
+    coc_7e_percentile: 6,
+    custom_dice_pool: 6,
+    vtm_v5: 6,
+  });
   assert.deepEqual(summary.kinds, [
     "coc_7e_other_dice",
     "coc_7e_percentile",
@@ -749,6 +760,7 @@ where owner_id = ${quoteLiteral(USER_A)}::uuid;
     retained: summary.total,
     retainedSequenceNumbers: summary.sequenceNumbers,
     kinds: summary.kinds,
+    kindCounts: summary.kindCounts,
   };
 }
 
@@ -834,8 +846,8 @@ async function testPerUserIsolation() {
   assert.deepEqual(presetsB.slots, [1, 2, 3, 4, 5]);
   assert.deepEqual(presetsA.owners, [USER_A]);
   assert.deepEqual(presetsB.owners, [USER_B]);
-  assert.equal(historyA.total, 11);
-  assert.equal(historyB.total, 11);
+  assert.equal(historyA.total, 12);
+  assert.equal(historyB.total, 12);
   assert.deepEqual(historyA.owners, [USER_A]);
   assert.deepEqual(historyB.owners, [USER_B]);
   assert.deepEqual(visibilityA, { otherPresets: 0, otherHistory: 0 });

@@ -178,7 +178,7 @@
   "VtmDiceRoller": {
     "metadataTitle": "Персональный бросок кубиков VtM V5",
     "metadataDescription": "Локальный персональный бросок кубиков для Vampire: The Masquerade Fifth Edition.",
-    "back": "Назад к Vampire: The Masquerade",
+    "back": "Назад",
     "eyebrow": "Vampire: The Masquerade Fifth Edition",
     "title": "Персональный бросок кубиков",
     "descriptionAuthenticated": "Обычные кубики и Кубики Голода бросаются локально. Если вы вошли в аккаунт и сохранение доступно, мы автоматически пытаемся сохранить бросок в вашей приватной личной истории. Броски не публикуются и не передаются другим пользователям.",

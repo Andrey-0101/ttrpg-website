@@ -1,6 +1,10 @@
 import type { CustomDicePoolResult } from "./custom-dice-pool";
 import { PERSONAL_ROLL_SCHEMA_VERSION } from "./personal-dice-persistence";
-import type { VtmV5DiceResult } from "../game-systems/vtm-v5/dice-engine";
+import type { PersonalRollHistoryEntry } from "./personal-dice-persistence-service";
+import type {
+  VtmV5DiceRequest,
+  VtmV5DiceResult,
+} from "../game-systems/vtm-v5/dice-engine";
 import type {
   Coc7eOtherDiceResult,
   Coc7ePercentileTestResult,
@@ -14,7 +18,7 @@ export type VtmV5PersonalRollRecordingInput = {
   rollerKind: "vtm_v5";
   schemaVersion: typeof PERSONAL_ROLL_SCHEMA_VERSION;
   requestData: {
-    request: VtmV5DiceResult["request"];
+    request: VtmV5DiceRequest;
     normalDice: number[];
     hungerDiceResults: number[];
   };
@@ -62,6 +66,8 @@ type BestEffortRecordingOptions<Result> = {
   snapshot: Result;
   recordAction: RecordPersonalRollAction;
   uuidFactory?: PersonalRollUuidFactory;
+  onClientRollId?: (clientRollId: string) => void;
+  onRecorded?: (entry: PersonalRollHistoryEntry) => void;
 };
 
 function createClientRollId(): string {
@@ -72,7 +78,17 @@ export function buildVtmV5PersonalRollRecordingInput(
   clientRollId: string,
   snapshot: VtmV5DiceResult,
 ): VtmV5PersonalRollRecordingInput {
-  const request = { ...snapshot.request };
+  const request: VtmV5DiceRequest = {
+    pool: snapshot.request.pool,
+    hungerDice: snapshot.request.hungerDice,
+    ...(snapshot.request.difficulty === null
+      ? {}
+      : { difficulty: snapshot.request.difficulty }),
+    ...(snapshot.request.label === null
+      ? {}
+      : { label: snapshot.request.label }),
+  };
+  const normalizedRequest = { ...snapshot.request };
   const normalDice = [...snapshot.normalDice];
   const hungerDiceResults = [...snapshot.hungerDiceResults];
 
@@ -87,7 +103,7 @@ export function buildVtmV5PersonalRollRecordingInput(
     },
     resultData: {
       ...snapshot,
-      request,
+      request: normalizedRequest,
       normalDice,
       hungerDiceResults,
       detailFlags: { ...snapshot.detailFlags },
@@ -169,18 +185,40 @@ async function recordRollBestEffort<Result, Input>({
   snapshot,
   recordAction,
   uuidFactory,
+  onClientRollId,
+  onRecorded,
   buildInput,
 }: BestEffortRecordingOptions<Result> & {
   uuidFactory: PersonalRollUuidFactory;
   buildInput: (clientRollId: string, snapshot: Result) => Input;
-}): Promise<void> {
-  if (!authenticated) return;
+}): Promise<PersonalRollHistoryEntry | null> {
+  if (!authenticated) return null;
 
   try {
-    await recordAction(buildInput(uuidFactory(), snapshot));
+    const clientRollId = uuidFactory();
+    onClientRollId?.(clientRollId);
+    const response = await recordAction(
+      buildInput(clientRollId, snapshot),
+    );
+
+    if (
+      typeof response === "object" &&
+      response !== null &&
+      "ok" in response &&
+      response.ok === true &&
+      "data" in response &&
+      typeof response.data === "object" &&
+      response.data !== null
+    ) {
+      const entry = response.data as PersonalRollHistoryEntry;
+      onRecorded?.(entry);
+      return entry;
+    }
   } catch {
     // Personal history must never affect the locally generated roll.
   }
+
+  return null;
 }
 
 export async function recordVtmV5RollBestEffort({
@@ -188,12 +226,18 @@ export async function recordVtmV5RollBestEffort({
   snapshot,
   recordAction,
   uuidFactory = createClientRollId,
-}: BestEffortRecordingOptions<VtmV5DiceResult>): Promise<void> {
+  onClientRollId,
+  onRecorded,
+}: BestEffortRecordingOptions<VtmV5DiceResult>): Promise<
+  PersonalRollHistoryEntry | null
+> {
   return recordRollBestEffort({
     authenticated,
     snapshot,
     recordAction,
     uuidFactory,
+    onClientRollId,
+    onRecorded,
     buildInput: buildVtmV5PersonalRollRecordingInput,
   });
 }
@@ -203,12 +247,18 @@ export async function recordCustomRollBestEffort({
   snapshot,
   recordAction,
   uuidFactory = createClientRollId,
-}: BestEffortRecordingOptions<CustomDicePoolResult>): Promise<void> {
+  onClientRollId,
+  onRecorded,
+}: BestEffortRecordingOptions<CustomDicePoolResult>): Promise<
+  PersonalRollHistoryEntry | null
+> {
   return recordRollBestEffort({
     authenticated,
     snapshot,
     recordAction,
     uuidFactory,
+    onClientRollId,
+    onRecorded,
     buildInput: buildCustomPersonalRollRecordingInput,
   });
 }
@@ -218,12 +268,18 @@ export async function recordCoc7ePercentileRollBestEffort({
   snapshot,
   recordAction,
   uuidFactory = createClientRollId,
-}: BestEffortRecordingOptions<Coc7ePercentileTestResult>): Promise<void> {
+  onClientRollId,
+  onRecorded,
+}: BestEffortRecordingOptions<Coc7ePercentileTestResult>): Promise<
+  PersonalRollHistoryEntry | null
+> {
   return recordRollBestEffort({
     authenticated,
     snapshot,
     recordAction,
     uuidFactory,
+    onClientRollId,
+    onRecorded,
     buildInput: buildCoc7ePercentilePersonalRollRecordingInput,
   });
 }
@@ -233,12 +289,18 @@ export async function recordCoc7eOtherDiceRollBestEffort({
   snapshot,
   recordAction,
   uuidFactory = createClientRollId,
-}: BestEffortRecordingOptions<Coc7eOtherDiceResult>): Promise<void> {
+  onClientRollId,
+  onRecorded,
+}: BestEffortRecordingOptions<Coc7eOtherDiceResult>): Promise<
+  PersonalRollHistoryEntry | null
+> {
   return recordRollBestEffort({
     authenticated,
     snapshot,
     recordAction,
     uuidFactory,
+    onClientRollId,
+    onRecorded,
     buildInput: buildCoc7eOtherDicePersonalRollRecordingInput,
   });
 }

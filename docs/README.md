@@ -18,8 +18,8 @@ Completed:
 Active:
 
 - Phase 4 — Core Play & Campaign Tools, with 4A through 4C2 complete in Production;
-- Phase 4D1 — CoC 7e Dice Roller implemented and verified locally, pending publication;
-- next product stage after publication — Phase 4D2 system-aware Game Room dice.
+- Phase 4D1 — CoC 7e Dice Roller deployed in Production; the contextual-navigation, scoped-history, and live Target-band follow-up is implemented locally and pending publication;
+- next product stage after the follow-up — Phase 4D2 system-aware Game Room dice.
 
 The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
@@ -30,7 +30,7 @@ main
 0796cf737e4253ae38631ec807c416c17da10dbc
 ```
 
-The Production product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell, campaign-authorized LiveKit video, the accepted responsive Campaign Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation. PR #43 delivered presentation and PR #44 corrected the desktop Expand participant layout; the corrected feature was manually accepted in Production. The last broader Game Room Production group test passed with one GM and four Players, without quantitative network/connection-quality telemetry. The working tree additionally contains the complete locally verified Phase 4D1 CoC 7e personal roller and its forward-only personal-history constraint migration; neither is yet published or applied to remote Supabase. Standalone Video Rooms are retained only as an uncommitted backlog idea.
+The Production product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell and personal dice roller, campaign-authorized LiveKit video, the accepted responsive Campaign Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation. PR #43 delivered presentation and PR #44 corrected the desktop Expand participant layout; the corrected feature was manually accepted in Production. The last broader Game Room Production group test passed with one GM and four Players, without quantitative network/connection-quality telemetry. The working tree additionally contains a locally verified Phase 4D1 UX follow-up for contextual roller navigation, roller-scoped personal history, and live CoC Target bands; that follow-up and its forward-only per-kind retention migration are pending publication. Standalone Video Rooms are retained only as an uncommitted backlog idea.
 
 ## Architecture
 
@@ -70,7 +70,7 @@ Accepted and proposed ADRs are stored in:
 Current decision status relevant to dice delivery:
 
 - ADR-007 — Campaign foundation before shared realtime tools: Accepted;
-- ADR-008 — Game-system domain boundaries: Accepted and preserved by the local Phase 4D1 implementation;
+- ADR-008 — Game-system domain boundaries: Accepted and preserved by Phase 4D1;
 - ADR-009 — Managed video infrastructure: Accepted for the current LiveKit campaign Game Room only; standalone Video Rooms are not active roadmap scope.
 
 ## Evidence summaries

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import DarkPackNotice from "@/components/games/vtm-v5/dark-pack-notice";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { withDiceRollerReturnTo } from "@/lib/dice/dice-roller-navigation";
 
 type VampirePageProps = {
   params: Promise<{
@@ -53,7 +54,10 @@ export default async function VampirePage() {
           {diceTranslations("entryDescription")}
         </p>
         <Link
-          href="/games/vampire-the-masquerade/tools/dice"
+          href={withDiceRollerReturnTo(
+            "/games/vampire-the-masquerade/tools/dice",
+            "/games/vampire-the-masquerade",
+          )}
           className="mt-5 inline-flex rounded bg-white px-5 py-3 font-medium text-black outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-red-950"
         >
           {diceTranslations("entryAction")}

@@ -230,8 +230,8 @@ function createFakeDataSource(
       calls.push({ method: "deleteRoll", value: args });
       return { data: true, error: null };
     },
-    async clearHistory() {
-      calls.push({ method: "clearHistory" });
+    async clearHistory(args) {
+      calls.push({ method: "clearHistory", value: args });
       return { data: 3, error: null };
     },
     ...overrides,
@@ -586,7 +586,7 @@ test("client initialization failure returns only a safe result", async () => {
     async () => {
       throw new Error(rawMessage);
     },
-    (service) => service.listPersonalRollHistory(),
+    (service) => service.listPersonalRollHistory(["vtm_v5"]),
     (diagnostic) => diagnostics.push(diagnostic),
   );
 
@@ -631,7 +631,7 @@ test("server adapter RPC names and action delegation remain exact", () => {
       "delete_custom_dice_preset",
       "record_personal_roll",
       "delete_personal_roll",
-      "clear_personal_roll_history",
+      "clear_personal_roll_history_by_kinds",
     ],
   );
   assert.equal(actionSource.startsWith('"use server";'), true);
@@ -730,10 +730,10 @@ test("every unauthenticated operation stops before data access", async () => {
     service.deleteSavedCustomDicePreset({
       presetId: PRESET_ID,
     }),
-    service.listPersonalRollHistory(),
+    service.listPersonalRollHistory(["vtm_v5"]),
     service.recordPersonalRoll(validVtmCandidate()),
     service.deletePersonalRoll({ rollId: ROLL_ID }),
-    service.clearPersonalRollHistory(),
+    service.clearPersonalRollHistory(["vtm_v5"]),
   ]);
 
   for (const result of results) {
@@ -767,7 +767,7 @@ test("auth.getUser errors cannot reach a table query or RPC", async () => {
     () => undefined,
   );
 
-  assert.deepEqual(await service.listPersonalRollHistory(), {
+  assert.deepEqual(await service.listPersonalRollHistory(["vtm_v5"]), {
     ok: false,
     error: { code: "authentication_required" },
   });
@@ -1126,14 +1126,14 @@ test("idempotent record responses map to sanitized history", async () => {
   assert.doesNotThrow(() => JSON.stringify(entry));
 });
 
-test("history list requests newest eleven rows and sanitizes models", async () => {
+test("history list requests six newest scoped rows and sanitizes models", async () => {
   const { source, calls } = createFakeDataSource();
   const service = createPersonalDicePersistenceService(
     source,
     () => undefined,
   );
   const entries = requireSuccess(
-    await service.listPersonalRollHistory(),
+    await service.listPersonalRollHistory(["vtm_v5"]),
   );
 
   assert.deepEqual(calls[1], {
@@ -1141,11 +1141,32 @@ test("history list requests newest eleven rows and sanitizes models", async () =
     value: {
       orderBy: "sequence_number",
       ascending: false,
-      limit: 11,
+      rollerKinds: ["vtm_v5"],
+      limit: 6,
     },
   });
   assert.equal(entries.length, 1);
   assert.equal("owner_id" in entries[0], false);
+});
+
+test("history list and clear reject empty or unsupported scopes before data access", async () => {
+  const { source, calls } = createFakeDataSource();
+  const service = createPersonalDicePersistenceService(
+    source,
+    () => undefined,
+  );
+
+  for (const scope of [[], ["unknown_kind"]]) {
+    const listed = await service.listPersonalRollHistory(scope);
+    const cleared = await service.clearPersonalRollHistory(scope);
+    assert.equal(listed.ok, false);
+    assert.equal(cleared.ok, false);
+  }
+
+  assert.equal(
+    calls.every((call) => call.method === "getAuthenticatedUser"),
+    true,
+  );
 });
 
 test("malformed and unsupported stored history is skipped without hiding valid rows", async () => {
@@ -1183,7 +1204,10 @@ test("malformed and unsupported stored history is skipped without hiding valid r
     (diagnostic) => diagnostics.push(diagnostic),
   );
 
-  const result = await service.listPersonalRollHistory();
+  const result = await service.listPersonalRollHistory([
+    "vtm_v5",
+    "coc_7e_percentile",
+  ]);
   assert.equal(result.ok, true);
   assert.deepEqual(
     result.ok ? result.data.map((entry) => entry.rollerKind) : [],
@@ -1236,7 +1260,14 @@ test("mixed personal history keeps newest-first ordering across all roller kinds
     source,
     () => undefined,
   );
-  const result = requireSuccess(await service.listPersonalRollHistory());
+  const result = requireSuccess(
+    await service.listPersonalRollHistory([
+      "vtm_v5",
+      "custom_dice_pool",
+      "coc_7e_percentile",
+      "coc_7e_other_dice",
+    ]),
+  );
   assert.deepEqual(
     result.map((entry) => entry.rollerKind),
     [
@@ -1245,6 +1276,35 @@ test("mixed personal history keeps newest-first ordering across all roller kinds
       "coc_7e_percentile",
       "coc_7e_other_dice",
     ],
+  );
+});
+
+test("scoped history never leaks rows from another registered roller", async () => {
+  const rows = [
+    historyRow(validVtmCandidate()),
+    {
+      ...historyRow(validCocPercentileCandidate()),
+      id: "30000000-0000-4000-8000-000000000002",
+      client_roll_id: "40000000-0000-4000-8000-000000000002",
+      sequence_number: 41,
+    },
+  ];
+  const { source } = createFakeDataSource({
+    async listHistoryRows() {
+      return { data: rows, error: null };
+    },
+  });
+  const service = createPersonalDicePersistenceService(
+    source,
+    () => undefined,
+  );
+  const result = requireSuccess(
+    await service.listPersonalRollHistory(["coc_7e_percentile"]),
+  );
+
+  assert.deepEqual(
+    result.map((entry) => entry.rollerKind),
+    ["coc_7e_percentile"],
   );
 });
 
@@ -1262,7 +1322,7 @@ test("history query failures return safe mapped errors", async () => {
     source,
     () => undefined,
   );
-  const result = await service.listPersonalRollHistory();
+  const result = await service.listPersonalRollHistory(["vtm_v5"]);
 
   assert.deepEqual(result, {
     ok: false,
@@ -1327,18 +1387,29 @@ test("delete personal roll validates and uses exact opaque RPC shape", async () 
   assert.equal(calls.length, 3);
 });
 
-test("clear history invokes the no-argument RPC and returns count", async () => {
+test("clear history invokes the scoped RPC and returns count", async () => {
   const { source, calls } = createFakeDataSource();
   const service = createPersonalDicePersistenceService(
     source,
     () => undefined,
   );
 
-  assert.deepEqual(await service.clearPersonalRollHistory(), {
+  assert.deepEqual(
+    await service.clearPersonalRollHistory([
+      "coc_7e_percentile",
+      "coc_7e_other_dice",
+    ]),
+    {
     ok: true,
     data: { deletedCount: 3 },
+    },
+  );
+  assert.deepEqual(calls[1], {
+    method: "clearHistory",
+    value: {
+      p_roller_kinds: ["coc_7e_percentile", "coc_7e_other_dice"],
+    },
   });
-  assert.deepEqual(calls[1], { method: "clearHistory" });
 });
 
 test("thrown data-source failures become persistence_unavailable", async () => {
@@ -1377,7 +1448,7 @@ test("returned history is copy-isolated from database response rows", async () =
     () => undefined,
   );
   const [entry] = requireSuccess(
-    await service.listPersonalRollHistory(),
+    await service.listPersonalRollHistory(["vtm_v5"]),
   );
 
   (

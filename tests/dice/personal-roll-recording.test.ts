@@ -16,6 +16,7 @@ import {
   recordCustomRollBestEffort,
   recordVtmV5RollBestEffort,
 } from "../../lib/dice/personal-roll-recording";
+import type { PersonalRollHistoryEntry } from "../../lib/dice/personal-dice-persistence-service";
 import {
   evaluateVtmV5Dice,
   type VtmV5DiceResult,
@@ -210,6 +211,78 @@ test("authenticated VtM rolls copy the complete snapshot with one id", async () 
     input.resultData.detailFlags,
     snapshot.detailFlags,
   );
+});
+
+test("VtM persistence omits absent request options across the server-action boundary", async () => {
+  const evaluation = evaluateVtmV5Dice({
+    request: { pool: 1, hungerDice: 0 },
+    normalDice: [6],
+    hungerDiceResults: [],
+  });
+  assert.equal(evaluation.ok, true);
+
+  const actionInputs: unknown[] = [];
+  await recordVtmV5RollBestEffort({
+    authenticated: true,
+    snapshot: evaluation.result,
+    uuidFactory: () => VTM_UUID,
+    async recordAction(input) {
+      actionInputs.push(input);
+      return { ok: false };
+    },
+  });
+
+  assert.equal(actionInputs.length, 1);
+  const actionInput =
+    actionInputs[0] as VtmV5PersonalRollRecordingInput;
+  assert.deepEqual(actionInput.requestData.request, {
+    pool: 1,
+    hungerDice: 0,
+  });
+  assert.deepEqual(actionInput.resultData.request, {
+    pool: 1,
+    hungerDice: 0,
+    difficulty: null,
+    label: null,
+  });
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(actionInput.requestData.request)),
+    actionInput.requestData.request,
+  );
+});
+
+test("successful recording reports the current id and saved entry for live history", async () => {
+  const entry = {
+    id: "30000000-0000-4000-8000-000000000001",
+    clientRollId: VTM_UUID,
+    rollerKind: "vtm_v5",
+    schemaVersion: 1,
+    requestData: {},
+    resultData: {},
+    sequenceNumber: 42,
+    createdAt: "2026-09-07T00:00:00.000Z",
+  } as PersonalRollHistoryEntry;
+  let currentId: string | null = null;
+  let recorded: PersonalRollHistoryEntry | null = null;
+
+  const result = await recordVtmV5RollBestEffort({
+    authenticated: true,
+    snapshot: createVtmSnapshot(),
+    uuidFactory: () => VTM_UUID,
+    onClientRollId: (clientRollId) => {
+      currentId = clientRollId;
+    },
+    onRecorded: (savedEntry) => {
+      recorded = savedEntry;
+    },
+    async recordAction() {
+      return { ok: true, data: entry };
+    },
+  });
+
+  assert.equal(currentId, VTM_UUID);
+  assert.equal(recorded, entry);
+  assert.equal(result, entry);
 });
 
 test("authenticated Custom rolls copy quantities, coins, and every group", async () => {
@@ -570,7 +643,7 @@ test("VtM roller records only the successful local snapshot", () => {
   assert.match(pageSource, /auth\.getClaims\(\)/u);
   assert.match(
     pageSource,
-    /<PersonalDiceRoller\s+authenticated=\{authenticated\}\s*\/>/u,
+    /<PersonalDiceRoller[\s\S]*authenticated=\{authenticated\}[\s\S]*initialHistoryEntries=\{historyEntries\}/u,
   );
   assert.match(pageSource, /descriptionAuthenticated/u);
   assert.match(pageSource, /descriptionGuest/u);
@@ -660,7 +733,7 @@ test("CoC roller records successful snapshots after updating local results", () 
   assert.match(pageSource, /auth\.getClaims\(\)/u);
   assert.match(
     pageSource,
-    /<CallOfCthulhu7eDiceRoller authenticated=\{authenticated\}/u,
+    /<CallOfCthulhu7eDiceRoller[\s\S]*authenticated=\{authenticated\}[\s\S]*initialHistoryEntries=\{historyEntries\}/u,
   );
   assert.match(rollerSource, /recordCoc7ePercentileRollBestEffort/u);
   assert.match(rollerSource, /recordCoc7eOtherDiceRollBestEffort/u);

@@ -5,6 +5,9 @@ import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
 import { recordPersonalRollAction } from "@/app/[locale]/dice-rollers/actions";
+import PersonalRollHistory from "@/components/dice-rollers/personal-roll-history";
+import { mergePersonalRollHistoryEntry } from "@/lib/dice/personal-roll-history";
+import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 import { recordVtmV5RollBestEffort } from "@/lib/dice/personal-roll-recording";
 import {
   VTM_V5_DICE_LIMITS,
@@ -304,8 +307,10 @@ function DiceResult({
 
 export default function PersonalDiceRoller({
   authenticated,
+  initialHistoryEntries,
 }: {
   authenticated: boolean;
+  initialHistoryEntries: PersonalRollHistoryEntry[] | null;
 }) {
   const translations = useTranslations("VtmDiceRoller");
   const [pool, setPool] = useState("1");
@@ -314,6 +319,12 @@ export default function PersonalDiceRoller({
   const [label, setLabel] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [result, setResult] = useState<VtmV5DiceResult | null>(null);
+  const [historyEntries, setHistoryEntries] = useState(
+    initialHistoryEntries ?? [],
+  );
+  const [currentClientRollId, setCurrentClientRollId] = useState<
+    string | null
+  >(null);
   const [displayMode, setDisplayMode] =
     useState<VtmV5DiceDisplayMode>("symbols");
 
@@ -442,6 +453,12 @@ export default function PersonalDiceRoller({
         authenticated,
         snapshot,
         recordAction: recordPersonalRollAction,
+        onClientRollId: setCurrentClientRollId,
+        onRecorded: (entry) => {
+          setHistoryEntries((current) =>
+            mergePersonalRollHistoryEntry(current, entry),
+          );
+        },
       });
     } catch {
       setErrors({ general: translations("validation.randomUnavailable") });
@@ -594,6 +611,18 @@ export default function PersonalDiceRoller({
           <DiceResult result={result} displayMode={displayMode} />
         </>
       )}
+
+      {initialHistoryEntries ? (
+        <PersonalRollHistory
+          entries={historyEntries}
+          rollerKinds={["vtm_v5"]}
+          currentClientRollIds={
+            currentClientRollId ? [currentClientRollId] : []
+          }
+          scope="vtm"
+          setEntries={setHistoryEntries}
+        />
+      ) : null}
     </>
   );
 }

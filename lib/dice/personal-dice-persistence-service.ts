@@ -1,5 +1,7 @@
 import {
+  PERSONAL_ROLLER_KINDS,
   validatePersonalRollForPersistence,
+  type PersonalRollerKind,
   type PersonalRollPersistenceIssue,
   type PersonalRollPersistencePayload,
 } from "./personal-dice-persistence";
@@ -187,7 +189,7 @@ type RecordedRollRow =
 type DeleteRollArgs =
   Database["public"]["Functions"]["delete_personal_roll"]["Args"];
 type ClearHistoryArgs =
-  Database["public"]["Functions"]["clear_personal_roll_history"]["Args"];
+  Database["public"]["Functions"]["clear_personal_roll_history_by_kinds"]["Args"];
 
 export type PersonalDiceDataResponse<T> = {
   data: T | null;
@@ -214,7 +216,8 @@ export type PersonalDicePersistenceDataSource = {
   listHistoryRows(options: {
     orderBy: "sequence_number";
     ascending: false;
-    limit: 11;
+    rollerKinds: PersonalRollerKind[];
+    limit: number;
   }): Promise<PersonalDiceDataResponse<PersonalRollHistoryRow[]>>;
   recordRoll(
     args: RecordRollArgs,
@@ -222,7 +225,9 @@ export type PersonalDicePersistenceDataSource = {
   deleteRoll(
     args: DeleteRollArgs,
   ): Promise<PersonalDiceDataResponse<boolean>>;
-  clearHistory(): Promise<PersonalDiceDataResponse<number>>;
+  clearHistory(
+    args: ClearHistoryArgs,
+  ): Promise<PersonalDiceDataResponse<number>>;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -565,6 +570,40 @@ export function validateDeletePersonalRollInput(
     "rollId",
     DELETE_ROLL_FIELDS,
   );
+}
+
+function validatePersonalRollerKinds(
+  input: unknown,
+): PersonalDiceActionResult<PersonalRollerKind[]> {
+  if (!Array.isArray(input) || input.length === 0) {
+    return failure("validation_failed", [
+      { code: "invalid-type", path: "rollerKinds" },
+    ]);
+  }
+
+  const rollerKinds: PersonalRollerKind[] = [];
+  const issues: PersonalRollPersistenceIssue[] = [];
+
+  for (const [index, candidate] of input.entries()) {
+    if (
+      typeof candidate !== "string" ||
+      !PERSONAL_ROLLER_KINDS.includes(candidate as PersonalRollerKind)
+    ) {
+      issues.push({
+        code: "unsupported-roller-kind",
+        path: `rollerKinds[${index}]`,
+      });
+      continue;
+    }
+
+    if (!rollerKinds.includes(candidate as PersonalRollerKind)) {
+      rollerKinds.push(candidate as PersonalRollerKind);
+    }
+  }
+
+  return issues.length > 0
+    ? failure("validation_failed", issues)
+    : { ok: true, data: rollerKinds };
 }
 
 function readOwnString(
@@ -1089,7 +1128,9 @@ export function createPersonalDicePersistenceService(
       }
     },
 
-    async listPersonalRollHistory(): Promise<
+    async listPersonalRollHistory(
+      rollerKindsInput: unknown,
+    ): Promise<
       PersonalDiceActionResult<PersonalRollHistoryEntry[]>
     > {
       const operation = "list_history" as const;
@@ -1100,11 +1141,16 @@ export function createPersonalDicePersistenceService(
       );
       if (!authentication.ok) return authentication;
 
+      const scope = validatePersonalRollerKinds(rollerKindsInput);
+      if (!scope.ok) return scope;
+
       try {
+        const allowedKinds = new Set(scope.data);
         const response = await source.listHistoryRows({
           orderBy: "sequence_number",
           ascending: false,
-          limit: 11,
+          rollerKinds: scope.data,
+          limit: scope.data.length * 6,
         });
         if (response.error) {
           return dataFailure(operation, response.error, logger);
@@ -1128,7 +1174,9 @@ export function createPersonalDicePersistenceService(
             });
             continue;
           }
-          history.push(entry);
+          if (allowedKinds.has(entry.rollerKind)) {
+            history.push(entry);
+          }
         }
 
         return { ok: true, data: history };
@@ -1214,7 +1262,9 @@ export function createPersonalDicePersistenceService(
       }
     },
 
-    async clearPersonalRollHistory(): Promise<
+    async clearPersonalRollHistory(
+      rollerKindsInput: unknown,
+    ): Promise<
       PersonalDiceActionResult<{ deletedCount: number }>
     > {
       const operation = "clear_history" as const;
@@ -1225,8 +1275,13 @@ export function createPersonalDicePersistenceService(
       );
       if (!authentication.ok) return authentication;
 
+      const scope = validatePersonalRollerKinds(rollerKindsInput);
+      if (!scope.ok) return scope;
+
       try {
-        const response = await source.clearHistory();
+        const response = await source.clearHistory({
+          p_roller_kinds: scope.data,
+        });
         if (response.error) {
           return dataFailure(operation, response.error, logger);
         }
@@ -1248,10 +1303,3 @@ export function createPersonalDicePersistenceService(
     },
   };
 }
-
-// Generated types express a no-argument RPC as `Args: never`.
-type ClearHistoryHasNoArguments =
-  [ClearHistoryArgs] extends [never] ? true : false;
-const CLEAR_HISTORY_HAS_NO_ARGUMENTS: ClearHistoryHasNoArguments =
-  true;
-void CLEAR_HISTORY_HAS_NO_ARGUMENTS;

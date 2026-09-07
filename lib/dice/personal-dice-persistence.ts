@@ -9,6 +9,7 @@ import {
 import {
   evaluateVtmV5Dice,
   type NormalizedVtmV5DiceRequest,
+  type VtmV5DiceRequest,
   type VtmV5DiceDetailFlags,
   type VtmV5DiceResult,
   type VtmV5DiceValidationError,
@@ -89,7 +90,7 @@ export type PersonalRollPersistenceIssue = {
 };
 
 export type VtmV5PersonalRollRequestData = {
-  request: NormalizedVtmV5DiceRequest;
+  request: VtmV5DiceRequest;
   normalDice: number[];
   hungerDiceResults: number[];
 };
@@ -538,6 +539,19 @@ function copyVtmResult(
   };
 }
 
+function copyVtmRequestForPersistence(
+  request: NormalizedVtmV5DiceRequest,
+): VtmV5DiceRequest {
+  return {
+    pool: request.pool,
+    hungerDice: request.hungerDice,
+    ...(request.difficulty === null
+      ? {}
+      : { difficulty: request.difficulty }),
+    ...(request.label === null ? {} : { label: request.label }),
+  };
+}
+
 function validateVtmSnapshot(
   envelope: ValidatedEnvelope,
   issues: PersonalRollPersistenceIssue[],
@@ -575,7 +589,7 @@ function validateVtmSnapshot(
     p_roller_kind: "vtm_v5",
     p_schema_version: PERSONAL_ROLL_SCHEMA_VERSION,
     p_request_data: {
-      request: { ...canonicalResult.request },
+      request: copyVtmRequestForPersistence(canonicalResult.request),
       normalDice: [...canonicalResult.normalDice],
       hungerDiceResults: [...canonicalResult.hungerDiceResults],
     },

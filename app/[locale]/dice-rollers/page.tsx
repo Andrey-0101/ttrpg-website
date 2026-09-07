@@ -2,13 +2,10 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import SystemCard from "@/components/game-systems/system-card";
-import PersonalRollHistory from "@/components/dice-rollers/personal-roll-history";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { listPersonalRollHistory } from "@/lib/dice/personal-dice-persistence.server";
-import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
+import { withDiceRollerReturnTo } from "@/lib/dice/dice-roller-navigation";
 import { GAME_SYSTEM_CATALOGUE } from "@/lib/game-systems/catalogue";
-import { createClient } from "@/utils/supabase/server";
 
 type DiceRollersPageProps = {
   params: Promise<{
@@ -34,22 +31,6 @@ export async function generateMetadata({
 export default async function DiceRollersPage() {
   const translations = await getTranslations("DiceRollersPage");
   const catalogueTranslations = await getTranslations("GameSystemCatalogue");
-  let historyEntries: PersonalRollHistoryEntry[] | null = null;
-
-  try {
-    const supabase = await createClient();
-    const { data: claimsData, error: claimsError } =
-      await supabase.auth.getClaims();
-
-    if (!claimsError && claimsData?.claims) {
-      const historyResult = await listPersonalRollHistory();
-      if (historyResult.ok) {
-        historyEntries = historyResult.data;
-      }
-    }
-  } catch {
-    historyEntries = null;
-  }
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -93,7 +74,10 @@ export default async function DiceRollersPage() {
                 action={
                   capability.status === "available"
                     ? {
-                        href: capability.route,
+                        href: withDiceRollerReturnTo(
+                          capability.route,
+                          "/dice-rollers",
+                        ),
                         label: catalogueTranslations(
                           "actions.openDiceRoller",
                         ),
@@ -121,17 +105,16 @@ export default async function DiceRollersPage() {
             {translations("customPoolDescription")}
           </p>
           <Link
-            href="/dice-rollers/custom"
+            href={withDiceRollerReturnTo(
+              "/dice-rollers/custom",
+              "/dice-rollers",
+            )}
             className="mt-5 inline-flex rounded-lg bg-white px-5 py-3 font-bold text-neutral-950 outline-none hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           >
             {translations("openCustomPool")}
           </Link>
         </article>
       </section>
-
-      {historyEntries ? (
-        <PersonalRollHistory initialEntries={historyEntries} />
-      ) : null}
     </main>
   );
 }

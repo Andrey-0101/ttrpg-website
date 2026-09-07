@@ -1,12 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import {
+  useState,
+  useTransition,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import {
   clearPersonalRollHistoryAction,
   deletePersonalRollAction,
 } from "@/app/[locale]/dice-rollers/actions";
+import type { PersonalRollerKind } from "@/lib/dice/personal-dice-persistence";
+import { getVisiblePreviousRolls } from "@/lib/dice/personal-roll-history";
 import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 
 function RollSummary({ entry }: { entry: PersonalRollHistoryEntry }) {
@@ -84,15 +91,31 @@ function RollSummary({ entry }: { entry: PersonalRollHistoryEntry }) {
 }
 
 export default function PersonalRollHistory({
-  initialEntries,
+  entries,
+  rollerKinds,
+  currentClientRollIds,
+  scope,
+  setEntries,
 }: {
-  initialEntries: PersonalRollHistoryEntry[];
+  entries: PersonalRollHistoryEntry[];
+  rollerKinds: readonly PersonalRollerKind[];
+  currentClientRollIds: readonly string[];
+  scope: "vtm" | "custom" | "coc";
+  setEntries: Dispatch<SetStateAction<PersonalRollHistoryEntry[]>>;
 }) {
   const translations = useTranslations("PersonalRollHistory");
   const locale = useLocale();
-  const [entries, setEntries] = useState(initialEntries);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const visibleEntries = getVisiblePreviousRolls(
+    entries,
+    rollerKinds,
+    currentClientRollIds,
+  );
+  const scopedKinds = new Set(rollerKinds);
+  const hasStoredEntries = entries.some((entry) =>
+    scopedKinds.has(entry.rollerKind),
+  );
 
   function deleteRoll(entry: PersonalRollHistoryEntry) {
     setError(null);
@@ -113,12 +136,16 @@ export default function PersonalRollHistory({
 
     setError(null);
     startTransition(async () => {
-      const result = await clearPersonalRollHistoryAction();
+      const result = await clearPersonalRollHistoryAction([
+        ...rollerKinds,
+      ]);
       if (!result.ok) {
         setError(translations("error"));
         return;
       }
-      setEntries([]);
+      setEntries((current) =>
+        current.filter((entry) => !scopedKinds.has(entry.rollerKind)),
+      );
     });
   }
 
@@ -130,10 +157,10 @@ export default function PersonalRollHistory({
             {translations("title")}
           </h2>
           <p className="mt-2 max-w-3xl text-white/75">
-            {translations("description")}
+            {translations(`descriptions.${scope}`)}
           </p>
         </div>
-        {entries.length > 0 ? (
+        {hasStoredEntries ? (
           <button
             type="button"
             disabled={isPending}
@@ -151,13 +178,13 @@ export default function PersonalRollHistory({
         </p>
       ) : null}
 
-      {entries.length === 0 ? (
+      {visibleEntries.length === 0 ? (
         <p className="mt-5 rounded-xl border border-white/20 bg-black/20 p-5 text-white/70">
           {translations("empty")}
         </p>
       ) : (
         <ol className="mt-5 grid gap-3">
-          {entries.map((entry) => (
+          {visibleEntries.map((entry) => (
             <li
               key={entry.id}
               className="rounded-xl border border-white/20 bg-black/20 p-4"

@@ -2,7 +2,7 @@
 
 ## Summary
 
-The current Production application is a bilingual private TTRPG hub with implemented VtM V5 characters and personal dice, a generic CoC campaign shell, secure Campaign Foundation, a Production-accepted campaign LiveKit Game Room, and an image-only Campaign Gallery. The local working tree additionally contains the verified Phase 4D1 CoC 7e personal roller pending publication. The approved target adds narrowly scoped remaining core play tools, technical refinement, Delta Green parity, ordered game-system hubs, and Public Readiness.
+The current Production application is a bilingual private TTRPG hub with implemented VtM V5 characters and personal dice, a generic CoC campaign shell and Phase 4D1 CoC 7e personal roller, secure Campaign Foundation, a Production-accepted campaign LiveKit Game Room, and an image-only Campaign Gallery. The local working tree additionally contains the verified Phase 4D1 contextual-navigation, scoped-history, and live Target-band follow-up pending publication. The approved target adds narrowly scoped remaining core play tools, technical refinement, Delta Green parity, ordered game-system hubs, and Public Readiness.
 
 ## Structural comparison
 
@@ -12,7 +12,7 @@ The current Production application is a bilingual private TTRPG hub with impleme
 | Campaign video | Implemented and accepted | Retain; Phase 4E technical refinement |
 | Campaign Gallery | Four fixed image-only sections and 4C2 Game Room presentation implemented | Retain |
 | VtM dice | Personal roller implemented | 4D2 VtM Game Room integration |
-| CoC dice | Phase 4D1 personal roller implemented locally, pending publication | 4D2 Game Room integration after publication |
+| CoC dice | Phase 4D1 personal roller deployed; UX follow-up pending publication | 4D2 Game Room integration after the follow-up |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |

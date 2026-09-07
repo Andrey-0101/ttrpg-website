@@ -35,6 +35,8 @@ export async function deletePersonalRollAction(input: unknown) {
   return deletePersonalRoll(input);
 }
 
-export async function clearPersonalRollHistoryAction() {
-  return clearPersonalRollHistory();
+export async function clearPersonalRollHistoryAction(
+  rollerKinds: unknown,
+) {
+  return clearPersonalRollHistory(rollerKinds);
 }

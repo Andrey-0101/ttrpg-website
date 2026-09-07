@@ -226,6 +226,11 @@ test("VtM count-only and failure outcomes remain canonical", () => {
       difficulty?: number;
     }
   ).difficulty;
+  delete (
+    countOnly.requestData.request as {
+      label?: string;
+    }
+  ).label;
   countOnly.requestData.normalDice = [6, 2];
   countOnly.requestData.hungerDiceResults = [5, 3];
 
@@ -234,6 +239,10 @@ test("VtM count-only and failure outcomes remain canonical", () => {
   assert.equal(countPayload.p_result_data.isSuccess, null);
   assert.equal(countPayload.p_result_data.difficultyResult, "not-set");
   assert.equal(countPayload.p_result_data.summaryKey, "successes-counted");
+  assert.deepEqual(countPayload.p_request_data.request, {
+    pool: 4,
+    hungerDice: 2,
+  });
 
   const bestial = validVtmInput();
   bestial.requestData.request.pool = 2;

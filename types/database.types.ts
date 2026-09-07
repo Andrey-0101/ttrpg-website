@@ -660,6 +660,10 @@ export type Database = {
         Returns: string
       }
       clear_personal_roll_history: { Args: never; Returns: number }
+      clear_personal_roll_history_by_kinds: {
+        Args: { p_roller_kinds: string[] }
+        Returns: number
+      }
       create_campaign_invitation: {
         Args: { target_campaign_id: string }
         Returns: {

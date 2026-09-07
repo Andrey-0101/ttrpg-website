@@ -1,6 +1,6 @@
 begin;
 
-select plan(154);
+select plan(164);
 
 -- Deterministic Auth owners used throughout the transaction.
 insert into auth.users (
@@ -197,6 +197,10 @@ select ok(
   'history owner-sequence index exists'
 );
 select ok(
+  to_regclass('public.personal_roll_history_owner_kind_sequence_idx') is not null,
+  'history owner-kind-sequence index exists'
+);
+select ok(
   (
     select relation.relrowsecurity
     from pg_catalog.pg_class as relation
@@ -267,6 +271,12 @@ select ok(
 select ok(
   to_regprocedure('public.clear_personal_roll_history()') is not null,
   'clear_personal_roll_history has the expected signature'
+);
+select ok(
+  to_regprocedure(
+    'public.clear_personal_roll_history_by_kinds(text[])'
+  ) is not null,
+  'scoped clear history has the expected signature'
 );
 select is(
   (
@@ -410,6 +420,14 @@ select ok(
   ),
   'authenticated can execute clear_personal_roll_history'
 );
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.clear_personal_roll_history_by_kinds(text[])',
+    'EXECUTE'
+  ),
+  'authenticated can execute scoped clear history'
+);
 select is(
   (
     select count(*)
@@ -423,7 +441,8 @@ select is(
         'delete_custom_dice_preset',
         'record_personal_roll',
         'delete_personal_roll',
-        'clear_personal_roll_history'
+        'clear_personal_roll_history',
+        'clear_personal_roll_history_by_kinds'
       )
       and pg_catalog.has_function_privilege(
         'authenticated',
@@ -431,8 +450,8 @@ select is(
         'EXECUTE'
       )
   ),
-  6::bigint,
-  'authenticated can execute exactly the six intended personal dice RPCs'
+  7::bigint,
+  'authenticated can execute exactly the seven intended personal dice RPCs'
 );
 select ok(
   not has_function_privilege(
@@ -482,6 +501,14 @@ select ok(
   ),
   'anon cannot execute clear_personal_roll_history'
 );
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.clear_personal_roll_history_by_kinds(text[])',
+    'EXECUTE'
+  ),
+  'anon cannot execute scoped clear history'
+);
 select is(
   (
     select count(*)
@@ -501,7 +528,8 @@ select is(
         'delete_custom_dice_preset',
         'record_personal_roll',
         'delete_personal_roll',
-        'clear_personal_roll_history'
+        'clear_personal_roll_history',
+        'clear_personal_roll_history_by_kinds'
       )
       and privilege.grantee = 0
       and privilege.privilege_type = 'EXECUTE'
@@ -1556,7 +1584,7 @@ select throws_ok(
   'changed result causes idempotency conflict'
 );
 
--- Combined eleven-entry retention. This is intentionally single-session;
+-- Six-entry retention per kind. This is intentionally single-session;
 -- concurrent lock behavior belongs to a separate integration test.
 select lives_ok(
   $test$
@@ -1566,7 +1594,7 @@ select lives_ok(
       roll_id uuid;
       roll_kind text;
     begin
-      for roll_index in 10..19 loop
+      for roll_index in 10..41 loop
         roll_id := (
           '10000000-0000-4000-8000-'
           || pg_catalog.lpad(roll_index::text, 12, '0')
@@ -1589,12 +1617,12 @@ select lives_ok(
     end;
     $block$
   $test$,
-  'mixed personal roller kinds can be recorded through the twelfth distinct roll'
+  'mixed personal roller kinds can be recorded beyond every per-kind limit'
 );
 select is(
   (select count(*) from public.personal_roll_history),
-  11::bigint,
-  'owner A retains exactly 11 combined history rows'
+  24::bigint,
+  'owner A retains exactly six rows for each of four kinds'
 );
 select is(
   (
@@ -1604,29 +1632,23 @@ select is(
       '10000000-0000-4000-8000-000000000001'
   ),
   0::bigint,
-  'oldest owner A history row is pruned'
+  'oldest owner A VtM history row is pruned'
 );
 select results_eq(
   $test$
-    select client_roll_id
+    select roller_kind, count(*)
     from public.personal_roll_history
-    order by client_roll_id
+    group by roller_kind
+    order by roller_kind
   $test$,
   $expected$
     values
-      ('10000000-0000-4000-8000-000000000002'::uuid),
-      ('10000000-0000-4000-8000-000000000010'::uuid),
-      ('10000000-0000-4000-8000-000000000011'::uuid),
-      ('10000000-0000-4000-8000-000000000012'::uuid),
-      ('10000000-0000-4000-8000-000000000013'::uuid),
-      ('10000000-0000-4000-8000-000000000014'::uuid),
-      ('10000000-0000-4000-8000-000000000015'::uuid),
-      ('10000000-0000-4000-8000-000000000016'::uuid),
-      ('10000000-0000-4000-8000-000000000017'::uuid),
-      ('10000000-0000-4000-8000-000000000018'::uuid),
-      ('10000000-0000-4000-8000-000000000019'::uuid)
+      ('coc_7e_other_dice'::text, 6::bigint),
+      ('coc_7e_percentile'::text, 6::bigint),
+      ('custom_dice_pool'::text, 6::bigint),
+      ('vtm_v5'::text, 6::bigint)
   $expected$,
-  'the newest 11 owner A client roll IDs remain'
+  'retention is independent for every roller kind'
 );
 select is(
   (
@@ -1661,7 +1683,7 @@ select is(
     select public.delete_personal_roll(id)
     from public.personal_roll_history
     where client_roll_id =
-      '10000000-0000-4000-8000-000000000002'
+      '10000000-0000-4000-8000-000000000021'
   ),
   true,
   'owner A can delete an owned history row'
@@ -1671,7 +1693,7 @@ select is(
     select count(*)
     from public.personal_roll_history
     where client_roll_id =
-      '10000000-0000-4000-8000-000000000002'
+      '10000000-0000-4000-8000-000000000021'
   ),
   0::bigint,
   'deleted owner A history row is absent'
@@ -1713,14 +1735,39 @@ select is(
   'deleting another owner history row returns false'
 );
 select is(
+  public.clear_personal_roll_history_by_kinds(
+    array['coc_7e_percentile', 'coc_7e_other_dice']
+  ),
+  12::bigint,
+  'scoped clear removes both CoC kinds and reports the count'
+);
+select is(
+  (select count(*) from public.personal_roll_history),
+  11::bigint,
+  'scoped CoC clear leaves unrelated owner A history intact'
+);
+select results_eq(
+  $test$
+    select distinct roller_kind
+    from public.personal_roll_history
+    order by roller_kind
+  $test$,
+  $expected$
+    values
+      ('custom_dice_pool'::text),
+      ('vtm_v5'::text)
+  $expected$,
+  'scoped CoC clear leaves only Custom and VtM kinds'
+);
+select is(
   public.clear_personal_roll_history(),
-  10::bigint,
-  'clear history returns the number of owner A rows deleted'
+  11::bigint,
+  'legacy clear-all remains backward compatible'
 );
 select is(
   (select count(*) from public.personal_roll_history),
   0::bigint,
-  'clear history removes all owner A rows'
+  'legacy clear-all removes the remaining owner A rows'
 );
 
 reset role;
@@ -1808,14 +1855,41 @@ select throws_ok(
   'authentication_required',
   'history clearing rejects missing authentication'
 );
+select throws_ok(
+  $test$
+    select public.clear_personal_roll_history_by_kinds(
+      array['vtm_v5']
+    )
+  $test$,
+  '42501',
+  'authentication_required',
+  'scoped history clearing rejects missing authentication'
+);
 
--- Recreate one owner A history row so both tables exercise Auth-user cascade.
 set local role authenticated;
 set local request.jwt.claim.sub =
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 set local request.jwt.claim.role = 'authenticated';
 set local request.jwt.claims =
   '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated"}';
+select throws_ok(
+  $test$
+    select public.clear_personal_roll_history_by_kinds(array[]::text[])
+  $test$,
+  '22023',
+  'personal_roll_history_scope_invalid',
+  'scoped history clearing rejects an empty kind set'
+);
+select throws_ok(
+  $test$
+    select public.clear_personal_roll_history_by_kinds(null)
+  $test$,
+  '22023',
+  'personal_roll_history_scope_invalid',
+  'scoped history clearing rejects a null kind set'
+);
+
+-- Recreate one owner A history row so both tables exercise Auth-user cascade.
 select lives_ok(
   $test$
     select public.record_personal_roll(

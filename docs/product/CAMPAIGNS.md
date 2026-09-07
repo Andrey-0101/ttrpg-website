@@ -440,7 +440,7 @@ Outside the completed Campaign Foundation:
 - Game Master editing of Player characters;
 - public campaign pages.
 
-The Call of Cthulhu 7th Edition campaign shell is implemented. Phase 4D1 CoC personal dice functionality is implemented and verified locally, pending publication, and not yet deployed to Production. CoC character sheets remain planned for Phase 4F1, while Phase 4D2 server-authoritative campaign and Game Room dice remain future work. Keeper-specific tools, NPCs, clues, Handouts, Sessions, and Chronicle records are not active roadmap commitments.
+The Call of Cthulhu 7th Edition campaign shell and Phase 4D1 personal dice functionality are deployed. The focused Phase 4D1 contextual-navigation, scoped-history, and Target-band UX follow-up is implemented locally pending publication. CoC character sheets remain planned for Phase 4F1, while Phase 4D2 server-authoritative campaign and Game Room dice remain future work. Keeper-specific tools, NPCs, clues, Handouts, Sessions, and Chronicle records are not active roadmap commitments.
 
 ## Open questions for later milestones
 

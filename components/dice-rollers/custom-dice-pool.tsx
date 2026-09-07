@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { recordPersonalRollAction } from "@/app/[locale]/dice-rollers/actions";
 import SavedCustomDicePresets from "@/components/dice-rollers/saved-custom-dice-presets";
+import PersonalRollHistory from "@/components/dice-rollers/personal-roll-history";
 import {
   CUSTOM_DICE_POOL_LIMITS,
   CUSTOM_POOL_ITEM_KEYS,
@@ -15,6 +16,8 @@ import {
   type CustomPoolItemKey,
 } from "@/lib/dice/custom-dice-pool";
 import { recordCustomRollBestEffort } from "@/lib/dice/personal-roll-recording";
+import { mergePersonalRollHistoryEntry } from "@/lib/dice/personal-roll-history";
+import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 import {
   parseCustomDiceQuantityFields,
   type CustomDiceQuantityFields,
@@ -216,10 +219,12 @@ function RollResult({ result }: { result: CustomDicePoolResult }) {
 
 type CustomDicePoolProps = {
   presetAccess: SavedPresetAccess;
+  initialHistoryEntries: PersonalRollHistoryEntry[] | null;
 };
 
 export default function CustomDicePool({
   presetAccess,
+  initialHistoryEntries,
 }: CustomDicePoolProps) {
   const translations = useTranslations("CustomDicePool");
   const [quantities, setQuantities] =
@@ -227,6 +232,12 @@ export default function CustomDicePool({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [result, setResult] = useState<CustomDicePoolResult | null>(null);
+  const [historyEntries, setHistoryEntries] = useState(
+    initialHistoryEntries ?? [],
+  );
+  const [currentClientRollId, setCurrentClientRollId] = useState<
+    string | null
+  >(null);
   const configuredTotal = useMemo(
     () =>
       CUSTOM_POOL_ITEM_KEYS.reduce((total, item) => {
@@ -303,6 +314,12 @@ export default function CustomDicePool({
         authenticated: presetAccess.authenticated === true,
         snapshot,
         recordAction: recordPersonalRollAction,
+        onClientRollId: setCurrentClientRollId,
+        onRecorded: (entry) => {
+          setHistoryEntries((current) =>
+            mergePersonalRollHistoryEntry(current, entry),
+          );
+        },
       });
     } catch {
       setFieldErrors({});
@@ -434,6 +451,18 @@ export default function CustomDicePool({
       </form>
 
       {result && <RollResult result={result} />}
+
+      {initialHistoryEntries ? (
+        <PersonalRollHistory
+          entries={historyEntries}
+          rollerKinds={["custom_dice_pool"]}
+          currentClientRollIds={
+            currentClientRollId ? [currentClientRollId] : []
+          }
+          scope="custom"
+          setEntries={setHistoryEntries}
+        />
+      ) : null}
     </>
   );
 }

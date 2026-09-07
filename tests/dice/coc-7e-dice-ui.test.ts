@@ -30,7 +30,7 @@ function collectKeys(value: unknown, prefix = ""): string[] {
 test("CoC UI renders simultaneous 3:2 panels without tabs or a Label field", () => {
   assert.match(
     componentSource,
-    /md:grid-cols-\[minmax\(0,3fr\)_minmax\(16rem,2fr\)\][\s\S]*<PercentilePanel authenticated=\{authenticated\} \/>[\s\S]*<OtherDicePanel authenticated=\{authenticated\} \/>/u,
+    /md:grid-cols-\[minmax\(0,3fr\)_minmax\(16rem,2fr\)\][\s\S]*<PercentilePanel[\s\S]*<OtherDicePanel/u,
   );
   assert.doesNotMatch(componentSource, /role=["']tab/u);
   assert.doesNotMatch(componentSource, /labelOptional|roll-label/u);
@@ -63,12 +63,15 @@ test("Percentile result uses the core snapshot and approved physical dice presen
   assert.match(componentSource, /data-selected=\{isSelected/u);
 });
 
-test("Percentile interpretation is conditional on the rolled Target snapshot", () => {
+test("Percentile result keeps only the rolled outcome while the live guide owns ranges", () => {
   assert.match(
     componentSource,
-    /target !== null[\s\S]*hardThreshold !== null[\s\S]*extremeThreshold !== null[\s\S]*outcome !== null/u,
+    /target !== null && outcome !== null/u,
   );
-  assert.match(componentSource, /percentile\.thresholds/u);
+  assert.match(componentSource, /deriveCoc7eSuccessRanges\(target\)/u);
+  assert.match(componentSource, /data-testid="coc-success-range-guide"/u);
+  assert.match(componentSource, /formatSuccessRange/u);
+  assert.doesNotMatch(componentSource, /percentile\.thresholds/u);
   assert.match(
     componentSource,
     /outcomes\.\$\{interpretation\.outcome\}/u,

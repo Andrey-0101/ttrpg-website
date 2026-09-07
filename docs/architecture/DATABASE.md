@@ -2,11 +2,11 @@
 
 ## Status
 
-Current applied Production database state for the synchronized snapshot:
+Current applied Production database state before this follow-up:
 
 ```text
 main
-609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
+d5473a3ca4be02a73004647864fcfca039917a53
 ```
 
 Applied migrations:
@@ -22,17 +22,18 @@ supabase/migrations/20260822190351_campaign_video_data_foundation.sql
 supabase/migrations/20260823143856_harden_campaign_database_grants.sql
 supabase/migrations/20260902132447_allow_completed_campaign_image_cleanup.sql
 supabase/migrations/20260903000242_campaign_gallery_categories.sql
-```
-
-All ten listed migrations are current in Production. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, and Campaign Gallery category migration are applied.
-
-The Phase 4D1 working tree adds this forward migration:
-
-```text
 supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
 ```
 
-It has passed local reset, 154/154 pgTAP assertions, and concurrency verification. It has **not** been applied to remote or Production Supabase. Locally it replaces the closed two-kind `personal_roll_history.roller_kind` check with `^[a-z][a-z0-9_]{0,63}$` and replaces the fixed `schema_version = 1` check with `schema_version > 0`. The application registry, not these envelope constraints, remains authoritative for supported kinds and versions.
+All eleven listed migrations are current in Production. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, Campaign Gallery category migration, and Phase 4D1 extensible personal-history envelope are applied.
+
+The Phase 4D1 UX follow-up adds one pending forward migration:
+
+```text
+supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql
+```
+
+It has not yet been applied to remote or Production Supabase. It keeps the generic table and deployed RPC signatures, adds an owner-kind-sequence index, changes prospective pruning to the newest six rows for the same owner and `roller_kind`, and adds an authenticated scoped-clear RPC. No existing rows are bulk-rewritten. The application registry remains authoritative for supported kinds and versions.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
@@ -179,14 +180,14 @@ Historical unlinked rows may remain.
 | `client_roll_id` | non-null client-generated UUID; unique per owner |
 | `sequence_number` | unique generated identity used for stable newest-first ordering |
 | `roller_kind` | non-null text envelope discriminator |
-| `schema_version` | non-null positive smallint envelope version after the pending migration |
+| `schema_version` | non-null positive smallint envelope version |
 | `request_data` | non-null JSON object; maximum serialized size 16 KiB |
 | `result_data` | non-null JSON object; maximum serialized size 64 KiB |
 | `created_at` | non-null timestamptz |
 
-The owner-scoped recording function is idempotent for an identical `client_roll_id` payload, serializes writes per owner, and retains the current roll plus ten previous rolls. Delete-one and clear-all functions are generic and owner-scoped. RLS keeps history private to its owner.
+The owner-scoped recording function is idempotent for an identical `client_roll_id` payload and serializes writes per owner. The pending follow-up changes prospective retention from the newest eleven combined owner rows to the newest six rows independently for each `roller_kind`, supporting one current result plus five previous results. Delete-one, deployed clear-all, and pending scoped-clear functions are generic and owner-scoped. RLS keeps history private to its owner.
 
-Production currently constrains `roller_kind` to `vtm_v5` or `custom_dice_pool` and `schema_version` to 1. After the pending local migration is published and applied, the database envelope can accept syntactically valid future kinds and positive versions without another constraint-only migration. The current application registry supports only version 1 of:
+Production accepts syntactically valid future `roller_kind` values and positive schema versions through the deployed Phase 4D1 envelope migration. The current application registry supports only version 1 of:
 
 ```text
 vtm_v5
@@ -451,14 +452,14 @@ Known limitation:
 
 Current database verification recorded:
 
-- ten synchronized repository/Production migration versions;
+- eleven synchronized repository/Production migration versions before this follow-up;
 - RLS on all fifteen public tables, including all seven campaign-video tables;
 - all five required foreign-key indexes valid;
 - hardened table/function grants and restricted `handle_new_user()` execution;
 - private `campaign-images` Storage;
 - the recorded Campaign Foundation GM/Player/Outsider transaction test, with all test data rolled back.
 - a Phase 4C1 test-project transaction covering selected/outsider/completed access and completed-GM Storage cleanup, with all temporary rows rolled back.
-- local-only verification of the pending Phase 4D1 constraint migration through a clean local reset, 154/154 pgTAP assertions, and the personal-history concurrency suite.
+- deployed verification of the Phase 4D1 envelope migration; the pending per-kind retention/scoped-clear migration has passed local reset, pgTAP, and concurrency verification and awaits publication.
 
 Security and lifecycle verification exposed three issues that were corrected through new migrations rather than editing applied migrations:
 
