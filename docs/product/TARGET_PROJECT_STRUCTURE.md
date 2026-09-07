@@ -29,7 +29,7 @@ The implemented campaign-scoped Gallery route, focused `campaign-handouts` workf
 
 The existing Game Room and campaign-video/controller boundaries now provide GM selection, shared current display, replacement, stop-presentation, synchronized Expand / Collapse, and late join/rejoin behavior without map, annotation, drawing, screen-sharing, or persistence modules.
 
-### Phase 4D1 — CoC personal dice (implemented locally, pending publication)
+### Phase 4D1 — CoC personal dice (deployed; UX follow-up pending publication)
 
 CoC deterministic rules and random generation live in the CoC game-system domain, while only proven validation and secure-random primitives are shared under `lib/dice/`. The localized personal UI follows the existing game-system tool route convention. The extensible personal-history registry supports VtM, Custom, CoC percentile, and CoC Other Dice without making the database envelope authoritative for application support.
 

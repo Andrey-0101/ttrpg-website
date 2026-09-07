@@ -3,11 +3,47 @@ import test from "node:test";
 
 import {
   COC_7E_TENS_VALUES,
+  deriveCoc7eSuccessRanges,
   evaluateCoc7ePercentileTest,
   type Coc7eBonusPenalty,
   type Coc7ePercentileOutcome,
   type Coc7eTensValue,
 } from "../../lib/game-systems/call-of-cthulhu-7e/dice-engine";
+
+test("CoC Target success ranges use official floor rounding and fumble bands", () => {
+  assert.deepEqual(deriveCoc7eSuccessRanges(60), {
+    critical: { minimum: 1, maximum: 1 },
+    extreme: { minimum: 1, maximum: 12 },
+    hard: { minimum: 1, maximum: 30 },
+    regular: { minimum: 1, maximum: 60 },
+    failure: { minimum: 61, maximum: 99 },
+    fumble: { minimum: 100, maximum: 100 },
+  });
+  assert.deepEqual(deriveCoc7eSuccessRanges(49), {
+    critical: { minimum: 1, maximum: 1 },
+    extreme: { minimum: 1, maximum: 9 },
+    hard: { minimum: 1, maximum: 24 },
+    regular: { minimum: 1, maximum: 49 },
+    failure: { minimum: 50, maximum: 95 },
+    fumble: { minimum: 96, maximum: 100 },
+  });
+  assert.equal(deriveCoc7eSuccessRanges(51).hard.maximum, 25);
+  assert.equal(deriveCoc7eSuccessRanges(51).extreme.maximum, 10);
+  assert.equal(deriveCoc7eSuccessRanges(61).hard.maximum, 30);
+  assert.equal(deriveCoc7eSuccessRanges(61).extreme.maximum, 12);
+  assert.equal(deriveCoc7eSuccessRanges(99).failure, null);
+  assert.equal(deriveCoc7eSuccessRanges(99).hard.maximum, 49);
+  assert.equal(deriveCoc7eSuccessRanges(99).extreme.maximum, 19);
+  assert.equal(deriveCoc7eSuccessRanges(100).failure, null);
+  assert.equal(deriveCoc7eSuccessRanges(100).hard.maximum, 50);
+  assert.equal(deriveCoc7eSuccessRanges(100).extreme.maximum, 20);
+});
+
+test("CoC Target success ranges reject values outside the normalized domain", () => {
+  for (const target of [0, 1.5, 101, Number.NaN]) {
+    assert.throws(() => deriveCoc7eSuccessRanges(target), RangeError);
+  }
+});
 
 function successfulResult(options: {
   target?: number | null;

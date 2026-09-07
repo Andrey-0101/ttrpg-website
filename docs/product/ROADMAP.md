@@ -16,11 +16,12 @@ Completed foundation:
 - Phase 4A — VtM Personal Dice & Personal Persistence;
 - Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room;
 - Phase 4C1 — image-only Campaign Gallery;
-- Phase 4C2 — Game Room Image Presentation.
+- Phase 4C2 — Game Room Image Presentation;
+- Phase 4D1 — CoC 7e Dice Roller core.
 
-Locally complete and verified, pending publication:
+Locally implemented, pending final verification and publication:
 
-- Phase 4D1 — CoC 7e Dice Roller.
+- Phase 4D1 UX follow-up — contextual Back navigation, roller-scoped history, and live CoC Target bands.
 
 Next approved work after Phase 4D1 publication:
 
@@ -33,10 +34,10 @@ Current Production facts:
 - supported capacity is one GM plus up to six Players;
 - the last human Production group test passed with one GM and four Players;
 - quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred;
-- the generic Call of Cthulhu 7e campaign shell is implemented, but CoC character sheets and dice are not yet in Production;
+- the generic Call of Cthulhu 7e campaign shell and personal Dice Roller are deployed, but CoC character sheets are not yet in Production;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
-- Phase 4C2 is implemented and accepted in Production; the locally verified Phase 4D1 working-tree implementation and its migration remain unpublished and unapplied remotely.
+- Phase 4C2 is implemented and accepted in Production; Phase 4D1 core and its extensible-history migration are deployed, while the focused UX follow-up and per-kind-retention migration remain unpublished.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
@@ -84,7 +85,7 @@ Delivered:
 - public VtM and Custom Dice Pool rollers;
 - EN/RU and responsive interfaces;
 - up to five saved Custom Dice Pool presets for registered users;
-- private personal history containing the current roll plus ten previous rolls;
+- private personal history, with the pending follow-up retaining six rows per owner per roller kind and showing the current result plus up to five previous results;
 - non-persistent guest rolls.
 
 Personal history is owner-scoped, best-effort, and non-authoritative. It is not campaign evidence and must not be reused as the campaign dice execution path.
@@ -154,9 +155,9 @@ No annotations, drawing tools, screen sharing, general Handouts system, presenta
 
 ### Phase 4D1 — CoC 7e Dice Roller
 
-**Status: Implemented and verified locally; pending publication**
+**Status: Core deployed; UX follow-up implemented locally pending publication**
 
-Delivered in the working tree:
+Deployed in Production:
 
 - shared strict dice-validation primitives and unbiased `crypto.getRandomValues` integer generation with rejection sampling;
 - deterministic and generated CoC 7e percentile rolls with an optional target, one base tens die, and up to three bonus or penalty dice;
@@ -165,7 +166,7 @@ Delivered in the working tree:
 - local guest results and best-effort owner-private persistence for authenticated users through the shared personal-history surface;
 - an extensible personal-history envelope whose database constraints accept syntactically valid future kinds and positive schema versions while the application registry remains authoritative for supported contracts.
 
-The `20260905171520_make_personal_roll_history_extensible.sql` migration passed local reset, 154/154 pgTAP assertions, and concurrency verification. It has not been applied to remote or Production Supabase. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
+The `20260905171520_make_personal_roll_history_extensible.sql` migration is applied in Production. The pending focused follow-up adds validated contextual Back destinations, moves history from the generic catalogue to the matching roller pages, shows up to five previous entries per kind without duplicating the current result, scopes Clear History, and adds a live six-band CoC Target guide using official floor rounding. Its forward `20260907114535_scope_personal_roll_history_by_kind.sql` migration retains six rows per owner per kind. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
 
 ### Phase 4D2 — Game Room Dice Integration
 

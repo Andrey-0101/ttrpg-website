@@ -178,7 +178,7 @@
   "VtmDiceRoller": {
     "metadataTitle": "Personal VtM V5 Dice Roller",
     "metadataDescription": "Make a private, local Vampire: The Masquerade Fifth Edition dice roll.",
-    "back": "Back to Vampire: The Masquerade",
+    "back": "Back",
     "eyebrow": "Vampire: The Masquerade Fifth Edition",
     "title": "Personal Dice Roller",
     "descriptionAuthenticated": "Ordinary and Hunger dice are rolled locally. When you are signed in, automatic saving to your private personal history is attempted when available. Rolls are not shared.",

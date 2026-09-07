@@ -208,7 +208,7 @@ test("CoC dice route renders the authenticated persistence-enabled reusable roll
   );
   assert.match(
     routeSource,
-    /<CallOfCthulhu7eDiceRoller authenticated=\{authenticated\} \/>/u,
+    /<CallOfCthulhu7eDiceRoller[\s\S]*authenticated=\{authenticated\}[\s\S]*initialHistoryEntries=\{historyEntries\}/u,
   );
   assert.match(routeSource, /namespace: "Coc7eDiceRoller"/u);
   assert.match(routeSource, /auth\.getClaims\(\)/u);
@@ -230,7 +230,7 @@ test("Dice Rollers catalogue uses the shared localized capability link", () => {
   );
 
   assert.match(pageSource, /system\.capabilities\.diceRoller/u);
-  assert.match(pageSource, /href: capability\.route/u);
+  assert.match(pageSource, /withDiceRollerReturnTo\([\s\S]*capability\.route/u);
   assert.doesNotMatch(pageSource, /call-of-cthulhu/iu);
   assert.match(cardSource, /import \{ Link \} from "@\/i18n\/navigation"/u);
   assert.match(cardSource, /href=\{action\.href\}/u);

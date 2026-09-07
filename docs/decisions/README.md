@@ -44,11 +44,11 @@ Accepted ADRs must not be silently rewritten when the decision changes. Create a
 ADR-008 is accepted and governs the implemented dice boundaries:
 
 - common campaign code stays system-neutral;
-- VtM and locally implemented CoC rules remain in their respective game-system domains;
+- VtM and CoC rules remain in their respective game-system domains;
 - only proven validation and secure-random primitives are shared;
 - no universal dice-expression engine is introduced.
 
-The local Phase 4D1 implementation preserves this decision and remains pending publication. Phase 4D2 campaign dice must remain separate from non-authoritative personal history.
+The deployed Phase 4D1 implementation and pending UX follow-up preserve this decision. Phase 4D2 campaign dice must remain separate from non-authoritative personal history.
 
 ### Video
 

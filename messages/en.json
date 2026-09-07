@@ -253,11 +253,15 @@
   },
   "PersonalRollHistory": {
     "title": "Personal roll history",
-    "description": "Your latest 11 private, non-authoritative rolls across supported personal dice tools.",
+    "descriptions": {
+      "vtm": "Up to five previous private, non-authoritative Vampire rolls.",
+      "custom": "Up to five previous private, non-authoritative Custom Dice Pool rolls.",
+      "coc": "Up to five previous private, non-authoritative rolls for each Call of Cthulhu dice tool."
+    },
     "empty": "No personal rolls saved yet.",
     "delete": "Delete",
     "clear": "Clear history",
-    "confirmClear": "Clear your entire personal roll history?",
+    "confirmClear": "Clear the saved personal history for this roller?",
     "error": "Personal roll history could not be changed. Try again.",
     "kinds": {
       "vtm_v5": "Vampire: The Masquerade 5th Edition",
@@ -286,7 +290,7 @@
   "CustomDicePool": {
     "metadataTitle": "Custom Dice Pool",
     "metadataDescription": "Build and roll a custom pool of common tabletop dice in your browser.",
-    "back": "Back to Dice Rollers",
+    "back": "Back",
     "eyebrow": "Public local tool",
     "title": "Custom Dice Pool",
     "description": "Choose how many coins and numeric dice to roll, then see every result grouped by item type.",
@@ -369,7 +373,7 @@
   "Coc7eDiceRoller": {
     "metadataTitle": "Call of Cthulhu 7th Edition Dice Roller",
     "metadataDescription": "Roll percentile tests and other dice for Call of Cthulhu 7th Edition.",
-    "back": "Back to Dice Rollers",
+    "back": "Back",
     "title": "Call of Cthulhu 7th Edition Dice Roller",
     "percentile": {
       "title": "Percentile Test",
@@ -382,8 +386,7 @@
         "bonus1": "1 Bonus",
         "bonus2": "2 Bonus",
         "bonus3": "3 Bonus"
-      },
-      "thresholds": "Target {target} · Hard {hard} · Extreme {extreme}"
+      }
     },
     "other": {
       "title": "Other Dice",

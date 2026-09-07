@@ -70,12 +70,13 @@ function createDataSource(
       return { data, error };
     },
 
-    async listHistoryRows({ orderBy, ascending, limit }) {
+    async listHistoryRows({ orderBy, ascending, rollerKinds, limit }) {
       const { data, error } = await client
         .from("personal_roll_history")
         .select(
           "id, client_roll_id, roller_kind, schema_version, request_data, result_data, sequence_number, created_at",
         )
+        .in("roller_kind", rollerKinds)
         .order(orderBy, { ascending })
         .limit(limit);
 
@@ -98,9 +99,10 @@ function createDataSource(
       return { data, error };
     },
 
-    async clearHistory() {
+    async clearHistory(args) {
       const { data, error } = await client.rpc(
-        "clear_personal_roll_history",
+        "clear_personal_roll_history_by_kinds",
+        args,
       );
       return { data, error };
     },
@@ -146,11 +148,11 @@ export async function deleteSavedCustomDicePreset(input: unknown) {
   );
 }
 
-export async function listPersonalRollHistory() {
+export async function listPersonalRollHistory(rollerKinds: unknown) {
   return runPersonalDicePersistenceOperation(
     "list_history",
     createService,
-    (service) => service.listPersonalRollHistory(),
+    (service) => service.listPersonalRollHistory(rollerKinds),
   );
 }
 
@@ -170,10 +172,10 @@ export async function deletePersonalRoll(input: unknown) {
   );
 }
 
-export async function clearPersonalRollHistory() {
+export async function clearPersonalRollHistory(rollerKinds: unknown) {
   return runPersonalDicePersistenceOperation(
     "clear_history",
     createService,
-    (service) => service.clearPersonalRollHistory(),
+    (service) => service.clearPersonalRollHistory(rollerKinds),
   );
 }

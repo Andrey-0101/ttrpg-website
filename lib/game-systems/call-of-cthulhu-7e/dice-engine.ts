@@ -70,6 +70,20 @@ export type Coc7ePercentileOutcome =
   | "failure"
   | "fumble";
 
+export type Coc7eSuccessRange = {
+  minimum: number;
+  maximum: number;
+};
+
+export type Coc7eSuccessRanges = {
+  critical: Coc7eSuccessRange;
+  extreme: Coc7eSuccessRange;
+  hard: Coc7eSuccessRange;
+  regular: Coc7eSuccessRange;
+  failure: Coc7eSuccessRange | null;
+  fumble: Coc7eSuccessRange;
+};
+
 export type Coc7ePercentileTestResult = {
   gameSystem: typeof COC_7E_DICE_GAME_SYSTEM;
   request: NormalizedCoc7ePercentileTestRequest;
@@ -326,6 +340,31 @@ function composePercentile(tens: Coc7eTensValue, units: number): number {
   return tens === 0 && units === 0 ? 100 : tens + units;
 }
 
+export function deriveCoc7eSuccessRanges(
+  target: number,
+): Coc7eSuccessRanges {
+  if (!Number.isInteger(target) || target < 1 || target > 100) {
+    throw new RangeError("CoC 7e Target must be an integer from 1 through 100");
+  }
+
+  const failureMaximum = target < 50 ? 95 : 99;
+
+  return {
+    critical: { minimum: 1, maximum: 1 },
+    extreme: { minimum: 1, maximum: Math.floor(target / 5) },
+    hard: { minimum: 1, maximum: Math.floor(target / 2) },
+    regular: { minimum: 1, maximum: target },
+    failure:
+      target < failureMaximum
+        ? { minimum: target + 1, maximum: failureMaximum }
+        : null,
+    fumble:
+      target < 50
+        ? { minimum: 96, maximum: 100 }
+        : { minimum: 100, maximum: 100 },
+  };
+}
+
 function determineOutcome(
   percentileResult: number,
   target: number,
@@ -426,14 +465,12 @@ export function evaluateCoc7ePercentileTest(
         ? Math.max(...candidates)
         : candidates[0];
   const selectedTensIndex = candidates.indexOf(percentileResult);
-  const hardThreshold =
+  const successRanges =
     normalizedRequest.target === null
       ? null
-      : Math.floor(normalizedRequest.target / 2);
-  const extremeThreshold =
-    normalizedRequest.target === null
-      ? null
-      : Math.floor(normalizedRequest.target / 5);
+      : deriveCoc7eSuccessRanges(normalizedRequest.target);
+  const hardThreshold = successRanges?.hard.maximum ?? null;
+  const extremeThreshold = successRanges?.extreme.maximum ?? null;
   const outcome =
     normalizedRequest.target === null
       ? null

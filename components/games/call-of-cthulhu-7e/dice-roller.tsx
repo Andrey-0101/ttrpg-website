@@ -4,6 +4,9 @@ import { useId, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 
 import { recordPersonalRollAction } from "@/app/[locale]/dice-rollers/actions";
+import PersonalRollHistory from "@/components/dice-rollers/personal-roll-history";
+import { mergePersonalRollHistoryEntry } from "@/lib/dice/personal-roll-history";
+import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 import {
   recordCoc7eOtherDiceRollBestEffort,
   recordCoc7ePercentileRollBestEffort,
@@ -11,10 +14,12 @@ import {
 import {
   COC_7E_BONUS_PENALTY_VALUES,
   COC_7E_OTHER_DIE_SIDES,
+  deriveCoc7eSuccessRanges,
   type Coc7eBonusPenalty,
   type Coc7eOtherDiceResult,
   type Coc7eOtherDieSides,
   type Coc7ePercentileTestResult,
+  type Coc7eSuccessRange,
 } from "@/lib/game-systems/call-of-cthulhu-7e/dice-engine";
 import {
   rollCoc7eOtherDice,
@@ -169,15 +174,10 @@ function PercentileResult({
 }) {
   const translations = useTranslations("Coc7eDiceRoller");
   const target = result.request.target;
-  const hardThreshold = result.hardThreshold;
-  const extremeThreshold = result.extremeThreshold;
   const outcome = result.outcome;
   const interpretation =
-    target !== null &&
-    hardThreshold !== null &&
-    extremeThreshold !== null &&
-    outcome !== null
-      ? { target, hardThreshold, extremeThreshold, outcome }
+    target !== null && outcome !== null
+      ? { outcome }
       : null;
 
   return (
@@ -209,17 +209,7 @@ function PercentileResult({
         </div>
       </div>
 
-      {interpretation ? (
-        <p className="mt-5 text-sm font-medium text-white/75">
-          {translations("percentile.thresholds", {
-            target: interpretation.target,
-            hard: interpretation.hardThreshold,
-            extreme: interpretation.extremeThreshold,
-          })}
-        </p>
-      ) : null}
-
-      <div className="mt-3 flex min-w-0 flex-wrap items-baseline gap-x-4 gap-y-1">
+      <div className="mt-5 flex min-w-0 flex-wrap items-baseline gap-x-4 gap-y-1">
         <span className="text-5xl font-black tabular-nums sm:text-6xl">
           {result.percentileResult}
         </span>
@@ -230,6 +220,76 @@ function PercentileResult({
         ) : null}
       </div>
     </section>
+  );
+}
+
+function formatSuccessRange(
+  range: Coc7eSuccessRange | null,
+  format: "exact" | "maximum" | "range",
+): string {
+  if (!range) return "-";
+
+  if (format === "exact") {
+    return `= ${String(range.minimum).padStart(2, "0")}`;
+  }
+
+  if (format === "maximum") {
+    return `≤ ${range.maximum}`;
+  }
+
+  return `${range.minimum}–${range.maximum}`;
+}
+
+function SuccessRangeGuide({ target }: { target: number | null }) {
+  const translations = useTranslations("Coc7eDiceRoller");
+  const ranges = target === null ? null : deriveCoc7eSuccessRanges(target);
+  const bands = [
+    {
+      key: "critical" as const,
+      value: formatSuccessRange(ranges?.critical ?? null, "exact"),
+    },
+    {
+      key: "extreme" as const,
+      value: formatSuccessRange(ranges?.extreme ?? null, "maximum"),
+    },
+    {
+      key: "hard" as const,
+      value: formatSuccessRange(ranges?.hard ?? null, "maximum"),
+    },
+    {
+      key: "regular" as const,
+      value: formatSuccessRange(ranges?.regular ?? null, "maximum"),
+    },
+    {
+      key: "failure" as const,
+      value: formatSuccessRange(ranges?.failure ?? null, "range"),
+    },
+    {
+      key: "fumble" as const,
+      value: formatSuccessRange(
+        ranges?.fumble ?? null,
+        ranges?.fumble.minimum === ranges?.fumble.maximum
+          ? "exact"
+          : "range",
+      ),
+    },
+  ];
+
+  return (
+    <dl
+      className="mt-5 flex min-w-0 flex-wrap gap-x-4 gap-y-2 text-sm"
+      data-testid="coc-success-range-guide"
+      aria-live="polite"
+    >
+      {bands.map((band) => (
+        <div key={band.key} className="flex min-w-0 gap-1">
+          <dt className="font-semibold text-white/85">
+            {translations(`outcomes.${band.key}`)}
+          </dt>
+          <dd className="tabular-nums text-white/70">{band.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -248,7 +308,15 @@ function parseTarget(value: string): number | null | "invalid" {
   return target >= 1 && target <= 100 ? target : "invalid";
 }
 
-function PercentilePanel({ authenticated }: { authenticated: boolean }) {
+function PercentilePanel({
+  authenticated,
+  onClientRollId,
+  onRecorded,
+}: {
+  authenticated: boolean;
+  onClientRollId: (clientRollId: string) => void;
+  onRecorded: (entry: PersonalRollHistoryEntry) => void;
+}) {
   const translations = useTranslations("Coc7eDiceRoller");
   const id = useId();
   const targetId = `${id}-target`;
@@ -260,6 +328,7 @@ function PercentilePanel({ authenticated }: { authenticated: boolean }) {
   const [formError, setFormError] = useState<string | null>(null);
   const [result, setResult] =
     useState<Coc7ePercentileTestResult | null>(null);
+  const parsedLiveTarget = parseTarget(target);
 
   function handleRoll(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -297,6 +366,8 @@ function PercentilePanel({ authenticated }: { authenticated: boolean }) {
         authenticated,
         snapshot: evaluation.result,
         recordAction: recordPersonalRollAction,
+        onClientRollId,
+        onRecorded,
       });
     } catch {
       setFormError(translations("errors.randomUnavailable"));
@@ -376,6 +447,14 @@ function PercentilePanel({ authenticated }: { authenticated: boolean }) {
           </button>
         </div>
 
+        <SuccessRangeGuide
+          target={
+            typeof parsedLiveTarget === "number"
+              ? parsedLiveTarget
+              : null
+          }
+        />
+
         {formError ? (
           <p className="mt-3 text-sm text-red-200" role="alert">
             {formError}
@@ -430,7 +509,15 @@ function OtherDiceResult({ result }: { result: Coc7eOtherDiceResult }) {
   );
 }
 
-function OtherDicePanel({ authenticated }: { authenticated: boolean }) {
+function OtherDicePanel({
+  authenticated,
+  onClientRollId,
+  onRecorded,
+}: {
+  authenticated: boolean;
+  onClientRollId: (clientRollId: string) => void;
+  onRecorded: (entry: PersonalRollHistoryEntry) => void;
+}) {
   const translations = useTranslations("Coc7eDiceRoller");
   const id = useId();
   const [sides, setSides] = useState<Coc7eOtherDieSides>(6);
@@ -460,6 +547,8 @@ function OtherDicePanel({ authenticated }: { authenticated: boolean }) {
         authenticated,
         snapshot: evaluation.result,
         recordAction: recordPersonalRollAction,
+        onClientRollId,
+        onRecorded,
       });
     } catch {
       setFormError(translations("errors.randomUnavailable"));
@@ -540,13 +629,53 @@ function OtherDicePanel({ authenticated }: { authenticated: boolean }) {
 
 export default function CallOfCthulhu7eDiceRoller({
   authenticated,
+  initialHistoryEntries,
 }: {
   authenticated: boolean;
+  initialHistoryEntries: PersonalRollHistoryEntry[] | null;
 }) {
+  const [historyEntries, setHistoryEntries] = useState(
+    initialHistoryEntries ?? [],
+  );
+  const [currentPercentileRollId, setCurrentPercentileRollId] = useState<
+    string | null
+  >(null);
+  const [currentOtherDiceRollId, setCurrentOtherDiceRollId] = useState<
+    string | null
+  >(null);
+  const handleRecorded = (entry: PersonalRollHistoryEntry) => {
+    setHistoryEntries((current) =>
+      mergePersonalRollHistoryEntry(current, entry),
+    );
+  };
+
   return (
-    <div className="grid min-w-0 gap-6 md:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
-      <PercentilePanel authenticated={authenticated} />
-      <OtherDicePanel authenticated={authenticated} />
-    </div>
+    <>
+      <div className="grid min-w-0 gap-6 md:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
+        <PercentilePanel
+          authenticated={authenticated}
+          onClientRollId={setCurrentPercentileRollId}
+          onRecorded={handleRecorded}
+        />
+        <OtherDicePanel
+          authenticated={authenticated}
+          onClientRollId={setCurrentOtherDiceRollId}
+          onRecorded={handleRecorded}
+        />
+      </div>
+
+      {initialHistoryEntries ? (
+        <PersonalRollHistory
+          entries={historyEntries}
+          rollerKinds={["coc_7e_percentile", "coc_7e_other_dice"]}
+          currentClientRollIds={[
+            ...(currentPercentileRollId ? [currentPercentileRollId] : []),
+            ...(currentOtherDiceRollId ? [currentOtherDiceRollId] : []),
+          ]}
+          scope="coc"
+          setEntries={setHistoryEntries}
+        />
+      ) : null}
+    </>
   );
 }

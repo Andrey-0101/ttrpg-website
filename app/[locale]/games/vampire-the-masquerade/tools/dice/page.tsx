@@ -5,12 +5,16 @@ import DarkPackNotice from "@/components/games/vtm-v5/dark-pack-notice";
 import PersonalDiceRoller from "@/components/games/vtm-v5/personal-dice-roller";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { resolveDiceRollerReturnTo } from "@/lib/dice/dice-roller-navigation";
+import { listPersonalRollHistory } from "@/lib/dice/personal-dice-persistence.server";
+import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 import { createClient } from "@/utils/supabase/server";
 
 type DicePageProps = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
 };
 
 export async function generateMetadata({
@@ -28,9 +32,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function DicePage() {
+export default async function DicePage({
+  params,
+  searchParams,
+}: DicePageProps) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
   const translations = await getTranslations("VtmDiceRoller");
+  const backHref = resolveDiceRollerReturnTo(locale, query.returnTo);
   let authenticated = false;
+  let historyEntries: PersonalRollHistoryEntry[] | null = null;
 
   try {
     const supabase = await createClient();
@@ -38,6 +48,12 @@ export default async function DicePage() {
       await supabase.auth.getClaims();
 
     authenticated = !claimsError && Boolean(claimsData?.claims);
+    if (authenticated) {
+      const historyResult = await listPersonalRollHistory(["vtm_v5"]);
+      if (historyResult.ok) {
+        historyEntries = historyResult.data;
+      }
+    }
   } catch {
     authenticated = false;
   }
@@ -45,7 +61,7 @@ export default async function DicePage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-3 py-6 sm:px-6 lg:p-8">
       <Link
-        href="/games/vampire-the-masquerade"
+        href={backHref}
         className="inline-flex rounded outline-none focus-visible:ring-2 focus-visible:ring-red-300"
       >
         <span aria-hidden="true">&larr;</span>
@@ -68,7 +84,10 @@ export default async function DicePage() {
         </p>
       </header>
 
-      <PersonalDiceRoller authenticated={authenticated} />
+      <PersonalDiceRoller
+        authenticated={authenticated}
+        initialHistoryEntries={historyEntries}
+      />
       <DarkPackNotice />
     </main>
   );
