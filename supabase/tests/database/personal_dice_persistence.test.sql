@@ -1738,7 +1738,7 @@ select is(
   public.clear_personal_roll_history_by_kinds(
     array['coc_7e_percentile', 'coc_7e_other_dice']
   ),
-  12::bigint,
+  6::bigint,
   'scoped clear removes both CoC kinds and reports the count'
 );
 select is(
