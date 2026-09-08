@@ -7,13 +7,13 @@
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
 | Document status | Current synchronized project context |
-| Last reviewed | 2026-09-07 |
+| Last reviewed | 2026-09-08 |
 | H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
 | Verified release | PRs #28–#35 merged; Phase 4C2 shipped in PR #43 with its accepted PR #44 fix; Phase 4D1 core shipped in PR #46 and its UX follow-up shipped in PR #47 at `abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6` |
 | Canonical production domain | `https://ttrpg.fans` |
 | Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
 | Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Phase 4D1 and its contextual-navigation, scoped-history, and CoC Target-band UX follow-up are deployed; Phase 4D2 remains next |
+| Current delivery stage | Phase 4D1 and its final roll-label/history refinement are deployed; Phase 4D2 remains next |
 | Current audience | Small invited group of friends |
 
 ## Release-state boundaries
@@ -28,7 +28,13 @@ The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans
 
 PR #47 deployed validated, reload-safe contextual Back destinations for personal roller routes; moved personal history from the generic catalogue to its VtM, Custom, or combined CoC roller page; exposed up to five previous results per roller kind without duplicating the current result; scoped Clear History to the current roller; and added a live deterministic CoC Target success-range guide. Production guest and runtime verification passed at `abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6`; authenticated Production history acceptance remains pending because no authorized signed-in Production browser session was available.
 
-Both Phase 4D1 migrations are applied in Production. The forward migration `supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql` changes prospective retention to six rows per owner per roller kind, adds an owner-and-kind query index, and adds authenticated owner-scoped clearing by a validated set of roller kinds. It passed local reset, pgTAP, and concurrency verification before controlled application; post-apply migration history is synchronized at 12/12. The generic table, RLS, idempotency, and existing RPC signatures remain intact.
+The first two Phase 4D1 migrations established the extensible envelope, per-kind prospective retention, owner-and-kind query index, and authenticated owner-scoped clearing by a validated set of roller kinds. Both passed local reset, pgTAP, and concurrency verification before controlled application. The generic table, RLS, idempotency, and existing RPC signatures remain intact.
+
+### Phase 4D1 final roll-label/history refinement
+
+VtM, Custom, CoC Percentile, and CoC Other Dice each support an optional Roll Label as the first settings control. The two CoC panels keep independent label state. Labels use the shared 120-Unicode-code-point normalizer, and every personal-history entry renders the normalized label or `No label` / `Без метки`. Custom and CoC store labels as additive `request_data` JSON metadata, so older unlabeled rows remain valid.
+
+History remains scoped to the roller page. VtM and Custom retain six rows each. CoC retains six rows total across `coc_7e_percentile` and `coc_7e_other_dice`, and its UI shows one combined chronological list of at most five previous rolls while keeping each panel's current result separate. The forward migration `supabase/migrations/20260908094324_scope_coc_personal_roll_history.sql` changes only this prospective CoC pruning rule and preserves the existing generic table, RPC signature, RLS, owner isolation, idempotency, scoped Clear, and individual Delete behavior. Phase 4D2 campaign/Game Room dice remains future and server-authoritative.
 
 Phase 4D1 follow-up evidence records 260/260 dice tests, 13/13 site-URL tests, 40/40 Campaign/Gallery/catalogue tests, 53/53 Campaign Video/Game Room tests, 273 local database assertions, the required concurrency checks, ESLint, TypeScript, EN/RU key parity, and a 38/38-page production build as passing. Preview and Production guest EN/RU browser acceptance passed, including contextual navigation, target bands, and mobile containment. Production runtime logs showed no current 500-level or error-level entries attributable to the release. Authenticated Production history acceptance remains pending; no application defect was demonstrated. Both production-only and full npm audits reported zero vulnerabilities.
 
@@ -233,6 +239,7 @@ supabase/migrations/20260902132447_allow_completed_campaign_image_cleanup.sql
 supabase/migrations/20260903000242_campaign_gallery_categories.sql
 supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
 supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql
+supabase/migrations/20260908094324_scope_coc_personal_roll_history.sql
 ```
 
 Current public tables:
@@ -255,7 +262,7 @@ public.campaign_image_recipients
 public.campaign_video_audit_log
 ```
 
-All twelve repository migrations are current in Production. The eleventh migration, `20260905171520_make_personal_roll_history_extensible.sql`, replaced the two-value `personal_roll_history.roller_kind` constraint with the syntax check `^[a-z][a-z0-9_]{0,63}$` and changed the schema-version constraint to require a positive value; it does not make arbitrary payloads application-supported. The twelfth migration scopes prospective retention to six rows per owner and roller kind and adds scoped clearing. The application registry supports schema version 1 for `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`, and safely skips malformed or unsupported history rows.
+All thirteen repository migrations are current in Production. The eleventh migration, `20260905171520_make_personal_roll_history_extensible.sql`, replaced the two-value `personal_roll_history.roller_kind` constraint with the syntax check `^[a-z][a-z0-9_]{0,63}$` and changed the schema-version constraint to require a positive value; it does not make arbitrary payloads application-supported. The twelfth migration adds owner-and-kind indexing and scoped clearing. The thirteenth changes prospective CoC retention to six rows total across its two kinds while VtM and Custom remain six rows each. The application registry supports schema version 1 for `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`, and safely skips malformed or unsupported history rows.
 
 The seven campaign-video tables use RLS; the five required foreign-key indexes, database grants, and `handle_new_user()` hardening are current. The private `campaign-images` Storage bucket is current. Phase 4C1 uses the existing `campaign_images` and `campaign_image_recipients` tables rather than adding broad Handout, NPC, or Maps tables. `campaign_images.category` is fixed to `handout`, `npc`, `maps_plans`, or `other`; it is immutable organizational metadata and grants no access. No campaign-authoritative dice-roll, provider-room-mapping, document-handout, structured NPC, session, or campaign-notes table is implemented. Personal dice history is private per owner, non-authoritative, and not campaign evidence.
 

@@ -5,14 +5,38 @@ import type {
   PersonalRollHistoryEntry,
 } from "./personal-dice-persistence-service";
 
-export const PERSONAL_ROLL_HISTORY_RETAINED_PER_KIND = 6;
-export const PERSONAL_ROLL_HISTORY_VISIBLE_PREVIOUS_PER_KIND = 5;
+export const PERSONAL_ROLL_HISTORY_RETAINED_PER_SCOPE = 6;
+export const PERSONAL_ROLL_HISTORY_VISIBLE_PREVIOUS_PER_SCOPE = 5;
+
+type PersonalRollHistoryScope = "vtm" | "custom" | "coc";
+
+function getHistoryScope(
+  rollerKind: PersonalRollerKind,
+): PersonalRollHistoryScope {
+  switch (rollerKind) {
+    case "vtm_v5":
+      return "vtm";
+    case "custom_dice_pool":
+      return "custom";
+    case "coc_7e_percentile":
+    case "coc_7e_other_dice":
+      return "coc";
+  }
+}
+
+export function getPersonalRollHistoryLabel(
+  entry: PersonalRollHistoryEntry,
+): string | null {
+  return entry.rollerKind === "vtm_v5"
+    ? entry.resultData.request.label
+    : entry.requestData.label ?? null;
+}
 
 export function mergePersonalRollHistoryEntry(
   entries: readonly PersonalRollHistoryEntry[],
   recordedEntry: PersonalRollHistoryEntry,
 ): PersonalRollHistoryEntry[] {
-  const counts = new Map<PersonalRollerKind, number>();
+  const counts = new Map<PersonalRollHistoryScope, number>();
 
   return [
     recordedEntry,
@@ -20,9 +44,10 @@ export function mergePersonalRollHistoryEntry(
   ]
     .sort((left, right) => right.sequenceNumber - left.sequenceNumber)
     .filter((entry) => {
-      const count = counts.get(entry.rollerKind) ?? 0;
-      counts.set(entry.rollerKind, count + 1);
-      return count < PERSONAL_ROLL_HISTORY_RETAINED_PER_KIND;
+      const scope = getHistoryScope(entry.rollerKind);
+      const count = counts.get(scope) ?? 0;
+      counts.set(scope, count + 1);
+      return count < PERSONAL_ROLL_HISTORY_RETAINED_PER_SCOPE;
     });
 }
 
@@ -33,18 +58,19 @@ export function getVisiblePreviousRolls(
 ): PersonalRollHistoryEntry[] {
   const allowedKinds = new Set(rollerKinds);
   const currentIds = new Set(currentClientRollIds);
-  const visibleCounts = new Map<PersonalRollerKind, number>();
+  let visibleCount = 0;
 
-  return entries.filter((entry) => {
-    if (
-      !allowedKinds.has(entry.rollerKind) ||
-      currentIds.has(entry.clientRollId)
-    ) {
-      return false;
-    }
+  return [...entries]
+    .sort((left, right) => right.sequenceNumber - left.sequenceNumber)
+    .filter((entry) => {
+      if (
+        !allowedKinds.has(entry.rollerKind) ||
+        currentIds.has(entry.clientRollId)
+      ) {
+        return false;
+      }
 
-    const count = visibleCounts.get(entry.rollerKind) ?? 0;
-    visibleCounts.set(entry.rollerKind, count + 1);
-    return count < PERSONAL_ROLL_HISTORY_VISIBLE_PREVIOUS_PER_KIND;
-  });
+      visibleCount += 1;
+      return visibleCount <= PERSONAL_ROLL_HISTORY_VISIBLE_PREVIOUS_PER_SCOPE;
+    });
 }

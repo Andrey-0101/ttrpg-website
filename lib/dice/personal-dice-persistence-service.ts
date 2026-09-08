@@ -6,6 +6,9 @@ import {
   type PersonalRollPersistencePayload,
 } from "./personal-dice-persistence";
 import type { Database } from "../../types/database.types";
+import {
+  PERSONAL_ROLL_HISTORY_RETAINED_PER_SCOPE,
+} from "./personal-roll-history";
 
 export const SAVED_CUSTOM_DICE_PRESET_LIMITS = {
   nameCodePoints: 80,
@@ -1150,7 +1153,7 @@ export function createPersonalDicePersistenceService(
           orderBy: "sequence_number",
           ascending: false,
           rollerKinds: scope.data,
-          limit: scope.data.length * 6,
+          limit: PERSONAL_ROLL_HISTORY_RETAINED_PER_SCOPE,
         });
         if (response.error) {
           return dataFailure(operation, response.error, logger);

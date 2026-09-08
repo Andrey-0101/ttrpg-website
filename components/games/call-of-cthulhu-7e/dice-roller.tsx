@@ -8,6 +8,10 @@ import PersonalRollHistory from "@/components/dice-rollers/personal-roll-history
 import { mergePersonalRollHistoryEntry } from "@/lib/dice/personal-roll-history";
 import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 import {
+  DICE_ROLL_LABEL_MAX_CODE_POINTS,
+  validateOptionalDiceRollLabel,
+} from "@/lib/dice/validation";
+import {
   recordCoc7eOtherDiceRollBestEffort,
   recordCoc7ePercentileRollBestEffort,
 } from "@/lib/dice/personal-roll-recording";
@@ -35,6 +39,44 @@ const MODIFIER_MAXIMUM = 10;
 const panelClassName =
   "min-w-0 rounded-xl border border-white/25 bg-black/20 p-4 shadow-lg sm:p-6";
 const labelClassName = "block text-sm font-semibold text-white/85";
+
+function RollLabelField({
+  id,
+  value,
+  error,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  error: string | null;
+  onChange: (value: string) => void;
+}) {
+  const translations = useTranslations("Coc7eDiceRoller");
+  const errorId = `${id}-error`;
+
+  return (
+    <div className="mt-5 min-w-0">
+      <label htmlFor={id} className={labelClassName}>
+        {translations("labelOptional")}
+      </label>
+      <input
+        id={id}
+        type="text"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
+        className="mt-2 block min-h-11 w-full rounded-lg border border-white/30 bg-neutral-950 px-3 text-white outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+        placeholder={translations("labelPlaceholder")}
+      />
+      {error ? (
+        <p id={errorId} className="mt-2 text-sm text-red-200" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 const selectClassName =
   "mt-2 min-h-11 rounded-lg border border-white/30 bg-neutral-950 px-3 text-white outline-none focus-visible:ring-2 focus-visible:ring-red-300";
 const rollButtonClassName =
@@ -322,6 +364,8 @@ function PercentilePanel({
   const targetId = `${id}-target`;
   const targetErrorId = `${id}-target-error`;
   const [target, setTarget] = useState("");
+  const [label, setLabel] = useState("");
+  const [labelError, setLabelError] = useState<string | null>(null);
   const [bonusPenalty, setBonusPenalty] =
     useState<Coc7eBonusPenalty>(0);
   const [targetError, setTargetError] = useState<string | null>(null);
@@ -333,9 +377,19 @@ function PercentilePanel({
   function handleRoll(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsedTarget = parseTarget(target);
+    const labelValidation = validateOptionalDiceRollLabel(label, true);
 
-    if (parsedTarget === "invalid") {
-      setTargetError(translations("errors.target"));
+    if (parsedTarget === "invalid" || !labelValidation.ok) {
+      setTargetError(
+        parsedTarget === "invalid" ? translations("errors.target") : null,
+      );
+      setLabelError(
+        labelValidation.ok
+          ? null
+          : translations("errors.labelTooLong", {
+              maximum: DICE_ROLL_LABEL_MAX_CODE_POINTS,
+            }),
+      );
       setFormError(null);
       return;
     }
@@ -360,11 +414,13 @@ function PercentilePanel({
       }
 
       setTargetError(null);
+      setLabelError(null);
       setFormError(null);
       setResult(evaluation.result);
       void recordCoc7ePercentileRollBestEffort({
         authenticated,
         snapshot: evaluation.result,
+        label: labelValidation.value,
         recordAction: recordPersonalRollAction,
         onClientRollId,
         onRecorded,
@@ -380,6 +436,16 @@ function PercentilePanel({
         <legend className="text-2xl font-bold">
           {translations("percentile.title")}
         </legend>
+
+        <RollLabelField
+          id={`${id}-percentile-roll-label`}
+          value={label}
+          error={labelError}
+          onChange={(value) => {
+            setLabel(value);
+            setLabelError(null);
+          }}
+        />
 
         <div className="mt-5 flex min-w-0 flex-wrap items-end gap-4">
           <div className="min-w-0">
@@ -521,6 +587,8 @@ function OtherDicePanel({
   const translations = useTranslations("Coc7eDiceRoller");
   const id = useId();
   const [sides, setSides] = useState<Coc7eOtherDieSides>(6);
+  const [label, setLabel] = useState("");
+  const [labelError, setLabelError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [modifier, setModifier] = useState(0);
   const [formError, setFormError] = useState<string | null>(null);
@@ -528,6 +596,16 @@ function OtherDicePanel({
 
   function handleRoll(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const labelValidation = validateOptionalDiceRollLabel(label, true);
+    if (!labelValidation.ok) {
+      setLabelError(
+        translations("errors.labelTooLong", {
+          maximum: DICE_ROLL_LABEL_MAX_CODE_POINTS,
+        }),
+      );
+      setFormError(null);
+      return;
+    }
 
     try {
       const evaluation = rollCoc7eOtherDice({
@@ -542,10 +620,12 @@ function OtherDicePanel({
       }
 
       setFormError(null);
+      setLabelError(null);
       setResult(evaluation.result);
       void recordCoc7eOtherDiceRollBestEffort({
         authenticated,
         snapshot: evaluation.result,
+        label: labelValidation.value,
         recordAction: recordPersonalRollAction,
         onClientRollId,
         onRecorded,
@@ -561,6 +641,16 @@ function OtherDicePanel({
         <legend className="text-2xl font-bold">
           {translations("other.title")}
         </legend>
+
+        <RollLabelField
+          id={`${id}-other-roll-label`}
+          value={label}
+          error={labelError}
+          onChange={(value) => {
+            setLabel(value);
+            setLabelError(null);
+          }}
+        />
 
         <div className="mt-5 flex min-w-0 flex-wrap items-end gap-4">
           <div className="min-w-0">

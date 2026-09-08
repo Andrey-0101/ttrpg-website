@@ -9,6 +9,7 @@ import {
 } from "../../lib/dice/dice-roller-navigation";
 import type { PersonalRollerKind } from "../../lib/dice/personal-dice-persistence";
 import {
+  getPersonalRollHistoryLabel,
   getVisiblePreviousRolls,
   mergePersonalRollHistoryEntry,
 } from "../../lib/dice/personal-roll-history";
@@ -100,7 +101,7 @@ test("returnTo resolution is stable across direct server renders", () => {
   );
 });
 
-test("history shows five previous per kind without duplicating current rolls", () => {
+test("history shows five previous per page scope without duplicating current rolls", () => {
   const vtm = Array.from({ length: 7 }, (_, index) =>
     historyEntry("vtm_v5", 7 - index),
   );
@@ -122,7 +123,7 @@ test("history shows five previous per kind without duplicating current rolls", (
   );
 });
 
-test("CoC history mixes only its two kinds and limits each independently", () => {
+test("CoC history mixes its two kinds and limits the combined scope to five", () => {
   const percentile = Array.from({ length: 7 }, (_, index) =>
     historyEntry("coc_7e_percentile", 30 - index * 2),
   );
@@ -137,21 +138,14 @@ test("CoC history mixes only its two kinds and limits each independently", () =>
     [percentile[0].clientRollId, other[0].clientRollId],
   );
 
-  assert.equal(visible.length, 10);
-  assert.equal(
-    visible.filter((entry) => entry.rollerKind === "coc_7e_percentile")
-      .length,
-    5,
-  );
-  assert.equal(
-    visible.filter((entry) => entry.rollerKind === "coc_7e_other_dice")
-      .length,
-    5,
+  assert.deepEqual(
+    visible.map((entry) => entry.sequenceNumber),
+    [28, 27, 26, 25, 24],
   );
   assert.equal(visible.some((entry) => entry.rollerKind === "vtm_v5"), false);
 });
 
-test("recorded history merges newest-first and keeps six rows per kind", () => {
+test("recorded history merges newest-first and keeps six rows per scope", () => {
   const existing = Array.from({ length: 6 }, (_, index) =>
     historyEntry("vtm_v5", 6 - index),
   );
@@ -162,6 +156,38 @@ test("recorded history merges newest-first and keeps six rows per kind", () => {
     merged.map((entry) => entry.sequenceNumber),
     [7, 6, 5, 4, 3, 2],
   );
+});
+
+test("recorded CoC history keeps six rows total across alternating kinds", () => {
+  const existing = Array.from({ length: 12 }, (_, index) =>
+    historyEntry(
+      index % 2 === 0 ? "coc_7e_percentile" : "coc_7e_other_dice",
+      12 - index,
+    ),
+  );
+  const recorded = historyEntry("coc_7e_other_dice", 13);
+  const merged = mergePersonalRollHistoryEntry(existing, recorded);
+
+  assert.deepEqual(
+    merged.map((entry) => entry.sequenceNumber),
+    [13, 12, 11, 10, 9, 8],
+  );
+});
+
+test("history labels read VtM and additive Custom/CoC metadata safely", () => {
+  const vtm = {
+    ...historyEntry("vtm_v5", 1),
+    resultData: { request: { label: "Stealth check" } },
+  } as PersonalRollHistoryEntry;
+  const custom = {
+    ...historyEntry("custom_dice_pool", 2),
+    requestData: { label: "Damage" },
+  } as PersonalRollHistoryEntry;
+  const coc = historyEntry("coc_7e_percentile", 3);
+
+  assert.equal(getPersonalRollHistoryLabel(vtm), "Stealth check");
+  assert.equal(getPersonalRollHistoryLabel(custom), "Damage");
+  assert.equal(getPersonalRollHistoryLabel(coc), null);
 });
 
 test("current routes use server-resolved Back links and the catalogue has no history", () => {
@@ -187,4 +213,23 @@ test("current routes use server-resolved Back links and the catalogue has no his
     assert.match(route, /resolveDiceRollerReturnTo/u);
     assert.match(route, /href=\{backHref\}/u);
   }
+});
+
+test("VtM and Custom place Roll Label before dice-specific controls", () => {
+  const vtm = readFileSync(
+    resolve("components/games/vtm-v5/personal-dice-roller.tsx"),
+    "utf8",
+  );
+  const custom = readFileSync(
+    resolve("components/dice-rollers/custom-dice-pool.tsx"),
+    "utf8",
+  );
+
+  assert.ok(vtm.indexOf('htmlFor="roll-label"') < vtm.indexOf('htmlFor="dice-pool"'));
+  assert.ok(
+    custom.indexOf('htmlFor="custom-roll-label"') <
+      custom.indexOf("CUSTOM_POOL_ITEM_KEYS.map"),
+  );
+  assert.match(vtm, /validateOptionalDiceRollLabel/u);
+  assert.match(custom, /validateOptionalDiceRollLabel/u);
 });

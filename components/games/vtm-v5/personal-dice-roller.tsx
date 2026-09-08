@@ -9,6 +9,7 @@ import PersonalRollHistory from "@/components/dice-rollers/personal-roll-history
 import { mergePersonalRollHistoryEntry } from "@/lib/dice/personal-roll-history";
 import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 import { recordVtmV5RollBestEffort } from "@/lib/dice/personal-roll-recording";
+import { validateOptionalDiceRollLabel } from "@/lib/dice/validation";
 import {
   VTM_V5_DICE_LIMITS,
   type VtmV5DiceResult,
@@ -377,6 +378,7 @@ export default function PersonalDiceRoller({
           VTM_V5_DICE_LIMITS.difficulty.maximum,
         )
       : null;
+    const labelValidation = validateOptionalDiceRollLabel(label, true);
 
     if (!poolValidation.ok) {
       nextErrors.pool = getIntegerError(
@@ -413,7 +415,7 @@ export default function PersonalDiceRoller({
       nextErrors.hungerDice = translations("validation.hungerExceedsPool");
     }
 
-    if ([...label.trim()].length > VTM_V5_DICE_LIMITS.labelCodePoints) {
+    if (!labelValidation.ok) {
       nextErrors.label = translations("validation.labelTooLong", {
         maximum: VTM_V5_DICE_LIMITS.labelCodePoints,
       });
@@ -423,6 +425,7 @@ export default function PersonalDiceRoller({
       !poolValidation.ok ||
       !hungerValidation.ok ||
       (difficultyValidation !== null && !difficultyValidation.ok) ||
+      !labelValidation.ok ||
       Object.keys(nextErrors).length > 0
     ) {
       setErrors(nextErrors);
@@ -436,7 +439,9 @@ export default function PersonalDiceRoller({
         ...(difficultyValidation
           ? { difficulty: difficultyValidation.value }
           : {}),
-        ...(label.trim() ? { label } : {}),
+        ...(labelValidation.value === null
+          ? {}
+          : { label: labelValidation.value }),
       });
 
       if (!evaluation.ok) {
@@ -476,6 +481,30 @@ export default function PersonalDiceRoller({
         noValidate
       >
         <div className="grid min-w-0 gap-5 sm:grid-cols-2">
+          <div className="min-w-0 sm:col-span-2">
+            <label htmlFor="roll-label" className="font-semibold">
+              {translations("labelOptional")}
+            </label>
+            <input
+              id="roll-label"
+              type="text"
+              value={label}
+              onChange={(event) => {
+                setLabel(event.target.value);
+                clearFieldError("label");
+              }}
+              aria-invalid={Boolean(errors.label)}
+              aria-describedby={errors.label ? "roll-label-error" : undefined}
+              className={inputClassName}
+              placeholder={translations("labelPlaceholder")}
+            />
+            {errors.label && (
+              <p id="roll-label-error" className="mt-2 text-sm text-red-200">
+                {errors.label}
+              </p>
+            )}
+          </div>
+
           <div className="min-w-0">
             <label htmlFor="dice-pool" className="font-semibold">
               {translations("pool")}
@@ -566,29 +595,6 @@ export default function PersonalDiceRoller({
             )}
           </div>
 
-          <div className="min-w-0">
-            <label htmlFor="roll-label" className="font-semibold">
-              {translations("labelOptional")}
-            </label>
-            <input
-              id="roll-label"
-              type="text"
-              value={label}
-              onChange={(event) => {
-                setLabel(event.target.value);
-                clearFieldError("label");
-              }}
-              aria-invalid={Boolean(errors.label)}
-              aria-describedby={errors.label ? "roll-label-error" : undefined}
-              className={inputClassName}
-              placeholder={translations("labelPlaceholder")}
-            />
-            {errors.label && (
-              <p id="roll-label-error" className="mt-2 text-sm text-red-200">
-                {errors.label}
-              </p>
-            )}
-          </div>
         </div>
 
         {errors.general && (

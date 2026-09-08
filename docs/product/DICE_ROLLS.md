@@ -260,7 +260,8 @@ The UI:
 - guest rolls remain non-persistent;
 - registered users may save up to 5 custom dice presets;
 - saved custom presets preserve the selected Coin quantity as well as every numeric dice quantity;
-- registered-user personal history retains up to six rows per owner per roller kind;
+- registered-user personal history retains up to six rows per owner per roller-page scope: VtM, Custom, or both CoC kinds combined;
+- all four personal rollers support an optional normalized Roll Label as the first settings control; history always displays the label or the localized `No label` fallback;
 - personal persistence is owner-scoped and best-effort rather than guaranteed for every roll;
 - personal roll history remains private, non-authoritative, and separate from future campaign roll history;
 - personal records are not campaign evidence and must not be reused as the Phase 4D2 campaign execution path;
@@ -275,9 +276,11 @@ coc_7e_percentile
 coc_7e_other_dice
 ```
 
-The deployed UX follow-up removes history from the generic catalogue and renders it only on the matching roller page: VtM shows `vtm_v5`, Custom shows `custom_dice_pool`, and CoC chronologically mixes only `coc_7e_percentile` and `coc_7e_other_dice`. Each kind shows its current in-memory result plus up to five previous persisted entries without duplication. Individual Delete remains row-specific. Clear History is owner-scoped to the current page's one or two kinds and cannot clear unrelated roller history.
+The deployed UX follow-up removes history from the generic catalogue and renders it only on the matching roller page: VtM shows `vtm_v5`, Custom shows `custom_dice_pool`, and CoC chronologically mixes only `coc_7e_percentile` and `coc_7e_other_dice`. VtM and Custom each show their current in-memory result plus up to five previous entries. CoC keeps independent current Percentile and Other Dice results plus one combined chronological history of at most five previous entries total. Current results are not duplicated in history. Individual Delete remains row-specific. Clear History is owner-scoped to the current page's one or two kinds and cannot clear unrelated roller history.
 
-The deployed database envelope requires `roller_kind` to match `^[a-z][a-z0-9_]{0,63}$` and `schema_version` to be positive. Those constraints do not declare application support. The application registry remains authoritative for supported kind/version pairs, revalidates each payload, and safely skips malformed or unknown rows. The applied `20260907114535_scope_personal_roll_history_by_kind.sql` migration changes prospective pruning from a combined owner timeline to six rows per owner per kind, adds the matching query index, and adds scoped clearing without removing the existing clear-all RPC.
+The deployed database envelope requires `roller_kind` to match `^[a-z][a-z0-9_]{0,63}$` and `schema_version` to be positive. Those constraints do not declare application support. The application registry remains authoritative for supported kind/version pairs, revalidates each payload, and safely skips malformed or unknown rows. The `20260907114535_scope_personal_roll_history_by_kind.sql` migration added the owner-kind query index and scoped clearing. The forward `20260908094324_scope_coc_personal_roll_history.sql` migration preserves the generic RPC signature while changing prospective CoC pruning to six rows total across both CoC kinds; VtM and Custom remain six rows each.
+
+Roll Label is optional for VtM, Custom, CoC Percentile, and CoC Other Dice. Each settings card places its label first, and the two CoC panels keep independent label state. The shared validator trims and collapses whitespace, maps an empty label to `null`, and enforces the 120-Unicode-code-point limit. Custom and CoC store normalized labels as additive `request_data` metadata; older rows without that key remain readable. Every history entry renders its normalized label or `No label` / `Без метки`.
 
 ## Phase 4D1 — CoC 7e Dice Roller
 
@@ -288,7 +291,7 @@ The standalone EN/RU route presents two responsive panels: Percentile and Other 
 ### Percentile contract
 
 - target is optional; without it the roller reports the raw percentile result and no success interpretation;
-- a supplied target is an integer from 1 through 100; there is no separate Difficulty or Label input;
+- a supplied target is an integer from 1 through 100; there is no separate Difficulty input, while the panel has its own optional Roll Label metadata field;
 - bonus/penalty is an integer from -3 through +3; support for three dice in either direction is an intentional product extension;
 - the physical model uses one units die, one base tens die, and one additional tens die per absolute bonus/penalty value;
 - tens faces are `00`, `10`, ..., `90`, and `00` with units `0` means 100;

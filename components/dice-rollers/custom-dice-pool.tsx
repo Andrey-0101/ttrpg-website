@@ -19,6 +19,10 @@ import { recordCustomRollBestEffort } from "@/lib/dice/personal-roll-recording";
 import { mergePersonalRollHistoryEntry } from "@/lib/dice/personal-roll-history";
 import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 import {
+  DICE_ROLL_LABEL_MAX_CODE_POINTS,
+  validateOptionalDiceRollLabel,
+} from "@/lib/dice/validation";
+import {
   parseCustomDiceQuantityFields,
   type CustomDiceQuantityFields,
   type SavedPresetAccess,
@@ -229,6 +233,8 @@ export default function CustomDicePool({
   const translations = useTranslations("CustomDicePool");
   const [quantities, setQuantities] =
     useState<QuantityFields>(INITIAL_QUANTITIES);
+  const [label, setLabel] = useState("");
+  const [labelError, setLabelError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [result, setResult] = useState<CustomDicePoolResult | null>(null);
@@ -265,6 +271,17 @@ export default function CustomDicePool({
 
   function handleRoll(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const labelValidation = validateOptionalDiceRollLabel(label, true);
+    if (!labelValidation.ok) {
+      setLabelError(
+        translations("errors.labelTooLong", {
+          maximum: DICE_ROLL_LABEL_MAX_CODE_POINTS,
+        }),
+      );
+      return;
+    }
+
+    setLabelError(null);
     const evaluationRequest = {
       quantities: parseCustomDiceQuantityFields(quantities),
     };
@@ -313,6 +330,7 @@ export default function CustomDicePool({
       void recordCustomRollBestEffort({
         authenticated: presetAccess.authenticated === true,
         snapshot,
+        label: labelValidation.value,
         recordAction: recordPersonalRollAction,
         onClientRollId: setCurrentClientRollId,
         onRecorded: (entry) => {
@@ -328,6 +346,8 @@ export default function CustomDicePool({
   }
 
   function handleClear() {
+    setLabel("");
+    setLabelError(null);
     setQuantities({ ...INITIAL_QUANTITIES });
     setFieldErrors({});
     setFormError(null);
@@ -359,7 +379,36 @@ export default function CustomDicePool({
             })}
           </p>
 
-          <div className="mt-6 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 min-w-0">
+            <label htmlFor="custom-roll-label" className="font-semibold">
+              {translations("labelOptional")}
+            </label>
+            <input
+              id="custom-roll-label"
+              type="text"
+              value={label}
+              onChange={(event) => {
+                setLabel(event.target.value);
+                setLabelError(null);
+              }}
+              aria-invalid={Boolean(labelError)}
+              aria-describedby={
+                labelError ? "custom-roll-label-error" : undefined
+              }
+              className="mt-2 w-full rounded-lg border border-white/30 bg-neutral-950 px-3 py-2.5 text-white outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+              placeholder={translations("labelPlaceholder")}
+            />
+            {labelError ? (
+              <p
+                id="custom-roll-label-error"
+                className="mt-2 text-sm text-red-200"
+              >
+                {labelError}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {CUSTOM_POOL_ITEM_KEYS.map((item) => {
               const itemLabel =
                 item === "coin" ? translations("coinLabel") : `d${item}`;

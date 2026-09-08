@@ -25,6 +25,10 @@ import {
   type Coc7eOtherDiceValidationError,
 } from "../game-systems/call-of-cthulhu-7e/dice-engine";
 import type { Database } from "../../types/database.types";
+import {
+  DICE_ROLL_LABEL_MAX_CODE_POINTS,
+  validateOptionalDiceRollLabel,
+} from "./validation";
 
 export const PERSONAL_ROLL_SCHEMA_VERSION = 1 as const;
 
@@ -117,6 +121,7 @@ export type VtmV5PersonalRollResultData = {
 };
 
 export type CustomPersonalRollRequestData = {
+  label?: string;
   quantities: CustomDiceQuantities;
 };
 
@@ -133,6 +138,7 @@ export type CustomPersonalRollResultData = {
 };
 
 export type Coc7ePercentilePersonalRollRequestData = {
+  label?: string;
   request: Coc7ePercentileTestInput["request"];
   units: number;
   tensDice: number[];
@@ -147,6 +153,7 @@ export type Coc7ePercentilePersonalRollResultData = Omit<
 };
 
 export type Coc7eOtherDicePersonalRollRequestData = {
+  label?: string;
   request: Coc7eOtherDiceInput["request"];
   results: number[];
 };
@@ -266,7 +273,7 @@ const VTM_RESULT_FIELDS = new Set([
   "detailFlags",
 ]);
 
-const CUSTOM_REQUEST_FIELDS = new Set(["quantities"]);
+const CUSTOM_REQUEST_FIELDS = new Set(["label", "quantities"]);
 const CUSTOM_RESULT_FIELDS = new Set([
   "quantities",
   "coinResults",
@@ -386,6 +393,36 @@ function validateInteger(
   }
 
   return { valid: true, value };
+}
+
+function validatePersistenceLabel(
+  requestData: UnknownRecord,
+  issues: PersonalRollPersistenceIssue[],
+): string | null {
+  const validation = validateOptionalDiceRollLabel(
+    requestData.label,
+    hasOwn(requestData, "label"),
+  );
+
+  if (validation.ok) {
+    return validation.value;
+  }
+
+  issues.push(
+    validation.reason === "too-long"
+      ? {
+          code: "label-too-long",
+          path: "requestData.label",
+          details: {
+            maximum: DICE_ROLL_LABEL_MAX_CODE_POINTS,
+          },
+        }
+      : {
+          code: "invalid-type",
+          path: "requestData.label",
+        },
+  );
+  return null;
 }
 
 function validateEnvelope(
@@ -939,6 +976,9 @@ function validateCustomSnapshot(
   envelope: ValidatedEnvelope,
   issues: PersonalRollPersistenceIssue[],
 ): CustomPersonalRollPersistencePayload | null {
+  const label = envelope.requestData
+    ? validatePersistenceLabel(envelope.requestData, issues)
+    : null;
   const quantityValidation = envelope.requestData
     ? validateCustomQuantities(envelope.requestData, issues)
     : { quantities: null, totalItems: null };
@@ -996,6 +1036,7 @@ function validateCustomSnapshot(
     p_roller_kind: "custom_dice_pool",
     p_schema_version: PERSONAL_ROLL_SCHEMA_VERSION,
     p_request_data: {
+      ...(label === null ? {} : { label }),
       quantities: { ...quantityValidation.quantities },
     },
     p_result_data: {
@@ -1065,8 +1106,11 @@ function validateCoc7ePercentileSnapshot(
     return null;
   }
 
+  const label = validatePersistenceLabel(envelope.requestData, issues);
+  const evaluationInput = { ...envelope.requestData };
+  delete evaluationInput.label;
   const evaluation = evaluateCoc7ePercentileTest(
-    envelope.requestData,
+    evaluationInput,
   );
   if (!evaluation.ok) {
     issues.push(...evaluation.errors.map(mapCocIssue));
@@ -1089,6 +1133,7 @@ function validateCoc7ePercentileSnapshot(
     p_roller_kind: "coc_7e_percentile",
     p_schema_version: PERSONAL_ROLL_SCHEMA_VERSION,
     p_request_data: {
+      ...(label === null ? {} : { label }),
       request: { ...canonicalResult.request },
       units: canonicalResult.units,
       tensDice: [...canonicalResult.tensDice],
@@ -1127,7 +1172,10 @@ function validateCoc7eOtherDiceSnapshot(
     return null;
   }
 
-  const evaluation = evaluateCoc7eOtherDice(envelope.requestData);
+  const label = validatePersistenceLabel(envelope.requestData, issues);
+  const evaluationInput = { ...envelope.requestData };
+  delete evaluationInput.label;
+  const evaluation = evaluateCoc7eOtherDice(evaluationInput);
   if (!evaluation.ok) {
     issues.push(...evaluation.errors.map(mapCocIssue));
     return null;
@@ -1149,6 +1197,7 @@ function validateCoc7eOtherDiceSnapshot(
     p_roller_kind: "coc_7e_other_dice",
     p_schema_version: PERSONAL_ROLL_SCHEMA_VERSION,
     p_request_data: {
+      ...(label === null ? {} : { label }),
       request: { ...canonicalResult.request },
       results: [...canonicalResult.results],
     },
