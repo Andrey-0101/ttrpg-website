@@ -27,13 +27,36 @@ function collectKeys(value: unknown, prefix = ""): string[] {
   );
 }
 
-test("CoC UI renders simultaneous 3:2 panels without tabs or a Label field", () => {
+test("CoC UI renders simultaneous 3:2 panels with independent labels first", () => {
   assert.match(
     componentSource,
     /md:grid-cols-\[minmax\(0,3fr\)_minmax\(16rem,2fr\)\][\s\S]*<PercentilePanel[\s\S]*<OtherDicePanel/u,
   );
   assert.doesNotMatch(componentSource, /role=["']tab/u);
-  assert.doesNotMatch(componentSource, /labelOptional|roll-label/u);
+  const percentile = componentSource.slice(
+    componentSource.indexOf("function PercentilePanel"),
+    componentSource.indexOf("function OtherDiceResult"),
+  );
+  const other = componentSource.slice(
+    componentSource.indexOf("function OtherDicePanel"),
+    componentSource.indexOf("export default function"),
+  );
+  assert.ok(
+    percentile.indexOf("<RollLabelField") <
+      percentile.indexOf("<label htmlFor={targetId}"),
+  );
+  assert.ok(
+    other.indexOf("<RollLabelField") <
+      other.indexOf('htmlFor={`${id}-die-type`}'),
+  );
+  assert.match(percentile, /-percentile-roll-label/u);
+  assert.match(other, /-other-roll-label/u);
+  assert.equal(
+    componentSource.match(
+      /const \[label, setLabel\] = useState\(""\)/gu,
+    )?.length,
+    2,
+  );
 });
 
 test("CoC UI uses the accepted generators and exact control defaults", () => {
@@ -81,7 +104,7 @@ test("Percentile result keeps only the rolled outcome while the live guide owns 
 
 test("invalid Target and defensive errors preserve prior successful results", () => {
   const invalidTargetBranch = componentSource.match(
-    /if \(parsedTarget === "invalid"\) \{([\s\S]*?)\n    \}/u,
+    /if \(parsedTarget === "invalid" \|\| !labelValidation\.ok\) \{([\s\S]*?)\n    \}/u,
   );
   assert.ok(invalidTargetBranch);
   assert.doesNotMatch(invalidTargetBranch[1], /setResult/u);
@@ -98,7 +121,7 @@ test("Other Dice uses bounded non-editable steppers and core result fields", () 
     componentSource.indexOf("function OtherDicePanel"),
   );
 
-  assert.doesNotMatch(otherPanelSource, /<input/u);
+  assert.doesNotMatch(otherPanelSource, /type="number"/u);
   assert.match(componentSource, /disabled=\{value <= minimum\}/u);
   assert.match(componentSource, /disabled=\{value >= maximum\}/u);
   assert.match(componentSource, /const QUANTITY_MINIMUM = 1/u);
@@ -168,6 +191,8 @@ test("personal history renders typed summaries without raw JSON or campaign coup
   assert.match(historySource, /case "coc_7e_other_dice"/u);
   assert.match(historySource, /deletePersonalRollAction/u);
   assert.match(historySource, /clearPersonalRollHistoryAction/u);
+  assert.match(historySource, /getPersonalRollHistoryLabel/u);
+  assert.match(historySource, /translations\("noLabel"\)/u);
   assert.doesNotMatch(historySource, /JSON\.stringify|requestData/u);
   assert.doesNotMatch(historySource, /GameRoom|campaign_id|Realtime/u);
 });

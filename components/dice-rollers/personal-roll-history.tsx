@@ -13,7 +13,10 @@ import {
   deletePersonalRollAction,
 } from "@/app/[locale]/dice-rollers/actions";
 import type { PersonalRollerKind } from "@/lib/dice/personal-dice-persistence";
-import { getVisiblePreviousRolls } from "@/lib/dice/personal-roll-history";
+import {
+  getPersonalRollHistoryLabel,
+  getVisiblePreviousRolls,
+} from "@/lib/dice/personal-roll-history";
 import type { PersonalRollHistoryEntry } from "@/lib/dice/personal-dice-persistence-service";
 
 function RollSummary({ entry }: { entry: PersonalRollHistoryEntry }) {
@@ -191,7 +194,11 @@ export default function PersonalRollHistory({
             >
               <div className="flex min-w-0 items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-bold">
+                  <p className="break-words font-bold">
+                    {getPersonalRollHistoryLabel(entry) ??
+                      translations("noLabel")}
+                  </p>
+                  <p className="mt-1 text-sm text-white/80">
                     {translations(`kinds.${entry.rollerKind}`)}
                   </p>
                   <time

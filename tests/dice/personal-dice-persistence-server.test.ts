@@ -540,6 +540,29 @@ test("history row mapping returns typed canonical CoC entries", () => {
   }
 });
 
+test("history row mapping preserves additive labels and accepts old rows without them", () => {
+  const customCandidate = validCustomCandidate();
+  customCandidate.requestData = {
+    ...customCandidate.requestData,
+    label: "Damage roll",
+  } as typeof customCandidate.requestData;
+  const labelled = mapPersonalRollHistoryRow(historyRow(customCandidate));
+  assert.ok(labelled);
+  assert.equal(labelled.rollerKind, "custom_dice_pool");
+  if (labelled.rollerKind === "custom_dice_pool") {
+    assert.equal(labelled.requestData.label, "Damage roll");
+  }
+
+  const oldRow = mapPersonalRollHistoryRow(
+    historyRow(validCocOtherDiceCandidate()),
+  );
+  assert.ok(oldRow);
+  assert.equal(oldRow.rollerKind, "coc_7e_other_dice");
+  if (oldRow.rollerKind === "coc_7e_other_dice") {
+    assert.equal("label" in oldRow.requestData, false);
+  }
+});
+
 test("history row mapping rejects stored data that needs repair", () => {
   const row = historyRow();
   row.result_data = {

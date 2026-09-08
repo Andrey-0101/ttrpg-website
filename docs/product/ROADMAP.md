@@ -81,7 +81,7 @@ Delivered:
 - public VtM and Custom Dice Pool rollers;
 - EN/RU and responsive interfaces;
 - up to five saved Custom Dice Pool presets for registered users;
-- private personal history, retaining six rows per owner per roller kind and showing the current result plus up to five previous results;
+- private personal history with optional Roll Labels, retaining six rows per roller-page scope and showing the current result plus up to five previous results;
 - non-persistent guest rolls.
 
 Personal history is owner-scoped, best-effort, and non-authoritative. It is not campaign evidence and must not be reused as the campaign dice execution path.
@@ -162,7 +162,7 @@ Deployed in Production:
 - local guest results and best-effort owner-private persistence for authenticated users through the shared personal-history surface;
 - an extensible personal-history envelope whose database constraints accept syntactically valid future kinds and positive schema versions while the application registry remains authoritative for supported contracts.
 
-Both Phase 4D1 migrations are applied in Production. The focused follow-up adds validated contextual Back destinations, moves history from the generic catalogue to the matching roller pages, shows up to five previous entries per kind without duplicating the current result, scopes Clear History, and adds a live six-band CoC Target guide using official floor rounding. Its forward `20260907114535_scope_personal_roll_history_by_kind.sql` migration retains six rows per owner per kind. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
+Phase 4D1 personal rollers support an optional Roll Label as the first settings control, with labels or a localized no-label fallback displayed in history. The CoC panels keep separate labels and one combined chronological history of at most five previous rolls total; persistence retains six CoC rows total across both kinds. Validated contextual Back destinations, scoped Clear History, and the live six-band CoC Target guide remain unchanged. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
 
 ### Phase 4D2 — Game Room Dice Integration
 

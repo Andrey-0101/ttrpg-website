@@ -740,10 +740,10 @@ where owner_id = ${quoteLiteral(USER_A)}::uuid;
     ),
   );
   const summary = await getHistorySummary(USER_A);
-  assert.equal(summary.total, 24);
+  assert.equal(summary.total, 18);
   assert.deepEqual(summary.kindCounts, {
-    coc_7e_other_dice: 6,
-    coc_7e_percentile: 6,
+    coc_7e_other_dice: 3,
+    coc_7e_percentile: 3,
     custom_dice_pool: 6,
     vtm_v5: 6,
   });

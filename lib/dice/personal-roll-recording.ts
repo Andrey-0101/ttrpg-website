@@ -30,6 +30,7 @@ export type CustomPersonalRollRecordingInput = {
   rollerKind: "custom_dice_pool";
   schemaVersion: typeof PERSONAL_ROLL_SCHEMA_VERSION;
   requestData: {
+    label?: string;
     quantities: CustomDicePoolResult["quantities"];
   };
   resultData: {
@@ -43,6 +44,7 @@ export type Coc7ePercentilePersonalRollRecordingInput = {
   rollerKind: "coc_7e_percentile";
   schemaVersion: typeof PERSONAL_ROLL_SCHEMA_VERSION;
   requestData: {
+    label?: string;
     request: Coc7ePercentileTestResult["request"];
     units: number;
     tensDice: number[];
@@ -55,6 +57,7 @@ export type Coc7eOtherDicePersonalRollRecordingInput = {
   rollerKind: "coc_7e_other_dice";
   schemaVersion: typeof PERSONAL_ROLL_SCHEMA_VERSION;
   requestData: {
+    label?: string;
     request: Coc7eOtherDiceResult["request"];
     results: number[];
   };
@@ -64,6 +67,7 @@ export type Coc7eOtherDicePersonalRollRecordingInput = {
 type BestEffortRecordingOptions<Result> = {
   authenticated: boolean;
   snapshot: Result;
+  label?: string | null;
   recordAction: RecordPersonalRollAction;
   uuidFactory?: PersonalRollUuidFactory;
   onClientRollId?: (clientRollId: string) => void;
@@ -114,12 +118,14 @@ export function buildVtmV5PersonalRollRecordingInput(
 export function buildCustomPersonalRollRecordingInput(
   clientRollId: string,
   snapshot: CustomDicePoolResult,
+  label: string | null = null,
 ): CustomPersonalRollRecordingInput {
   return {
     clientRollId,
     rollerKind: "custom_dice_pool",
     schemaVersion: PERSONAL_ROLL_SCHEMA_VERSION,
     requestData: {
+      ...(label === null ? {} : { label }),
       quantities: { ...snapshot.quantities },
     },
     resultData: {
@@ -135,6 +141,7 @@ export function buildCustomPersonalRollRecordingInput(
 export function buildCoc7ePercentilePersonalRollRecordingInput(
   clientRollId: string,
   snapshot: Coc7ePercentileTestResult,
+  label: string | null = null,
 ): Coc7ePercentilePersonalRollRecordingInput {
   const request = { ...snapshot.request };
   const tensDice = [...snapshot.tensDice];
@@ -144,6 +151,7 @@ export function buildCoc7ePercentilePersonalRollRecordingInput(
     rollerKind: "coc_7e_percentile",
     schemaVersion: PERSONAL_ROLL_SCHEMA_VERSION,
     requestData: {
+      ...(label === null ? {} : { label }),
       request: { ...request },
       units: snapshot.units,
       tensDice: [...tensDice],
@@ -160,6 +168,7 @@ export function buildCoc7ePercentilePersonalRollRecordingInput(
 export function buildCoc7eOtherDicePersonalRollRecordingInput(
   clientRollId: string,
   snapshot: Coc7eOtherDiceResult,
+  label: string | null = null,
 ): Coc7eOtherDicePersonalRollRecordingInput {
   const request = { ...snapshot.request };
   const results = [...snapshot.results];
@@ -169,6 +178,7 @@ export function buildCoc7eOtherDicePersonalRollRecordingInput(
     rollerKind: "coc_7e_other_dice",
     schemaVersion: PERSONAL_ROLL_SCHEMA_VERSION,
     requestData: {
+      ...(label === null ? {} : { label }),
       request: { ...request },
       results: [...results],
     },
@@ -183,6 +193,7 @@ export function buildCoc7eOtherDicePersonalRollRecordingInput(
 async function recordRollBestEffort<Result, Input>({
   authenticated,
   snapshot,
+  label = null,
   recordAction,
   uuidFactory,
   onClientRollId,
@@ -190,7 +201,11 @@ async function recordRollBestEffort<Result, Input>({
   buildInput,
 }: BestEffortRecordingOptions<Result> & {
   uuidFactory: PersonalRollUuidFactory;
-  buildInput: (clientRollId: string, snapshot: Result) => Input;
+  buildInput: (
+    clientRollId: string,
+    snapshot: Result,
+    label: string | null,
+  ) => Input;
 }): Promise<PersonalRollHistoryEntry | null> {
   if (!authenticated) return null;
 
@@ -198,7 +213,7 @@ async function recordRollBestEffort<Result, Input>({
     const clientRollId = uuidFactory();
     onClientRollId?.(clientRollId);
     const response = await recordAction(
-      buildInput(clientRollId, snapshot),
+      buildInput(clientRollId, snapshot, label),
     );
 
     if (
@@ -238,13 +253,15 @@ export async function recordVtmV5RollBestEffort({
     uuidFactory,
     onClientRollId,
     onRecorded,
-    buildInput: buildVtmV5PersonalRollRecordingInput,
+    buildInput: (clientRollId, value) =>
+      buildVtmV5PersonalRollRecordingInput(clientRollId, value),
   });
 }
 
 export async function recordCustomRollBestEffort({
   authenticated,
   snapshot,
+  label,
   recordAction,
   uuidFactory = createClientRollId,
   onClientRollId,
@@ -255,6 +272,7 @@ export async function recordCustomRollBestEffort({
   return recordRollBestEffort({
     authenticated,
     snapshot,
+    label,
     recordAction,
     uuidFactory,
     onClientRollId,
@@ -266,6 +284,7 @@ export async function recordCustomRollBestEffort({
 export async function recordCoc7ePercentileRollBestEffort({
   authenticated,
   snapshot,
+  label,
   recordAction,
   uuidFactory = createClientRollId,
   onClientRollId,
@@ -276,6 +295,7 @@ export async function recordCoc7ePercentileRollBestEffort({
   return recordRollBestEffort({
     authenticated,
     snapshot,
+    label,
     recordAction,
     uuidFactory,
     onClientRollId,
@@ -287,6 +307,7 @@ export async function recordCoc7ePercentileRollBestEffort({
 export async function recordCoc7eOtherDiceRollBestEffort({
   authenticated,
   snapshot,
+  label,
   recordAction,
   uuidFactory = createClientRollId,
   onClientRollId,
@@ -297,6 +318,7 @@ export async function recordCoc7eOtherDiceRollBestEffort({
   return recordRollBestEffort({
     authenticated,
     snapshot,
+    label,
     recordAction,
     uuidFactory,
     onClientRollId,

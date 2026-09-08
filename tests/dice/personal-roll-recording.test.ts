@@ -389,6 +389,42 @@ test("authenticated CoC rolls copy canonical deterministic snapshots", async () 
   assert.notStrictEqual(otherInput.resultData.results, other.results);
 });
 
+test("Custom and independent CoC labels cross the recording boundary as metadata", async () => {
+  const inputs: unknown[] = [];
+  const recordAction = async (input: unknown) => {
+    inputs.push(input);
+  };
+
+  await recordCustomRollBestEffort({
+    authenticated: true,
+    snapshot: createCustomSnapshot(),
+    label: "Custom label",
+    uuidFactory: () => CUSTOM_UUID,
+    recordAction,
+  });
+  await recordCoc7ePercentileRollBestEffort({
+    authenticated: true,
+    snapshot: createCocPercentileSnapshot(),
+    label: "Percentile label",
+    uuidFactory: () => COC_PERCENTILE_UUID,
+    recordAction,
+  });
+  await recordCoc7eOtherDiceRollBestEffort({
+    authenticated: true,
+    snapshot: createCocOtherSnapshot(),
+    label: "Other Dice label",
+    uuidFactory: () => COC_OTHER_UUID,
+    recordAction,
+  });
+
+  assert.deepEqual(
+    inputs.map((input) =>
+      (input as { requestData: { label?: string } }).requestData.label
+    ),
+    ["Custom label", "Percentile label", "Other Dice label"],
+  );
+});
+
 test("VtM action payload is isolated from later snapshot mutations", async () => {
   const snapshot = createVtmSnapshot();
   let actionInput: VtmV5PersonalRollRecordingInput | undefined;

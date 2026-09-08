@@ -329,6 +329,44 @@ test("a custom snapshot is reordered and recomputed canonically", () => {
   });
 });
 
+test("Custom and CoC labels use the shared optional normalization contract", () => {
+  const custom = validCustomInput();
+  custom.requestData = {
+    ...custom.requestData,
+    label: "  Climbing\n  check  ",
+  } as typeof custom.requestData;
+  const customPayload = requirePayload(custom);
+  assert.equal(customPayload.p_roller_kind, "custom_dice_pool");
+  assert.equal(customPayload.p_request_data.label, "Climbing check");
+
+  const percentile = validCocPercentileInput();
+  percentile.requestData = {
+    ...percentile.requestData,
+    label: "  Library\tUse ",
+  } as typeof percentile.requestData;
+  const percentilePayload = requirePayload(percentile);
+  assert.equal(percentilePayload.p_roller_kind, "coc_7e_percentile");
+  assert.equal(percentilePayload.p_request_data.label, "Library Use");
+
+  const other = validCocOtherDiceInput();
+  other.requestData = {
+    ...other.requestData,
+    label: "   ",
+  } as typeof other.requestData;
+  const otherPayload = requirePayload(other);
+  assert.equal(otherPayload.p_roller_kind, "coc_7e_other_dice");
+  assert.equal("label" in otherPayload.p_request_data, false);
+
+  const tooLong = validCustomInput();
+  tooLong.requestData = {
+    ...tooLong.requestData,
+    label: "🎲".repeat(121),
+  } as typeof tooLong.requestData;
+  assert.deepEqual(requireIssuePairs(tooLong), [
+    { code: "label-too-long", path: "requestData.label" },
+  ]);
+});
+
 test("custom forged totals and result quantities are never trusted", () => {
   const input = validCustomInput();
   input.resultData.totalItems = -20;

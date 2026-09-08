@@ -256,8 +256,9 @@
     "descriptions": {
       "vtm": "Up to five previous private, non-authoritative Vampire rolls.",
       "custom": "Up to five previous private, non-authoritative Custom Dice Pool rolls.",
-      "coc": "Up to five previous private, non-authoritative rolls for each Call of Cthulhu dice tool."
+      "coc": "Up to five previous private, non-authoritative Call of Cthulhu rolls total across both dice tools."
     },
+    "noLabel": "No label",
     "empty": "No personal rolls saved yet.",
     "delete": "Delete",
     "clear": "Clear history",
@@ -298,6 +299,8 @@
     "privacyNoteGuest": "This roll is generated locally. It is not saved while you are signed out.",
     "privacyNoteUnavailable": "The roller still works locally. Automatic history saving is currently unavailable.",
     "poolTitle": "Build your pool",
+    "labelOptional": "Roll Label (optional)",
+    "labelPlaceholder": "For example: Climbing check",
     "poolHelp": "Choose at least one coin or die. A pool can contain up to {maximum} rolled items in total.",
     "coinLabel": "Coin (d2)",
     "decrease": "Remove one {item}",
@@ -321,6 +324,7 @@
       "emptyPool": "Add at least one die before rolling.",
       "poolTooLarge": "Reduce the pool to {maximum} dice or fewer.",
       "invalidRequest": "Check the dice quantities and try again.",
+      "labelTooLong": "Keep the roll label to {maximum} characters or fewer.",
       "randomUnavailable": "Secure random generation is unavailable. No dice were rolled."
     },
     "presets": {
@@ -375,6 +379,8 @@
     "metadataDescription": "Roll percentile tests and other dice for Call of Cthulhu 7th Edition.",
     "back": "Back",
     "title": "Call of Cthulhu 7th Edition Dice Roller",
+    "labelOptional": "Roll Label (optional)",
+    "labelPlaceholder": "For example: Library Use",
     "percentile": {
       "title": "Percentile Test",
       "target": "Target",
@@ -423,6 +429,7 @@
       "target": "Enter a whole number from 1 through 100, or leave Target empty.",
       "percentileRequest": "Check the Percentile Test controls and try again.",
       "otherRequest": "Check the Other Dice controls and try again.",
+      "labelTooLong": "Keep the roll label to {maximum} characters or fewer.",
       "randomUnavailable": "Secure local randomness is unavailable in this browser."
     }
   },

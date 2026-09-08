@@ -1584,7 +1584,7 @@ select throws_ok(
   'changed result causes idempotency conflict'
 );
 
--- Six-entry retention per kind. This is intentionally single-session;
+-- Six-entry retention per page scope. This is intentionally single-session;
 -- concurrent lock behavior belongs to a separate integration test.
 select lives_ok(
   $test$
@@ -1617,12 +1617,12 @@ select lives_ok(
     end;
     $block$
   $test$,
-  'mixed personal roller kinds can be recorded beyond every per-kind limit'
+  'mixed personal roller kinds can be recorded beyond every scope limit'
 );
 select is(
   (select count(*) from public.personal_roll_history),
-  24::bigint,
-  'owner A retains exactly six rows for each of four kinds'
+  18::bigint,
+  'owner A retains six VtM, six Custom, and six combined CoC rows'
 );
 select is(
   (
@@ -1643,12 +1643,12 @@ select results_eq(
   $test$,
   $expected$
     values
-      ('coc_7e_other_dice'::text, 6::bigint),
-      ('coc_7e_percentile'::text, 6::bigint),
+      ('coc_7e_other_dice'::text, 3::bigint),
+      ('coc_7e_percentile'::text, 3::bigint),
       ('custom_dice_pool'::text, 6::bigint),
       ('vtm_v5'::text, 6::bigint)
   $expected$,
-  'retention is independent for every roller kind'
+  'CoC retention is shared across both kinds while other scopes stay independent'
 );
 select is(
   (

@@ -23,17 +23,11 @@ supabase/migrations/20260823143856_harden_campaign_database_grants.sql
 supabase/migrations/20260902132447_allow_completed_campaign_image_cleanup.sql
 supabase/migrations/20260903000242_campaign_gallery_categories.sql
 supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
-```
-
-All eleven listed migrations are current in Production. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, Campaign Gallery category migration, and Phase 4D1 extensible personal-history envelope are applied.
-
-The Phase 4D1 UX follow-up deployed one forward migration:
-
-```text
 supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql
+supabase/migrations/20260908094324_scope_coc_personal_roll_history.sql
 ```
 
-It has not yet been applied to remote or Production Supabase. It keeps the generic table and deployed RPC signatures, adds an owner-kind-sequence index, changes prospective pruning to the newest six rows for the same owner and `roller_kind`, and adds an authenticated scoped-clear RPC. No existing rows are bulk-rewritten. The application registry remains authoritative for supported kinds and versions.
+All thirteen listed migrations are current in Production after the roll-label/history follow-up. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, Campaign Gallery category migration, Phase 4D1 extensible personal-history envelope, scoped-clear migration, and combined CoC retention migration are applied. The last migration preserves the generic table and RPC signature, changes prospective CoC pruning to the newest six rows total across both CoC kinds, and leaves VtM and Custom at six rows per kind. No existing rows are bulk-rewritten. The application registry remains authoritative for supported kinds and versions.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
@@ -185,7 +179,7 @@ Historical unlinked rows may remain.
 | `result_data` | non-null JSON object; maximum serialized size 64 KiB |
 | `created_at` | non-null timestamptz |
 
-The owner-scoped recording function is idempotent for an identical `client_roll_id` payload and serializes writes per owner. The deployed follow-up changes prospective retention from the newest eleven combined owner rows to the newest six rows independently for each `roller_kind`, supporting one current result plus five previous results. Delete-one, clear-all, and scoped-clear functions are generic and owner-scoped. RLS keeps history private to its owner.
+The owner-scoped recording function is idempotent for an identical `client_roll_id` payload and serializes writes per owner. Prospective retention is six rows per roller-page scope: six VtM, six Custom, and six total across CoC Percentile plus CoC Other Dice. This supports one current result plus five previous results for each page scope. Delete-one, clear-all, and scoped-clear functions are generic and owner-scoped. RLS keeps history private to its owner. Optional normalized Custom and CoC roll labels live as backward-compatible `request_data` JSON metadata; VtM retains its existing nested request label.
 
 Production accepts syntactically valid future `roller_kind` values and positive schema versions through the deployed Phase 4D1 envelope migration. The current application registry supports only version 1 of:
 
@@ -452,14 +446,14 @@ Known limitation:
 
 Current database verification recorded:
 
-- twelve synchronized repository/Production migration versions after this follow-up;
+- thirteen synchronized repository/Production migration versions after the roll-label/history follow-up;
 - RLS on all fifteen public tables, including all seven campaign-video tables;
 - all five required foreign-key indexes valid;
 - hardened table/function grants and restricted `handle_new_user()` execution;
 - private `campaign-images` Storage;
 - the recorded Campaign Foundation GM/Player/Outsider transaction test, with all test data rolled back.
 - a Phase 4C1 test-project transaction covering selected/outsider/completed access and completed-GM Storage cleanup, with all temporary rows rolled back.
-- deployed verification of both Phase 4D1 migrations; the per-kind retention/scoped-clear migration passed local reset, pgTAP, and concurrency verification before application, and Production migration history is synchronized at 12/12.
+- deployed verification of all Phase 4D1 personal-history migrations; the scoped-clear and combined CoC-retention changes passed local reset, pgTAP, and concurrency verification before application, and Production migration history is synchronized at 13/13.
 
 Security and lifecycle verification exposed three issues that were corrected through new migrations rather than editing applied migrations:
 
