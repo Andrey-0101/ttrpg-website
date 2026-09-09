@@ -151,7 +151,7 @@ No annotations, drawing tools, screen sharing, general Handouts system, presenta
 
 ### Phase 4D1 — CoC 7e Dice Roller
 
-**Status: Deployed in Production, including UX follow-up**
+**Status: Deployed / verified with known minor issue**
 
 Deployed in Production:
 
@@ -162,7 +162,9 @@ Deployed in Production:
 - local guest results and best-effort owner-private persistence for authenticated users through the shared personal-history surface;
 - an extensible personal-history envelope whose database constraints accept syntactically valid future kinds and positive schema versions while the application registry remains authoritative for supported contracts.
 
-Phase 4D1 personal rollers support an optional Roll Label as the first settings control, with labels or a localized no-label fallback displayed in history. The CoC panels keep separate labels and one combined chronological history of at most five previous rolls total; persistence retains six CoC rows total across both kinds. Validated contextual Back destinations, scoped Clear History, and the live six-band CoC Target guide remain unchanged. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
+Phase 4D1 personal rollers support an optional Roll Label as the first settings control, with labels or a localized no-label fallback displayed in history. The CoC panels keep separate labels and one combined chronological history intended to show at most five previous rolls total; persistence retains six CoC rows total across both kinds. Validated contextual Back destinations, scoped Clear History, and the live six-band CoC Target guide remain unchanged. Phase 4D1 does not create campaign-authoritative history, campaign dice, Game Room integration, or Realtime dice delivery.
+
+Known minor issue: CoC personal roll history currently displays four previous rolls plus the current roll instead of the intended five previous rolls plus the current roll. This issue is deferred for a later maintenance follow-up.
 
 ### Phase 4D2 — Game Room Dice Integration
 

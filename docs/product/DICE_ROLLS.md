@@ -316,7 +316,7 @@ Both generators use `crypto.getRandomValues` through the shared unbiased rejecti
 
 Phase 4D1 extends only personal, client-generated convenience history. It does not create campaign-authoritative history, campaign-scoped execution, Realtime delivery, or Game Room integration.
 
-Phase 4D1 and its UX follow-up passed complete local application, database, and browser verification and are deployed. Preview and Production guest acceptance passed, including contextual Back destinations, scoped-history placement, CoC Target bands, and mobile containment. Authenticated Production persistence acceptance remains pending because no authorized signed-in Production browser session was available; no application defect was demonstrated.
+Phase 4D1 and its UX follow-up passed complete local application, database, and browser verification and are deployed. Preview and Production guest acceptance passed, including contextual Back destinations, scoped-history placement, CoC Target bands, and mobile containment. Authenticated Production persistence acceptance also passed. A known minor issue remains: CoC personal roll history currently displays four previous rolls plus the current roll instead of the intended five previous rolls plus the current roll. This issue is deferred for a later maintenance follow-up.
 
 ## Phase 4D2 — System-aware Game Room dice
 
