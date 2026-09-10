@@ -30,6 +30,7 @@ type CampaignVideoRoomController = ReturnType<
 
 type CampaignVideoRoomProps = {
   campaignId: string;
+  campaignGameSystem: string;
   campaignStatus: string;
   directoryReady: boolean;
   isGameMaster: boolean;
@@ -41,12 +42,10 @@ type CampaignVideoRoomProps = {
   sessionError: boolean;
   onStartSession(): Promise<void>;
   onEndSession(): Promise<void>;
+  onJournalEvent(event: GameSessionState["journal"][number]): void;
 };
 
-type CampaignVideoRoomLayoutProps = Omit<
-  CampaignVideoRoomProps,
-  "campaignId"
-> & {
+type CampaignVideoRoomLayoutProps = CampaignVideoRoomProps & {
   snapshot: CampaignVideoRoomSnapshot;
   seenParticipantIdentities: ReadonlySet<string>;
   onJoin(): void;
@@ -376,6 +375,8 @@ function phaseMessage(
 }
 
 export function CampaignVideoRoomLayout({
+  campaignId,
+  campaignGameSystem,
   campaignStatus,
   directoryReady,
   isGameMaster,
@@ -397,6 +398,7 @@ export function CampaignVideoRoomLayout({
   sessionError,
   onStartSession,
   onEndSession,
+  onJournalEvent,
 }: CampaignVideoRoomLayoutProps) {
   const translations = useTranslations("CampaignVideoRoom");
   const statusMessage =
@@ -464,6 +466,8 @@ export function CampaignVideoRoomLayout({
         ))}
         <CampaignGameRoomWorkspace
           isGameMaster={isGameMaster}
+          campaignId={campaignId}
+          campaignGameSystem={campaignGameSystem}
           galleryItems={galleryItems}
           connected={connected}
           isPresenting={snapshot.isPresenting}
@@ -477,6 +481,7 @@ export function CampaignVideoRoomLayout({
           sessionError={sessionError}
           onStartSession={onStartSession}
           onEndSession={onEndSession}
+          onJournalEvent={onJournalEvent}
           onShareImage={onShareImage}
           onSetPresentationExpanded={onSetPresentationExpanded}
           onStopShare={onStopShare}
@@ -488,6 +493,7 @@ export function CampaignVideoRoomLayout({
 
 function CampaignVideoRoomInstance({
   campaignId,
+  campaignGameSystem,
   campaignStatus,
   directoryReady,
   isGameMaster,
@@ -499,6 +505,7 @@ function CampaignVideoRoomInstance({
   sessionError,
   onStartSession,
   onEndSession,
+  onJournalEvent,
 }: CampaignVideoRoomProps) {
   const controllerRef = useRef<CampaignVideoRoomController | null>(null);
   const participantDirectoryJson = JSON.stringify(participantDirectory);
@@ -543,6 +550,8 @@ function CampaignVideoRoomInstance({
 
   return (
     <CampaignVideoRoomLayout
+      campaignId={campaignId}
+      campaignGameSystem={campaignGameSystem}
       campaignStatus={campaignStatus}
       directoryReady={directoryReady}
       isGameMaster={isGameMaster}
@@ -554,6 +563,7 @@ function CampaignVideoRoomInstance({
       sessionError={sessionError}
       onStartSession={onStartSession}
       onEndSession={onEndSession}
+      onJournalEvent={onJournalEvent}
       snapshot={snapshot}
       seenParticipantIdentities={seenParticipantIdentities}
       onJoin={() => void controllerRef.current?.join()}

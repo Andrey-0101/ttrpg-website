@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing";
 import { isCampaignGalleryCategory } from "@/lib/campaign-handouts/contracts";
 import { loadCampaignGalleryImages } from "@/lib/campaign-handouts/gallery.server";
 import { loadCampaignParticipantDirectory } from "@/lib/campaign-video/participant-directory.server";
+import { normalizeGameSystemId } from "@/lib/characters/game-systems";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignGameRoomPageProps = {
@@ -122,6 +123,9 @@ export default async function CampaignGameRoomPage({
       </h1>
       <CampaignGameRoom
         campaignId={campaign.id}
+        campaignGameSystem={
+          normalizeGameSystemId(campaign.game_system) ?? campaign.game_system
+        }
         campaignStatus={campaign.status}
         directoryReady={participantDirectoryResult.ready}
         isGameMaster={isGameMaster}

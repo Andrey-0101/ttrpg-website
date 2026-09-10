@@ -596,7 +596,18 @@
       "empty": "The current session Journal is empty.",
       "start": "Start session",
       "end": "End session",
-      "error": "The session state could not be updated. Try again."
+      "error": "The session state could not be updated. Try again.",
+      "participantFallback": "Campaign participant",
+      "unlabelled": "Unlabelled",
+      "unlabelledPercentile": "Unlabelled Percentile",
+      "difficulty": "Difficulty {value}",
+      "target": "Target {value}"
+    },
+    "dice": {
+      "localOnly": "No active Game Session. This result is visible only to you and is not saved.",
+      "sessionPublic": "Game Session active. Valid rolls are public in the current Journal.",
+      "error": "The campaign roll could not be completed safely. Try again.",
+      "unavailable": "Dice are not available for this campaign system."
     }
   },
   "CampaignVideoRoom": {

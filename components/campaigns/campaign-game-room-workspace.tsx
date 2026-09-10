@@ -1,9 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type KeyboardEvent, type PointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import { useTranslations } from "next-intl";
 
+import CampaignDiceJournalEvent from "@/components/campaigns/campaign-dice-journal-event";
+import CampaignDiceRoller from "@/components/campaigns/campaign-dice-roller";
 import {
   CAMPAIGN_GALLERY_CATEGORIES,
   type CampaignGalleryCategory,
@@ -29,6 +37,8 @@ export type CampaignGameRoomGalleryItem = {
 };
 
 export default function CampaignGameRoomWorkspace({
+  campaignId,
+  campaignGameSystem,
   isGameMaster,
   galleryItems,
   connected,
@@ -43,10 +53,13 @@ export default function CampaignGameRoomWorkspace({
   sessionError,
   onStartSession,
   onEndSession,
+  onJournalEvent,
   onShareImage,
   onSetPresentationExpanded,
   onStopShare,
 }: {
+  campaignId: string;
+  campaignGameSystem: string;
   isGameMaster: boolean;
   galleryItems: CampaignGameRoomGalleryItem[];
   connected: boolean;
@@ -61,19 +74,27 @@ export default function CampaignGameRoomWorkspace({
   sessionError: boolean;
   onStartSession(): Promise<void>;
   onEndSession(): Promise<void>;
+  onJournalEvent(event: GameSessionState["journal"][number]): void;
   onShareImage(imageId: string): Promise<boolean>;
   onSetPresentationExpanded(expanded: boolean): Promise<boolean>;
   onStopShare(): Promise<boolean>;
 }) {
   const translations = useTranslations("CampaignGameRoom");
   const galleryTranslations = useTranslations("CampaignHandouts");
-  const [activeTool, setActiveTool] = useState<"journal" | "gallery" | null>(
-    null,
-  );
+  const [activeTool, setActiveTool] = useState<
+    "journal" | "gallery" | "dice" | null
+  >(null);
   const [activeCategory, setActiveCategory] =
     useState<CampaignGalleryCategory | null>(null);
   const [selectedImage, setSelectedImage] =
     useState<CampaignGameRoomGalleryItem | null>(null);
+  const journalEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (activeTool === "journal" && gameSession.journal.length > 0) {
+      journalEndRef.current?.scrollIntoView({ block: "end" });
+    }
+  }, [activeTool, gameSession.journal.length]);
 
   const visibleItems = activeCategory
     ? galleryItems.filter((item) => item.category === activeCategory)
@@ -135,7 +156,14 @@ export default function CampaignGameRoomWorkspace({
           {translations("workspace.display")}
         </h2>
 
-        {activeTool === "journal" ? (
+        {activeTool === "dice" ? (
+          <CampaignDiceRoller
+            campaignId={campaignId}
+            gameSystem={campaignGameSystem}
+            sessionActive={Boolean(gameSession.session)}
+            onJournalEvent={onJournalEvent}
+          />
+        ) : activeTool === "journal" ? (
           <div
             className="flex min-h-0 w-full flex-col overflow-y-auto p-4 text-white"
             data-game-room-journal
@@ -177,16 +205,21 @@ export default function CampaignGameRoomWorkspace({
             ) : null}
             {gameSession.journal.length > 0 ? (
               <ol className="mt-4 space-y-2" data-game-room-journal-events>
-                {gameSession.journal.map((event) => (
-                  <li
-                    key={event.id}
-                    className="rounded-lg border border-white/15 bg-white/5 p-2 text-sm"
-                  >
-                    {event.eventKind}
-                  </li>
-                ))}
+                {gameSession.journal.map((event) =>
+                  event.eventKind === "campaign_dice_roll" ? (
+                    <CampaignDiceJournalEvent key={event.id} event={event} />
+                  ) : (
+                    <li
+                      key={event.id}
+                      className="rounded-lg border border-white/15 bg-white/5 p-2 text-sm"
+                    >
+                      {event.eventKind}
+                    </li>
+                  ),
+                )}
               </ol>
             ) : null}
+            <div ref={journalEndRef} aria-hidden="true" />
             {sessionError ? (
               <p role="alert" className="mt-3 text-sm text-rose-200">
                 {translations("journal.error")}
@@ -376,7 +409,11 @@ export default function CampaignGameRoomWorkspace({
             >
               {translations("tools.gallery")}
             </button>
-            <button type="button" disabled className={TOOL_BUTTON_CLASS}>
+            <button
+              type="button"
+              onClick={() => setActiveTool("dice")}
+              className={TOOL_BUTTON_CLASS}
+            >
               {translations("tools.dice")}
             </button>
             <button type="button" disabled className={TOOL_BUTTON_CLASS}>
@@ -384,7 +421,7 @@ export default function CampaignGameRoomWorkspace({
             </button>
           </div>
         )}
-        {activeTool === "journal" ? (
+        {activeTool === "journal" || activeTool === "dice" ? (
           <button
             type="button"
             onClick={() => setActiveTool(null)}

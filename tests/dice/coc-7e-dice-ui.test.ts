@@ -27,12 +27,15 @@ function collectKeys(value: unknown, prefix = ""): string[] {
   );
 }
 
-test("CoC UI renders simultaneous 3:2 panels with independent labels first", () => {
+test("CoC UI keeps personal 3:2 panels and adds compact campaign tabs", () => {
   assert.match(
     componentSource,
     /md:grid-cols-\[minmax\(0,3fr\)_minmax\(16rem,2fr\)\][\s\S]*<PercentilePanel[\s\S]*<OtherDicePanel/u,
   );
-  assert.doesNotMatch(componentSource, /role=["']tab/u);
+  assert.match(componentSource, /compact \? \(/u);
+  assert.match(componentSource, /role="tablist"/u);
+  assert.match(componentSource, /role="tab"/u);
+  assert.match(componentSource, /hidden=\{compact && activeTab !== "percentile"\}/u);
   const percentile = componentSource.slice(
     componentSource.indexOf("function PercentilePanel"),
     componentSource.indexOf("function OtherDiceResult"),

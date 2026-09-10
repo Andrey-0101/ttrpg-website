@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import CampaignVideoRoom from "@/components/campaigns/campaign-video-room";
 import type { CampaignGameRoomGalleryItem } from "@/components/campaigns/campaign-game-room-workspace";
 import type { CampaignVideoParticipantDirectoryEntry } from "@/lib/campaign-video/browser/contracts";
+import { mapJournalRow } from "@/lib/campaign-dice/contracts";
 import {
   GAME_SESSION_PRESENCE_RENEWAL_MS,
   GAME_SESSION_STATE_REFRESH_MS,
@@ -12,11 +13,27 @@ import {
   type GameSessionApiResult,
   type GameSessionState,
 } from "@/lib/game-sessions/contracts";
+import type { Database } from "@/types/database.types";
+import { createClient } from "@/utils/supabase/client";
 
 const EMPTY_STATE: GameSessionState = { session: null, journal: [] };
 
+function mergeJournalEvents(
+  ...journals: GameSessionState["journal"][]
+): GameSessionState["journal"] {
+  const byId = new Map(
+    journals.flat().map((event) => [event.id, event] as const),
+  );
+  return [...byId.values()].sort(
+    (left, right) =>
+      left.createdAt.localeCompare(right.createdAt) ||
+      left.id.localeCompare(right.id),
+  );
+}
+
 export default function CampaignGameRoom({
   campaignId,
+  campaignGameSystem,
   campaignStatus,
   directoryReady,
   isGameMaster,
@@ -24,6 +41,7 @@ export default function CampaignGameRoom({
   participantDirectory,
 }: {
   campaignId: string;
+  campaignGameSystem: string;
   campaignStatus: string;
   directoryReady: boolean;
   isGameMaster: boolean;
@@ -38,13 +56,33 @@ export default function CampaignGameRoom({
   const [sessionError, setSessionError] = useState(false);
   const requestGeneration = useRef(0);
   const mutationInFlight = useRef(false);
+  const [supabase] = useState(createClient);
+
+  const appendJournalEvent = useCallback(
+    (event: GameSessionState["journal"][number]) => {
+      setGameSession((current) => {
+        if (!current.session) return current;
+        return {
+          session: current.session,
+          journal: mergeJournalEvents(current.journal, [event]),
+        };
+      });
+    },
+    [],
+  );
 
   const applyResult = useCallback((result: GameSessionApiResult) => {
     if (!result.ok) {
       setSessionError(true);
       return false;
     }
-    setGameSession({ session: result.session, journal: result.journal });
+    setGameSession((current) => ({
+      session: result.session,
+      journal:
+        result.session?.id === current.session?.id
+          ? mergeJournalEvents(current.journal, result.journal)
+          : result.journal,
+    }));
     setSessionError(false);
     return true;
   }, []);
@@ -127,9 +165,38 @@ export default function CampaignGameRoom({
     };
   }, [campaignStatus, isGameMaster, mutate, refresh]);
 
+  useEffect(() => {
+    const sessionId = gameSession.session?.id;
+    if (!sessionId) return;
+
+    const channel = supabase
+      .channel(`game-session-journal-${sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "game_session_journal_events",
+          filter: `game_session_id=eq.${sessionId}`,
+        },
+        (payload) => {
+          const row = payload.new as Database["public"]["Tables"]["game_session_journal_events"]["Row"];
+          appendJournalEvent(mapJournalRow(row));
+        },
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") void refresh();
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [appendJournalEvent, gameSession.session?.id, refresh, supabase]);
+
   return (
     <CampaignVideoRoom
       campaignId={campaignId}
+      campaignGameSystem={campaignGameSystem}
       campaignStatus={campaignStatus}
       directoryReady={directoryReady}
       isGameMaster={isGameMaster}
@@ -141,6 +208,7 @@ export default function CampaignGameRoom({
       sessionError={sessionError}
       onStartSession={() => mutate("start")}
       onEndSession={() => mutate("end")}
+      onJournalEvent={appendJournalEvent}
     />
   );
 }
