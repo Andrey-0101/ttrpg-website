@@ -79,12 +79,12 @@ values
   ('${PLAYER_ID}', 'authenticated', 'authenticated', 'dice-player@example.test', '', '{}'::jsonb, '{}'::jsonb, now(), now());
 update public.profiles set display_name = 'Game Master Profile' where id = '${GM_ID}'::uuid;
 update public.profiles set display_name = 'Player Profile' where id = '${PLAYER_ID}'::uuid;
-insert into public.characters (id, owner_id, game_system, name)
-values ('${CHARACTER_ID}', '${PLAYER_ID}', 'vtm-v5', 'Player Character');
+insert into public.characters (id, owner_id, game_system, name, visibility)
+values ('${CHARACTER_ID}', '${PLAYER_ID}', 'vtm-v5', 'Player Character', 'campaign');
 insert into public.campaigns (id, game_master_id, game_system, name)
 values ('${CAMPAIGN_ID}', '${GM_ID}', 'vtm-v5', 'Campaign Dice session');
-insert into public.campaign_members (campaign_id, user_id)
-values ('${CAMPAIGN_ID}', '${PLAYER_ID}');
+insert into public.campaign_members (campaign_id, user_id, display_order)
+values ('${CAMPAIGN_ID}', '${PLAYER_ID}', 1);
 insert into public.campaign_characters (campaign_id, character_id, linked_by)
 values ('${CAMPAIGN_ID}', '${CHARACTER_ID}', '${PLAYER_ID}');`,
     "fixture setup",
