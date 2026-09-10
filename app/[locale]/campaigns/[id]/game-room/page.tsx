@@ -3,7 +3,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import CampaignVideoRoom from "@/components/campaigns/campaign-video-room";
+import CampaignGameRoom from "@/components/campaigns/campaign-game-room";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { isCampaignGalleryCategory } from "@/lib/campaign-handouts/contracts";
@@ -120,7 +120,7 @@ export default async function CampaignGameRoomPage({
       <h1 className="sr-only">
         {campaign.name}: {translations("title")}
       </h1>
-      <CampaignVideoRoom
+      <CampaignGameRoom
         campaignId={campaign.id}
         campaignStatus={campaign.status}
         directoryReady={participantDirectoryResult.ready}

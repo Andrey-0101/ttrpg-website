@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -587,6 +582,82 @@ export type Database = {
         }
         Relationships: []
       }
+      game_session_journal_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_data: Json
+          event_kind: string
+          game_session_id: string
+          id: string
+          schema_version: number
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_data: Json
+          event_kind: string
+          game_session_id: string
+          id?: string
+          schema_version?: number
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_data?: Json
+          event_kind?: string
+          game_session_id?: string
+          id?: string
+          schema_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_session_journal_events_game_session_id_fkey"
+            columns: ["game_session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_sessions: {
+        Row: {
+          campaign_id: string
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          presence_expires_at: string
+          started_at: string
+          started_by: string | null
+        }
+        Insert: {
+          campaign_id: string
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          presence_expires_at?: string
+          started_at?: string
+          started_by?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          presence_expires_at?: string
+          started_at?: string
+          started_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal_roll_history: {
         Row: {
           client_roll_id: string
@@ -756,6 +827,24 @@ export type Database = {
         Returns: boolean
       }
       delete_personal_roll: { Args: { p_roll_id: string }; Returns: boolean }
+      end_game_session: {
+        Args: { target_campaign_id: string }
+        Returns: {
+          campaign_id: string
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          presence_expires_at: string
+          started_at: string
+          started_by: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "game_sessions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       record_personal_roll: {
         Args: {
           p_client_roll_id: string
@@ -782,6 +871,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      renew_game_session_presence: {
+        Args: { target_campaign_id: string }
+        Returns: {
+          campaign_id: string
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          presence_expires_at: string
+          started_at: string
+          started_by: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "game_sessions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       reorder_campaign_media_groups: {
         Args: { ordered_group_ids: string[]; target_campaign_id: string }
         Returns: number
@@ -801,6 +908,24 @@ export type Database = {
           target_visibility: string
         }
         Returns: undefined
+      }
+      start_game_session: {
+        Args: { target_campaign_id: string }
+        Returns: {
+          campaign_id: string
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          presence_expires_at: string
+          started_at: string
+          started_by: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "game_sessions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       update_custom_dice_preset: {
         Args: {

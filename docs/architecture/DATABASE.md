@@ -31,6 +31,8 @@ All thirteen listed migrations are current in Production after the roll-label/hi
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
+The current implementation branch adds the forward, not-yet-Production migration `20260910122247_game_sessions_and_journal.sql`. Production status above remains unchanged until that migration is explicitly deployed.
+
 ## Generated types
 
 Generated public-schema types are stored in:
@@ -206,6 +208,17 @@ Application persistence revalidates and canonicalizes supported payloads. Malfor
 
 The foundation is provider-neutral. It does not persist LiveKit rooms, tokens, connections, session-only overrides, or media state.
 
+### Game Session and Journal tables
+
+| Table | Purpose |
+|---|---|
+| `game_sessions` | persistent campaign session lifecycle, GM starter, start/end timestamps, presence deadline, and terminal reason |
+| `game_session_journal_events` | event envelope scoped by required `game_session_id`; no campaign-global Journal row exists |
+
+`game_sessions_one_active_per_campaign_idx` is a partial unique index over unended rows. Start, explicit end, and presence renewal are authenticated RPCs that derive the GM from `auth.uid()` and lock the campaign/session boundary. A renewal after deadline closes rather than resurrects the session. The private `expire_game_sessions()` function closes expired rows, and a one-minute `pg_cron` job invokes it autonomously. Campaign completion reuses the existing completion trigger to close an active session with `campaign_completed`.
+
+Both tables use participant-readable RLS. Authenticated clients have SELECT only; they cannot directly insert, update, or delete either table. Journal inserts additionally pass a trigger that requires the referenced session and campaign to remain active and the recorded actor to be a current campaign participant. No application event writer is exposed in this preparation task.
+
 ## Indexes and consistency rules
 
 Campaign Foundation includes indexes for:
@@ -243,6 +256,8 @@ profiles
 characters
 custom_dice_presets
 personal_roll_history
+game_sessions
+game_session_journal_events
 campaigns
 campaign_members
 campaign_invitations
@@ -481,7 +496,7 @@ campaign-authoritative dice persistence, only if approved by Phase 4D2
 campaign_notes for Phase 4G shared and GM-private scope
 ```
 
-The Phase 4C1 image-only Campaign Gallery uses the existing campaign image tables and private Storage bucket. Its four fixed categories are metadata on `campaign_images`; no broad Handout, NPC, or Maps table was added. General document Handouts, structured NPCs or maps, Sessions, Chronicle records, and standalone provider-room mappings are not active roadmap schema areas.
+The Phase 4C1 image-only Campaign Gallery uses the existing campaign image tables and private Storage bucket. Its four fixed categories are metadata on `campaign_images`; no broad Handout, NPC, or Maps table was added. The narrow Game Session and Journal event envelope does not introduce richer session content, Chronicle records, notes, or archives. General document Handouts, structured NPCs or maps, richer Sessions, Chronicle records, and standalone provider-room mappings are not active roadmap schema areas.
 
 Each future domain requires:
 

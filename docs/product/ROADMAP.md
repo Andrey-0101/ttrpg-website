@@ -168,7 +168,16 @@ Known minor issue: CoC personal roll history currently displays four previous ro
 
 ### Phase 4D2 — Game Room Dice Integration
 
-**Status: Planned**
+**Status: In progress — Game Session and Journal foundation implemented locally; campaign dice not implemented**
+
+The first bounded delivery establishes the non-dice lifecycle boundary:
+
+- the campaign Game Room exists independently of LiveKit and never joins video on entry;
+- the GM alone starts, ends, and renews one persistent active Game Session per campaign;
+- a 30-minute Game Room presence renewal and approximately 60-minute database deadline are independent of camera, microphone, video Join/Leave, and refresh;
+- autonomous database scheduling closes abandoned sessions, while campaign completion closes the active session immediately;
+- `Journal | Gallery | Dice | Character` is the stable tool order, and Journal reads only the exact active session's persisted event scope;
+- the Journal event table deliberately exposes no client write grant. The next dice delivery must add a server-authoritative writer against the exact active session rather than reuse personal history.
 
 Add a system-aware campaign dice surface to the Game Room:
 

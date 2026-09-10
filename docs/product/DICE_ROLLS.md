@@ -320,11 +320,13 @@ Phase 4D1 and its UX follow-up passed complete local application, database, and 
 
 ## Phase 4D2 — System-aware Game Room dice
 
-Recommended route:
+Integration surface:
 
 ```text
-/[locale]/campaigns/[id]/dice
+/[locale]/campaigns/[id]/game-room
 ```
+
+The preparation delivery now provides persistent `game_sessions` plus a `game_session_journal_events` envelope. Journal is strictly scoped to the exact active Game Session and currently receives no events: there is intentionally no client or generic application write boundary. Personal history is unchanged and must not be reused. Campaign dice itself, Realtime delivery, and rendering of dice events remain unimplemented.
 
 Requirements:
 
@@ -351,7 +353,7 @@ Candidate fields:
 ```text
 id
 campaign_id
-session_id
+game_session_id
 user_id
 character_id
 game_system

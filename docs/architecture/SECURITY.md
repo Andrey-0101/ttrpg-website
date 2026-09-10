@@ -135,6 +135,17 @@ This foundation is current in Production. All seven campaign-video tables use RL
 - cascade removal of campaign-owned rows;
 - Player-owned characters preserved.
 
+### Game Sessions and Journal
+
+- GM-only start, explicit end, and presence-renewal RPCs derive identity from `auth.uid()`;
+- a database partial unique index enforces at most one active session per campaign under concurrency;
+- participants read session and Journal rows through campaign-scoped RLS; Outsiders are denied;
+- authenticated clients receive no direct lifecycle mutation or Journal insert/update/delete grants;
+- Journal rows require an exact `game_session_id`; a trigger rejects ended, expired, completed-campaign, and foreign-actor inserts;
+- the private timeout function is not executable by application roles and is scheduled by `pg_cron` every minute;
+- a late renewal cannot resurrect an expired session, and campaign completion closes the active session;
+- LiveKit Join/Leave, disconnect, refresh, camera, and microphone state have no authority over Game Session lifecycle.
+
 ### Error handling
 
 - raw backend errors are not displayed;
@@ -221,6 +232,8 @@ Both Phase 4D1 forward migrations are applied in Production. The follow-up migra
 The Phase 4D1 dependency closeout records zero known npm vulnerabilities in both the production-only and full local dependency audits after the lockfile-only Browserslist update from 4.28.4 to 4.28.9.
 
 ### Game Room dice — Phase 4D2
+
+The Game Session/Journal preparation establishes a read-only client boundary and exact future event scope. It does not expose campaign dice or a generic event-write RPC. The next dice implementation must keep server-generated randomness and interpretation authoritative and insert only after revalidating the exact active session in the same database operation.
 
 Required before campaign persistence or sharing:
 

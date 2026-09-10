@@ -22,6 +22,7 @@ import {
   getCampaignVideoParticipantSlots,
   type CampaignVideoParticipantSlot,
 } from "@/lib/campaign-video/browser/presentation";
+import type { GameSessionState } from "@/lib/game-sessions/contracts";
 
 type CampaignVideoRoomController = ReturnType<
   typeof createCampaignVideoRoomController
@@ -34,6 +35,12 @@ type CampaignVideoRoomProps = {
   isGameMaster: boolean;
   galleryItems: CampaignGameRoomGalleryItem[];
   participantDirectory: CampaignVideoParticipantDirectoryEntry[];
+  gameSession: GameSessionState;
+  sessionLoading: boolean;
+  sessionBusy: boolean;
+  sessionError: boolean;
+  onStartSession(): Promise<void>;
+  onEndSession(): Promise<void>;
 };
 
 type CampaignVideoRoomLayoutProps = Omit<
@@ -384,6 +391,12 @@ export function CampaignVideoRoomLayout({
   onShareImage,
   onSetPresentationExpanded,
   onStopShare,
+  gameSession,
+  sessionLoading,
+  sessionBusy,
+  sessionError,
+  onStartSession,
+  onEndSession,
 }: CampaignVideoRoomLayoutProps) {
   const translations = useTranslations("CampaignVideoRoom");
   const statusMessage =
@@ -458,6 +471,12 @@ export function CampaignVideoRoomLayout({
           sharedPresentationUrl={snapshot.sharedPresentation?.signedUrl ?? null}
           presentationBusy={snapshot.presentationBusy}
           presentationError={snapshot.presentationError !== null}
+          gameSession={gameSession}
+          sessionLoading={sessionLoading}
+          sessionBusy={sessionBusy}
+          sessionError={sessionError}
+          onStartSession={onStartSession}
+          onEndSession={onEndSession}
           onShareImage={onShareImage}
           onSetPresentationExpanded={onSetPresentationExpanded}
           onStopShare={onStopShare}
@@ -474,6 +493,12 @@ function CampaignVideoRoomInstance({
   isGameMaster,
   galleryItems,
   participantDirectory,
+  gameSession,
+  sessionLoading,
+  sessionBusy,
+  sessionError,
+  onStartSession,
+  onEndSession,
 }: CampaignVideoRoomProps) {
   const controllerRef = useRef<CampaignVideoRoomController | null>(null);
   const participantDirectoryJson = JSON.stringify(participantDirectory);
@@ -523,6 +548,12 @@ function CampaignVideoRoomInstance({
       isGameMaster={isGameMaster}
       galleryItems={galleryItems}
       participantDirectory={participantDirectory}
+      gameSession={gameSession}
+      sessionLoading={sessionLoading}
+      sessionBusy={sessionBusy}
+      sessionError={sessionError}
+      onStartSession={onStartSession}
+      onEndSession={onEndSession}
       snapshot={snapshot}
       seenParticipantIdentities={seenParticipantIdentities}
       onJoin={() => void controllerRef.current?.join()}

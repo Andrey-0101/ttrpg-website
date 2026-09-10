@@ -2,7 +2,7 @@
 
 ## Status
 
-Current architecture for the implemented VtM character and campaign application, including the accepted campaign-authorized LiveKit Game Room and image-only Campaign Gallery.
+Current architecture for the implemented VtM character and campaign application, including the campaign Game Room, its independent Game Session/Journal foundation, optional campaign-authorized LiveKit video, and image-only Campaign Gallery.
 
 Phase 4D1 extends this architecture with a deployed CoC 7e personal dice domain, extensible personal-history envelope, contextual roller navigation, roller-scoped history, and live CoC Target bands.
 
@@ -48,6 +48,7 @@ Supabase
   +-- PostgreSQL
   +-- Auth
   +-- Row Level Security
+  +-- pg_cron for autonomous Game Session expiry
   +-- Storage
   +-- Realtime only where a later approved campaign capability requires it
 ```
@@ -67,6 +68,10 @@ Next.js server
 ```
 
 The reusable video core remains separate from authorization adapters. The current Campaign Game Room uses campaign-derived authorization and LiveKit, the accepted provider for this implementation. Provider secrets remain server-only. Standalone Video Rooms are not active roadmap scope; any future product would require a separate authorization and provider review. ADR-009 does not automatically select it.
+
+The campaign Game Room is the parent application boundary. It owns session state, GM presence renewal, Journal state, and non-video tool navigation. The Video child owns LiveKit connection/media behavior and image-presentation transport. Entering Game Room starts neither boundary: session start is an explicit GM action and LiveKit Join is a separate explicit action. Their lifecycles do not drive one another.
+
+Persistent `game_sessions` rows provide the exact scope for the current Journal and future campaign dice events. A partial unique index permits only one unended session per campaign. GM entry renews a 60-minute deadline approximately every 30 minutes; `pg_cron` invokes a private expiry function every minute so abandoned sessions close without visitor traffic. Completion closes the campaign's active session through the existing lifecycle trigger. Authenticated clients can read only their campaign's session and Journal rows and have no generic Journal writer.
 
 ## Route architecture
 

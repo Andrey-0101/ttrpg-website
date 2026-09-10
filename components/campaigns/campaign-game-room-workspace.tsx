@@ -8,6 +8,7 @@ import {
   CAMPAIGN_GALLERY_CATEGORIES,
   type CampaignGalleryCategory,
 } from "@/lib/campaign-handouts/contracts";
+import type { GameSessionState } from "@/lib/game-sessions/contracts";
 
 const CATEGORY_TRANSLATION_KEYS: Record<CampaignGalleryCategory, string> = {
   handout: "categories.handout",
@@ -36,6 +37,12 @@ export default function CampaignGameRoomWorkspace({
   sharedPresentationUrl,
   presentationBusy,
   presentationError,
+  gameSession,
+  sessionLoading,
+  sessionBusy,
+  sessionError,
+  onStartSession,
+  onEndSession,
   onShareImage,
   onSetPresentationExpanded,
   onStopShare,
@@ -48,13 +55,21 @@ export default function CampaignGameRoomWorkspace({
   sharedPresentationUrl: string | null;
   presentationBusy: boolean;
   presentationError: boolean;
+  gameSession: GameSessionState;
+  sessionLoading: boolean;
+  sessionBusy: boolean;
+  sessionError: boolean;
+  onStartSession(): Promise<void>;
+  onEndSession(): Promise<void>;
   onShareImage(imageId: string): Promise<boolean>;
   onSetPresentationExpanded(expanded: boolean): Promise<boolean>;
   onStopShare(): Promise<boolean>;
 }) {
   const translations = useTranslations("CampaignGameRoom");
   const galleryTranslations = useTranslations("CampaignHandouts");
-  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [activeTool, setActiveTool] = useState<"journal" | "gallery" | null>(
+    null,
+  );
   const [activeCategory, setActiveCategory] =
     useState<CampaignGalleryCategory | null>(null);
   const [selectedImage, setSelectedImage] =
@@ -68,7 +83,7 @@ export default function CampaignGameRoomWorkspace({
     : sharedPresentationUrl;
 
   function closeGallery() {
-    setGalleryOpen(false);
+    setActiveTool(null);
     setActiveCategory(null);
     setSelectedImage(null);
   }
@@ -120,7 +135,65 @@ export default function CampaignGameRoomWorkspace({
           {translations("workspace.display")}
         </h2>
 
-        {isGameMaster && selectedImage?.localSignedUrl ? (
+        {activeTool === "journal" ? (
+          <div
+            className="flex min-h-0 w-full flex-col overflow-y-auto p-4 text-white"
+            data-game-room-journal
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-semibold">{translations("journal.title")}</h3>
+                <p className="mt-1 text-sm text-white/70">
+                  {translations(
+                    sessionLoading
+                      ? "journal.loading"
+                      : gameSession.session
+                        ? "journal.active"
+                        : "journal.inactive",
+                  )}
+                </p>
+              </div>
+              {isGameMaster && !sessionLoading ? (
+                <button
+                  type="button"
+                  disabled={sessionBusy}
+                  onClick={() =>
+                    void (gameSession.session
+                      ? onEndSession()
+                      : onStartSession())
+                  }
+                  className={TOOL_BUTTON_CLASS}
+                >
+                  {translations(
+                    gameSession.session ? "journal.end" : "journal.start",
+                  )}
+                </button>
+              ) : null}
+            </div>
+            {gameSession.session && gameSession.journal.length === 0 ? (
+              <p className="flex flex-1 items-center justify-center py-6 text-center text-sm text-white/65">
+                {translations("journal.empty")}
+              </p>
+            ) : null}
+            {gameSession.journal.length > 0 ? (
+              <ol className="mt-4 space-y-2" data-game-room-journal-events>
+                {gameSession.journal.map((event) => (
+                  <li
+                    key={event.id}
+                    className="rounded-lg border border-white/15 bg-white/5 p-2 text-sm"
+                  >
+                    {event.eventKind}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+            {sessionError ? (
+              <p role="alert" className="mt-3 text-sm text-rose-200">
+                {translations("journal.error")}
+              </p>
+            ) : null}
+          </div>
+        ) : isGameMaster && selectedImage?.localSignedUrl ? (
           <div className="relative min-h-0 w-full" data-game-room-local-image>
             <Image
               src={selectedImage.localSignedUrl}
@@ -246,7 +319,7 @@ export default function CampaignGameRoomWorkspace({
               )}
             </button>
           </div>
-        ) : galleryOpen ? (
+        ) : activeTool === "gallery" ? (
           <div
             className="grid grid-cols-[3rem_repeat(4,minmax(0,1fr))] gap-2"
             data-game-room-gallery-tools
@@ -287,14 +360,21 @@ export default function CampaignGameRoomWorkspace({
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2" data-game-room-root-tools>
+          <div className="grid grid-cols-4 gap-2" data-game-room-root-tools>
+            <button
+              type="button"
+              onClick={() => setActiveTool("journal")}
+              className={TOOL_BUTTON_CLASS}
+            >
+              {translations("tools.journal")}
+            </button>
             <button
               type="button"
               disabled={!isGameMaster}
-              onClick={() => setGalleryOpen(true)}
+              onClick={() => setActiveTool("gallery")}
               className={TOOL_BUTTON_CLASS}
             >
-              {translations(isGameMaster ? "tools.gallery" : "tools.display")}
+              {translations("tools.gallery")}
             </button>
             <button type="button" disabled className={TOOL_BUTTON_CLASS}>
               {translations("tools.dice")}
@@ -304,6 +384,16 @@ export default function CampaignGameRoomWorkspace({
             </button>
           </div>
         )}
+        {activeTool === "journal" ? (
+          <button
+            type="button"
+            onClick={() => setActiveTool(null)}
+            aria-label={translations("tools.back")}
+            className={`mt-2 w-full ${TOOL_BUTTON_CLASS}`}
+          >
+            <span aria-hidden="true">&larr;</span>
+          </button>
+        ) : null}
         {presentationError && (
           <p
             role="alert"
