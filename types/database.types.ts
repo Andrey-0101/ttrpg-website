@@ -845,6 +845,31 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      record_campaign_dice_roll: {
+        Args: {
+          target_actor_id: string
+          target_campaign_id: string
+          target_game_session_id: string
+          target_request: Json
+          target_result: Json
+          target_roll_type: string
+        }
+        Returns: {
+          actor_id: string | null
+          created_at: string
+          event_data: Json
+          event_kind: string
+          game_session_id: string
+          id: string
+          schema_version: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "game_session_journal_events"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       record_personal_roll: {
         Args: {
           p_client_roll_id: string
@@ -869,30 +894,6 @@ export type Database = {
           to: "personal_roll_history"
           isOneToOne: true
           isSetofReturn: false
-        }
-      }
-      record_campaign_dice_roll: {
-        Args: {
-          target_actor_id: string
-          target_campaign_id: string
-          target_request: Json
-          target_result: Json
-          target_roll_type: string
-        }
-        Returns: {
-          actor_id: string | null
-          created_at: string
-          event_data: Json
-          event_kind: string
-          game_session_id: string
-          id: string
-          schema_version: number
-        }[]
-        SetofOptions: {
-          from: "*"
-          to: "game_session_journal_events"
-          isOneToOne: false
-          isSetofReturn: true
         }
       }
       renew_game_session_presence: {

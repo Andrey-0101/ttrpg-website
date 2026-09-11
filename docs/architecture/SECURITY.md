@@ -233,11 +233,11 @@ The Phase 4D1 dependency closeout records zero known npm vulnerabilities in both
 
 ### Game Room dice — Phase 4D2
 
-The Game Session/Journal preparation establishes a read-only client boundary and exact future event scope. It does not expose campaign dice or a generic event-write RPC. The next dice implementation must keep server-generated randomness and interpretation authoritative and insert only after revalidating the exact active session in the same database operation.
+The Phase 4D2 implementation keeps Campaign Dice randomness and interpretation server-authoritative. Ordinary authenticated clients retain read-only Journal access and cannot call the recording RPC. The trusted server resolves the active Game Session and passes that exact ID to a service-role-only function, which locks the campaign and expected session, rechecks campaign membership/system/session state, and never rebinds an in-flight roll to a newer session. If the expected session ended or expired, the result remains non-persisted.
 
-Required before campaign persistence or sharing:
+Implemented controls and the retained external-exposure gate:
 
-- reviewed `dice_rolls` schema;
+- reviewed session-scoped Journal event schema;
 - campaign membership check;
 - server-authoritative random generation;
 - server-authoritative result evaluation;
@@ -247,8 +247,10 @@ Required before campaign persistence or sharing:
 - bounded labels and pool sizes;
 - RLS and direct-ID tests;
 - removed-member regression;
-- safe Realtime subscription scope;
+- safe Supabase Realtime subscription scope;
 - rate-limit plan before external exposure.
+
+Journal Realtime is independent of LiveKit. LiveKit remains responsible only for video and the existing Gallery image-presentation exception. Hidden rolls, alternate visibility modes, and archive UI remain deferred.
 
 ### Standalone Video Rooms — uncommitted backlog gate
 

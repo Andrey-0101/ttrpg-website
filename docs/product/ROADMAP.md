@@ -168,7 +168,7 @@ Known minor issue: CoC personal roll history currently displays four previous ro
 
 ### Phase 4D2 — Game Room Dice Integration
 
-**Status: In progress — Game Session and Journal foundation implemented locally; campaign dice not implemented**
+**Status: Implemented on the Phase 4D2 branch; Production acceptance pending**
 
 The first bounded delivery establishes the non-dice lifecycle boundary:
 
@@ -177,16 +177,19 @@ The first bounded delivery establishes the non-dice lifecycle boundary:
 - a 30-minute Game Room presence renewal and approximately 60-minute database deadline are independent of camera, microphone, video Join/Leave, and refresh;
 - autonomous database scheduling closes abandoned sessions, while campaign completion closes the active session immediately;
 - `Journal | Gallery | Dice | Character` is the stable tool order, and Journal reads only the exact active session's persisted event scope;
-- the Journal event table deliberately exposes no client write grant. The next dice delivery must add a server-authoritative writer against the exact active session rather than reuse personal history.
+- the Journal event table exposes no client write grant; Campaign Dice uses a server-authoritative writer bound to the exact active session rather than personal history.
 
-Add a system-aware campaign dice surface to the Game Room:
+The system-aware Campaign Dice surface is implemented in the Game Room:
 
 - VtM campaigns use the implemented VtM roller and VtM rules;
 - CoC campaigns use the Phase 4D1 CoC roller and CoC rules;
 - the shared platform derives the campaign system and does not expose an incompatible roller;
-- any persisted or realtime campaign history requires a reviewed server-authoritative schema, RLS contract, and execution boundary.
+- without an active Game Session, a roll is returned only to its initiator and is not persisted;
+- with an active Game Session, the exact server-resolved session is revalidated under lock and the public roll is persisted to its Journal;
+- Journal Realtime uses Supabase independently of LiveKit. LiveKit remains limited to video and the existing Gallery image-presentation transport.
 
 Personal roll history remains separate and non-authoritative.
+Archive UI, hidden rolls, richer session records, and other visibility modes remain deferred.
 
 ### Phase 4E — Campaign & Game Room UX/UI Refinement
 

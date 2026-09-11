@@ -192,6 +192,7 @@ export async function rollCampaignDice(
     const { data, error } = await admin.rpc("record_campaign_dice_roll", {
       target_actor_id: actorId,
       target_campaign_id: campaignId,
+      target_game_session_id: activeSession.id,
       target_request: toJson(requestData),
       target_result: toJson(success.result),
       target_roll_type: request.rollType,

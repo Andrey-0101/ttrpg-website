@@ -42,6 +42,11 @@ test("campaign roll execution is server-authoritative and LiveKit-independent", 
   const server = source("lib", "campaign-dice", "server.ts");
   const route = source("app", "api", "campaigns", "[campaignId]", "dice", "route.ts");
   const migration = source("supabase", "migrations", "20260911120000_campaign_dice_journal.sql");
+  const sessionBoundaryMigration = source(
+    "supabase",
+    "migrations",
+    "20260911120001_bind_campaign_dice_to_expected_session.sql",
+  );
 
   assert.match(server, /rollVtmV5Dice\(request\.request\)/u);
   assert.match(server, /rollCoc7ePercentileTest\(request\.request\)/u);
@@ -49,11 +54,19 @@ test("campaign roll execution is server-authoritative and LiveKit-independent", 
   assert.match(server, /normalizeGameSystemId\(campaign\.game_system\)/u);
   assert.match(server, /from\("game_sessions"\)/u);
   assert.match(server, /record_campaign_dice_roll/u);
+  assert.match(server, /target_game_session_id: activeSession\.id/u);
   assert.doesNotMatch(server + route, /LiveKit|video\/join/u);
   assert.match(migration, /for update/u);
   assert.match(migration, /grant execute[\s\S]*to service_role/u);
   assert.doesNotMatch(migration, /grant execute[^;]*to authenticated/u);
   assert.match(migration, /alter publication supabase_realtime/u);
+  assert.match(sessionBoundaryMigration, /drop function public\.record_campaign_dice_roll\(uuid, uuid, text, jsonb, jsonb\)/u);
+  assert.match(sessionBoundaryMigration, /where id = target_game_session_id[\s\S]*and campaign_id = target_campaign_id/u);
+  assert.match(sessionBoundaryMigration, /grant execute[\s\S]*to service_role/u);
+  assert.doesNotMatch(
+    sessionBoundaryMigration,
+    /grant execute[^;]*to authenticated/u,
+  );
 });
 
 test("Journal appends stored engine output, auto-scrolls, and never switches tools", () => {

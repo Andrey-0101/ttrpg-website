@@ -31,7 +31,7 @@ All thirteen listed migrations are current in Production after the roll-label/hi
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
-The current implementation branch adds the forward, not-yet-Production migration `20260910122247_game_sessions_and_journal.sql`. Production status above remains unchanged until that migration is explicitly deployed.
+The current implementation branch adds three forward, not-yet-Production migrations: `20260910122247_game_sessions_and_journal.sql`, `20260911120000_campaign_dice_journal.sql`, and `20260911120001_bind_campaign_dice_to_expected_session.sql`. Production status above remains unchanged until they are explicitly deployed.
 
 ## Generated types
 
@@ -217,7 +217,7 @@ The foundation is provider-neutral. It does not persist LiveKit rooms, tokens, c
 
 `game_sessions_one_active_per_campaign_idx` is a partial unique index over unended rows. Start, explicit end, and presence renewal are authenticated RPCs that derive the GM from `auth.uid()` and lock the campaign/session boundary. A renewal after deadline closes rather than resurrects the session. The private `expire_game_sessions()` function closes expired rows, and a one-minute `pg_cron` job invokes it autonomously. Campaign completion reuses the existing completion trigger to close an active session with `campaign_completed`.
 
-Both tables use participant-readable RLS. Authenticated clients have SELECT only; they cannot directly insert, update, or delete either table. Journal inserts additionally pass a trigger that requires the referenced session and campaign to remain active and the recorded actor to be a current campaign participant. No application event writer is exposed in this preparation task.
+Both tables use participant-readable RLS. Authenticated clients have SELECT only; they cannot directly insert, update, or delete either table. Journal inserts additionally pass a trigger that requires the referenced session and campaign to remain active and the recorded actor to be a current campaign participant. Campaign Dice uses a service-role-only `record_campaign_dice_roll` RPC: the trusted server supplies the exact session it resolved, and the function locks and revalidates that session without rebinding to a newer one. Supabase Realtime publishes Journal inserts; LiveKit is not part of this delivery path.
 
 ## Indexes and consistency rules
 
@@ -492,7 +492,6 @@ Security and lifecycle verification exposed three issues that were corrected thr
 Approved but not implemented:
 
 ```text
-campaign-authoritative dice persistence, only if approved by Phase 4D2
 campaign_notes for Phase 4G shared and GM-private scope
 ```
 

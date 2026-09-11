@@ -322,7 +322,7 @@ Approved responsibilities:
 
 ```text
 Personal dice execution
-System-aware campaign dice execution if approved by the Phase 4D2 persistence contract
+System-aware Campaign Dice execution through the Phase 4D2 session-scoped Journal contract
 Campaign image library and shared current-image presentation
 Linked campaign-character presentation
 Shared and GM-private campaign notes
@@ -505,7 +505,7 @@ Approved sequence:
 7. Phase 4C1 image-only Campaign Gallery — complete;
 8. Phase 4C2 Game Room Image Presentation — complete and accepted in Production;
 9. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
-10. Phase 4D2 system-aware Game Room Dice Integration — next;
+10. Phase 4D2 system-aware Game Room Dice Integration — implemented on its release branch; Production acceptance pending;
 11. Phase 4E Campaign & Game Room UX/UI Refinement;
 12. Phase 4F1 CoC 7e Character Sheets;
 13. Phase 4F2 system-aware linked-character Game Room integration;

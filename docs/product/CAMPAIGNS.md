@@ -434,7 +434,6 @@ ADR-008 defines the accepted boundary.
 
 Outside the completed Campaign Foundation:
 
-- Phase 4D2 server-authoritative, system-aware campaign and Game Room dice;
 - Phase 4E Campaign & Game Room UX/UI refinement;
 - Phase 4F1 CoC character sheets and Phase 4F2 system-aware linked-character integration;
 - Phase 4G shared notes and GM-private notes;
@@ -445,7 +444,7 @@ Outside the completed Campaign Foundation:
 - Game Master editing of Player characters;
 - public campaign pages.
 
-The Call of Cthulhu 7th Edition campaign shell and Phase 4D1 personal dice functionality are deployed, including the focused contextual-navigation, scoped-history, and Target-band UX follow-up. CoC character sheets remain planned for Phase 4F1, while Phase 4D2 server-authoritative campaign and Game Room dice remain future work. Keeper-specific tools, NPCs, clues, Handouts, Sessions, and Chronicle records are not active roadmap commitments.
+The Phase 4D2 release branch implements GM-controlled Game Sessions, an exact-session Journal, and system-aware Campaign Dice for VtM V5 and CoC 7e. Rolls outside an active session remain local and non-persisted; active-session rolls are public Journal events delivered through Supabase Realtime. LiveKit remains independent except for the existing Gallery image-presentation transport. CoC character sheets remain planned for Phase 4F1. Archive UI, hidden rolls, Keeper-specific tools, NPCs, clues, general Handouts, richer Sessions, and Chronicle records are not active roadmap commitments.
 
 ## Open questions for later milestones
 
