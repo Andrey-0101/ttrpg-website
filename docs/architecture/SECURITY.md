@@ -6,11 +6,11 @@ This document records implemented friend-alpha controls and the remaining Public
 
 It is not a claim that the application has completed a public security audit.
 
-H011 Production baseline:
+Current accepted Production baseline:
 
 ```text
 main
-609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
+01d917688ddadb5366949a714bba462b7c5c44b2
 ```
 
 ## Strategy
@@ -197,7 +197,6 @@ Two defects found during testing were fixed through separate migrations:
 - no staging environment;
 - no account export/deletion workflow;
 - no public privacy, terms, or support process;
-- no campaign-authoritative dice security model implemented yet;
 - no standalone Video Rooms authorization model or route; standalone rooms are not active roadmap scope;
 - campaign video performs fresh authenticated authorization, derives server-owned room/participant identifiers, validates a seven-participant LiveKit room, and issues explicit ten-minute least-privilege tokens only after an explicit Join action.
 
@@ -227,13 +226,13 @@ Phase 4D1 core and its focused UX follow-up are deployed and preserve the person
 - contextual Back destinations accept only validated same-site routes and fall back to the localized Dice Rollers catalogue;
 - history listing and clearing are restricted to validated registered roller kinds, while ownership remains derived from the authenticated server session.
 
-Both Phase 4D1 forward migrations are applied in Production. The follow-up migration preserves owner RLS and idempotency, scopes prospective six-row retention by kind, adds a matching index, and exposes scoped clearing only to `authenticated`; the application rejects empty or unsupported scope inputs before calling it. Phase 4D1 adds no campaign-scoped authorization, campaign result table, Realtime feed, or Game Room dice behavior.
+All three Phase 4D1 forward migrations are applied in Production. The scoped-history and combined-CoC-retention migrations preserve owner RLS and idempotency, scope prospective six-row retention by roller page, add a matching index, and expose scoped clearing only to `authenticated`; the application rejects empty or unsupported scope inputs before calling it. Phase 4D1 itself adds no campaign-scoped authorization, campaign result table, Realtime feed, or Game Room dice behavior.
 
 The Phase 4D1 dependency closeout records zero known npm vulnerabilities in both the production-only and full local dependency audits after the lockfile-only Browserslist update from 4.28.4 to 4.28.9.
 
 ### Game Room dice — Phase 4D2
 
-The Phase 4D2 implementation keeps Campaign Dice randomness and interpretation server-authoritative. Ordinary authenticated clients retain read-only Journal access and cannot call the recording RPC. The trusted server resolves the active Game Session and passes that exact ID to a service-role-only function, which locks the campaign and expected session, rechecks campaign membership/system/session state, and never rebinds an in-flight roll to a newer session. If the expected session ended or expired, the result remains non-persisted.
+Phase 4D2 is deployed, accepted, and closed. Campaign Dice randomness and interpretation remain server-authoritative. Ordinary authenticated clients retain read-only Journal access and cannot call the recording RPC. The trusted server resolves the active Game Session and passes that exact ID to a service-role-only function, which locks the campaign and expected session, rechecks campaign membership/system/session state, and never rebinds an in-flight roll to a newer session. If the expected session ended or expired, the result remains non-persisted.
 
 Implemented controls and the retained external-exposure gate:
 
@@ -251,6 +250,18 @@ Implemented controls and the retained external-exposure gate:
 - rate-limit plan before external exposure.
 
 Journal Realtime is independent of LiveKit. LiveKit remains responsible only for video and the existing Gallery image-presentation exception. Hidden rolls, alternate visibility modes, and archive UI remain deferred.
+
+The four Phase 4D2 migrations are applied in Production. Game Session state and Journal events are both published through Supabase Realtime. The authenticated application roles cannot forge Journal events directly, and automatic expiry remains private database-controlled behavior.
+
+### Known non-blocking advisor items
+
+- hosted leaked-password protection is currently disabled;
+- the intentionally separate owner and campaign-sharing SELECT paths on `characters` produce an existing multiple-permissive-policy performance warning;
+- the advisor reports the intentional authenticated `SECURITY DEFINER` RPC surface; authorization remains enforced inside the reviewed functions, and this aggregate warning is not by itself evidence of unauthorized access;
+- unused-index notices remain informational on the young/low-volume schema;
+- two informational unindexed-foreign-key notices currently apply to `game_session_journal_events.actor_id` and `game_sessions.started_by`.
+
+These items were not changed by Phase 4D2 and are not part of this documentation close-out.
 
 ### Standalone Video Rooms — uncommitted backlog gate
 

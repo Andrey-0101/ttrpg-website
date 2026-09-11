@@ -13,24 +13,25 @@ Completed:
 - planned game-system catalogue across Games, Dice Rollers, character creation, and campaign creation;
 - Phase 4B — Campaign Video Rooms Integration;
 - Phase 4C1 — image-only Campaign Gallery;
-- Phase 4C2 — Game Room Image Presentation.
+- Phase 4C2 — Game Room Image Presentation;
+- Phase 4D1 — CoC 7e personal Dice Roller and focused UX follow-up;
+- Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice.
 
 Active:
 
-- Phase 4 — Core Play & Campaign Tools, with 4A through 4C2 complete in Production;
-- Phase 4D1 — CoC 7e Dice Roller and its contextual-navigation, scoped-history, and live Target-band follow-up deployed in Production;
-- next product stage — Phase 4D2 system-aware Game Room dice.
+- Phase 4 — Core Play & Campaign Tools, with Phase 4D2 complete and accepted in Production;
+- next product stage — Phase 4E Campaign & Game Room UX/UI Refinement.
 
 The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
-Accepted Phase 4C2 Production code baseline:
+Accepted Phase 4D2 Production application baseline:
 
 ```text
 main
-0796cf737e4253ae38631ec807c416c17da10dbc
+01d917688ddadb5366949a714bba462b7c5c44b2
 ```
 
-The Production product includes Phase 4A personal dice and persistence, the game-system catalogue, the CoC campaign shell and personal dice roller with its focused Phase 4D1 UX follow-up, campaign-authorized LiveKit video, the accepted responsive Campaign Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation. PR #43 delivered presentation and PR #44 corrected the desktop Expand participant layout; the corrected feature was manually accepted in Production. The last broader Game Room Production group test passed with one GM and four Players, without quantitative network/connection-quality telemetry. PR #47 deployed contextual roller navigation, roller-scoped personal history, live CoC Target bands, and the forward-only per-kind retention migration; guest/runtime acceptance passed and authenticated Production history acceptance remains pending. Standalone Video Rooms are retained only as an uncommitted backlog idea.
+The Production product includes Phase 4A through Phase 4D2. PR #52 delivered independent Game Sessions, session-scoped Journal, and server-authoritative VtM V5/CoC 7e Campaign Dice; PR #53 refined acceptance UX; PR #54 delivered the final stable one-row Journal/Gallery/Dice navigation. Multi-user Phase 4D2 acceptance and the final UI-polish re-test passed. LiveKit remains limited to video/audio and Gallery presentation. Standalone Video Rooms are retained only as an uncommitted backlog idea.
 
 ## Architecture
 
@@ -51,7 +52,7 @@ The Production product includes Phase 4A personal dice and persistence, the game
 | [`product/ROADMAP.md`](product/ROADMAP.md) | Milestones, current status, scope boundaries, and exit criteria |
 | [`product/IDEAS_BACKLOG.md`](product/IDEAS_BACKLOG.md) | Unapproved product ideas captured for review and possible roadmap acceptance |
 | [`product/CAMPAIGNS.md`](product/CAMPAIGNS.md) | Implemented Campaign Foundation contract and current UI |
-| [`product/DICE_ROLLS.md`](product/DICE_ROLLS.md) | Implemented personal dice contracts, persistence boundary, and planned Game Room dice sequence |
+| [`product/DICE_ROLLS.md`](product/DICE_ROLLS.md) | Implemented personal and Campaign Dice contracts and their separate trust boundaries |
 | [`product/VIDEO_ROOMS.md`](product/VIDEO_ROOMS.md) | Accepted campaign-only LiveKit scope and uncommitted standalone backlog boundary |
 | [`product/GAME_HUB.md`](product/GAME_HUB.md) | Proposed game-hub content and tools |
 | [`product/SITE_STRUCTURE_CURRENT.md`](product/SITE_STRUCTURE_CURRENT.md) | Current implemented information architecture |

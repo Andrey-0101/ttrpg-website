@@ -4,11 +4,11 @@
 
 **Implemented and verified.**
 
-Campaign Foundation and Phase 4C2 are complete in the accepted Production code baseline:
+Campaign Foundation through Phase 4D2 are complete in the accepted Production code baseline:
 
 ```text
 main
-0796cf737e4253ae38631ec807c416c17da10dbc
+01d917688ddadb5366949a714bba462b7c5c44b2
 ```
 
 It includes the database schema, RLS, invitation lifecycle, membership controls, campaign character sharing, campaign management UI, EN/RU localization, mobile layouts, and multi-user security testing.
@@ -26,13 +26,13 @@ The current implementation connects:
 - a dedicated campaign Game Room with the basic LiveKit video experience;
 - a private image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other sections, GM access controls, and Player-filtered viewing;
 - GM-controlled Game Room image presentation from that Gallery, including Share / Stop Share and synchronized Expand / Collapse.
-- a persistent GM-controlled Game Session lifecycle and a session-scoped, currently empty Journal shell, independent of LiveKit.
+- a persistent GM-controlled Game Session lifecycle and session-scoped Journal, independent of LiveKit;
+- system-aware, server-authoritative Campaign Dice for VtM V5 and CoC 7e, with active-session rolls published in the Journal through Supabase Realtime.
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
 Approved later Phase 4 work will add:
 
-- system-aware campaign dice for VtM and CoC;
 - system-aware linked-character presentation in the Game Room;
 - shared notes for permitted participants and GM-private notes.
 
@@ -319,9 +319,15 @@ Players do not see management controls.
 
 `/[locale]/campaigns/[id]/game-room` is the dedicated localized virtual tabletop for an authorized campaign participant. The Campaign Overview contains a compact entry card and no longer mounts or connects the active video component.
 
-The Game Room owns the room-level Game Session state and non-video tools. Its stable order is `Journal | Gallery | Dice | Character`: Journal opens in the shared Display, Gallery remains browsable by the GM without video, and Dice and Character remain disabled. Journal shows only the exact active Game Session and creates no synthetic events. Only the GM can Start or End; Players see current state and Journal. One active session per campaign is database-enforced, ended sessions are retained, and campaign completion closes the active session and prevents another start.
+The Game Room owns the room-level Game Session state and non-video tools. Its stable one-row order is `Journal | Gallery | Dice | Character`: Journal opens by default in the shared Display and has no back arrow, Gallery opens directly in Handouts and keeps its internal back arrow, Campaign Dice is available for VtM V5 and CoC 7e, and Character remains unavailable until its roadmap phase. CoC Dice opens directly in Percentile with the internal `← | Percentile | Other Dice` submenu; VtM Dice opens directly without a submenu.
+
+Journal shows only the exact active Game Session and creates no synthetic events. Without an active session there are no persistent Journal events; every new session starts with an empty current Journal, while ended session rows and events remain stored for future archive/history UI. Entries append at the bottom, older entries remain above, the Journal auto-scrolls to the newest entry, and the GM Start/End control stays fixed while the event list scrolls. Journal events and Game Session Start/End state propagate through Supabase Realtime; lightweight polling is only fallback reconciliation.
+
+Only the GM can Start or End. Players see the current state and Journal. One active session per campaign is database-enforced, explicit End closes immediately, and campaign completion closes the active session and prevents another start. Ended sessions are retained; archive UI is not implemented.
 
 Video remains an optional child capability with explicit Join/Leave, participant video tiles, own camera and microphone controls, browser sound unlock when required, participant names and roles, reconnect, cleanup, and safe errors. Opening or refreshing Game Room never joins LiveKit; refresh requires explicit Join again. Video Leave/disconnect and camera or microphone state never start, renew, or end Game Session. Gallery Share and synchronized Expand remain available only while the GM is connected to LiveKit.
+
+Browsing Gallery does not require LiveKit. Image Share/Presentation still uses LiveKit: the GM must be connected, and only LiveKit-connected participants receive the presented image. LiveKit controls only video/audio and Gallery presentation; it does not control Game Room access, Game Session lifecycle, Journal, or Campaign Dice.
 
 GM Game Room presence renews on entry and approximately every 30 minutes while the page remains mounted. The database deadline is approximately 60 minutes after the last renewal, and an autonomous scheduled database function closes abandoned sessions without waiting for another visitor. No unload event is part of the correctness contract.
 
@@ -358,6 +364,7 @@ Deletion cascades campaign-owned records:
 - invitations;
 - assignment records.
 - campaign video settings, groups, restrictions, image metadata/recipients, and audit rows.
+- Game Sessions and their Journal events.
 
 Campaign image objects are outside ordinary relational cascade behavior. Implemented individual deletion removes and verifies the Storage object before deleting metadata. Implemented campaign deletion removes and verifies every represented object before deleting either an active or completed campaign. A missing object can be reconciled; an unverified remaining object keeps metadata/campaign rows for a safe retry.
 
@@ -444,7 +451,7 @@ Outside the completed Campaign Foundation:
 - Game Master editing of Player characters;
 - public campaign pages.
 
-The Phase 4D2 release branch implements GM-controlled Game Sessions, an exact-session Journal, and system-aware Campaign Dice for VtM V5 and CoC 7e. Rolls outside an active session remain local and non-persisted; active-session rolls are public Journal events delivered through Supabase Realtime. LiveKit remains independent except for the existing Gallery image-presentation transport. CoC character sheets remain planned for Phase 4F1. Archive UI, hidden rolls, Keeper-specific tools, NPCs, clues, general Handouts, richer Sessions, and Chronicle records are not active roadmap commitments.
+Phase 4D2 is deployed, accepted, and closed. Its GM-controlled Game Sessions, exact-session Journal, and system-aware Campaign Dice for VtM V5 and CoC 7e are current behavior. Rolls outside an active session remain local to the roller and non-persisted; active-session rolls are public Journal events delivered through Supabase Realtime. The campaign system selects the existing system roller automatically; no parallel campaign dice mechanics exist. Server-authoritative execution, exact-session binding across End → Start races, and the absence of direct authenticated Journal writes preserve the shared-history trust boundary. Hidden/private campaign rolls remain unimplemented. LiveKit remains independent except for the existing Gallery image-presentation transport. CoC character sheets remain planned for Phase 4F1. Archive UI, hidden rolls, Keeper-specific tools, NPCs, clues, general Handouts, richer Sessions, and Chronicle records are not active roadmap commitments.
 
 ## Open questions for later milestones
 

@@ -2,13 +2,13 @@
 
 ## Status
 
-**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are also deployed. Phase 4D2 system-aware Game Room dice is implemented on its release branch and awaits Production acceptance.**
+**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are deployed. Phase 4D2 system-aware Game Room dice is deployed, manually accepted, and closed.**
 
 The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. Shared strict validation primitives live at `lib/dice/validation.ts`, and shared unbiased secure integer generation lives at `lib/dice/secure-random.ts`. Phase 4D1 adds the CoC evaluators and generators under `lib/game-systems/call-of-cthulhu-7e/`.
 
 The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`, and the deployed CoC route is `/[locale]/games/call-of-cthulhu/tools/dice`. Personal persistence is implemented and remains non-authoritative. Campaign-authoritative Game Room rolls use session-scoped Journal events rather than a separate `dice_rolls` table.
 
-Campaign-authorized LiveKit video, the responsive Game Room, Phase 4C1 Campaign Gallery, Phase 4C2 Game Room Image Presentation, and Phase 4D1 with its UX follow-up are complete in Production. The Phase 4D2 branch adds Game Sessions, Journal, and system-aware Campaign Dice; Production acceptance remains pending.
+Campaign-authorized LiveKit video, the responsive Game Room, Phase 4C1 Campaign Gallery, Phase 4C2 Game Room Image Presentation, Phase 4D1, and Phase 4D2 Game Sessions, Journal, and system-aware Campaign Dice are complete in Production. Phase 4D2 passed multi-user acceptance and the final focused navigation re-test.
 
 Initial system:
 
@@ -320,6 +320,8 @@ Phase 4D1 and its UX follow-up passed complete local application, database, and 
 
 ## Phase 4D2 — System-aware Game Room dice
 
+**Complete / deployed / accepted in Production.**
+
 Integration surface:
 
 ```text
@@ -328,7 +330,11 @@ Integration surface:
 
 The Phase 4D2 implementation provides persistent `game_sessions`, the `game_session_journal_events` envelope, VtM V5 and CoC 7e Campaign Dice, rendered Journal events, and Supabase Realtime delivery. With no active Game Session, the server returns the roll only to its initiator and does not persist it. With an active session, the trusted server passes the exact resolved session ID to a service-role-only database RPC, which revalidates that session under lock before inserting the public Journal event. Personal history remains separate and is never reused.
 
-Requirements:
+The campaign system selects the roller automatically, and Campaign Dice reuses the existing VtM V5 and CoC 7e engines rather than defining separate campaign mechanics. Campaign Dice is independent of LiveKit. Hidden/private campaign rolls are not implemented.
+
+The accepted UI opens VtM Dice directly with no submenu. CoC Dice opens directly in Percentile and uses the internal one-row submenu `← | Percentile | Other Dice`; both modes retain the existing CoC request, validation, mechanics, and result contracts.
+
+Accepted requirements:
 
 - active campaign participant;
 - derive the campaign game system server-side;
@@ -342,7 +348,10 @@ Requirements:
 - immutable ordinary history;
 - Supabase Realtime feed scoped to the exact Game Session;
 - removed Player access loss;
-- safe limits and errors.
+- safe limits and errors;
+- direct authenticated Journal forging denied;
+- exact-session binding preserved across an End → Start race;
+- Game Session state and Journal event delivery use Supabase Realtime, with lightweight polling only as fallback reconciliation.
 
 ## Persisted Journal record
 
@@ -364,7 +373,7 @@ Events are public to current campaign participants through participant-readable 
 
 ## Campaign feed
 
-Friend-alpha feed should show:
+The accepted friend-alpha feed shows:
 
 - Player;
 - character when selected;
@@ -464,3 +473,5 @@ Use fixed die arrays for:
 3. All authorized viewers receive the same result.
 4. History cannot be silently changed.
 5. Removed Players and Outsiders are denied.
+
+All five criteria passed the Phase 4D2 automated verification and Production acceptance sequence.
