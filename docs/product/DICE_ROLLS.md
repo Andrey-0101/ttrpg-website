@@ -2,13 +2,13 @@
 
 ## Status
 
-**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are also deployed. Phase 4D2 system-aware Game Room dice remains planned.**
+**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are also deployed. Phase 4D2 system-aware Game Room dice is implemented on its release branch and awaits Production acceptance.**
 
 The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. Shared strict validation primitives live at `lib/dice/validation.ts`, and shared unbiased secure integer generation lives at `lib/dice/secure-random.ts`. Phase 4D1 adds the CoC evaluators and generators under `lib/game-systems/call-of-cthulhu-7e/`.
 
-The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`, and the deployed CoC route is `/[locale]/games/call-of-cthulhu/tools/dice`. Personal persistence is implemented and remains non-authoritative. The `dice_rolls` table and campaign-authoritative Game Room dice are not implemented.
+The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`, and the deployed CoC route is `/[locale]/games/call-of-cthulhu/tools/dice`. Personal persistence is implemented and remains non-authoritative. Campaign-authoritative Game Room rolls use session-scoped Journal events rather than a separate `dice_rolls` table.
 
-Campaign-authorized LiveKit video, the responsive Game Room, Phase 4C1 Campaign Gallery, Phase 4C2 Game Room Image Presentation, and Phase 4D1 with its UX follow-up are complete in Production. Dice resumes in Phase 4D2 with system-aware Game Room integration.
+Campaign-authorized LiveKit video, the responsive Game Room, Phase 4C1 Campaign Gallery, Phase 4C2 Game Room Image Presentation, and Phase 4D1 with its UX follow-up are complete in Production. The Phase 4D2 branch adds Game Sessions, Journal, and system-aware Campaign Dice; Production acceptance remains pending.
 
 Initial system:
 
@@ -23,7 +23,7 @@ Implementation order:
 3. preserve the completed campaign Game Room and keep unavailable controls visibly disabled;
 4. preserve the deployed CoC 7e personal dice engine, roller, and scoped UX follow-up from Phase 4D1;
 5. integrate the correct system roller into the Game Room in Phase 4D2: VtM for VtM campaigns and CoC for CoC campaigns;
-6. add persisted or realtime campaign history only if the Phase 4D2 design approves a server-authoritative schema, execution boundary, and RLS contract.
+6. persist active-session public rolls through the approved server-authoritative Journal boundary and deliver them through Supabase Realtime.
 
 ## Product goals
 
@@ -320,11 +320,13 @@ Phase 4D1 and its UX follow-up passed complete local application, database, and 
 
 ## Phase 4D2 — System-aware Game Room dice
 
-Recommended route:
+Integration surface:
 
 ```text
-/[locale]/campaigns/[id]/dice
+/[locale]/campaigns/[id]/game-room
 ```
+
+The Phase 4D2 implementation provides persistent `game_sessions`, the `game_session_journal_events` envelope, VtM V5 and CoC 7e Campaign Dice, rendered Journal events, and Supabase Realtime delivery. With no active Game Session, the server returns the roll only to its initiator and does not persist it. With an active session, the trusted server passes the exact resolved session ID to a service-role-only database RPC, which revalidates that session under lock before inserting the public Journal event. Personal history remains separate and is never reused.
 
 Requirements:
 
@@ -333,44 +335,32 @@ Requirements:
 - use VtM rules for VtM campaigns and CoC rules for CoC campaigns;
 - never expose an incompatible system roller;
 - server-authoritative random generation;
-- server-authoritative system-specific interpretation if persisted or shared history is approved;
+- server-authoritative system-specific interpretation;
 - structured request and result persistence;
 - authenticated actor derived server-side;
 - optional character association only when accessible;
 - immutable ordinary history;
-- Realtime feed scoped to the campaign;
+- Supabase Realtime feed scoped to the exact Game Session;
 - removed Player access loss;
 - safe limits and errors.
 
-## Candidate persisted record
+## Persisted Journal record
 
-Not implemented.
+Implemented as a `campaign_dice_roll` event in `game_session_journal_events`.
 
-Candidate fields:
+Persisted fields:
 
 ```text
 id
-campaign_id
-session_id
-user_id
-character_id
-game_system
-visibility
-label
-request_data
-result_data
+game_session_id
+actor_id
+event_kind
+schema_version
+event_data: campaignId, gameSystem, rollType, characterId, actorDisplayName, request, result
 created_at
 ```
 
-Potential visibility:
-
-```text
-all_members
-game_master_only
-roller_only
-```
-
-Do not add visibility modes until their RLS behavior is fully specified.
+Events are public to current campaign participants through participant-readable RLS. Hidden, GM-only, roller-only, and archive views remain deferred until their product and RLS behavior is specified.
 
 ## Campaign feed
 

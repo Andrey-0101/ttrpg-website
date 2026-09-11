@@ -22,6 +22,7 @@ import {
   getCampaignVideoParticipantSlots,
   type CampaignVideoParticipantSlot,
 } from "@/lib/campaign-video/browser/presentation";
+import type { GameSessionState } from "@/lib/game-sessions/contracts";
 
 type CampaignVideoRoomController = ReturnType<
   typeof createCampaignVideoRoomController
@@ -29,17 +30,22 @@ type CampaignVideoRoomController = ReturnType<
 
 type CampaignVideoRoomProps = {
   campaignId: string;
+  campaignGameSystem: string;
   campaignStatus: string;
   directoryReady: boolean;
   isGameMaster: boolean;
   galleryItems: CampaignGameRoomGalleryItem[];
   participantDirectory: CampaignVideoParticipantDirectoryEntry[];
+  gameSession: GameSessionState;
+  sessionLoading: boolean;
+  sessionBusy: boolean;
+  sessionError: boolean;
+  onStartSession(): Promise<void>;
+  onEndSession(): Promise<void>;
+  onJournalEvent(event: GameSessionState["journal"][number]): void;
 };
 
-type CampaignVideoRoomLayoutProps = Omit<
-  CampaignVideoRoomProps,
-  "campaignId"
-> & {
+type CampaignVideoRoomLayoutProps = CampaignVideoRoomProps & {
   snapshot: CampaignVideoRoomSnapshot;
   seenParticipantIdentities: ReadonlySet<string>;
   onJoin(): void;
@@ -369,6 +375,8 @@ function phaseMessage(
 }
 
 export function CampaignVideoRoomLayout({
+  campaignId,
+  campaignGameSystem,
   campaignStatus,
   directoryReady,
   isGameMaster,
@@ -384,6 +392,13 @@ export function CampaignVideoRoomLayout({
   onShareImage,
   onSetPresentationExpanded,
   onStopShare,
+  gameSession,
+  sessionLoading,
+  sessionBusy,
+  sessionError,
+  onStartSession,
+  onEndSession,
+  onJournalEvent,
 }: CampaignVideoRoomLayoutProps) {
   const translations = useTranslations("CampaignVideoRoom");
   const statusMessage =
@@ -451,6 +466,8 @@ export function CampaignVideoRoomLayout({
         ))}
         <CampaignGameRoomWorkspace
           isGameMaster={isGameMaster}
+          campaignId={campaignId}
+          campaignGameSystem={campaignGameSystem}
           galleryItems={galleryItems}
           connected={connected}
           isPresenting={snapshot.isPresenting}
@@ -458,6 +475,13 @@ export function CampaignVideoRoomLayout({
           sharedPresentationUrl={snapshot.sharedPresentation?.signedUrl ?? null}
           presentationBusy={snapshot.presentationBusy}
           presentationError={snapshot.presentationError !== null}
+          gameSession={gameSession}
+          sessionLoading={sessionLoading}
+          sessionBusy={sessionBusy}
+          sessionError={sessionError}
+          onStartSession={onStartSession}
+          onEndSession={onEndSession}
+          onJournalEvent={onJournalEvent}
           onShareImage={onShareImage}
           onSetPresentationExpanded={onSetPresentationExpanded}
           onStopShare={onStopShare}
@@ -469,11 +493,19 @@ export function CampaignVideoRoomLayout({
 
 function CampaignVideoRoomInstance({
   campaignId,
+  campaignGameSystem,
   campaignStatus,
   directoryReady,
   isGameMaster,
   galleryItems,
   participantDirectory,
+  gameSession,
+  sessionLoading,
+  sessionBusy,
+  sessionError,
+  onStartSession,
+  onEndSession,
+  onJournalEvent,
 }: CampaignVideoRoomProps) {
   const controllerRef = useRef<CampaignVideoRoomController | null>(null);
   const participantDirectoryJson = JSON.stringify(participantDirectory);
@@ -518,11 +550,20 @@ function CampaignVideoRoomInstance({
 
   return (
     <CampaignVideoRoomLayout
+      campaignId={campaignId}
+      campaignGameSystem={campaignGameSystem}
       campaignStatus={campaignStatus}
       directoryReady={directoryReady}
       isGameMaster={isGameMaster}
       galleryItems={galleryItems}
       participantDirectory={participantDirectory}
+      gameSession={gameSession}
+      sessionLoading={sessionLoading}
+      sessionBusy={sessionBusy}
+      sessionError={sessionError}
+      onStartSession={onStartSession}
+      onEndSession={onEndSession}
+      onJournalEvent={onJournalEvent}
       snapshot={snapshot}
       seenParticipantIdentities={seenParticipantIdentities}
       onJoin={() => void controllerRef.current?.join()}

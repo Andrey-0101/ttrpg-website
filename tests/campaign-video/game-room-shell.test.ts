@@ -47,6 +47,20 @@ test("Campaign Overview links to Game Room without mounting the active video com
   assert.doesNotMatch(card, /fetch\(|getUserMedia|createLiveKit/u);
 });
 
+test("Game Room route mounts the room owner without starting session or video", () => {
+  const route = source(
+    "app",
+    "[locale]",
+    "campaigns",
+    "[id]",
+    "game-room",
+    "page.tsx",
+  );
+  assert.match(route, /import CampaignGameRoom/u);
+  assert.match(route, /<CampaignGameRoom/u);
+  assert.doesNotMatch(route, /start_game_session|renew_game_session_presence|video\/join/u);
+});
+
 test("Game Room requires explicit Join and keeps interactive controls local-only", () => {
   const room = source("components", "campaigns", "campaign-video-room.tsx");
   const participantCard = room.slice(
@@ -224,12 +238,10 @@ test("Game Room workspace preserves the role-specific tool shell", () => {
   );
 
   assert.match(workspace, /data-game-room-root-tools/u);
-  assert.match(workspace, /grid grid-cols-3 gap-2/u);
+  assert.match(workspace, /grid grid-cols-4 gap-2/u);
   assert.match(workspace, /disabled=\{!isGameMaster\}/u);
-  assert.match(
-    workspace,
-    /translations\(isGameMaster \? "tools\.gallery" : "tools\.display"\)/u,
-  );
+  assert.match(workspace, /translations\("tools\.journal"\)/u);
+  assert.match(workspace, /translations\("tools\.gallery"\)/u);
   assert.match(workspace, /translations\("tools\.dice"\)/u);
   assert.match(workspace, /translations\("tools\.character"\)/u);
   assert.match(workspace, /data-game-room-gallery-tools/u);

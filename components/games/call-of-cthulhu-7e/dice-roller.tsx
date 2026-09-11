@@ -21,7 +21,9 @@ import {
   deriveCoc7eSuccessRanges,
   type Coc7eBonusPenalty,
   type Coc7eOtherDiceResult,
+  type Coc7eOtherDiceRequest,
   type Coc7eOtherDieSides,
+  type Coc7ePercentileTestRequest,
   type Coc7ePercentileTestResult,
   type Coc7eSuccessRange,
 } from "@/lib/game-systems/call-of-cthulhu-7e/dice-engine";
@@ -35,6 +37,16 @@ const QUANTITY_MINIMUM = 1;
 const QUANTITY_MAXIMUM = 10;
 const MODIFIER_MINIMUM = -10;
 const MODIFIER_MAXIMUM = 10;
+
+export type Coc7ePercentileDiceExecutor = (
+  request: Coc7ePercentileTestRequest,
+  label: string | null,
+) => Promise<Coc7ePercentileTestResult>;
+
+export type Coc7eOtherDiceExecutor = (
+  request: Coc7eOtherDiceRequest,
+  label: string | null,
+) => Promise<Coc7eOtherDiceResult>;
 
 const panelClassName =
   "min-w-0 rounded-xl border border-white/25 bg-black/20 p-4 shadow-lg sm:p-6";
@@ -354,10 +366,14 @@ function PercentilePanel({
   authenticated,
   onClientRollId,
   onRecorded,
+  executeRoll,
+  executionErrorMessage,
 }: {
   authenticated: boolean;
   onClientRollId: (clientRollId: string) => void;
   onRecorded: (entry: PersonalRollHistoryEntry) => void;
+  executeRoll?: Coc7ePercentileDiceExecutor;
+  executionErrorMessage?: string;
 }) {
   const translations = useTranslations("Coc7eDiceRoller");
   const id = useId();
@@ -372,9 +388,10 @@ function PercentilePanel({
   const [formError, setFormError] = useState<string | null>(null);
   const [result, setResult] =
     useState<Coc7ePercentileTestResult | null>(null);
+  const [busy, setBusy] = useState(false);
   const parsedLiveTarget = parseTarget(target);
 
-  function handleRoll(event: FormEvent<HTMLFormElement>) {
+  async function handleRoll(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsedTarget = parseTarget(target);
     const labelValidation = validateOptionalDiceRollLabel(label, true);
@@ -394,11 +411,22 @@ function PercentilePanel({
       return;
     }
 
-    try {
-      const evaluation = rollCoc7ePercentileTest({
+    const request: Coc7ePercentileTestRequest = {
         target: parsedTarget,
         bonusPenalty,
-      });
+      };
+
+    try {
+      setBusy(Boolean(executeRoll));
+      const evaluation = executeRoll
+        ? {
+            ok: true as const,
+            result: await executeRoll(request, labelValidation.value),
+          }
+        : rollCoc7ePercentileTest({
+            target: request.target,
+            bonusPenalty: request.bonusPenalty,
+          });
 
       if (!evaluation.ok) {
         const hasTargetError = evaluation.errors.some(
@@ -417,16 +445,22 @@ function PercentilePanel({
       setLabelError(null);
       setFormError(null);
       setResult(evaluation.result);
-      void recordCoc7ePercentileRollBestEffort({
-        authenticated,
-        snapshot: evaluation.result,
-        label: labelValidation.value,
-        recordAction: recordPersonalRollAction,
-        onClientRollId,
-        onRecorded,
-      });
+      if (!executeRoll) {
+        void recordCoc7ePercentileRollBestEffort({
+          authenticated,
+          snapshot: evaluation.result,
+          label: labelValidation.value,
+          recordAction: recordPersonalRollAction,
+          onClientRollId,
+          onRecorded,
+        });
+      }
     } catch {
-      setFormError(translations("errors.randomUnavailable"));
+      setFormError(
+        executionErrorMessage ?? translations("errors.randomUnavailable"),
+      );
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -508,7 +542,7 @@ function PercentilePanel({
             </select>
           </div>
 
-          <button type="submit" className={rollButtonClassName}>
+          <button type="submit" disabled={busy} className={rollButtonClassName}>
             {translations("roll")}
           </button>
         </div>
@@ -579,10 +613,14 @@ function OtherDicePanel({
   authenticated,
   onClientRollId,
   onRecorded,
+  executeRoll,
+  executionErrorMessage,
 }: {
   authenticated: boolean;
   onClientRollId: (clientRollId: string) => void;
   onRecorded: (entry: PersonalRollHistoryEntry) => void;
+  executeRoll?: Coc7eOtherDiceExecutor;
+  executionErrorMessage?: string;
 }) {
   const translations = useTranslations("Coc7eDiceRoller");
   const id = useId();
@@ -593,8 +631,9 @@ function OtherDicePanel({
   const [modifier, setModifier] = useState(0);
   const [formError, setFormError] = useState<string | null>(null);
   const [result, setResult] = useState<Coc7eOtherDiceResult | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  function handleRoll(event: FormEvent<HTMLFormElement>) {
+  async function handleRoll(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const labelValidation = validateOptionalDiceRollLabel(label, true);
     if (!labelValidation.ok) {
@@ -607,12 +646,24 @@ function OtherDicePanel({
       return;
     }
 
-    try {
-      const evaluation = rollCoc7eOtherDice({
+    const request: Coc7eOtherDiceRequest = {
         sides,
         quantity,
         modifier,
-      });
+      };
+
+    try {
+      setBusy(Boolean(executeRoll));
+      const evaluation = executeRoll
+        ? {
+            ok: true as const,
+            result: await executeRoll(request, labelValidation.value),
+          }
+        : rollCoc7eOtherDice({
+            sides: request.sides,
+            quantity: request.quantity,
+            modifier: request.modifier,
+          });
 
       if (!evaluation.ok) {
         setFormError(translations("errors.otherRequest"));
@@ -622,16 +673,22 @@ function OtherDicePanel({
       setFormError(null);
       setLabelError(null);
       setResult(evaluation.result);
-      void recordCoc7eOtherDiceRollBestEffort({
-        authenticated,
-        snapshot: evaluation.result,
-        label: labelValidation.value,
-        recordAction: recordPersonalRollAction,
-        onClientRollId,
-        onRecorded,
-      });
+      if (!executeRoll) {
+        void recordCoc7eOtherDiceRollBestEffort({
+          authenticated,
+          snapshot: evaluation.result,
+          label: labelValidation.value,
+          recordAction: recordPersonalRollAction,
+          onClientRollId,
+          onRecorded,
+        });
+      }
     } catch {
-      setFormError(translations("errors.randomUnavailable"));
+      setFormError(
+        executionErrorMessage ?? translations("errors.randomUnavailable"),
+      );
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -700,7 +757,7 @@ function OtherDicePanel({
             }}
           />
 
-          <button type="submit" className={rollButtonClassName}>
+          <button type="submit" disabled={busy} className={rollButtonClassName}>
             {translations("roll")}
           </button>
         </div>
@@ -720,10 +777,19 @@ function OtherDicePanel({
 export default function CallOfCthulhu7eDiceRoller({
   authenticated,
   initialHistoryEntries,
+  executePercentileRoll,
+  executeOtherDiceRoll,
+  compact = false,
+  executionErrorMessage,
 }: {
   authenticated: boolean;
   initialHistoryEntries: PersonalRollHistoryEntry[] | null;
+  executePercentileRoll?: Coc7ePercentileDiceExecutor;
+  executeOtherDiceRoll?: Coc7eOtherDiceExecutor;
+  compact?: boolean;
+  executionErrorMessage?: string;
 }) {
+  const translations = useTranslations("Coc7eDiceRoller");
   const [historyEntries, setHistoryEntries] = useState(
     initialHistoryEntries ?? [],
   );
@@ -733,6 +799,9 @@ export default function CallOfCthulhu7eDiceRoller({
   const [currentOtherDiceRollId, setCurrentOtherDiceRollId] = useState<
     string | null
   >(null);
+  const [activeTab, setActiveTab] = useState<"percentile" | "other">(
+    "percentile",
+  );
   const handleRecorded = (entry: PersonalRollHistoryEntry) => {
     setHistoryEntries((current) =>
       mergePersonalRollHistoryEntry(current, entry),
@@ -741,17 +810,51 @@ export default function CallOfCthulhu7eDiceRoller({
 
   return (
     <>
-      <div className="grid min-w-0 gap-6 md:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
-        <PercentilePanel
-          authenticated={authenticated}
-          onClientRollId={setCurrentPercentileRollId}
-          onRecorded={handleRecorded}
-        />
-        <OtherDicePanel
-          authenticated={authenticated}
-          onClientRollId={setCurrentOtherDiceRollId}
-          onRecorded={handleRecorded}
-        />
+      {compact ? (
+        <div className="mb-3 grid grid-cols-2 gap-2" role="tablist">
+          {(["percentile", "other"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab}
+              onClick={() => setActiveTab(tab)}
+              className={`min-h-11 rounded-lg border px-3 py-2 font-semibold ${
+                activeTab === tab
+                  ? "border-white bg-white text-neutral-950"
+                  : "border-white/30 bg-black/20 text-white"
+              }`}
+            >
+              {translations(tab === "percentile" ? "percentile.title" : "other.title")}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <div
+        className={
+          compact
+            ? "min-w-0"
+            : "grid min-w-0 gap-6 md:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]"
+        }
+      >
+        <div hidden={compact && activeTab !== "percentile"}>
+          <PercentilePanel
+            authenticated={authenticated}
+            onClientRollId={setCurrentPercentileRollId}
+            onRecorded={handleRecorded}
+            executeRoll={executePercentileRoll}
+            executionErrorMessage={executionErrorMessage}
+          />
+        </div>
+        <div hidden={compact && activeTab !== "other"}>
+          <OtherDicePanel
+            authenticated={authenticated}
+            onClientRollId={setCurrentOtherDiceRollId}
+            onRecorded={handleRecorded}
+            executeRoll={executeOtherDiceRoll}
+            executionErrorMessage={executionErrorMessage}
+          />
+        </div>
       </div>
 
       {initialHistoryEntries ? (

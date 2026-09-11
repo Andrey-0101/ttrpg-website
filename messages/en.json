@@ -554,7 +554,7 @@
     "back": "Back to Campaign Overview",
     "backCompact": "Back to campaign",
     "title": "Game Room",
-    "description": "The campaign's virtual tabletop with video and a local Gallery workspace for the Game Master.",
+    "description": "The campaign's virtual tabletop with session tools and optional video.",
     "roleLabel": "Your role",
     "availability": {
       "label": "Room status",
@@ -571,6 +571,7 @@
       "tools": "Tools"
     },
     "tools": {
+      "journal": "Journal",
       "gallery": "Gallery",
       "display": "Display",
       "dice": "Dice",
@@ -586,6 +587,27 @@
       "openImage": "Open {name}",
       "presentedImageAlt": "Presented campaign image",
       "presentationError": "The image could not be shared. Try again."
+    },
+    "journal": {
+      "title": "Journal",
+      "loading": "Loading session state...",
+      "active": "Game session active",
+      "inactive": "No active game session",
+      "empty": "The current session Journal is empty.",
+      "start": "Start session",
+      "end": "End session",
+      "error": "The session state could not be updated. Try again.",
+      "participantFallback": "Campaign participant",
+      "unlabelled": "Unlabelled",
+      "unlabelledPercentile": "Unlabelled Percentile",
+      "difficulty": "Difficulty {value}",
+      "target": "Target {value}"
+    },
+    "dice": {
+      "localOnly": "No active Game Session. This result is visible only to you and is not saved.",
+      "sessionPublic": "Game Session active. Valid rolls are public in the current Journal.",
+      "error": "The campaign roll could not be completed safely. Try again.",
+      "unavailable": "Dice are not available for this campaign system."
     }
   },
   "CampaignVideoRoom": {

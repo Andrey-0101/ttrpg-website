@@ -1,0 +1,237 @@
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+
+const DATABASE_CONTAINER = "supabase_db_ttrpg-website";
+const CAMPAIGN_ID = "94000000-0000-4000-8000-000000000001";
+const GM_ID = "94000000-0000-4000-8000-000000000002";
+const PLAYER_ID = "94000000-0000-4000-8000-000000000003";
+const CHARACTER_ID = "94000000-0000-4000-8000-000000000004";
+const MISSING_SESSION_ID = "94000000-0000-4000-8000-000000000005";
+
+type Result = {
+  ok: boolean;
+  sqlState: string | null;
+  stdout: string;
+  stderr: string;
+};
+
+function runPsql(sql: string): Promise<Result> {
+  return new Promise((resolve) => {
+    const child = spawn(
+      "docker",
+      [
+        "exec", "-i", DATABASE_CONTAINER, "psql", "-U", "postgres",
+        "-d", "postgres", "-X", "-q", "-t", "-A", "-v",
+        "ON_ERROR_STOP=1",
+        "--set", "VERBOSITY=verbose",
+      ],
+      { stdio: ["pipe", "pipe", "pipe"], windowsHide: true },
+    );
+    let stdout = "";
+    let stderr = "";
+    const timeout = setTimeout(() => child.kill(), 30_000);
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", (chunk: string) => (stdout += chunk));
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", (chunk: string) => (stderr += chunk));
+    child.on("error", (error) => {
+      clearTimeout(timeout);
+      resolve({ ok: false, sqlState: null, stdout, stderr: error.message });
+    });
+    child.on("close", (code) => {
+      clearTimeout(timeout);
+      resolve({
+        ok: code === 0,
+        sqlState: stderr.match(/ERROR:\s+([0-9A-Z]{5}):/)?.[1] ?? null,
+        stdout,
+        stderr,
+      });
+    });
+    child.stdin.end(`set statement_timeout = '25s';\n${sql}`);
+  });
+}
+
+async function requireSuccess(sql: string, label: string) {
+  const result = await runPsql(sql);
+  assert.equal(result.ok, true, `${label}: ${result.stderr}`);
+}
+
+async function requireScalar(sql: string, label: string) {
+  const result = await runPsql(sql);
+  assert.equal(result.ok, true, `${label}: ${result.stderr}`);
+  const value = result.stdout.trim();
+  assert.notEqual(value, "", `${label}: expected one scalar result`);
+  return value;
+}
+
+function authenticatedSql(actorId: string, sql: string) {
+  return `begin;
+set local role authenticated;
+set local request.jwt.claim.sub = '${actorId}';
+set local request.jwt.claim.role = 'authenticated';
+set local request.jwt.claims = '{"sub":"${actorId}","role":"authenticated"}';
+${sql}
+commit;`;
+}
+
+function recordSql(actorId: string, expectedSessionId: string, label: string) {
+  return `begin;
+set local role service_role;
+select public.record_campaign_dice_roll(
+  '${CAMPAIGN_ID}'::uuid,
+  '${actorId}'::uuid,
+  '${expectedSessionId}'::uuid,
+  'vtm_v5',
+  '{"pool":1,"hungerDice":0,"difficulty":null,"label":"${label}"}'::jsonb,
+  '{"gameSystem":"vtm-v5","request":{"pool":1,"hungerDice":0,"difficulty":null,"label":"${label}"},"normalDice":[7],"hungerDiceResults":[],"summaryKey":"successes-counted"}'::jsonb
+);
+commit;`;
+}
+
+async function main() {
+  await requireSuccess(
+    `delete from public.characters where id = '${CHARACTER_ID}'::uuid;
+delete from public.campaigns where id = '${CAMPAIGN_ID}'::uuid;
+delete from auth.users where id in ('${GM_ID}'::uuid, '${PLAYER_ID}'::uuid);
+insert into auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+values
+  ('${GM_ID}', 'authenticated', 'authenticated', 'dice-gm@example.test', '', '{}'::jsonb, '{}'::jsonb, now(), now()),
+  ('${PLAYER_ID}', 'authenticated', 'authenticated', 'dice-player@example.test', '', '{}'::jsonb, '{}'::jsonb, now(), now());
+update public.profiles set display_name = 'Game Master Profile' where id = '${GM_ID}'::uuid;
+update public.profiles set display_name = 'Player Profile' where id = '${PLAYER_ID}'::uuid;
+insert into public.characters (id, owner_id, game_system, name, visibility)
+values ('${CHARACTER_ID}', '${PLAYER_ID}', 'vtm-v5', 'Player Character', 'campaign');
+insert into public.campaigns (id, game_master_id, game_system, name)
+values ('${CAMPAIGN_ID}', '${GM_ID}', 'vtm-v5', 'Campaign Dice session');
+insert into public.campaign_members (campaign_id, user_id, display_order)
+values ('${CAMPAIGN_ID}', '${PLAYER_ID}', 1);
+insert into public.campaign_characters (campaign_id, character_id, linked_by)
+values ('${CAMPAIGN_ID}', '${CHARACTER_ID}', '${PLAYER_ID}');`,
+    "fixture setup",
+  );
+
+  try {
+    await requireSuccess(
+      `do $$ begin
+        if (select count(*) from public.record_campaign_dice_roll(
+          '${CAMPAIGN_ID}', '${GM_ID}', '${MISSING_SESSION_ID}', 'vtm_v5', '{}'::jsonb, '{}'::jsonb
+        )) <> 0 then raise exception 'roll persisted without active session'; end if;
+      end $$;`,
+      "no-session roll is not persisted",
+    );
+
+    await requireSuccess(
+      authenticatedSql(GM_ID, `select public.start_game_session('${CAMPAIGN_ID}'::uuid);`),
+      "start session",
+    );
+    const firstSessionId = await requireScalar(
+      `select id from public.game_sessions where campaign_id = '${CAMPAIGN_ID}' and ended_at is null;`,
+      "read first session id",
+    );
+    await requireSuccess(
+      recordSql(GM_ID, firstSessionId, "GM Roll"),
+      "GM roll",
+    );
+    await requireSuccess(
+      recordSql(PLAYER_ID, firstSessionId, "Player Roll"),
+      "Player roll",
+    );
+
+    await requireSuccess(
+      `do $$ declare active_id uuid; begin
+        select id into active_id from public.game_sessions
+        where campaign_id = '${CAMPAIGN_ID}' and ended_at is null;
+        if (select count(*) from public.game_session_journal_events where game_session_id = active_id) <> 2 then
+          raise exception 'wrong Journal event count';
+        end if;
+        if not exists (
+          select 1 from public.game_session_journal_events
+          where game_session_id = active_id
+            and event_data->>'actorDisplayName' = 'Game Master Profile'
+            and event_data->>'characterId' is null
+        ) then raise exception 'GM profile fallback missing'; end if;
+        if not exists (
+          select 1 from public.game_session_journal_events
+          where game_session_id = active_id
+            and event_data->>'actorDisplayName' = 'Player Character'
+            and event_data->>'characterId' = '${CHARACTER_ID}'
+        ) then raise exception 'player character identity missing'; end if;
+      end $$;`,
+      "session and identity associations",
+    );
+
+    const directForge = await runPsql(
+      authenticatedSql(PLAYER_ID, `select public.record_campaign_dice_roll('${CAMPAIGN_ID}', '${PLAYER_ID}', '${firstSessionId}', 'vtm_v5', '{}'::jsonb, '{}'::jsonb);`),
+    );
+    assert.equal(directForge.ok, false, "authenticated client cannot call Journal writer");
+    assert.equal(directForge.sqlState, "42501");
+
+    await requireSuccess(
+      authenticatedSql(GM_ID, `select public.end_game_session('${CAMPAIGN_ID}'::uuid);`),
+      "end session",
+    );
+
+    await requireSuccess(
+      authenticatedSql(GM_ID, `select public.start_game_session('${CAMPAIGN_ID}'::uuid);`),
+      "start replacement session",
+    );
+    const replacementSessionId = await requireScalar(
+      `select id from public.game_sessions where campaign_id = '${CAMPAIGN_ID}' and ended_at is null;`,
+      "read replacement session id",
+    );
+    assert.notEqual(replacementSessionId, firstSessionId);
+    await requireSuccess(
+      recordSql(GM_ID, firstSessionId, "Stale Session Roll"),
+      "stale session persistence attempt",
+    );
+    await requireSuccess(
+      `do $$ begin
+        if (select count(*) from public.game_session_journal_events
+          where game_session_id = '${firstSessionId}') <> 2 then
+          raise exception 'stale roll was written to ended session';
+        end if;
+        if (select count(*) from public.game_session_journal_events
+          where game_session_id = '${replacementSessionId}') <> 0 then
+          raise exception 'stale roll was rebound to replacement session';
+        end if;
+      end $$;`,
+      "exact session boundary",
+    );
+
+    const ambiguousOldPath = await runPsql(
+      `select public.record_campaign_dice_roll('${CAMPAIGN_ID}', '${GM_ID}', 'vtm_v5', '{}'::jsonb, '{}'::jsonb);`,
+    );
+    assert.equal(
+      ambiguousOldPath.ok,
+      false,
+      "ambiguous old RPC signature must not exist",
+    );
+    assert.equal(ambiguousOldPath.sqlState, "42883");
+
+    await requireSuccess(
+      authenticatedSql(GM_ID, `select public.end_game_session('${CAMPAIGN_ID}'::uuid);`),
+      "end replacement session",
+    );
+
+    console.log(JSON.stringify({
+      gmRolls: 1,
+      playerRolls: 1,
+      directForge: "blocked",
+      oldRpcPath: "removed",
+      sessionRebinding: "blocked",
+      result: "PASS",
+    }));
+  } finally {
+    await requireSuccess(
+      `delete from public.campaigns where id = '${CAMPAIGN_ID}'::uuid;
+delete from public.characters where id = '${CHARACTER_ID}'::uuid;
+delete from auth.users where id in ('${GM_ID}'::uuid, '${PLAYER_ID}'::uuid);`,
+      "fixture cleanup",
+    );
+  }
+}
+
+void main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+});

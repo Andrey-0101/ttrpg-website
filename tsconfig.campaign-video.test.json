@@ -32,7 +32,10 @@
     "lib/campaign-video/provider.ts",
     "lib/campaign-video/providers/livekit-presentation.ts",
     "lib/campaign-video/providers/livekit.ts",
+    "lib/game-sessions/contracts.ts",
     "tests/campaign-video/browser-room.test.ts",
+    "tests/campaign-video/campaign-dice.test.ts",
+    "tests/campaign-video/game-session.test.ts",
     "tests/campaign-video/game-room-shell.test.ts",
     "tests/campaign-video/server-runtime.test.ts"
   ],

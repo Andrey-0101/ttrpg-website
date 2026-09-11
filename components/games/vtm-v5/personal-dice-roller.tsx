@@ -12,6 +12,7 @@ import { recordVtmV5RollBestEffort } from "@/lib/dice/personal-roll-recording";
 import { validateOptionalDiceRollLabel } from "@/lib/dice/validation";
 import {
   VTM_V5_DICE_LIMITS,
+  type VtmV5DiceRequest,
   type VtmV5DiceResult,
 } from "@/lib/game-systems/vtm-v5/dice-engine";
 import { rollVtmV5Dice } from "@/lib/game-systems/vtm-v5/dice-roller";
@@ -306,12 +307,22 @@ function DiceResult({
   );
 }
 
+export type VtmV5DiceExecutor = (
+  request: VtmV5DiceRequest,
+) => Promise<VtmV5DiceResult>;
+
 export default function PersonalDiceRoller({
   authenticated,
   initialHistoryEntries,
+  executeRoll,
+  compact = false,
+  executionErrorMessage,
 }: {
   authenticated: boolean;
   initialHistoryEntries: PersonalRollHistoryEntry[] | null;
+  executeRoll?: VtmV5DiceExecutor;
+  compact?: boolean;
+  executionErrorMessage?: string;
 }) {
   const translations = useTranslations("VtmDiceRoller");
   const [pool, setPool] = useState("1");
@@ -328,6 +339,7 @@ export default function PersonalDiceRoller({
   >(null);
   const [displayMode, setDisplayMode] =
     useState<VtmV5DiceDisplayMode>("symbols");
+  const [busy, setBusy] = useState(false);
 
   function clearFieldError(field: FieldName) {
     setErrors((current) => ({
@@ -357,7 +369,7 @@ export default function PersonalDiceRoller({
     });
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const nextErrors: FieldErrors = {};
@@ -432,8 +444,7 @@ export default function PersonalDiceRoller({
       return;
     }
 
-    try {
-      const evaluation = rollVtmV5Dice({
+    const request: VtmV5DiceRequest = {
         pool: poolValidation.value,
         hungerDice: hungerValidation.value,
         ...(difficultyValidation
@@ -442,7 +453,20 @@ export default function PersonalDiceRoller({
         ...(labelValidation.value === null
           ? {}
           : { label: labelValidation.value }),
-      });
+      };
+
+    try {
+      setBusy(Boolean(executeRoll));
+      const evaluation = executeRoll
+        ? { ok: true as const, result: await executeRoll(request) }
+        : rollVtmV5Dice({
+            pool: request.pool,
+            hungerDice: request.hungerDice,
+            ...(request.difficulty === undefined
+              ? {}
+              : { difficulty: request.difficulty }),
+            ...(request.label === undefined ? {} : { label: request.label }),
+          });
 
       if (!evaluation.ok) {
         setErrors({ general: translations("validation.unexpected") });
@@ -454,19 +478,26 @@ export default function PersonalDiceRoller({
       setErrors({});
       setResult(snapshot);
 
-      void recordVtmV5RollBestEffort({
-        authenticated,
-        snapshot,
-        recordAction: recordPersonalRollAction,
-        onClientRollId: setCurrentClientRollId,
-        onRecorded: (entry) => {
-          setHistoryEntries((current) =>
-            mergePersonalRollHistoryEntry(current, entry),
-          );
-        },
-      });
+      if (!executeRoll) {
+        void recordVtmV5RollBestEffort({
+          authenticated,
+          snapshot,
+          recordAction: recordPersonalRollAction,
+          onClientRollId: setCurrentClientRollId,
+          onRecorded: (entry) => {
+            setHistoryEntries((current) =>
+              mergePersonalRollHistoryEntry(current, entry),
+            );
+          },
+        });
+      }
     } catch {
-      setErrors({ general: translations("validation.randomUnavailable") });
+      setErrors({
+        general:
+          executionErrorMessage ?? translations("validation.randomUnavailable"),
+      });
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -476,7 +507,7 @@ export default function PersonalDiceRoller({
   return (
     <>
       <form
-        className="mt-8 rounded-xl border border-white/25 bg-black/20 p-4 sm:p-6"
+        className={`${compact ? "m-0" : "mt-8"} rounded-xl border border-white/25 bg-black/20 p-4 sm:p-6`}
         onSubmit={handleSubmit}
         noValidate
       >
@@ -605,6 +636,7 @@ export default function PersonalDiceRoller({
 
         <button
           type="submit"
+          disabled={busy}
           className="mt-6 w-full rounded-lg bg-white px-5 py-3 font-bold text-neutral-950 outline-none hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-red-950 sm:w-auto"
         >
           {translations("roll")}

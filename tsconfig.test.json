@@ -36,6 +36,8 @@
     "lib/game-systems/vtm-v5/dice-symbols.ts",
     "tests/database/personal-dice-concurrency.test.ts",
     "tests/database/campaign-video-foundation-concurrency.test.ts",
+    "tests/database/game-session-concurrency.test.ts",
+    "tests/database/campaign-dice-session.test.ts",
     "tests/campaigns/coc-campaign-shell.test.ts",
     "tests/campaigns/campaign-handouts.test.ts",
     "tests/dice/coc-7e-dice-engine.test.ts",

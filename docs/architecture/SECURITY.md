@@ -135,6 +135,17 @@ This foundation is current in Production. All seven campaign-video tables use RL
 - cascade removal of campaign-owned rows;
 - Player-owned characters preserved.
 
+### Game Sessions and Journal
+
+- GM-only start, explicit end, and presence-renewal RPCs derive identity from `auth.uid()`;
+- a database partial unique index enforces at most one active session per campaign under concurrency;
+- participants read session and Journal rows through campaign-scoped RLS; Outsiders are denied;
+- authenticated clients receive no direct lifecycle mutation or Journal insert/update/delete grants;
+- Journal rows require an exact `game_session_id`; a trigger rejects ended, expired, completed-campaign, and foreign-actor inserts;
+- the private timeout function is not executable by application roles and is scheduled by `pg_cron` every minute;
+- a late renewal cannot resurrect an expired session, and campaign completion closes the active session;
+- LiveKit Join/Leave, disconnect, refresh, camera, and microphone state have no authority over Game Session lifecycle.
+
 ### Error handling
 
 - raw backend errors are not displayed;
@@ -222,9 +233,11 @@ The Phase 4D1 dependency closeout records zero known npm vulnerabilities in both
 
 ### Game Room dice — Phase 4D2
 
-Required before campaign persistence or sharing:
+The Phase 4D2 implementation keeps Campaign Dice randomness and interpretation server-authoritative. Ordinary authenticated clients retain read-only Journal access and cannot call the recording RPC. The trusted server resolves the active Game Session and passes that exact ID to a service-role-only function, which locks the campaign and expected session, rechecks campaign membership/system/session state, and never rebinds an in-flight roll to a newer session. If the expected session ended or expired, the result remains non-persisted.
 
-- reviewed `dice_rolls` schema;
+Implemented controls and the retained external-exposure gate:
+
+- reviewed session-scoped Journal event schema;
 - campaign membership check;
 - server-authoritative random generation;
 - server-authoritative result evaluation;
@@ -234,8 +247,10 @@ Required before campaign persistence or sharing:
 - bounded labels and pool sizes;
 - RLS and direct-ID tests;
 - removed-member regression;
-- safe Realtime subscription scope;
+- safe Supabase Realtime subscription scope;
 - rate-limit plan before external exposure.
+
+Journal Realtime is independent of LiveKit. LiveKit remains responsible only for video and the existing Gallery image-presentation exception. Hidden rolls, alternate visibility modes, and archive UI remain deferred.
 
 ### Standalone Video Rooms — uncommitted backlog gate
 
