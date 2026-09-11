@@ -166,6 +166,41 @@ export default function CampaignGameRoom({
   }, [campaignStatus, isGameMaster, mutate, refresh]);
 
   useEffect(() => {
+    if (campaignStatus !== "active") return;
+
+    const refreshSessionState = () => void refresh();
+    const channel = supabase
+      .channel(`game-session-state-${campaignId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "game_sessions",
+          filter: `campaign_id=eq.${campaignId}`,
+        },
+        refreshSessionState,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "game_sessions",
+          filter: `campaign_id=eq.${campaignId}`,
+        },
+        refreshSessionState,
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") void refresh();
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [campaignId, campaignStatus, refresh, supabase]);
+
+  useEffect(() => {
     const sessionId = gameSession.session?.id;
     if (!sessionId) return;
 
