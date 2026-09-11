@@ -33,21 +33,69 @@ test("Game Room owns session presence while Video owns LiveKit", () => {
   assert.doesNotMatch(video, /fetch\([^)]*game-session/u);
 });
 
+test("Game Session state uses Supabase Realtime with polling reconciliation", () => {
+  const room = source("components", "campaigns", "campaign-game-room.tsx");
+  const migration = source(
+    "supabase",
+    "migrations",
+    "20260911121613_publish_game_session_state_realtime.sql",
+  );
+
+  assert.match(room, /channel\(`game-session-state-\$\{campaignId\}`\)/u);
+  assert.match(room, /event: "INSERT"[\s\S]*?table: "game_sessions"/u);
+  assert.match(room, /event: "UPDATE"[\s\S]*?table: "game_sessions"/u);
+  assert.match(room, /filter: `campaign_id=eq\.\$\{campaignId\}`/u);
+  assert.match(room, /refreshSessionState/u);
+  assert.match(room, /GAME_SESSION_STATE_REFRESH_MS/u);
+  assert.match(
+    migration,
+    /alter publication supabase_realtime[\s\S]*add table public\.game_sessions/u,
+  );
+  assert.doesNotMatch(room + migration, /LiveKit|video\/join/u);
+});
+
 test("Journal is first, session-scoped, and Gallery Share remains video-gated", () => {
   const workspace = source(
     "components",
     "campaigns",
     "campaign-game-room-workspace.tsx",
   );
-  const rootTools = workspace.slice(
-    workspace.indexOf('data-game-room-root-tools'),
+  const toolNavigation = workspace.slice(
+    workspace.indexOf('data-game-room-tool-navigation'),
     workspace.indexOf("{presentationError"),
   );
-  assert.ok(rootTools.indexOf('tools.journal') < rootTools.indexOf('tools.gallery'));
-  assert.ok(rootTools.indexOf('tools.gallery') < rootTools.indexOf('tools.dice'));
-  assert.ok(rootTools.indexOf('tools.dice') < rootTools.indexOf('tools.character'));
+  assert.match(workspace, />\("journal"\);/u);
+  assert.ok(
+    toolNavigation.indexOf('tools.back') <
+      toolNavigation.indexOf('tools.journal'),
+  );
+  assert.ok(
+    toolNavigation.indexOf('tools.journal') <
+      toolNavigation.indexOf('tools.gallery'),
+  );
+  assert.ok(
+    toolNavigation.indexOf('tools.gallery') <
+      toolNavigation.indexOf('tools.dice'),
+  );
+  assert.ok(
+    toolNavigation.indexOf('tools.dice') <
+      toolNavigation.indexOf('tools.character'),
+  );
+  assert.match(
+    workspace,
+    /grid-cols-\[3rem_repeat\(4,minmax\(0,1fr\)\)\]/u,
+  );
+  assert.match(workspace, /className="grid h-14/u);
+  assert.match(toolNavigation, /aria-pressed=\{activeTool === "journal"\}/u);
+  assert.match(workspace, /border-amber-200 bg-amber-100 text-amber-950 shadow-sm/u);
+  assert.doesNotMatch(workspace, /mt-2 w-full/u);
   assert.match(workspace, /data-game-room-journal/u);
   assert.match(workspace, /gameSession\.journal/u);
+  assert.match(workspace, /data-game-room-journal-header/u);
+  assert.match(workspace, /data-game-room-journal-scroll/u);
+  assert.match(workspace, /shrink-0 items-center/u);
+  assert.match(workspace, /min-h-0 flex-1 overflow-y-auto/u);
+  assert.match(workspace, /data-game-room-gallery-tools/u);
   assert.match(workspace, /disabled=\{!connected \|\| presentationBusy\}/u);
   assert.doesNotMatch(workspace, /fake|mockJournal|sampleEvent/ui);
 });

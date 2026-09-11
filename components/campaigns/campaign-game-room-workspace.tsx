@@ -25,8 +25,17 @@ const CATEGORY_TRANSLATION_KEYS: Record<CampaignGalleryCategory, string> = {
   other: "categories.other",
 };
 
-const TOOL_BUTTON_CLASS =
-  "min-h-11 min-w-0 rounded-lg border border-white/30 bg-black/20 px-2 py-2 text-sm font-semibold text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-45";
+const TOOL_BUTTON_BASE_CLASS =
+  "min-h-11 min-w-0 rounded-lg border px-2 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-45";
+const TOOL_BUTTON_CLASS = `${TOOL_BUTTON_BASE_CLASS} border-white/30 bg-black/20 text-white hover:bg-white/10`;
+
+function gameToolButtonClass(active: boolean) {
+  return `${TOOL_BUTTON_BASE_CLASS} ${
+    active
+      ? "border-amber-200 bg-amber-100 text-amber-950 shadow-sm"
+      : "border-white/30 bg-black/20 text-white hover:bg-white/10"
+  }`;
+}
 
 export type CampaignGameRoomGalleryItem = {
   key: string;
@@ -82,8 +91,8 @@ export default function CampaignGameRoomWorkspace({
   const translations = useTranslations("CampaignGameRoom");
   const galleryTranslations = useTranslations("CampaignHandouts");
   const [activeTool, setActiveTool] = useState<
-    "journal" | "gallery" | "dice" | null
-  >(null);
+    "journal" | "gallery" | "dice"
+  >("journal");
   const [activeCategory, setActiveCategory] =
     useState<CampaignGalleryCategory | null>(null);
   const [selectedImage, setSelectedImage] =
@@ -104,7 +113,7 @@ export default function CampaignGameRoomWorkspace({
     : sharedPresentationUrl;
 
   function closeGallery() {
-    setActiveTool(null);
+    setActiveTool("journal");
     setActiveCategory(null);
     setSelectedImage(null);
   }
@@ -165,10 +174,13 @@ export default function CampaignGameRoomWorkspace({
           />
         ) : activeTool === "journal" ? (
           <div
-            className="flex min-h-0 w-full flex-col overflow-y-auto p-4 text-white"
+            className="flex min-h-0 w-full flex-col overflow-hidden text-white"
             data-game-room-journal
           >
-            <div className="flex items-center justify-between gap-3">
+            <div
+              className="flex shrink-0 items-center justify-between gap-3 p-4 pb-3"
+              data-game-room-journal-header
+            >
               <div>
                 <h3 className="font-semibold">{translations("journal.title")}</h3>
                 <p className="mt-1 text-sm text-white/70">
@@ -198,33 +210,38 @@ export default function CampaignGameRoomWorkspace({
                 </button>
               ) : null}
             </div>
-            {gameSession.session && gameSession.journal.length === 0 ? (
-              <p className="flex flex-1 items-center justify-center py-6 text-center text-sm text-white/65">
-                {translations("journal.empty")}
-              </p>
-            ) : null}
-            {gameSession.journal.length > 0 ? (
-              <ol className="mt-4 space-y-2" data-game-room-journal-events>
-                {gameSession.journal.map((event) =>
-                  event.eventKind === "campaign_dice_roll" ? (
-                    <CampaignDiceJournalEvent key={event.id} event={event} />
-                  ) : (
-                    <li
-                      key={event.id}
-                      className="rounded-lg border border-white/15 bg-white/5 p-2 text-sm"
-                    >
-                      {event.eventKind}
-                    </li>
-                  ),
-                )}
-              </ol>
-            ) : null}
-            <div ref={journalEndRef} aria-hidden="true" />
-            {sessionError ? (
-              <p role="alert" className="mt-3 text-sm text-rose-200">
-                {translations("journal.error")}
-              </p>
-            ) : null}
+            <div
+              className="min-h-0 flex-1 overflow-y-auto px-4 pb-4"
+              data-game-room-journal-scroll
+            >
+              {gameSession.session && gameSession.journal.length === 0 ? (
+                <p className="flex min-h-full items-center justify-center py-6 text-center text-sm text-white/65">
+                  {translations("journal.empty")}
+                </p>
+              ) : null}
+              {gameSession.journal.length > 0 ? (
+                <ol className="space-y-2" data-game-room-journal-events>
+                  {gameSession.journal.map((event) =>
+                    event.eventKind === "campaign_dice_roll" ? (
+                      <CampaignDiceJournalEvent key={event.id} event={event} />
+                    ) : (
+                      <li
+                        key={event.id}
+                        className="rounded-lg border border-white/15 bg-white/5 p-2 text-sm"
+                      >
+                        {event.eventKind}
+                      </li>
+                    ),
+                  )}
+                </ol>
+              ) : null}
+              <div ref={journalEndRef} aria-hidden="true" />
+              {sessionError ? (
+                <p role="alert" className="mt-3 text-sm text-rose-200">
+                  {translations("journal.error")}
+                </p>
+              ) : null}
+            </div>
           </div>
         ) : isGameMaster && selectedImage?.localSignedUrl ? (
           <div className="relative min-h-0 w-full" data-game-room-local-image>
@@ -314,7 +331,10 @@ export default function CampaignGameRoomWorkspace({
         </h2>
 
         {selectedImage ? (
-          <div className="grid grid-cols-3 gap-2" data-game-room-image-tools>
+          <div
+            className="grid h-14 grid-cols-3 gap-2"
+            data-game-room-image-tools
+          >
             <button
               type="button"
               onClick={() => void closeSelectedImage()}
@@ -354,7 +374,7 @@ export default function CampaignGameRoomWorkspace({
           </div>
         ) : activeTool === "gallery" ? (
           <div
-            className="grid grid-cols-[3rem_repeat(4,minmax(0,1fr))] gap-2"
+            className="grid h-14 grid-cols-[3rem_repeat(4,minmax(0,1fr))] gap-2"
             data-game-room-gallery-tools
           >
             <button
@@ -393,44 +413,65 @@ export default function CampaignGameRoomWorkspace({
             })}
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-2" data-game-room-root-tools>
+          <div
+            className="grid h-14 grid-cols-[3rem_repeat(4,minmax(0,1fr))] gap-2"
+            data-game-room-tool-navigation
+          >
+            <button
+              type="button"
+              disabled={activeTool === "journal"}
+              onClick={() => setActiveTool("journal")}
+              aria-label={translations("tools.back")}
+              className={TOOL_BUTTON_CLASS}
+            >
+              <span aria-hidden="true">&larr;</span>
+            </button>
             <button
               type="button"
               onClick={() => setActiveTool("journal")}
-              className={TOOL_BUTTON_CLASS}
+              aria-pressed={activeTool === "journal"}
+              className={gameToolButtonClass(activeTool === "journal")}
             >
-              {translations("tools.journal")}
+              <span className="flex min-w-0 items-center justify-center gap-1">
+                {activeTool === "journal" ? (
+                  <span aria-hidden="true">✓</span>
+                ) : null}
+                <span className="min-w-0 break-words">
+                  {translations("tools.journal")}
+                </span>
+              </span>
             </button>
             <button
               type="button"
               disabled={!isGameMaster}
               onClick={() => setActiveTool("gallery")}
-              className={TOOL_BUTTON_CLASS}
+              aria-pressed={false}
+              className={gameToolButtonClass(false)}
             >
-              {translations("tools.gallery")}
+              <span className="min-w-0 break-words">
+                {translations("tools.gallery")}
+              </span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTool("dice")}
-              className={TOOL_BUTTON_CLASS}
+              aria-pressed={activeTool === "dice"}
+              className={gameToolButtonClass(activeTool === "dice")}
             >
-              {translations("tools.dice")}
+              <span className="flex min-w-0 items-center justify-center gap-1">
+                {activeTool === "dice" ? (
+                  <span aria-hidden="true">✓</span>
+                ) : null}
+                <span className="min-w-0 break-words">
+                  {translations("tools.dice")}
+                </span>
+              </span>
             </button>
             <button type="button" disabled className={TOOL_BUTTON_CLASS}>
               {translations("tools.character")}
             </button>
           </div>
         )}
-        {activeTool === "journal" || activeTool === "dice" ? (
-          <button
-            type="button"
-            onClick={() => setActiveTool(null)}
-            aria-label={translations("tools.back")}
-            className={`mt-2 w-full ${TOOL_BUTTON_CLASS}`}
-          >
-            <span aria-hidden="true">&larr;</span>
-          </button>
-        ) : null}
         {presentationError && (
           <p
             role="alert"
