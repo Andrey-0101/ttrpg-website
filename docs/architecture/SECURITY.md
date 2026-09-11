@@ -257,7 +257,9 @@ The four Phase 4D2 migrations are applied in Production. Game Session state and 
 
 - hosted leaked-password protection is currently disabled;
 - the intentionally separate owner and campaign-sharing SELECT paths on `characters` produce an existing multiple-permissive-policy performance warning;
-- other previously documented advisor notices outside the Phase 4D2 delta remain pre-existing and non-blocking unless a later focused review proves otherwise.
+- the advisor reports the intentional authenticated `SECURITY DEFINER` RPC surface; authorization remains enforced inside the reviewed functions, and this aggregate warning is not by itself evidence of unauthorized access;
+- unused-index notices remain informational on the young/low-volume schema;
+- two informational unindexed-foreign-key notices currently apply to `game_session_journal_events.actor_id` and `game_sessions.started_by`.
 
 These items were not changed by Phase 4D2 and are not part of this documentation close-out.
 

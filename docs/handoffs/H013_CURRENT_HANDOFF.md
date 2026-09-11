@@ -222,7 +222,9 @@ No new Production fixtures or fake users were created for final acceptance. The 
 - CoC personal history displays the current roll plus four previous rolls instead of the intended current plus five previous. Root cause is unverified. This remains deferred and is not a Phase 4D2 defect to fix implicitly.
 - Supabase leaked-password protection is currently disabled.
 - The intentionally separate character-owner and campaign-sharing SELECT paths produce an existing `characters` multiple-permissive-policy performance warning.
-- Other previously documented advisor notices outside the Phase 4D2 delta remain pre-existing and non-blocking unless a focused future review proves otherwise.
+- The advisor reports the intentional authenticated `SECURITY DEFINER` RPC surface; reviewed functions retain their internal authorization checks.
+- Unused-index notices remain informational on the young/low-volume schema.
+- Two informational unindexed-foreign-key notices currently apply to `game_session_journal_events.actor_id` and `game_sessions.started_by`.
 - Game Session archive/history UI is not implemented.
 - Hidden/private Campaign Dice rolls are not implemented.
 
