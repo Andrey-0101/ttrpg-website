@@ -48,6 +48,8 @@ export type Coc7eOtherDiceExecutor = (
   label: string | null,
 ) => Promise<Coc7eOtherDiceResult>;
 
+export type Coc7eDiceMode = "percentile" | "other";
+
 const panelClassName =
   "min-w-0 rounded-xl border border-white/25 bg-black/20 p-4 shadow-lg sm:p-6";
 const labelClassName = "block text-sm font-semibold text-white/85";
@@ -780,6 +782,7 @@ export default function CallOfCthulhu7eDiceRoller({
   executePercentileRoll,
   executeOtherDiceRoll,
   compact = false,
+  activeMode,
   executionErrorMessage,
 }: {
   authenticated: boolean;
@@ -787,6 +790,7 @@ export default function CallOfCthulhu7eDiceRoller({
   executePercentileRoll?: Coc7ePercentileDiceExecutor;
   executeOtherDiceRoll?: Coc7eOtherDiceExecutor;
   compact?: boolean;
+  activeMode?: Coc7eDiceMode;
   executionErrorMessage?: string;
 }) {
   const translations = useTranslations("Coc7eDiceRoller");
@@ -799,9 +803,9 @@ export default function CallOfCthulhu7eDiceRoller({
   const [currentOtherDiceRollId, setCurrentOtherDiceRollId] = useState<
     string | null
   >(null);
-  const [activeTab, setActiveTab] = useState<"percentile" | "other">(
-    "percentile",
-  );
+  const [internalActiveMode, setInternalActiveMode] =
+    useState<Coc7eDiceMode>("percentile");
+  const activeTab = activeMode ?? internalActiveMode;
   const handleRecorded = (entry: PersonalRollHistoryEntry) => {
     setHistoryEntries((current) =>
       mergePersonalRollHistoryEntry(current, entry),
@@ -810,7 +814,7 @@ export default function CallOfCthulhu7eDiceRoller({
 
   return (
     <>
-      {compact ? (
+      {compact && activeMode === undefined ? (
         <div className="mb-3 grid grid-cols-2 gap-2" role="tablist">
           {(["percentile", "other"] as const).map((tab) => (
             <button
@@ -818,7 +822,7 @@ export default function CallOfCthulhu7eDiceRoller({
               type="button"
               role="tab"
               aria-selected={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => setInternalActiveMode(tab)}
               className={`min-h-11 rounded-lg border px-3 py-2 font-semibold ${
                 activeTab === tab
                   ? "border-white bg-white text-neutral-950"

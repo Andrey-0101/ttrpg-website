@@ -3,7 +3,9 @@
 import { useCallback } from "react";
 import { useTranslations } from "next-intl";
 
-import CallOfCthulhu7eDiceRoller from "@/components/games/call-of-cthulhu-7e/dice-roller";
+import CallOfCthulhu7eDiceRoller, {
+  type Coc7eDiceMode,
+} from "@/components/games/call-of-cthulhu-7e/dice-roller";
 import PersonalDiceRoller from "@/components/games/vtm-v5/personal-dice-roller";
 import type {
   CampaignDiceApiResult,
@@ -27,11 +29,13 @@ export default function CampaignDiceRoller({
   campaignId,
   gameSystem,
   sessionActive,
+  cocMode,
   onJournalEvent,
 }: {
   campaignId: string;
   gameSystem: string;
   sessionActive: boolean;
+  cocMode: Coc7eDiceMode;
   onJournalEvent(event: GameSessionJournalEvent): void;
 }) {
   const translations = useTranslations("CampaignGameRoom");
@@ -127,6 +131,7 @@ export default function CampaignDiceRoller({
           executePercentileRoll={executePercentile}
           executeOtherDiceRoll={executeOther}
           compact
+          activeMode={cocMode}
           executionErrorMessage={translations("dice.error")}
         />
       ) : (

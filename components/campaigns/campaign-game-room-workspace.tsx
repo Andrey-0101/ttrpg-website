@@ -90,11 +90,15 @@ export default function CampaignGameRoomWorkspace({
 }) {
   const translations = useTranslations("CampaignGameRoom");
   const galleryTranslations = useTranslations("CampaignHandouts");
+  const cocTranslations = useTranslations("Coc7eDiceRoller");
   const [activeTool, setActiveTool] = useState<
     "journal" | "gallery" | "dice"
   >("journal");
   const [activeCategory, setActiveCategory] =
     useState<CampaignGalleryCategory | null>(null);
+  const [cocDiceMode, setCocDiceMode] = useState<"percentile" | "other">(
+    "percentile",
+  );
   const [selectedImage, setSelectedImage] =
     useState<CampaignGameRoomGalleryItem | null>(null);
   const journalEndRef = useRef<HTMLDivElement | null>(null);
@@ -116,6 +120,17 @@ export default function CampaignGameRoomWorkspace({
     setActiveTool("journal");
     setActiveCategory(null);
     setSelectedImage(null);
+  }
+
+  function openGallery() {
+    setActiveCategory("handout");
+    setSelectedImage(null);
+    setActiveTool("gallery");
+  }
+
+  function openDice() {
+    setCocDiceMode("percentile");
+    setActiveTool("dice");
   }
 
   function openImage(item: CampaignGameRoomGalleryItem) {
@@ -170,6 +185,7 @@ export default function CampaignGameRoomWorkspace({
             campaignId={campaignId}
             gameSystem={campaignGameSystem}
             sessionActive={Boolean(gameSession.session)}
+            cocMode={cocDiceMode}
             onJournalEvent={onJournalEvent}
           />
         ) : activeTool === "journal" ? (
@@ -412,20 +428,64 @@ export default function CampaignGameRoomWorkspace({
               );
             })}
           </div>
-        ) : (
+        ) : activeTool === "dice" &&
+          campaignGameSystem === "call-of-cthulhu-7e" ? (
           <div
-            className="grid h-14 grid-cols-[3rem_repeat(4,minmax(0,1fr))] gap-2"
-            data-game-room-tool-navigation
+            className="grid h-14 grid-cols-[3rem_repeat(2,minmax(0,1fr))] gap-2"
+            data-game-room-coc-dice-tools
           >
             <button
               type="button"
-              disabled={activeTool === "journal"}
               onClick={() => setActiveTool("journal")}
               aria-label={translations("tools.back")}
               className={TOOL_BUTTON_CLASS}
             >
               <span aria-hidden="true">&larr;</span>
             </button>
+            {(["percentile", "other"] as const).map((mode) => {
+              const active = mode === cocDiceMode;
+
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setCocDiceMode(mode)}
+                  className={gameToolButtonClass(active)}
+                >
+                  <span className="flex min-w-0 items-center justify-center gap-1">
+                    {active ? <span aria-hidden="true">✓</span> : null}
+                    <span className="min-w-0 break-words">
+                      {cocTranslations(
+                        mode === "percentile"
+                          ? "percentile.title"
+                          : "other.title",
+                      )}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            className={`grid h-14 gap-2 ${
+              activeTool === "journal"
+                ? "grid-cols-4"
+                : "grid-cols-[3rem_repeat(4,minmax(0,1fr))]"
+            }`}
+            data-game-room-tool-navigation
+          >
+            {activeTool !== "journal" ? (
+              <button
+                type="button"
+                onClick={() => setActiveTool("journal")}
+                aria-label={translations("tools.back")}
+                className={TOOL_BUTTON_CLASS}
+              >
+                <span aria-hidden="true">&larr;</span>
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => setActiveTool("journal")}
@@ -444,7 +504,7 @@ export default function CampaignGameRoomWorkspace({
             <button
               type="button"
               disabled={!isGameMaster}
-              onClick={() => setActiveTool("gallery")}
+              onClick={openGallery}
               aria-pressed={false}
               className={gameToolButtonClass(false)}
             >
@@ -454,7 +514,7 @@ export default function CampaignGameRoomWorkspace({
             </button>
             <button
               type="button"
-              onClick={() => setActiveTool("dice")}
+              onClick={openDice}
               aria-pressed={activeTool === "dice"}
               className={gameToolButtonClass(activeTool === "dice")}
             >

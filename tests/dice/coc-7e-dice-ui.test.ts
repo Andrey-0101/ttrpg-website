@@ -27,14 +27,16 @@ function collectKeys(value: unknown, prefix = ""): string[] {
   );
 }
 
-test("CoC UI keeps personal 3:2 panels and adds compact campaign tabs", () => {
+test("CoC UI keeps personal panels and supports controlled compact mode", () => {
   assert.match(
     componentSource,
     /md:grid-cols-\[minmax\(0,3fr\)_minmax\(16rem,2fr\)\][\s\S]*<PercentilePanel[\s\S]*<OtherDicePanel/u,
   );
-  assert.match(componentSource, /compact \? \(/u);
+  assert.match(componentSource, /compact && activeMode === undefined \? \(/u);
   assert.match(componentSource, /role="tablist"/u);
   assert.match(componentSource, /role="tab"/u);
+  assert.match(componentSource, /activeMode\?: Coc7eDiceMode/u);
+  assert.match(componentSource, /const activeTab = activeMode \?\? internalActiveMode/u);
   assert.match(componentSource, /hidden=\{compact && activeTab !== "percentile"\}/u);
   const percentile = componentSource.slice(
     componentSource.indexOf("function PercentilePanel"),

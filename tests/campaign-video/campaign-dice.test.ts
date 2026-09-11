@@ -15,7 +15,7 @@ test("Campaign Dice stays inside Display and selects only the campaign system", 
   assert.match(page, /campaignGameSystem=\{/u);
   assert.match(workspace, /activeTool === "dice"/u);
   assert.match(workspace, /<CampaignDiceRoller/u);
-  assert.match(workspace, /onClick=\{\(\) => setActiveTool\("dice"\)\}/u);
+  assert.match(workspace, /onClick=\{openDice\}/u);
   assert.doesNotMatch(workspace, /type="button" disabled[^>]*>\s*\{translations\("tools\.dice"\)/u);
   assert.match(roller, /gameSystem === "vtm-v5"/u);
   assert.match(roller, /gameSystem === "call-of-cthulhu-7e"/u);
@@ -32,10 +32,49 @@ test("Campaign Dice reuses personal roller UI through server executors", () => {
   assert.match(vtmRoller, /executeRoll\?: VtmV5DiceExecutor/u);
   assert.match(cocRoller, /executePercentileRoll\?: Coc7ePercentileDiceExecutor/u);
   assert.match(cocRoller, /executeOtherDiceRoll\?: Coc7eOtherDiceExecutor/u);
+  assert.match(campaignRoller, /activeMode=\{cocMode\}/u);
+  assert.match(cocRoller, /activeMode\?: Coc7eDiceMode/u);
   assert.match(cocRoller, /role="tablist"/u);
+  assert.match(cocRoller, /compact && activeMode === undefined/u);
+  assert.match(cocRoller, /const activeTab = activeMode \?\? internalActiveMode/u);
   assert.match(cocRoller, /hidden=\{compact && activeTab !== "percentile"\}/u);
   assert.doesNotMatch(campaignRoller, /rollVtmV5Dice|rollCoc7e/u);
   assert.doesNotMatch(campaignRoller, /PersonalRollHistory/u);
+});
+
+test("Game Room owns the CoC mode submenu while VtM remains direct", () => {
+  const workspace = source(
+    "components",
+    "campaigns",
+    "campaign-game-room-workspace.tsx",
+  );
+  const campaignRoller = source(
+    "components",
+    "campaigns",
+    "campaign-dice-roller.tsx",
+  );
+
+  assert.match(
+    workspace,
+    /function openDice\(\)[\s\S]*?setCocDiceMode\("percentile"\)[\s\S]*?setActiveTool\("dice"\)/u,
+  );
+  assert.match(
+    workspace,
+    /activeTool === "dice" &&[\s\S]*?campaignGameSystem === "call-of-cthulhu-7e"/u,
+  );
+  assert.match(workspace, /data-game-room-coc-dice-tools/u);
+  assert.match(
+    workspace,
+    /grid h-14 grid-cols-\[3rem_repeat\(2,minmax\(0,1fr\)\)\] gap-2/u,
+  );
+  assert.match(workspace, /\["percentile", "other"\] as const/u);
+  assert.match(workspace, /onClick=\{\(\) => setCocDiceMode\(mode\)\}/u);
+  assert.match(workspace, /mode === "percentile"[\s\S]*?"percentile\.title"[\s\S]*?"other\.title"/u);
+  assert.match(
+    campaignRoller,
+    /supportedSystem === "vtm-v5" \? \([\s\S]*?<PersonalDiceRoller/u,
+  );
+  assert.doesNotMatch(campaignRoller, /vtmMode|setVtmMode|vtm-v5[\s\S]*role="tablist"/u);
 });
 
 test("campaign roll execution is server-authoritative and LiveKit-independent", () => {

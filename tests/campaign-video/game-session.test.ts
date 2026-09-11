@@ -54,7 +54,7 @@ test("Game Session state uses Supabase Realtime with polling reconciliation", ()
   assert.doesNotMatch(room + migration, /LiveKit|video\/join/u);
 });
 
-test("Journal is first, session-scoped, and Gallery Share remains video-gated", () => {
+test("Journal is the arrow-free root and Gallery opens at Handouts", () => {
   const workspace = source(
     "components",
     "campaigns",
@@ -65,10 +65,6 @@ test("Journal is first, session-scoped, and Gallery Share remains video-gated", 
     workspace.indexOf("{presentationError"),
   );
   assert.match(workspace, />\("journal"\);/u);
-  assert.ok(
-    toolNavigation.indexOf('tools.back') <
-      toolNavigation.indexOf('tools.journal'),
-  );
   assert.ok(
     toolNavigation.indexOf('tools.journal') <
       toolNavigation.indexOf('tools.gallery'),
@@ -81,11 +77,12 @@ test("Journal is first, session-scoped, and Gallery Share remains video-gated", 
     toolNavigation.indexOf('tools.dice') <
       toolNavigation.indexOf('tools.character'),
   );
+  assert.match(workspace, /activeTool === "journal"[\s\S]*?"grid-cols-4"/u);
   assert.match(
-    workspace,
-    /grid-cols-\[3rem_repeat\(4,minmax\(0,1fr\)\)\]/u,
+    toolNavigation,
+    /activeTool !== "journal" \? \([\s\S]*?tools\.back/u,
   );
-  assert.match(workspace, /className="grid h-14/u);
+  assert.doesNotMatch(toolNavigation, /disabled=\{activeTool === "journal"\}/u);
   assert.match(toolNavigation, /aria-pressed=\{activeTool === "journal"\}/u);
   assert.match(workspace, /border-amber-200 bg-amber-100 text-amber-950 shadow-sm/u);
   assert.doesNotMatch(workspace, /mt-2 w-full/u);
@@ -96,6 +93,11 @@ test("Journal is first, session-scoped, and Gallery Share remains video-gated", 
   assert.match(workspace, /shrink-0 items-center/u);
   assert.match(workspace, /min-h-0 flex-1 overflow-y-auto/u);
   assert.match(workspace, /data-game-room-gallery-tools/u);
+  assert.match(
+    workspace,
+    /function openGallery\(\)[\s\S]*?setActiveCategory\("handout"\)[\s\S]*?setActiveTool\("gallery"\)/u,
+  );
+  assert.match(workspace, /onClick=\{closeGallery\}[\s\S]*?tools\.back/u);
   assert.match(workspace, /disabled=\{!connected \|\| presentationBusy\}/u);
   assert.doesNotMatch(workspace, /fake|mockJournal|sampleEvent/ui);
 });
