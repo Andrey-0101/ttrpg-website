@@ -30,7 +30,7 @@ flowchart TD
     CAMPAIGN --> IMAGE_LIBRARY["4C1 Image Library"]
     GAME_ROOM --> VIDEO["4B Campaign Video — complete"]
     GAME_ROOM --> IMAGE_DISPLAY["4C2 Image Presentation"]
-    GAME_ROOM --> SYSTEM_DICE["4D2 System-aware Dice"]
+    GAME_ROOM --> SYSTEM_DICE["System-aware Dice — complete"]
     GAME_ROOM --> LINKED_CHARACTERS["4F2 Linked Characters"]
     CAMPAIGN --> NOTES["4G Campaign Notes"]
     GAMES --> COC_HUB["8A CoC Hub"]

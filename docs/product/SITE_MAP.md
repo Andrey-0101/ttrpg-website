@@ -25,6 +25,8 @@ flowchart TD
     CAMPAIGN --> GALLERY["Image-only Campaign Gallery"]
     GAME_ROOM --> VIDEO["Campaign-authorized LiveKit video"]
     GAME_ROOM --> DISPLAY["GM-controlled Gallery image presentation"]
+    GAME_ROOM --> SESSION["Game Session and Journal"]
+    GAME_ROOM --> SYSTEM_DICE["System-aware Campaign Dice"]
 ```
 
 The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D1 CoC personal dice route with contextual navigation, scoped history, and live Target bands. CoC character routes do not exist. Delta Green is a catalogue entry only. No complete game-system hub exists.
@@ -34,8 +36,6 @@ The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D
 ```mermaid
 flowchart TD
     CAMPAIGN --> GAME_ROOM["Game Room"]
-    GAME_ROOM --> SYSTEM_DICE["4D2 System-aware Dice"]
-    COC_DICE["4D1 CoC Dice Roller"] --> SYSTEM_DICE
     GAME_ROOM --> LINKED_CHARACTERS["4F2 Linked Participant Characters"]
     COC_CHARACTERS["4F1 CoC Character Sheets"] --> LINKED_CHARACTERS
     CAMPAIGN --> NOTES["4G Shared and GM-private Notes"]
@@ -63,8 +63,8 @@ Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and
 |---|---|---|
 | Campaign video | Implemented and Production accepted | Retain; technical refinement only unless separately scoped |
 | Campaign Gallery | Four-section private image library and Game Room presentation implemented | Retain; Campaign Wallpaper remains uncommitted `IDEA-007` only |
-| VtM dice | Personal roller implemented | Use for VtM campaigns in 4D2 |
-| CoC dice | Personal roller and UX follow-up deployed | 4D2 campaign integration next |
+| VtM dice | Personal and Campaign Dice implemented | Retain; direct Game Room roller with no submenu |
+| CoC dice | Personal and Campaign Dice implemented | Retain; Game Room defaults to Percentile with its internal submenu |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |

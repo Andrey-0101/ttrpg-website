@@ -11,8 +11,8 @@ The current Production application is a bilingual private TTRPG hub with impleme
 | Campaign authorization | Implemented | Retain |
 | Campaign video | Implemented and accepted | Retain; Phase 4E technical refinement |
 | Campaign Gallery | Four fixed image-only sections and 4C2 Game Room presentation implemented | Retain |
-| VtM dice | Personal roller implemented | 4D2 VtM Game Room integration |
-| CoC dice | Phase 4D1 personal roller and UX follow-up deployed | 4D2 Game Room integration next |
+| VtM dice | Personal and Game Room Campaign Dice implemented | Retain |
+| CoC dice | Personal roller, UX follow-up, and Game Room Campaign Dice implemented | Retain |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |

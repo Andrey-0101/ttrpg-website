@@ -6,7 +6,7 @@ Current applied Production database state:
 
 ```text
 main
-abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6
+01d917688ddadb5366949a714bba462b7c5c44b2
 ```
 
 Applied migrations:
@@ -25,13 +25,23 @@ supabase/migrations/20260903000242_campaign_gallery_categories.sql
 supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
 supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql
 supabase/migrations/20260908094324_scope_coc_personal_roll_history.sql
+supabase/migrations/20260910122247_game_sessions_and_journal.sql
+supabase/migrations/20260911120000_campaign_dice_journal.sql
+supabase/migrations/20260911120001_bind_campaign_dice_to_expected_session.sql
+supabase/migrations/20260911121613_publish_game_session_state_realtime.sql
 ```
 
-All thirteen listed migrations are current in Production after the roll-label/history follow-up. The campaign-video data foundation, grant hardening, completed-campaign image-cleanup policy, Campaign Gallery category migration, Phase 4D1 extensible personal-history envelope, scoped-clear migration, and combined CoC retention migration are applied. The last migration preserves the generic table and RPC signature, changes prospective CoC pruning to the newest six rows total across both CoC kinds, and leaves VtM and Custom at six rows per kind. No existing rows are bulk-rewritten. The application registry remains authoritative for supported kinds and versions.
+All seventeen listed migrations are current in Production. The first Phase 4D2 migration creates `game_sessions`, `game_session_journal_events`, lifecycle RPCs, participant-readable RLS, Journal-write guards, and the autonomous `pg_cron` expiry job. The next migration adds the service-role-only authoritative Campaign Dice writer and publishes Journal events through Supabase Realtime. The binding migration replaces that RPC signature with an exact expected Game Session ID so an in-flight roll cannot attach to a newly started session. `20260911121613_publish_game_session_state_realtime.sql` idempotently adds `game_sessions` to the `supabase_realtime` publication so Start/End state propagates in realtime.
+
+The earlier Phase 4D1 combined-CoC migration preserves the generic personal-history table and RPC signature, changes prospective CoC pruning to the newest six rows total across both CoC kinds, and leaves VtM and Custom at six rows per kind. No existing rows were bulk-rewritten. The application registry remains authoritative for supported personal kinds and versions.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
-The current implementation branch adds three forward, not-yet-Production migrations: `20260910122247_game_sessions_and_journal.sql`, `20260911120000_campaign_dice_journal.sql`, and `20260911120001_bind_campaign_dice_to_expected_session.sql`. Production status above remains unchanged until they are explicitly deployed.
+### Supabase projects
+
+Production uses project `ttrpg-website`, ref `nryzkqwcnbbneazaksgh`, for `ttrpg.fans`.
+
+The separate test project `ttrpg-website-m4e-test`, ref `sijgmybepesinijyspjm`, is intentionally retained pending a future cleanup decision. Do not delete, pause, or modify it, and do not claim it is safe to remove. No keys or secret values are recorded here.
 
 ## Generated types
 
@@ -215,9 +225,9 @@ The foundation is provider-neutral. It does not persist LiveKit rooms, tokens, c
 | `game_sessions` | persistent campaign session lifecycle, GM starter, start/end timestamps, presence deadline, and terminal reason |
 | `game_session_journal_events` | event envelope scoped by required `game_session_id`; no campaign-global Journal row exists |
 
-`game_sessions_one_active_per_campaign_idx` is a partial unique index over unended rows. Start, explicit end, and presence renewal are authenticated RPCs that derive the GM from `auth.uid()` and lock the campaign/session boundary. A renewal after deadline closes rather than resurrects the session. The private `expire_game_sessions()` function closes expired rows, and a one-minute `pg_cron` job invokes it autonomously. Campaign completion reuses the existing completion trigger to close an active session with `campaign_completed`.
+`game_sessions_one_active_per_campaign_idx` is a partial unique index over unended rows. `start_game_session(uuid)`, `end_game_session(uuid)`, and `renew_game_session_presence(uuid)` are authenticated RPCs that derive the GM from `auth.uid()` and lock the campaign/session boundary. A renewal after deadline closes rather than resurrects the session. The private `expire_game_sessions()` function closes expired rows, and the `expire-stale-game-sessions` one-minute `pg_cron` job invokes it autonomously. The Game Room renews presence approximately every 30 minutes against a 60-minute database deadline. Campaign completion reuses the existing completion trigger to close an active session with `campaign_completed`.
 
-Both tables use participant-readable RLS. Authenticated clients have SELECT only; they cannot directly insert, update, or delete either table. Journal inserts additionally pass a trigger that requires the referenced session and campaign to remain active and the recorded actor to be a current campaign participant. Campaign Dice uses a service-role-only `record_campaign_dice_roll` RPC: the trusted server supplies the exact session it resolved, and the function locks and revalidates that session without rebinding to a newer one. Supabase Realtime publishes Journal inserts; LiveKit is not part of this delivery path.
+Both tables use participant-readable RLS. Authenticated clients have SELECT only; they cannot directly insert, update, or delete either table. Journal inserts additionally pass a trigger that requires the referenced session and campaign to remain active and the recorded actor to be a current campaign participant. Campaign Dice uses the service-role-only `record_campaign_dice_roll(uuid, uuid, uuid, text, jsonb, jsonb)` RPC: the trusted server supplies the exact session it resolved, and the function locks and revalidates that session without rebinding to a newer one. Supabase Realtime publishes both Journal inserts and Game Session state changes; LiveKit is not part of this delivery path.
 
 ## Indexes and consistency rules
 
@@ -461,14 +471,15 @@ Known limitation:
 
 Current database verification recorded:
 
-- thirteen synchronized repository/Production migration versions after the roll-label/history follow-up;
-- RLS on all fifteen public tables, including all seven campaign-video tables;
+- seventeen synchronized repository/Production migration versions through Phase 4D2;
+- RLS on all seventeen public tables, including all seven campaign-video tables and both Phase 4D2 tables;
 - all five required foreign-key indexes valid;
 - hardened table/function grants and restricted `handle_new_user()` execution;
 - private `campaign-images` Storage;
 - the recorded Campaign Foundation GM/Player/Outsider transaction test, with all test data rolled back.
 - a Phase 4C1 test-project transaction covering selected/outsider/completed access and completed-GM Storage cleanup, with all temporary rows rolled back.
-- deployed verification of all Phase 4D1 personal-history migrations; the scoped-clear and combined CoC-retention changes passed local reset, pgTAP, and concurrency verification before application, and Production migration history is synchronized at 13/13.
+- deployed verification of all Phase 4D1 personal-history migrations; at Phase 4D1 close-out the scoped-clear and combined CoC-retention changes passed local reset, pgTAP, and concurrency verification and Production history was synchronized at 13/13;
+- deployed verification of all four Phase 4D2 migrations, including schema/security checks and the passing Campaign Dice database integration test.
 
 Security and lifecycle verification exposed three issues that were corrected through new migrations rather than editing applied migrations:
 

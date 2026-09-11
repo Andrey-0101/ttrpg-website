@@ -7,7 +7,7 @@
 | Status | Current approved target structure |
 | Current source | [`ROADMAP.md`](ROADMAP.md) |
 | Current route reference | [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCTURE_CURRENT.md) |
-| Next product phase | 4D2 Game Room Dice Integration |
+| Next product phase | 4E Campaign & Game Room UX/UI Refinement |
 
 ## Purpose
 
@@ -21,8 +21,8 @@ Describe the intended structure without presenting speculative routes or uncommi
 4. Phase 4C1 image-only Campaign Gallery — complete;
 5. Phase 4C2 Game Room Image Presentation — complete and Production accepted;
 6. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
-7. Phase 4D2 system-aware Game Room Dice Integration — next;
-8. Phase 4E Campaign & Game Room UX/UI Refinement;
+7. Phase 4D2 system-aware Game Room Dice Integration — complete and Production accepted;
+8. Phase 4E Campaign & Game Room UX/UI Refinement — next;
 9. Phase 4F1 CoC 7e Character Sheets;
 10. Phase 4F2 system-aware linked-character Game Room integration;
 11. Phase 4G Campaign Notes;
@@ -60,7 +60,7 @@ Campaign
 ├── Game Room
 │   ├── Campaign video                         [CURRENT]
 │   ├── Image presentation                     [4C2]
-│   ├── System-aware dice                      [4D2]
+│   ├── System-aware dice                      [CURRENT]
 │   └── Linked participant characters          [4F2]
 ├── Campaign Gallery (four image-only sections) [CURRENT]
 └── Campaign Notes                             [4G]

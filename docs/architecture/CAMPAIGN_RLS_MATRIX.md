@@ -2,9 +2,9 @@
 
 ## Status
 
-Campaign Foundation, the campaign-video data foundation, and the Phase 4C1 image-only Campaign Gallery are implemented and current in Production. H011 consolidation started from deployed `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8`.
+Campaign Foundation, the campaign-video data foundation, the Phase 4C1 image-only Campaign Gallery, and Phase 4D2 Game Sessions/Journal are implemented and current in Production. The accepted Phase 4D2 application baseline is `main` at `01d917688ddadb5366949a714bba462b7c5c44b2`.
 
-All ten repository migrations are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables, five required foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
+All seventeen repository migrations are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables and both Phase 4D2 tables, five required campaign-video foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
 
 This matrix describes the current minimum access boundary for:
 
@@ -22,6 +22,8 @@ campaign_media_restrictions
 campaign_images
 campaign_image_recipients
 campaign_video_audit_log
+game_sessions
+game_session_journal_events
 campaign-images
 ```
 
@@ -38,6 +40,18 @@ campaign-images
 A campaign has exactly one immutable Game Master. Membership rows represent only Players.
 
 Campaign video has a maximum of six Player rows in addition to the separate GM. Completed Players retain the existing campaign-history visibility described elsewhere, but receive no campaign-video settings or campaign-image access.
+
+## Game Sessions and Journal
+
+| Resource / operation | Active GM | Active Player | Completed participant | Outsider / anonymous |
+|---|---:|---:|---:|---:|
+| Read campaign Game Sessions | Allow | Allow | Historical campaign access only | Deny |
+| Read session Journal events | Allow | Allow | Historical campaign access only | Deny |
+| Start / End / renew presence RPC | Allow | Deny | Deny | Deny |
+| Direct table mutation or Journal forging | Deny | Deny | Deny | Deny |
+| Service-role Campaign Dice insert | Trusted server only | Trusted server only | Deny | Deny |
+
+Campaign Dice is bound to the server-resolved exact active Game Session. Application roles cannot call the recording RPC or write Journal rows directly. Realtime does not widen the underlying RLS read boundary.
 
 ## Campaign video settings
 

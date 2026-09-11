@@ -6,14 +6,16 @@ Current architecture for the implemented VtM character and campaign application,
 
 Phase 4D1 extends this architecture with a deployed CoC 7e personal dice domain, extensible personal-history envelope, contextual roller navigation, roller-scoped history, and live CoC Target bands.
 
+Phase 4D2 is deployed, manually accepted, and closed. It adds server-authoritative VtM V5 and CoC 7e Campaign Dice, exact-session Journal persistence, and Supabase Realtime for Journal and Game Session state without coupling those capabilities to LiveKit.
+
 Verified production baseline:
 
 ```text
 main
-609b6d9ec972bc842bfc8de4e4080eecdb10d4c8
+01d917688ddadb5366949a714bba462b7c5c44b2
 ```
 
-PRs #28–#35 are merged and deployed at the H011 consolidation baseline. The current campaign-video and Game Room scope passed human Production acceptance with one GM and four Players; no quantitative packet-loss, latency, jitter, or connection-quality telemetry was collected.
+PR #52 delivered Phase 4D2, PR #53 refined its acceptance UX, and PR #54 delivered the final navigation polish. All are merged and deployed. Phase 4D2 multi-user acceptance and the final UI-polish re-test passed. The earlier campaign-video human Production acceptance involved one GM and four Players; no quantitative packet-loss, latency, jitter, or connection-quality telemetry was collected.
 
 ## Architectural goals
 
@@ -50,10 +52,16 @@ Supabase
   +-- Row Level Security
   +-- pg_cron for autonomous Game Session expiry
   +-- Storage
-  +-- Realtime only where a later approved campaign capability requires it
+  +-- Realtime for current Game Session state and session-scoped Journal events
 ```
 
 The canonical production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` permanently redirects to the apex domain. Vercel `*.vercel.app` URLs remain technical deployment addresses. Vercel Function compute previously used the default Virginia region (`iad1`); after it moved to Tokyo (`hnd1`), a small Production comparison measured approximately 30% lower overall median TTFB. The region change aligns application compute with Supabase Production in Tokyo and does not change application behavior.
+
+### Supabase environments
+
+Production uses the Supabase project `ttrpg-website` with project ref `nryzkqwcnbbneazaksgh`; this is the project used by `ttrpg.fans`.
+
+A separate test project, `ttrpg-website-m4e-test` with project ref `sijgmybepesinijyspjm`, also exists and is intentionally retained pending a future cleanup decision. Do not delete, pause, or modify it as part of ordinary Production work, and do not assume it is safe to remove. No keys or secret values belong in this documentation.
 
 Current managed-video service boundary:
 
@@ -71,7 +79,9 @@ The reusable video core remains separate from authorization adapters. The curren
 
 The campaign Game Room is the parent application boundary. It owns session state, GM presence renewal, Journal state, and non-video tool navigation. The Video child owns LiveKit connection/media behavior and image-presentation transport. Entering Game Room starts neither boundary: session start is an explicit GM action and LiveKit Join is a separate explicit action. Their lifecycles do not drive one another.
 
-Persistent `game_sessions` rows provide the exact scope for the current Journal and future campaign dice events. A partial unique index permits only one unended session per campaign. GM entry renews a 60-minute deadline approximately every 30 minutes; `pg_cron` invokes a private expiry function every minute so abandoned sessions close without visitor traffic. Completion closes the campaign's active session through the existing lifecycle trigger. Authenticated clients can read only their campaign's session and Journal rows and have no generic Journal writer.
+Persistent `game_sessions` rows provide the exact scope for the current Journal and Campaign Dice events. A partial unique index permits only one unended session per campaign. GM presence is renewed from the mounted Game Room approximately every 30 minutes, extending a 60-minute deadline; in normal timing this produces the accepted approximately 30–60 minute expiry window after GM disappearance. `pg_cron` invokes a private expiry function every minute so abandoned sessions close without visitor traffic. Completion closes the campaign's active session through the existing lifecycle trigger. Authenticated clients can read only their campaign's session and Journal rows and have no generic Journal writer.
+
+The Game Room opens without joining LiveKit or starting a Game Session and exposes its normal tools immediately. Its stable one-row order is `Journal | Gallery | Dice | Character`. Journal is the default/root Display view and has no back arrow. Gallery opens in Handouts and retains its internal back arrow. CoC Dice opens in Percentile with `← | Percentile | Other Dice`; VtM Dice opens directly without a submenu. These UI states do not change the available Display height through navigation wrapping.
 
 ## Route architecture
 
@@ -149,7 +159,7 @@ Prefer server-side code for:
 - safe direct-route unavailable behavior;
 - current campaign-video token issuance after fresh campaign authorization;
 - owner-scoped best-effort personal-roll persistence after application revalidation;
-- future persisted campaign dice execution.
+- server-authoritative Campaign Dice execution and exact-session persistence.
 
 ### Client responsibilities
 
@@ -297,7 +307,7 @@ Its deterministic evaluator and random generator cover percentile rolls plus CoC
 
 The personal-history application registry supports version 1 of `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`. It revalidates and canonicalizes writes and safely skips malformed, unknown-kind, or unsupported-version reads. The first Phase 4D1 migration broadened the database envelope to syntactically valid kinds and positive versions. The deployed follow-up migration changes prospective pruning to six rows per owner and roller kind and adds owner-authenticated scoped clearing; row deletion, owner RLS, and best-effort semantics remain shared and generic.
 
-The same pure evaluator can later be called by server-authoritative campaign execution. That execution layer remains responsible for randomness, authorization, transport, and persistence.
+The same pure evaluators are reused by the implemented server-authoritative Campaign Dice execution layer. That layer remains responsible for randomness, authorization, transport, and persistence; no parallel campaign rules engine exists.
 
 ### Campaign domain
 
@@ -340,6 +350,8 @@ Standalone authorization adapter (not implemented; no active roadmap phase)
 ```
 
 The current campaign Game Room is implemented at `/{locale}/campaigns/{campaignId}/game-room` for one GM plus up to six Players. Image presentation, system-aware dice, linked characters, and notes must reuse campaign authorization and must not establish competing access models. A future standalone video idea would remain independent, but no schema, route, provider, or delivery phase is approved.
+
+LiveKit owns video/audio and Gallery image-presentation transport only. It does not control Game Room access, Game Session lifecycle, Journal, or Campaign Dice. Join, Leave, camera, microphone, refresh, and disconnect therefore cannot start or end a Game Session. Browsing Gallery requires no LiveKit connection; Share/Presentation requires the GM to be connected and reaches only LiveKit-connected participants.
 
 ### Campaign-content domain
 
@@ -505,7 +517,7 @@ Approved sequence:
 7. Phase 4C1 image-only Campaign Gallery — complete;
 8. Phase 4C2 Game Room Image Presentation — complete and accepted in Production;
 9. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
-10. Phase 4D2 system-aware Game Room Dice Integration — implemented on its release branch; Production acceptance pending;
+10. Phase 4D2 system-aware Game Room Dice Integration — complete, deployed, and accepted in Production;
 11. Phase 4E Campaign & Game Room UX/UI Refinement;
 12. Phase 4F1 CoC 7e Character Sheets;
 13. Phase 4F2 system-aware linked-character Game Room integration;

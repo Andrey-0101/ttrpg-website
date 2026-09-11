@@ -33,9 +33,9 @@ The existing Game Room and campaign-video/controller boundaries now provide GM s
 
 CoC deterministic rules and random generation live in the CoC game-system domain, while only proven validation and secure-random primitives are shared under `lib/dice/`. The localized personal UI follows the existing game-system tool route convention. The extensible personal-history registry supports VtM, Custom, CoC percentile, and CoC Other Dice without making the database envelope authoritative for application support.
 
-### Phase 4D2 — Game Room dice
+### Phase 4D2 — Game Room dice (implemented and accepted)
 
-Keep common Game Room selection and authorization system-neutral. Personal and campaign-authoritative persistence must remain separate.
+Common Game Room selection and authorization remain system-neutral. Personal and campaign-authoritative persistence are implemented as separate trust boundaries.
 
 ### Phase 4E — Campaign & Game Room UX/UI Refinement
 

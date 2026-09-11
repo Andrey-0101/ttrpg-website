@@ -17,11 +17,12 @@ Completed foundation:
 - Phase 4B — Campaign Video Rooms Integration and the responsive Campaign Game Room;
 - Phase 4C1 — image-only Campaign Gallery;
 - Phase 4C2 — Game Room Image Presentation;
-- Phase 4D1 — CoC 7e Dice Roller, including contextual Back navigation, roller-scoped history, and live CoC Target bands.
+- Phase 4D1 — CoC 7e Dice Roller, including contextual Back navigation, roller-scoped history, and live CoC Target bands;
+- Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice in the Game Room.
 
 Next approved work:
 
-- Phase 4D2 — Game Room Dice Integration.
+- Phase 4E — Campaign & Game Room UX/UI Refinement.
 
 Current Production facts:
 
@@ -33,7 +34,8 @@ Current Production facts:
 - the generic Call of Cthulhu 7e campaign shell and personal Dice Roller are deployed, but CoC character sheets are not yet in Production;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
-- Phase 4C2 is implemented and accepted in Production; Phase 4D1, its focused UX follow-up, and both personal-history migrations are deployed.
+- Phase 4C2 is implemented and accepted in Production; Phase 4D1, its focused UX follow-up, and all three personal-history migrations are deployed.
+- Phase 4D2 and its focused Game Room navigation polish are deployed and passed multi-user and final UI-polish Production acceptance.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
@@ -168,7 +170,7 @@ Known minor issue: CoC personal roll history currently displays four previous ro
 
 ### Phase 4D2 — Game Room Dice Integration
 
-**Status: Implemented on the Phase 4D2 branch; Production acceptance pending**
+**Status: Complete / deployed / accepted in Production**
 
 The first bounded delivery establishes the non-dice lifecycle boundary:
 
@@ -190,6 +192,12 @@ The system-aware Campaign Dice surface is implemented in the Game Room:
 
 Personal roll history remains separate and non-authoritative.
 Archive UI, hidden rolls, richer session records, and other visibility modes remain deferred.
+
+The accepted Game Room opens without joining LiveKit or starting a Game Session. `Journal | Gallery | Dice | Character` remains one stable tool row, with Journal as the default Display view and no Journal back arrow. Gallery opens directly in Handouts and keeps its internal back arrow. CoC Dice opens directly in Percentile with the internal `← | Percentile | Other Dice` submenu; VtM Dice opens directly without a submenu. These navigation changes do not alter dice mechanics, Journal persistence, Realtime, Gallery sharing, or LiveKit transport.
+
+Journal and Game Session state propagate through Supabase Realtime, with lightweight polling retained only for fallback reconciliation. Journal entries append at the bottom, older entries remain above, the list auto-scrolls to the newest entry, and the GM Start/End control remains fixed while the event list scrolls.
+
+Phase 4D2 passed automated verification, multi-user Production acceptance, and the focused final UI-polish re-test. It is closed.
 
 ### Phase 4E — Campaign & Game Room UX/UI Refinement
 

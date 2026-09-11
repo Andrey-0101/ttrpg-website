@@ -6,17 +6,17 @@
 |---|---|
 | Project | TTRPG Hub |
 | Document type | Current information architecture |
-| Status | Production route snapshot including the deployed Phase 4D1 UX follow-up |
-| H011 consolidation baseline | `main` at `609b6d9ec972bc842bfc8de4e4080eecdb10d4c8` |
+| Status | Production route snapshot through accepted Phase 4D2 |
+| Accepted Phase 4D2 application baseline | `main` at `01d917688ddadb5366949a714bba462b7c5c44b2` |
 | Current phase | Phase 4 — Core Play & Campaign Tools |
-| Completed work | Milestones 1–3 and Phases 4A–4D1, including the Phase 4D1 UX follow-up, in Production |
-| Next work | Begin Phase 4D2 Game Room Dice Integration |
+| Completed work | Milestones 1–3 and Phases 4A–4D2 in Production |
+| Next work | Plan/review Phase 4E Campaign & Game Room UX/UI Refinement |
 
 ## Purpose
 
 This document records the implemented user-facing route and navigation structure.
 
-It does not describe unimplemented system-aware Game Room dice, CoC character support, campaign notes, system hubs, standalone video, document Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current. The CoC personal dice route and its contextual-navigation, scoped-history, and live Target-band follow-up described here are deployed.
+It does not describe unimplemented CoC character support, campaign notes, system hubs, standalone video, document Handouts/NPC/Sessions/Chronicle, or Public Readiness routes as current. CoC personal dice and system-aware Game Room Campaign Dice are deployed.
 
 ## Current primary navigation
 
@@ -337,7 +337,9 @@ This campaign-scoped route implements the Phase 4C1 image-only Campaign Gallery.
 /[locale]/campaigns/[id]/game-room
 ```
 
-This authenticated participant-only route is the dedicated campaign virtual tabletop. It provides campaign-authorized video with explicit Join/Leave, local camera and microphone controls, participant media tiles, sound unlock, reconnect, cleanup, and safe states. Phase 4C2 adds a GM-only browser for existing Campaign Gallery images, local viewing, Share / Stop Share, synchronized Expand / Collapse, and late join/rejoin presentation. Player Display is empty when nothing is shared; Dice and Character controls remain disabled. Completed campaigns cannot start a video connection.
+This authenticated participant-only route is the dedicated campaign virtual tabletop. It opens independently of LiveKit and exposes the stable `Journal | Gallery | Dice | Character` tool row immediately. Journal is the default/root Display view with no back arrow. Gallery opens directly in Handouts, retains its internal back arrow, and can be browsed without video; Share / Stop Share, synchronized Expand / Collapse, and late join/rejoin presentation still use LiveKit. Campaign Dice is available for VtM V5 and CoC 7e, while Character remains disabled until Phase 4F2. CoC opens directly in Percentile with its internal `← | Percentile | Other Dice` submenu; VtM opens directly without a Dice submenu. Completed campaigns cannot start a video connection or retain an active Game Session.
+
+Only the GM can Start and End the one active Game Session. Journal persistence is exact-session scoped, and Game Session state plus Journal events propagate through Supabase Realtime independently of LiveKit. Without an active session, Campaign Dice results remain local to the roller and are neither broadcast nor persisted.
 
 The accepted participant model is one GM plus up to six Players. The responsive layout keeps seven stable 16:9 slots, uses a compact Game Room header and final accepted video-card controls, and reflows with vertical scrolling where needed. The last human Production group test passed with one GM and four Players, without quantitative network or connection-quality telemetry. The Phase 4C2 presentation flow and corrected desktop Expand layout were also manually accepted in Production.
 
@@ -366,9 +368,7 @@ RLS and Storage policies remain authoritative.
 
 Not implemented:
 
-- system-aware Game Room dice;
 - CoC character sheets and system-aware linked-character integration;
-- campaign-authoritative persisted roll history or realtime feed unless approved within 4D2;
 - standalone Video Rooms;
 - campaign video moderation and other uncommitted media expansion;
 - general Handouts, NPCs, Sessions, and Chronicle records;
@@ -381,6 +381,6 @@ Not implemented:
 
 The Production site is a bilingual VtM character and campaign manager with public personal VtM, Custom, and CoC dice tools, saved Custom presets, roller-scoped private personal history, contextual Back destinations, live CoC Target bands, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
 
-It has a working campaign authorization boundary, a Production-accepted campaign video workspace, an image-only Campaign Gallery, and Production-accepted Game Room Image Presentation. Phase 4D2 system-aware Game Room dice is next. The approved forward sequence then continues with 4E technical Campaign/Game Room refinement, 4F1/4F2 CoC and linked-character integration, and 4G narrowly scoped campaign notes.
+It has a working campaign authorization boundary, a Production-accepted campaign video workspace, an image-only Campaign Gallery, Game Room Image Presentation, independent Game Sessions, a session-scoped Realtime Journal, and system-aware Campaign Dice. Phase 4E technical Campaign/Game Room refinement is next, followed by 4F1/4F2 CoC and linked-character integration and 4G narrowly scoped campaign notes.
 
 Standalone Video Rooms and broad Handouts/NPC/Sessions/Chronicle modules are uncommitted backlog possibilities, not current limitations that imply scheduled delivery.
