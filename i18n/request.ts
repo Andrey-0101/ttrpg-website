@@ -18,12 +18,16 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const vtmV5Messages = (
     await import(`../messages/${locale}/vtm-v5.json`)
   ).default;
+  const coc7eMessages = (
+    await import(`../messages/${locale}/call-of-cthulhu-7e.json`)
+  ).default;
 
   return {
     locale,
     messages: {
       ...commonMessages,
       ...vtmV5Messages,
+      ...coc7eMessages,
     },
   };
 });

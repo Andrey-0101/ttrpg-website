@@ -2,11 +2,13 @@
 
 ## Status
 
-Current architecture for the implemented VtM character and campaign application, including the campaign Game Room, its independent Game Session/Journal foundation, optional campaign-authorized LiveKit video, and image-only Campaign Gallery.
+Current architecture for the implemented VtM V5 and CoC 7e character domains and campaign application, including the campaign Game Room, its independent Game Session/Journal foundation, optional campaign-authorized LiveKit video, and image-only Campaign Gallery.
 
 Phase 4D1 extends this architecture with a deployed CoC 7e personal dice domain, extensible personal-history envelope, contextual roller navigation, roller-scoped history, and live CoC Target bands.
 
 Phase 4D2 is deployed, manually accepted, and closed. It adds server-authoritative VtM V5 and CoC 7e Campaign Dice, exact-session Journal persistence, and Supabase Realtime for Journal and Game Session state without coupling those capabilities to LiveKit.
+
+Phase 4F1 adds the versioned CoC 7e character schema, responsive two-page sheet, system-specific normalization and formulas, EN/RU presentation, and existing Character Library/campaign-sharing integration without a database migration. Production manual acceptance remains pending.
 
 Verified production baseline:
 
@@ -241,7 +243,7 @@ Implemented Production system with all current catalogue capabilities:
 vtm-v5
 ```
 
-The Phase 4D1 typed catalogue enables both campaign creation and the deployed personal dice roller for `call-of-cthulhu-7e`; character creation and its game area remain planned. The catalogue also contains these fully planned systems:
+The typed catalogue also enables character creation, campaign creation, and the deployed personal dice roller for `call-of-cthulhu-7e`; its game area remains planned. The catalogue also contains these fully planned systems:
 
 ```text
 alien
@@ -256,7 +258,7 @@ paranoia
 traveller-mongoose
 ```
 
-Capability status is tracked separately for game area, character creation, campaign creation, and dice roller. VtM V5 is available for all four capabilities; Phase 4D1 makes Call of Cthulhu 7e available for its generic campaign shell and personal dice route. Planned capabilities expose no route. The catalogue is rendered across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool is not a game-system entry.
+Capability status is tracked separately for game area, character creation, campaign creation, and dice roller. VtM V5 is available for all four capabilities; Call of Cthulhu 7e is available for character creation, its generic campaign shell, and personal dice route. Planned capabilities expose no route. The catalogue is rendered across Games, the System Rollers section, character creation, and campaign creation. Custom Dice Pool is not a game-system entry.
 
 ADR-008 is Accepted. The project must not create a complete universal rules engine before CoC exposes real shared interfaces.
 
@@ -395,13 +397,16 @@ System-specific data is stored in versioned JSONB:
 characters.sheet_data
 ```
 
-All persisted VtM data must be normalized by:
+Persisted system data must be normalized by its own boundary:
 
 ```text
 normalizeVtmV5SheetData()
+normalizeCoc7eSheetData()
 ```
 
 Unknown top-level keys are preserved under `extensions`.
+
+The CoC schema is version 1 and remains separate from VtM. It owns CoC identity, characteristics, mutable vitals, conditions, fixed and specialty skills, weapons, Story, Backstory, Gear & Possessions, and Wealth. Hard/Extreme thresholds, Idea, Know, maximum HP/MP/SAN, the Starting-SAN-based Insane threshold, Move, Build, and Damage Bonus are calculated rather than duplicated in JSONB. Static skill bases remain system definitions. CoC and VtM use separate draft namespaces and page-state keys while sharing only proven common UI such as the portrait field.
 
 The schema is presentation-independent. Desktop A4, mobile, summary-card, shared read-only, and future print renderers consume the same normalized data.
 
@@ -518,8 +523,8 @@ Approved sequence:
 8. Phase 4C2 Game Room Image Presentation — complete and accepted in Production;
 9. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
 10. Phase 4D2 system-aware Game Room Dice Integration — complete, deployed, and accepted in Production;
-11. Phase 4E Campaign & Game Room UX/UI Refinement;
-12. Phase 4F1 CoC 7e Character Sheets;
+11. Phase 4E Fair Turn Order Dice — complete, deployed, and accepted in Production;
+12. Phase 4F1 CoC 7e Character Sheets — implemented and deployed, with Production manual acceptance pending;
 13. Phase 4F2 system-aware linked-character Game Room integration;
 14. Phase 4G narrowly scoped Campaign Notes;
 15. Phase 5 site-wide UI Technical Refinement;

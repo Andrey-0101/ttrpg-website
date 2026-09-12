@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document records the current common character architecture and the implemented Vampire: The Masquerade Fifth Edition sheet.
+This document records the current common character architecture and the implemented Vampire: The Masquerade Fifth Edition and Call of Cthulhu Seventh Edition sheets.
 
 ## Common character model
 
@@ -39,7 +39,7 @@ Current status:
 | System | Status |
 |---|---|
 | `vtm-v5` | Implemented |
-| `call-of-cthulhu-7e` | Registered but unavailable |
+| `call-of-cthulhu-7e` | Implemented / deployed / Production acceptance pending |
 
 ## VtM V5 schema
 
@@ -196,7 +196,43 @@ The normalizer:
 
 Do not bypass normalization when loading persisted data.
 
-## Current page structure
+## CoC 7e schema
+
+Current version:
+
+```text
+1
+```
+
+Source:
+
+```text
+lib/characters/call-of-cthulhu-7e/schema.ts
+lib/characters/call-of-cthulhu-7e/definitions.ts
+```
+
+The schema stores CoC-specific identity, the eight editable characteristics, mutable vitals, conditions, fixed and specialty skill state, weapons, Story, Backstory, Gear & Possessions, Wealth, and `extensions`. Fixed skill bases and specialty-category defaults belong to system definitions rather than every character payload. Specialty and weapon rows use stable IDs.
+
+The normalizer always returns `schemaVersion: 1`, restores required slots, accepts only finite integers in the technical `0..999` range, treats invalid numeric data as `null`, accepts only strict booleans, preserves long strings, de-duplicates row IDs, preserves unknown top-level data in `extensions`, and converts an invalid linked weapon skill to a visible custom value rather than silently discarding its identifier.
+
+Calculated values are never persisted separately:
+
+```text
+Hard = floor(Regular / 2)
+Extreme = floor(Regular / 5)
+Idea = INT
+Know = EDU
+Maximum HP = floor((CON + SIZ) / 10)
+Maximum MP = floor(POW / 5)
+Maximum SAN = 99 - Cthulhu Mythos
+Insane threshold = floor(Starting SAN / 5)
+Move = the accepted STR/DEX/SIZ and Age table
+Build and Damage Bonus = the accepted STR + SIZ table
+```
+
+Changing POW seeds an empty Starting SAN once. It does not overwrite Starting SAN after that point or mutate Current SAN. Current HP, MP, SAN, Luck, and explicitly entered skills remain mutable and are not recalculated when source characteristics change. Dodge derives from half DEX while unset; Language Own derives from EDU while unset. Credit Rating and Cthulhu Mythos cannot retain development marks.
+
+## VtM page structure
 
 Logical pages:
 
@@ -234,6 +270,21 @@ Contains:
 
 Biography history remains the final lower long-form field.
 
+## CoC page structure
+
+Logical pages:
+
+```text
+investigator
+story
+```
+
+The Investigator page uses an upper-left portrait and identity zone, horizontal Characteristics and Skills sections in the existing site style, derived/status values, a three-column desktop Skills region, a read-only Brawl combat row, and three initial editable weapon rows. Weapon rows may link to a valid sheet skill or store a named custom skill; notation-bearing fields remain strings.
+
+The Story page contains Story, the ten approved Backstory fields in a two-column desktop area, Gear & Possessions, and string-based Spending Level, Cash, and Assets. It has no Fellow Investigators or Quick Reference Rules section.
+
+Both pages use content-driven mobile height and a single two-control page-navigation row. The supplied standard autocalc PDF is a functional/compositional reference only: the implementation does not reproduce its logo, fonts, decorative assets, official trade dress, or endorsement. The exact required Chaosium Fan Material Policy notice appears beneath every rendered CoC sheet in a plainly legible accessible region.
+
 ## Responsive rendering
 
 Desktop:
@@ -263,6 +314,8 @@ Current model:
 - Add/Remove controls only in edit mode;
 - local browser-tab draft;
 - active-page restoration.
+
+VtM and CoC use separate versioned draft namespaces and page-state keys.
 
 Current draft limitation:
 
@@ -383,8 +436,7 @@ The owner or campaign Game Master may unlink an active assignment. Unlinking nev
 - complex autosave;
 - history/versioning;
 - public read-only renderer;
-- final decorative frame;
-- CoC character sheet.
+- final decorative frame.
 
 ## Adding a future system
 

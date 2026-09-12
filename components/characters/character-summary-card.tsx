@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import type { VtmV5Identity } from "@/lib/characters/vtm-v5/schema";
+import type { Coc7eIdentity } from "@/lib/characters/call-of-cthulhu-7e/schema";
 import DeleteCharacterButton from "./delete-character-button";
 
 type CharacterSummaryCardProps = {
@@ -12,7 +13,8 @@ type CharacterSummaryCardProps = {
   visibility: string;
   portraitPath: string | null;
   portraitUrl: string | null;
-  identity: VtmV5Identity | null;
+  vtmIdentity: VtmV5Identity | null;
+  cocIdentity: Coc7eIdentity | null;
 };
 
 type SummaryFieldProps = {
@@ -47,10 +49,12 @@ export default async function CharacterSummaryCard({
   visibility,
   portraitPath,
   portraitUrl,
-  identity,
+  vtmIdentity,
+  cocIdentity,
 }: CharacterSummaryCardProps) {
   const translations = await getTranslations("Characters");
-  const sheetTranslations = await getTranslations("VtmCharacterSheet");
+  const vtmSheetTranslations = await getTranslations("VtmCharacterSheet");
+  const cocSheetTranslations = await getTranslations("Coc7eCharacterSheet");
 
   const visibilityLabel =
     visibility === "public"
@@ -81,7 +85,9 @@ export default async function CharacterSummaryCard({
                 ◇
               </div>
               <p className="text-sm font-medium italic text-neutral-600">
-                {sheetTranslations("portrait")}
+                {vtmIdentity
+                  ? vtmSheetTranslations("portrait")
+                  : cocSheetTranslations("portrait")}
               </p>
             </div>
           )}
@@ -92,49 +98,79 @@ export default async function CharacterSummaryCard({
             <h2 className="break-words text-xl font-bold sm:truncate">{name}</h2>
           </div>
 
-          {identity ? (
+          {vtmIdentity ? (
             <div className="grid grid-cols-1 sm:grid-cols-2">
               <div className="min-w-0 sm:border-r sm:border-neutral-400">
                 <SummaryField
-                  label={sheetTranslations("chronicle")}
-                  value={identity.chronicle}
+                  label={vtmSheetTranslations("chronicle")}
+                  value={vtmIdentity.chronicle}
                   className="border-b"
                 />
                 <SummaryField
-                  label={sheetTranslations("concept")}
-                  value={identity.concept}
+                  label={vtmSheetTranslations("concept")}
+                  value={vtmIdentity.concept}
                   className="border-b"
                 />
                 <SummaryField
-                  label={sheetTranslations("ambition")}
-                  value={identity.ambition}
+                  label={vtmSheetTranslations("ambition")}
+                  value={vtmIdentity.ambition}
                   className="border-b"
                 />
                 <SummaryField
-                  label={sheetTranslations("desire")}
-                  value={identity.desire}
+                  label={vtmSheetTranslations("desire")}
+                  value={vtmIdentity.desire}
                 />
               </div>
 
               <div className="min-w-0 border-t border-neutral-400 sm:border-t-0">
                 <SummaryField
-                  label={sheetTranslations("generation")}
-                  value={String(identity.generation)}
+                  label={vtmSheetTranslations("generation")}
+                  value={String(vtmIdentity.generation)}
                   className="border-b"
                 />
                 <SummaryField
-                  label={sheetTranslations("sire")}
-                  value={identity.sire}
+                  label={vtmSheetTranslations("sire")}
+                  value={vtmIdentity.sire}
                   className="border-b"
                 />
                 <SummaryField
-                  label={sheetTranslations("clan")}
-                  value={identity.clan}
+                  label={vtmSheetTranslations("clan")}
+                  value={vtmIdentity.clan}
                   className="border-b"
                 />
                 <SummaryField
-                  label={sheetTranslations("predatorType")}
-                  value={identity.predatorType}
+                  label={vtmSheetTranslations("predatorType")}
+                  value={vtmIdentity.predatorType}
+                />
+              </div>
+            </div>
+          ) : cocIdentity ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2">
+              <div className="min-w-0 sm:border-r sm:border-neutral-400">
+                <SummaryField
+                  label={cocSheetTranslations("identity.occupation")}
+                  value={cocIdentity.occupation}
+                  className="border-b"
+                />
+                <SummaryField
+                  label={cocSheetTranslations("identity.birthplace")}
+                  value={cocIdentity.birthplace}
+                  className="border-b"
+                />
+                <SummaryField
+                  label={cocSheetTranslations("identity.residence")}
+                  value={cocIdentity.residence}
+                />
+              </div>
+              <div className="min-w-0 border-t border-neutral-400 sm:border-t-0">
+                <SummaryField
+                  label={cocSheetTranslations("identity.age")}
+                  value={cocIdentity.age === null ? "" : String(cocIdentity.age)}
+                  className="border-b"
+                />
+                <SummaryField
+                  label={cocSheetTranslations("identity.gender")}
+                  value={cocIdentity.gender}
                 />
               </div>
             </div>

@@ -31,6 +31,22 @@ import {
   createDefaultVtmV5SheetData,
   normalizeVtmV5SheetData,
 } from "@/lib/characters/vtm-v5/schema";
+import {
+  getCoc7eCharacterDraftKey,
+  getCoc7eCharacterPageKey,
+  readCoc7eEditorDraft,
+  readCoc7eSheetPage,
+  removeCoc7eEditorDraft,
+  writeCoc7eEditorDraft,
+  writeCoc7eSheetPage,
+  type Coc7eSheetPage,
+} from "@/lib/characters/call-of-cthulhu-7e/editor-draft";
+import {
+  createDefaultCoc7eSheetData,
+  normalizeCoc7eSheetData,
+  validateCoc7eSheetData,
+} from "@/lib/characters/call-of-cthulhu-7e/schema";
+import Coc7eCharacterSheet from "./sheets/call-of-cthulhu-7e/coc7e-character-sheet";
 import VtmCharacterSheet from "./sheets/vtm-v5/vtm-character-sheet";
 import type { Database } from "@/types/database.types";
 
@@ -59,7 +75,8 @@ export default function CharacterEditor({
 }) {
   const formTranslations = useTranslations("CharacterForm");
   const translations = useTranslations("CharacterEditor");
-  const sheetTranslations = useTranslations("VtmCharacterSheet");
+  const vtmSheetTranslations = useTranslations("VtmCharacterSheet");
+  const cocSheetTranslations = useTranslations("Coc7eCharacterSheet");
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const catalogueTranslations = useTranslations("GameSystemCatalogue");
 
@@ -76,12 +93,18 @@ export default function CharacterEditor({
       : "private";
 
   const draftStorageKey = useMemo(
-    () => getCharacterDraftKey(character.id),
-    [character.id],
+    () =>
+      normalizedSystemId === "call-of-cthulhu-7e"
+        ? getCoc7eCharacterDraftKey(character.id)
+        : getCharacterDraftKey(character.id),
+    [character.id, normalizedSystemId],
   );
   const pageStorageKey = useMemo(
-    () => getCharacterPageKey(character.id),
-    [character.id],
+    () =>
+      normalizedSystemId === "call-of-cthulhu-7e"
+        ? getCoc7eCharacterPageKey(character.id)
+        : getCharacterPageKey(character.id),
+    [character.id, normalizedSystemId],
   );
 
   const [isEditing, setIsEditing] = useState(false);
@@ -92,7 +115,12 @@ export default function CharacterEditor({
   const [vtmSheetData, setVtmSheetData] = useState(() =>
     normalizeVtmV5SheetData(character.sheet_data),
   );
-  const [activePage, setActivePage] = useState<VtmV5SheetPage>("core");
+  const [vtmActivePage, setVtmActivePage] = useState<VtmV5SheetPage>("core");
+  const [cocSheetData, setCocSheetData] = useState(() =>
+    normalizeCoc7eSheetData(character.sheet_data),
+  );
+  const [cocActivePage, setCocActivePage] =
+    useState<Coc7eSheetPage>("investigator");
   const [message, setMessage] = useState<MutationMessage>(null);
   const [saving, setSaving] = useState(false);
   const saveLockRef = useRef(false);
@@ -107,7 +135,10 @@ export default function CharacterEditor({
     JSON.stringify({
       name: character.name,
       visibility: initialVisibility,
-      sheetData: normalizeVtmV5SheetData(character.sheet_data),
+      sheetData:
+        normalizedSystemId === "call-of-cthulhu-7e"
+          ? normalizeCoc7eSheetData(character.sheet_data)
+          : normalizeVtmV5SheetData(character.sheet_data),
     }),
   );
   const [savedPortraitPath, setSavedPortraitPath] = useState(
@@ -115,14 +146,18 @@ export default function CharacterEditor({
   );
   const [savedVisibility, setSavedVisibility] =
     useState<CharacterVisibility>(initialVisibility);
+  const currentSheetData =
+    normalizedSystemId === "call-of-cthulhu-7e"
+      ? cocSheetData
+      : vtmSheetData;
   const currentFormSnapshot = useMemo(
     () =>
       JSON.stringify({
         name,
         visibility,
-        sheetData: vtmSheetData,
+        sheetData: currentSheetData,
       }),
-    [name, visibility, vtmSheetData],
+    [currentSheetData, name, visibility],
   );
   const currentPortraitPath = portraitRemoved ? null : portraitPath;
   const hasUnsavedPortraitChanges =
@@ -150,27 +185,41 @@ export default function CharacterEditor({
         return;
       }
 
-      if (normalizedSystemId !== "vtm-v5") {
-        setDraftReady(true);
-        return;
-      }
-
       try {
-        const storedPage = readVtmV5SheetPage(pageStorageKey);
-        const draft = readVtmV5EditorDraft(draftStorageKey);
+        if (normalizedSystemId === "call-of-cthulhu-7e") {
+          const storedPage = readCoc7eSheetPage(pageStorageKey);
+          const draft = readCoc7eEditorDraft(draftStorageKey);
 
-        if (draft) {
-          setName(draft.name);
-          setVisibility(
-            draft.visibility === "public" && initialVisibility !== "public"
-              ? initialVisibility
-              : draft.visibility,
-          );
-          setVtmSheetData(draft.sheetData);
-          setActivePage(draft.activePage);
-          setIsEditing(true);
-        } else if (storedPage) {
-          setActivePage(storedPage);
+          if (draft) {
+            setName(draft.name);
+            setVisibility(
+              draft.visibility === "public" && initialVisibility !== "public"
+                ? initialVisibility
+                : draft.visibility,
+            );
+            setCocSheetData(draft.sheetData);
+            setCocActivePage(draft.activePage);
+            setIsEditing(true);
+          } else if (storedPage) {
+            setCocActivePage(storedPage);
+          }
+        } else if (normalizedSystemId === "vtm-v5") {
+          const storedPage = readVtmV5SheetPage(pageStorageKey);
+          const draft = readVtmV5EditorDraft(draftStorageKey);
+
+          if (draft) {
+            setName(draft.name);
+            setVisibility(
+              draft.visibility === "public" && initialVisibility !== "public"
+                ? initialVisibility
+                : draft.visibility,
+            );
+            setVtmSheetData(draft.sheetData);
+            setVtmActivePage(draft.activePage);
+            setIsEditing(true);
+          } else if (storedPage) {
+            setVtmActivePage(storedPage);
+          }
         }
       } catch {
         // Draft restoration is optional when browser storage is unavailable.
@@ -191,32 +240,48 @@ export default function CharacterEditor({
   ]);
 
   useEffect(() => {
-    if (readOnly || !draftReady || normalizedSystemId !== "vtm-v5") {
+    if (readOnly || !draftReady) {
       return;
     }
 
-    writeVtmV5SheetPage(pageStorageKey, activePage);
-  }, [activePage, draftReady, normalizedSystemId, pageStorageKey, readOnly]);
+    if (normalizedSystemId === "call-of-cthulhu-7e") {
+      writeCoc7eSheetPage(pageStorageKey, cocActivePage);
+    } else if (normalizedSystemId === "vtm-v5") {
+      writeVtmV5SheetPage(pageStorageKey, vtmActivePage);
+    }
+  }, [cocActivePage, draftReady, normalizedSystemId, pageStorageKey, readOnly, vtmActivePage]);
 
   useEffect(() => {
     if (
       readOnly ||
       !draftReady ||
       !isEditing ||
-      normalizedSystemId !== "vtm-v5"
+      (normalizedSystemId !== "vtm-v5" &&
+        normalizedSystemId !== "call-of-cthulhu-7e")
     ) {
       return;
     }
 
-    writeVtmV5EditorDraft(draftStorageKey, {
-      version: 1,
-      name,
-      visibility,
-      activePage,
-      sheetData: vtmSheetData,
-    });
+    if (normalizedSystemId === "call-of-cthulhu-7e") {
+      writeCoc7eEditorDraft(draftStorageKey, {
+        version: 1,
+        name,
+        visibility,
+        activePage: cocActivePage,
+        sheetData: cocSheetData,
+      });
+    } else {
+      writeVtmV5EditorDraft(draftStorageKey, {
+        version: 1,
+        name,
+        visibility,
+        activePage: vtmActivePage,
+        sheetData: vtmSheetData,
+      });
+    }
   }, [
-    activePage,
+    cocActivePage,
+    cocSheetData,
     draftReady,
     draftStorageKey,
     isEditing,
@@ -224,6 +289,7 @@ export default function CharacterEditor({
     normalizedSystemId,
     readOnly,
     visibility,
+    vtmActivePage,
     vtmSheetData,
   ]);
 
@@ -270,8 +336,26 @@ export default function CharacterEditor({
     });
 
     const supabase = createClient();
+    const normalizedCocSheetData = normalizeCoc7eSheetData(cocSheetData);
     const sheetDataToSave =
-      normalizedSystemId === "vtm-v5" ? vtmSheetData : character.sheet_data;
+      normalizedSystemId === "call-of-cthulhu-7e"
+        ? normalizedCocSheetData
+        : normalizedSystemId === "vtm-v5"
+          ? normalizeVtmV5SheetData(vtmSheetData)
+          : character.sheet_data;
+
+    if (normalizedSystemId === "call-of-cthulhu-7e") {
+      const validationErrors = validateCoc7eSheetData(normalizedCocSheetData);
+      if (validationErrors.length > 0) {
+        setMessage({
+          kind: "error",
+          text: cocSheetTranslations(`validation.${validationErrors[0]}`),
+        });
+        saveLockRef.current = false;
+        setSaving(false);
+        return;
+      }
+    }
     let uploadedPortraitPath: string | null = null;
     let nextPortraitPath = portraitRemoved ? null : portraitPath;
 
@@ -304,7 +388,10 @@ export default function CharacterEditor({
           console.error(uploadError);
           setMessage({
             kind: "error",
-            text: sheetTranslations("portraitUploadError"),
+            text:
+              normalizedSystemId === "call-of-cthulhu-7e"
+                ? cocSheetTranslations("portraitUploadError")
+                : vtmSheetTranslations("portraitUploadError"),
           });
           return;
         }
@@ -374,7 +461,11 @@ export default function CharacterEditor({
       setSavedFormSnapshot(currentFormSnapshot);
       setSavedPortraitPath(nextPortraitPath);
       setSavedVisibility(visibility);
-      removeVtmV5EditorDraft(draftStorageKey);
+      if (normalizedSystemId === "call-of-cthulhu-7e") {
+        removeCoc7eEditorDraft(draftStorageKey);
+      } else if (normalizedSystemId === "vtm-v5") {
+        removeVtmV5EditorDraft(draftStorageKey);
+      }
       setMessage({ kind: "success", text: translations("changesSaved") });
       setIsEditing(false);
     } catch (error) {
@@ -412,7 +503,10 @@ export default function CharacterEditor({
 
     if (normalizedSystemId === "vtm-v5") {
       setVtmSheetData(createDefaultVtmV5SheetData());
-      setActivePage("core");
+      setVtmActivePage("core");
+    } else if (normalizedSystemId === "call-of-cthulhu-7e") {
+      setCocSheetData(createDefaultCoc7eSheetData());
+      setCocActivePage("investigator");
     }
 
     setMessage({ kind: "info", text: translations("clearNotice") });
@@ -451,7 +545,11 @@ export default function CharacterEditor({
   const fieldStyle =
     "mt-1 w-full rounded border px-2 py-1.5 disabled:bg-gray-100 disabled:text-gray-900";
   const showExternalNameField =
-    normalizedSystemId !== "vtm-v5" || activePage === "background";
+    normalizedSystemId === "vtm-v5"
+      ? vtmActivePage === "background"
+      : normalizedSystemId === "call-of-cthulhu-7e"
+        ? cocActivePage === "story"
+        : true;
   const displayedPortraitUrl = portraitRemoved
     ? null
     : (portraitPreviewUrl ?? portraitUrl);
@@ -569,8 +667,27 @@ export default function CharacterEditor({
             onChange={setVtmSheetData}
             onPortraitFileChange={handlePortraitFileChange}
             onPortraitRemove={handlePortraitRemove}
-            activePage={activePage}
-            onPageChange={setActivePage}
+            activePage={vtmActivePage}
+            onPageChange={setVtmActivePage}
+          />
+        ) : (
+          <div className="mt-4 min-h-40" />
+        )
+      ) : normalizedSystemId === "call-of-cthulhu-7e" ? (
+        draftReady ? (
+          <Coc7eCharacterSheet
+            isEditing={!readOnly && isEditing && !saving}
+            name={name}
+            sheetData={cocSheetData}
+            portraitUrl={displayedPortraitUrl}
+            hasPortrait={hasPortrait}
+            portraitBusy={saving}
+            onNameChange={setName}
+            onChange={setCocSheetData}
+            onPortraitFileChange={handlePortraitFileChange}
+            onPortraitRemove={handlePortraitRemove}
+            activePage={cocActivePage}
+            onPageChange={setCocActivePage}
           />
         ) : (
           <div className="mt-4 min-h-40" />

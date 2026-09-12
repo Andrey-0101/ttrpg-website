@@ -1,0 +1,175 @@
+{
+  "Coc7eCharacterSheet": {
+    "pageNavigationLabel": "Investigator sheet pages",
+    "pages": {
+      "investigator": "Page 1 — Investigator",
+      "story": "Page 2 — Story & Backstory"
+    },
+    "portrait": "Portrait",
+    "uploadPortrait": "Upload portrait",
+    "replacePortrait": "Replace portrait",
+    "removePortrait": "Remove portrait",
+    "portraitHelp": "JPEG, PNG, or WebP. Maximum 5 MB.",
+    "portraitInvalidType": "Choose a JPEG, PNG, or WebP image.",
+    "portraitTooLarge": "The portrait must be 5 MB or smaller.",
+    "portraitUploadError": "The portrait could not be uploaded. The character was not created.",
+    "identity": {
+      "name": "Name",
+      "occupation": "Occupation",
+      "birthplace": "Birthplace",
+      "residence": "Residence",
+      "age": "Age",
+      "gender": "Gender"
+    },
+    "characteristics": {
+      "title": "Characteristics",
+      "str": "STR",
+      "con": "CON",
+      "siz": "SIZ",
+      "dex": "DEX",
+      "app": "APP",
+      "int": "INT",
+      "pow": "POW",
+      "edu": "EDU",
+      "idea": "Idea",
+      "know": "Know"
+    },
+    "thresholds": {
+      "regular": "Regular",
+      "hard": "Hard",
+      "extreme": "Extreme",
+      "regularShort": "Reg.",
+      "hardShort": "Hard",
+      "extremeShort": "Ext."
+    },
+    "derived": {
+      "hitPoints": "Hit Points",
+      "magicPoints": "Magic Points",
+      "luck": "Luck",
+      "sanity": "Sanity",
+      "maximum": "Maximum",
+      "current": "Current",
+      "starting": "Starting",
+      "maximumSanity": "Maximum SAN",
+      "insaneThreshold": "Insane",
+      "move": "Move",
+      "build": "Build",
+      "damageBonus": "Damage Bonus",
+      "none": "None"
+    },
+    "conditions": {
+      "title": "Conditions",
+      "temporaryInsanity": "Temporary Insanity",
+      "indefiniteInsanity": "Indefinite Insanity",
+      "majorWound": "Major Wound",
+      "unconscious": "Unconscious",
+      "dying": "Dying"
+    },
+    "skills": {
+      "title": "Skills",
+      "developmentMark": "Mark {skill} for development",
+      "specialtyName": "Specialty name",
+      "regularValue": "Regular value for {skill}",
+      "base": "Base chance",
+      "baseShort": "Base",
+      "fixed": {
+        "accounting": "Accounting",
+        "anthropology": "Anthropology",
+        "appraise": "Appraise",
+        "archaeology": "Archaeology",
+        "charm": "Charm",
+        "climb": "Climb",
+        "creditRating": "Credit Rating",
+        "cthulhuMythos": "Cthulhu Mythos",
+        "disguise": "Disguise",
+        "dodge": "Dodge",
+        "driveAuto": "Drive Auto",
+        "electricalRepair": "Electrical Repair",
+        "fastTalk": "Fast Talk",
+        "fightingBrawl": "Fighting (Brawl)",
+        "firearmsHandgun": "Firearms (Handgun)",
+        "firearmsRifleShotgun": "Firearms (Rifle/Shotgun)",
+        "firstAid": "First Aid",
+        "history": "History",
+        "intimidate": "Intimidate",
+        "jump": "Jump",
+        "law": "Law",
+        "libraryUse": "Library Use",
+        "listen": "Listen",
+        "locksmith": "Locksmith",
+        "mechanicalRepair": "Mechanical Repair",
+        "medicine": "Medicine",
+        "naturalWorld": "Natural World",
+        "navigate": "Navigate",
+        "occult": "Occult",
+        "persuade": "Persuade",
+        "psychoanalysis": "Psychoanalysis",
+        "psychology": "Psychology",
+        "ride": "Ride",
+        "sleightOfHand": "Sleight of Hand",
+        "spotHidden": "Spot Hidden",
+        "stealth": "Stealth",
+        "swim": "Swim",
+        "throw": "Throw",
+        "track": "Track"
+      },
+      "specialties": {
+        "artCraft": "Art/Craft",
+        "fighting": "Fighting",
+        "firearms": "Firearms",
+        "languageOther": "Language (Other)",
+        "languageOwn": "Language (Own)",
+        "pilot": "Pilot",
+        "science": "Science",
+        "survival": "Survival",
+        "custom": "Custom Skill"
+      }
+    },
+    "combat": {
+      "title": "Combat",
+      "weapon": "Weapon",
+      "skill": "Skill",
+      "skillSource": "Skill source",
+      "customSkill": "Custom skill",
+      "customSkillName": "Custom skill name",
+      "damage": "Damage",
+      "attacks": "Attacks",
+      "range": "Range",
+      "ammo": "Ammo",
+      "malfunction": "Malf.",
+      "brawl": "Brawl"
+    },
+    "story": {
+      "title": "Story",
+      "label": "Story"
+    },
+    "backstory": {
+      "title": "Backstory",
+      "personalDescription": "Personal Description",
+      "ideologyBeliefs": "Ideology & Beliefs",
+      "significantPeople": "Significant People",
+      "meaningfulLocations": "Meaningful Locations",
+      "treasuredPossessions": "Treasured Possessions",
+      "traits": "Traits",
+      "injuriesScars": "Injuries & Scars",
+      "phobiasManias": "Phobias & Manias",
+      "arcaneTomesSpells": "Arcane Tomes & Spells",
+      "encountersWithStrangeEntities": "Encounters with Strange Entities"
+    },
+    "gearAndPossessions": "Gear & Possessions",
+    "wealth": {
+      "title": "Wealth",
+      "spendingLevel": "Spending Level",
+      "cash": "Cash",
+      "assets": "Assets"
+    },
+    "validation": {
+      "specialtyNameRequired": "Add a name to every specialty or custom skill that contains values.",
+      "weaponSkillNameRequired": "Add a name to every custom weapon skill that contains a value.",
+      "invalidLinkedWeaponSkill": "A weapon references a skill that is no longer available. Select another skill or use a custom skill."
+    },
+    "fanMaterial": {
+      "title": "Chaosium Fan Material notice"
+    }
+  }
+}
