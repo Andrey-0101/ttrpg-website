@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import SystemCard from "@/components/game-systems/system-card";
-import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { withDiceRollerReturnTo } from "@/lib/dice/dice-roller-navigation";
 import { GAME_SYSTEM_CATALOGUE } from "@/lib/game-systems/catalogue";
@@ -90,30 +89,46 @@ export default async function DiceRollersPage() {
         </div>
       </section>
 
-      <section className="mt-10" aria-labelledby="custom-pool-title">
-        <h2 id="custom-pool-title" className="text-2xl font-bold">
-          {translations("customPoolTitle")}
+      <section className="mt-10" aria-labelledby="standalone-tools-title">
+        <h2 id="standalone-tools-title" className="text-2xl font-bold">
+          {translations("standaloneTitle")}
         </h2>
-        <article className="mt-5 max-w-2xl rounded-xl border border-white/25 bg-black/20 p-5 sm:p-6">
-          <span className="inline-flex rounded-full border border-green-300/40 bg-green-950/40 px-3 py-1 text-sm font-semibold text-green-100">
-            {catalogueTranslations("available")}
-          </span>
-          <h3 className="mt-4 break-words text-xl font-bold">
-            {translations("customPoolCardTitle")}
-          </h3>
-          <p className="mt-3 break-words text-white/75">
-            {translations("customPoolDescription")}
-          </p>
-          <Link
-            href={withDiceRollerReturnTo(
-              "/dice-rollers/custom",
-              "/dice-rollers",
-            )}
-            className="mt-5 inline-flex rounded-lg bg-white px-5 py-3 font-bold text-neutral-950 outline-none hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-          >
-            {translations("openCustomPool")}
-          </Link>
-        </article>
+        <p className="mt-2 max-w-3xl text-white/75">
+          {translations("standaloneDescription")}
+        </p>
+
+        <div className="mt-5 grid gap-5 md:grid-cols-2">
+          <SystemCard
+            name={translations("customPoolCardTitle")}
+            description={translations("customPoolDescription")}
+            status="available"
+            availableLabel={catalogueTranslations("available")}
+            plannedLabel={catalogueTranslations("planned")}
+            headingLevel={3}
+            action={{
+              href: withDiceRollerReturnTo(
+                "/dice-rollers/custom",
+                "/dice-rollers",
+              ),
+              label: translations("openCustomPool"),
+            }}
+          />
+          <SystemCard
+            name={translations("goFirstCardTitle")}
+            description={translations("goFirstDescription")}
+            status="available"
+            availableLabel={catalogueTranslations("available")}
+            plannedLabel={catalogueTranslations("planned")}
+            headingLevel={3}
+            action={{
+              href: withDiceRollerReturnTo(
+                "/dice-rollers/go-first",
+                "/dice-rollers",
+              ),
+              label: translations("openGoFirst"),
+            }}
+          />
+        </div>
       </section>
     </main>
   );

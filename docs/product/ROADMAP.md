@@ -20,9 +20,13 @@ Completed foundation:
 - Phase 4D1 — CoC 7e Dice Roller, including contextual Back navigation, roller-scoped history, and live CoC Target bands;
 - Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice in the Game Room.
 
-Next approved work:
+Implemented with final Production acceptance pending:
 
-- Phase 4E — Campaign & Game Room UX/UI Refinement.
+- Phase 4E — Go First Dice Roller.
+
+Next planned product stage after Phase 4E acceptance:
+
+- Phase 4F1 — CoC 7e Character Sheets.
 
 Current Production facts:
 
@@ -199,18 +203,19 @@ Journal and Game Session state propagate through Supabase Realtime, with lightwe
 
 Phase 4D2 passed automated verification, multi-user Production acceptance, and the focused final UI-polish re-test. It is closed.
 
-### Phase 4E — Campaign & Game Room UX/UI Refinement
+### Phase 4E — Go First Dice Roller
 
-**Status: Planned**
+**Status: Implemented / Production acceptance pending**
 
-Refine the existing Campaign and Game Room experience without adding new product capabilities:
+Deliver the standalone, system-neutral Go First Dice utility at `/{locale}/dice-rollers/go-first` and expose it through the public Dice Rollers hub.
 
-- layout, navigation, information hierarchy, responsive behavior, accessibility, usability, and consistent states;
-- campaign overview and live-room transitions;
-- clearer participant, character, image, dice, and notes areas as those capabilities become available;
-- placeholders for unavailable capabilities remain visibly disabled and must not expose fake behavior, controls, or routes.
+- uses Paul Meyer's fixed permutation-fair five-d60 configuration discovered in 2023;
+- supports two through five players with optional localized player names and one complete descending turn order;
+- reuses the shared unbiased secure browser RNG and performs no runtime table generation;
+- has no account state, history, presets, persistence, Campaign Dice, Game Room, Realtime, or API boundary;
+- includes exact deterministic tests for the five fixed face tables and every permutation of every two-to-five-die subset.
 
-This campaign-focused technical refinement is distinct from the site-wide Phase 5 UI Technical Refinement.
+The implementation must not be marked manually accepted until the focused Production checklist passes.
 
 ### Phase 4F1 — CoC 7e Character Sheets
 
@@ -243,6 +248,19 @@ The private group can use system-aware dice and linked characters, campaign imag
 
 ## Phase 5 — UI Technical Refinement
 
+### Phase 5A — Campaign & Game Room UX/UI Refinement
+
+**Status: Planned**
+
+Refine the existing Campaign and Game Room experience without adding new product capabilities:
+
+- layout, navigation, information hierarchy, responsive behavior, accessibility, usability, and consistent states;
+- campaign overview and live-room transitions;
+- clearer participant, character, image, dice, and notes areas as those capabilities become available;
+- placeholders for unavailable capabilities remain visibly disabled and must not expose fake behavior, controls, or routes.
+
+### Phase 5B — Site-wide UI Technical Refinement
+
 **Status: Planned**
 
 Perform site-wide technical consistency work after the core play workflow is complete:
@@ -254,13 +272,13 @@ Perform site-wide technical consistency work after the core play workflow is com
 - maintainable design tokens and primitives;
 - removal of demonstrated UI duplication or inconsistency.
 
-Phase 5 adds no new product features and does not decide final visual identity.
+Phases 5A and 5B add no new product features and do not decide final visual identity.
 
 ## Phase 6 — Visual Identity
 
 **Status: Planned**
 
-Define and apply the platform's visual identity after Phase 5. The exact themes, fonts, palette, imagery, decorative language, and system-specific presentation are intentionally undecided until the technical UI baseline is stable.
+Define and apply the platform's visual identity after Phases 5A and 5B. The exact themes, fonts, palette, imagery, decorative language, and system-specific presentation are intentionally undecided until the technical UI baseline is stable.
 
 ## Phase 7 — Delta Green System Implementation
 

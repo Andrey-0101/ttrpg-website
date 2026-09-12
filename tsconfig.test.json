@@ -15,6 +15,7 @@
   },
   "include": [
     "lib/dice/custom-dice-pool.ts",
+    "lib/dice/go-first-dice.ts",
     "lib/dice/secure-random.ts",
     "lib/dice/validation.ts",
     "lib/dice/personal-dice-persistence.ts",
@@ -46,6 +47,7 @@
     "tests/dice/coc-7e-other-dice-roller.test.ts",
     "tests/dice/coc-7e-dice-ui.test.ts",
     "tests/dice/custom-dice-pool.test.ts",
+    "tests/dice/go-first-dice.test.ts",
     "tests/dice/dice-roller-ux-followup.test.ts",
     "tests/dice/secure-random.test.ts",
     "tests/dice/validation.test.ts",

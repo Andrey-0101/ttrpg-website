@@ -22,15 +22,16 @@ Describe the intended structure without presenting speculative routes or uncommi
 5. Phase 4C2 Game Room Image Presentation — complete and Production accepted;
 6. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
 7. Phase 4D2 system-aware Game Room Dice Integration — complete and Production accepted;
-8. Phase 4E Campaign & Game Room UX/UI Refinement — next;
+8. Phase 4E Go First Dice Roller — implemented, Production acceptance pending;
 9. Phase 4F1 CoC 7e Character Sheets;
 10. Phase 4F2 system-aware linked-character Game Room integration;
 11. Phase 4G Campaign Notes;
-12. Phase 5 UI Technical Refinement;
-13. Phase 6 Visual Identity;
-14. Phase 7 Delta Green System Implementation;
-15. Phase 8 Game System Hubs: CoC, Delta Green, Vampire;
-16. Phase 9 Public Readiness.
+12. Phase 5A Campaign & Game Room UX/UI Refinement;
+13. Phase 5B Site-wide UI Technical Refinement;
+14. Phase 6 Visual Identity;
+15. Phase 7 Delta Green System Implementation;
+16. Phase 8 Game System Hubs: CoC, Delta Green, Vampire;
+17. Phase 9 Public Readiness.
 
 ## Target top-level structure
 
@@ -68,7 +69,7 @@ Campaign
     └── GM-private notes
 ```
 
-The existing Game Room may retain clearly disabled placeholders during transition, but placeholders do not approve product scope or routes. Phase 4E decides the clean technical presentation as capabilities arrive.
+The existing Game Room may retain clearly disabled placeholders during transition, but placeholders do not approve product scope or routes. Phase 5A decides the clean technical presentation as capabilities arrive.
 
 Global/document Handouts, NPCs, Sessions, Chronicle records, clues, maps, wikis, and similar campaign modules are not active roadmap scope.
 
@@ -85,7 +86,7 @@ Phase 8 hubs organize existing information and tools. They do not introduce new 
 
 ## UI and visual phases
 
-Phase 5 provides site-wide technical UI consistency and adds no product features. Phase 6 decides visual identity only after that technical baseline. Themes, fonts, palette, imagery, and decorative language are intentionally undecided today.
+Phase 5A provides Campaign and Game Room technical refinement, and Phase 5B provides remaining site-wide technical UI consistency. Neither adds product features. Phase 6 decides visual identity only after that technical baseline. Themes, fonts, palette, imagery, and decorative language are intentionally undecided today.
 
 ## Public Readiness
 

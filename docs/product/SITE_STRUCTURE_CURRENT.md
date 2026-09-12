@@ -9,8 +9,8 @@
 | Status | Production route snapshot through accepted Phase 4D2 |
 | Accepted Phase 4D2 application baseline | `main` at `01d917688ddadb5366949a714bba462b7c5c44b2` |
 | Current phase | Phase 4 — Core Play & Campaign Tools |
-| Completed work | Milestones 1–3 and Phases 4A–4D2 in Production |
-| Next work | Plan/review Phase 4E Campaign & Game Room UX/UI Refinement |
+| Completed work | Milestones 1–3 and Phases 4A–4D2 in Production; Phase 4E implemented pending Production acceptance |
+| Next work | Complete Phase 4E Production acceptance, then plan/review Phase 4F1 |
 
 ## Purpose
 
@@ -141,11 +141,12 @@ The Vampire Game System Hub remains planned for Phase 8C, after CoC and Delta Gr
 ```text
 /[locale]/dice-rollers
 /[locale]/dice-rollers/custom
+/[locale]/dice-rollers/go-first
 /[locale]/games/call-of-cthulhu/tools/dice
 /[locale]/games/vampire-the-masquerade/tools/dice
 ```
 
-The Production hub links to the implemented VtM V5, CoC 7e, and system-neutral Custom Dice Pool rollers. The CoC Percentile and Other Dice panels are public, localized, responsive, and client-generated. Registered users may save up to five Custom Dice Pool presets; deployed persistence retains six rows per owner and kind and displays up to five previous entries per kind alongside the current result on each matching roller page. Guest rolls remain local and non-persistent. Personal history is non-authoritative and separate from future campaign history.
+The Production hub links to the implemented VtM V5, CoC 7e, system-neutral Custom Dice Pool, and standalone Go First Dice rollers. Go First Dice uses Paul Meyer's fixed permutation-fair five-d60 configuration for a local, tie-free two-to-five-player turn order and has no persistence or account state. The CoC Percentile and Other Dice panels are public, localized, responsive, and client-generated. Registered users may save up to five Custom Dice Pool presets; deployed persistence retains six rows per owner and kind and displays up to five previous entries per kind alongside the current result on each matching roller page. Guest rolls remain local and non-persistent. Personal history is non-authoritative and separate from future campaign history.
 
 ### Authentication
 
@@ -379,8 +380,8 @@ Not implemented:
 
 ## Current structural conclusion
 
-The Production site is a bilingual VtM character and campaign manager with public personal VtM, Custom, and CoC dice tools, saved Custom presets, roller-scoped private personal history, contextual Back destinations, live CoC Target bands, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
+The Production site is a bilingual VtM character and campaign manager with public personal VtM, Custom, Go First, and CoC dice tools, saved Custom presets, roller-scoped private personal history, contextual Back destinations, live CoC Target bands, a twelve-system catalogue, a generic CoC campaign shell, and an accepted campaign LiveKit Game Room.
 
-It has a working campaign authorization boundary, a Production-accepted campaign video workspace, an image-only Campaign Gallery, Game Room Image Presentation, independent Game Sessions, a session-scoped Realtime Journal, and system-aware Campaign Dice. Phase 4E technical Campaign/Game Room refinement is next, followed by 4F1/4F2 CoC and linked-character integration and 4G narrowly scoped campaign notes.
+It has a working campaign authorization boundary, a Production-accepted campaign video workspace, an image-only Campaign Gallery, Game Room Image Presentation, independent Game Sessions, a session-scoped Realtime Journal, and system-aware Campaign Dice. Phase 4E Go First Dice is implemented pending final Production acceptance, followed by 4F1/4F2 CoC and linked-character integration and 4G narrowly scoped campaign notes.
 
 Standalone Video Rooms and broad Handouts/NPC/Sessions/Chronicle modules are uncommitted backlog possibilities, not current limitations that imply scheduled delivery.

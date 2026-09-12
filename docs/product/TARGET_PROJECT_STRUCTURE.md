@@ -37,9 +37,9 @@ CoC deterministic rules and random generation live in the CoC game-system domain
 
 Common Game Room selection and authorization remain system-neutral. Personal and campaign-authoritative persistence are implemented as separate trust boundaries.
 
-### Phase 4E — Campaign & Game Room UX/UI Refinement
+### Phase 4E — Go First Dice Roller
 
-Refactor demonstrated layout, navigation, responsive, accessibility, or duplication problems within existing domains. This phase adds no feature directories.
+Keep the fixed Paul Meyer face allocation and pure roller contract under `lib/dice/`, the interactive UI under `components/dice-rollers/`, and the localized public route under `app/[locale]/dice-rollers/go-first/`. Reuse the shared secure-random primitive and keep persistence, accounts, campaigns, and APIs outside this standalone boundary.
 
 ### Phase 4F1 and 4F2 — Characters
 
@@ -49,9 +49,9 @@ Place CoC schema, normalizer, renderer, summaries, and tests in the CoC game-sys
 
 Introduce only narrowly scoped shared-note and GM-private-note persistence, authorization, UI, and tests. Do not create Sessions, Chronicle, NPC, Handout, clue, map, or wiki directories.
 
-### Phases 5 and 6
+### Phases 5A, 5B, and 6
 
-Phase 5 may consolidate proven shared UI primitives without adding product modules. Phase 6 may add approved visual assets, tokens, and theme layers after its decisions are recorded.
+Phase 5A may refine demonstrated Campaign and Game Room layout, navigation, responsive, accessibility, or duplication problems without adding product modules. Phase 5B may consolidate proven shared UI primitives across the remaining site. Phase 6 may add approved visual assets, tokens, and theme layers after its decisions are recorded.
 
 ### Phase 7 — Delta Green
 

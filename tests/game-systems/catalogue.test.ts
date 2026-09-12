@@ -236,6 +236,42 @@ test("Dice Rollers catalogue uses the shared localized capability link", () => {
   assert.match(cardSource, /href=\{action\.href\}/u);
 });
 
+test("Dice Rollers hub exposes localized standalone Go First Dice", () => {
+  const pageSource = readFileSync(
+    resolve("app/[locale]/dice-rollers/page.tsx"),
+    "utf8",
+  );
+  const routeSource = readFileSync(
+    resolve("app/[locale]/dice-rollers/go-first/page.tsx"),
+    "utf8",
+  );
+  const englishMessages = JSON.parse(
+    readFileSync(resolve("messages/en.json"), "utf8"),
+  ) as Record<string, unknown>;
+  const russianMessages = JSON.parse(
+    readFileSync(resolve("messages/ru.json"), "utf8"),
+  ) as Record<string, unknown>;
+
+  assert.match(pageSource, /"\/dice-rollers\/go-first"/u);
+  assert.match(pageSource, /withDiceRollerReturnTo/u);
+  assert.match(routeSource, /<GoFirstDiceRoller \/>/u);
+  assert.match(routeSource, /resolveDiceRollerReturnTo/u);
+  assert.deepEqual(
+    Object.keys(englishMessages.GoFirstDice as Record<string, unknown>),
+    Object.keys(russianMessages.GoFirstDice as Record<string, unknown>),
+  );
+  assert.deepEqual(
+    Object.keys(
+      (englishMessages.GoFirstDice as { errors: Record<string, unknown> })
+        .errors,
+    ),
+    Object.keys(
+      (russianMessages.GoFirstDice as { errors: Record<string, unknown> })
+        .errors,
+    ),
+  );
+});
+
 test("only VtM V5 and Call of Cthulhu 7e allow campaign creation", () => {
   assert.deepEqual(
     GAME_SYSTEM_CATALOGUE.filter(

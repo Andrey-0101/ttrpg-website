@@ -9,14 +9,14 @@ The current Production application is a bilingual private TTRPG hub with impleme
 | Area | Current | Approved target |
 |---|---|---|
 | Campaign authorization | Implemented | Retain |
-| Campaign video | Implemented and accepted | Retain; Phase 4E technical refinement |
+| Campaign video | Implemented and accepted | Retain; Phase 5A technical refinement |
 | Campaign Gallery | Four fixed image-only sections and 4C2 Game Room presentation implemented | Retain |
 | VtM dice | Personal and Game Room Campaign Dice implemented | Retain |
 | CoC dice | Personal roller, UX follow-up, and Game Room Campaign Dice implemented | Retain |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |
-| Site UI | Functional current baseline | Phase 5 technical consistency, no new features |
+| Site UI | Functional current baseline | Phase 5A campaign/Game Room refinement, then Phase 5B site-wide technical consistency; no new features |
 | Visual identity | Not finalized | Phase 6, decisions intentionally deferred |
 | Delta Green | Catalogue entry only | Phase 7 system parity |
 | Game-system hubs | Not implemented | Phase 8A CoC, 8B Delta Green, 8C Vampire |
@@ -29,4 +29,4 @@ The current target does not include the former standalone Video Rooms phase, Cam
 
 ## Implementation rule
 
-Do not expose planned routes, active controls, persistence, or translated behavior before the corresponding phase is implemented. Keep unavailable placeholders visibly disabled or remove them during Phase 4E when they no longer communicate approved scope.
+Do not expose planned routes, active controls, persistence, or translated behavior before the corresponding phase is implemented. Keep unavailable placeholders visibly disabled or remove them during Phase 5A when they no longer communicate approved scope.
