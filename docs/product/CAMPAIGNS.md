@@ -441,7 +441,7 @@ ADR-008 defines the accepted boundary.
 
 Outside the completed Campaign Foundation:
 
-- Phase 4E Campaign & Game Room UX/UI refinement;
+- Phase 5A Campaign & Game Room UX/UI refinement;
 - Phase 4F1 CoC character sheets and Phase 4F2 system-aware linked-character integration;
 - Phase 4G shared notes and GM-private notes;
 - campaign discovery;

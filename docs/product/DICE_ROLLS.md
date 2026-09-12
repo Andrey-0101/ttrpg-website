@@ -2,11 +2,11 @@
 
 ## Status
 
-**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are deployed. Phase 4D2 system-aware Game Room dice is deployed, manually accepted, and closed.**
+**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are deployed. Phase 4D2 system-aware Game Room dice is deployed, manually accepted, and closed. Phase 4E Go First Dice is implemented with final Production acceptance pending.**
 
 The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. Shared strict validation primitives live at `lib/dice/validation.ts`, and shared unbiased secure integer generation lives at `lib/dice/secure-random.ts`. Phase 4D1 adds the CoC evaluators and generators under `lib/game-systems/call-of-cthulhu-7e/`.
 
-The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`, and the deployed CoC route is `/[locale]/games/call-of-cthulhu/tools/dice`. Personal persistence is implemented and remains non-authoritative. Campaign-authoritative Game Room rolls use session-scoped Journal events rather than a separate `dice_rolls` table.
+The public hub is available at `/[locale]/dice-rollers`, the localized personal VtM roller is available at `/[locale]/games/vampire-the-masquerade/tools/dice`, the localized Custom Dice Pool is available at `/[locale]/dice-rollers/custom`, Go First Dice is available at `/[locale]/dice-rollers/go-first`, and the deployed CoC route is `/[locale]/games/call-of-cthulhu/tools/dice`. Personal persistence is implemented and remains non-authoritative. Campaign-authoritative Game Room rolls use session-scoped Journal events rather than a separate `dice_rolls` table. Go First Dice is always local and non-persistent.
 
 Campaign-authorized LiveKit video, the responsive Game Room, Phase 4C1 Campaign Gallery, Phase 4C2 Game Room Image Presentation, Phase 4D1, and Phase 4D2 Game Sessions, Journal, and system-aware Campaign Dice are complete in Production. Phase 4D2 passed multi-user acceptance and the final focused navigation re-test.
 
@@ -207,13 +207,14 @@ Public hub:
 /[locale]/dice-rollers
 ```
 
-The Production hub links to the implemented VtM V5, Custom Dice Pool, and CoC 7e rollers. Current inbound links attach a validated `returnTo` source so Back returns to the same-locale internal section that opened the roller; missing, invalid, external, protocol-relative, or locale-conflicting destinations fall back to the localized Dice Rollers catalogue.
+The Production hub links to the implemented VtM V5, Custom Dice Pool, Go First Dice, and CoC 7e rollers. Current inbound links attach a validated `returnTo` source so Back returns to the same-locale internal section that opened the roller; missing, invalid, external, protocol-relative, or locale-conflicting destinations fall back to the localized Dice Rollers catalogue.
 
 Implemented:
 
 ```text
 /[locale]/games/vampire-the-masquerade/tools/dice
 /[locale]/dice-rollers/custom
+/[locale]/dice-rollers/go-first
 /[locale]/games/call-of-cthulhu/tools/dice
 ```
 
@@ -253,6 +254,16 @@ The UI:
 - keeps client-side generation independent from campaigns, Realtime, and named-game interpretation;
 - adds authentication only for saved presets and private personal history;
 - preserves the visible local result when best-effort persistence is unavailable or fails.
+
+## Phase 4E — Go First Dice
+
+Go First Dice is a standalone, system-neutral turn-order utility at `/[locale]/dice-rollers/go-first`. It uses the fixed permutation-fair five-d60 configuration discovered by Paul Meyer on 31 July 2023. The exact face allocation was decoded from the [archived Go First Dice Wiki `significant_solutions` sequence](https://web.archive.org/web/20231002203517/http://gofirstdice.ericharshbarger.org/doku.php?id=significant_solutions) and cross-checked against the [independently published numeric table](https://en.wikipedia.org/wiki/Go_First_Dice#Five_players). This is not the earlier Grime/Pollock five-d60 place-fair construction described in the Ford/Grime/Harshbarger/Pollock background work.
+
+The implementation stores five immutable source arrays of 60 face values. Together they contain every integer from 1 through 300 exactly once. Runtime rolling does not generate or fetch those tables: it uses the existing shared `generateUnbiasedInteger` primitive to select one uniform face index from each of the first two through five distinct dice, then sorts the unique results from highest to lowest.
+
+Players may supply optional names; localized `Player N` fallbacks and stable Dice A–E assignments are used otherwise. Names remain available for repeat rolls and still-applicable names survive player-count changes. The tool has no history, presets, Supabase persistence, account-specific state, campaign connection, Realtime, or API endpoint.
+
+Automated tests reconstruct the archived 300-character source sequence from the stored arrays, verify the exact `1..300` partition, and count every ordering for every subset of two through five dice with deterministic dynamic programming. Every permutation must have exactly `1,800`, `36,000`, `540,000`, or `6,480,000` outcomes for subset sizes two, three, four, or five respectively. No Monte Carlo result or runtime fairness check is used.
 
 ## Implemented personal-tool persistence
 

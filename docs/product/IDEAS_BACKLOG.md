@@ -28,9 +28,9 @@ Items in this document are not commitments and are not automatically part of the
 
 | ID | Idea | Area | Status | Suggested milestone |
 |---|---|---|---|---|
-| IDEA-001 | Campaign edit mode activated by a button | Campaigns / User interface | Inbox | Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review |
-| IDEA-002 | Move campaign invitations below players and characters | Campaigns / Page structure | Inbox | Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review |
-| IDEA-003 | Combine players and characters into one list | Campaigns / Members / Characters | Inbox | Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review |
+| IDEA-001 | Campaign edit mode activated by a button | Campaigns / User interface | Inbox | Phase 5A — Campaign & Game Room UX/UI Refinement, subject to review |
+| IDEA-002 | Move campaign invitations below players and characters | Campaigns / Page structure | Inbox | Phase 5A — Campaign & Game Room UX/UI Refinement, subject to review |
+| IDEA-003 | Combine players and characters into one list | Campaigns / Members / Characters | Inbox | Phase 5A — Campaign & Game Room UX/UI Refinement, subject to review |
 | IDEA-004 | Interactive character portrait preparation | Characters / Portraits / Image upload | Deferred | Phase 6 — Visual Identity, subject to review |
 | IDEA-005 | AI-assisted character generation | Characters / AI assistance | Inbox | Unassigned; not committed roadmap scope |
 | IDEA-006 | Standalone Video Rooms | Video / Separate product | Deferred | Unassigned; removed from active roadmap |
@@ -45,7 +45,7 @@ Items in this document are not commitments and are not automatically part of the
 - **Status:** Inbox
 - **Area:** Campaigns / User interface
 - **Added:** 2026-07-10
-- **Suggested milestone:** Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review
+- **Suggested milestone:** Phase 5A — Campaign & Game Room UX/UI Refinement, subject to review
 - **Priority:** Unassigned
 - **Source:** Observation during Campaign Management testing
 - **Related documents:**
@@ -98,7 +98,7 @@ Not reviewed.
 - **Status:** Inbox
 - **Area:** Campaigns / Page structure
 - **Added:** 2026-07-10
-- **Suggested milestone:** Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review
+- **Suggested milestone:** Phase 5A — Campaign & Game Room UX/UI Refinement, subject to review
 - **Priority:** Unassigned
 - **Source:** Observation during Campaign Overview testing
 - **Related documents:**
@@ -155,7 +155,7 @@ Not reviewed.
 - **Status:** Inbox
 - **Area:** Campaigns / Members / Characters
 - **Added:** 2026-07-10
-- **Suggested milestone:** Phase 4E — Campaign & Game Room UX/UI Refinement, subject to review
+- **Suggested milestone:** Phase 5A — Campaign & Game Room UX/UI Refinement, subject to review
 - **Priority:** Unassigned
 - **Source:** Observation during Campaign Members and Campaign Characters testing
 - **Related documents:**

@@ -20,6 +20,7 @@ flowchart TD
     ROOT --> PRIVATE["Authenticated areas"]
     PUBLIC --> GAMES["Games catalogue"]
     PUBLIC --> DICE["Dice Rollers"]
+    DICE --> GO_FIRST_DICE["4E Go First Dice"]
     PUBLIC --> AUTH["Authentication"]
     PRIVATE --> DASHBOARD["Dashboard"]
     PRIVATE --> CHARACTERS["Characters"]
@@ -47,9 +48,10 @@ Conceptual approved additions:
 ```text
 /[locale]/campaigns/[id]/gallery         Current image-only Phase 4C1 route
 /[locale]/campaigns/[id]/handouts        Compatibility redirect to Gallery
-/[locale]/campaigns/[id]/game-room       Existing route expanded by 4C2, 4D2, 4E, and 4F2
+/[locale]/campaigns/[id]/game-room       Existing route expanded by 4C2, 4D2, 4F2, and refined by 5A
 /[locale]/campaigns/[id]/notes           Phase 4G, exact route subject to implementation review
 /[locale]/games/call-of-cthulhu/tools/dice  Current Phase 4D1 personal roller
+/[locale]/dice-rollers/go-first              Current Phase 4E standalone turn-order roller
 ```
 
 Later CoC and Delta Green character, dice, and hub paths should follow the established game-system routing convention when those capabilities are implemented. Planned catalogue entries must not expose controls or routes before capability support exists.
@@ -78,4 +80,4 @@ The active roadmap does not approve routes for:
 
 ## Later phases
 
-Phase 5 and Phase 6 refine the existing product without inventing feature routes. Phase 7 adds Delta Green system parity. Phase 8 adds CoC, Delta Green, and Vampire hubs in that order. Phase 9 adds only public-readiness routes justified by an accepted operational requirement.
+Phases 5A, 5B, and 6 refine the existing product without inventing feature routes. Phase 7 adds Delta Green system parity. Phase 8 adds CoC, Delta Green, and Vampire hubs in that order. Phase 9 adds only public-readiness routes justified by an accepted operational requirement.

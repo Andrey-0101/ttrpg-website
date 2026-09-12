@@ -18,6 +18,7 @@ flowchart TD
     LOCALE --> PROFILE["Profile / Account"]
     DICE --> VTM_DICE["VtM V5 Roller"]
     DICE --> CUSTOM_DICE["Custom Dice Pool"]
+    DICE --> GO_FIRST_DICE["Go First Dice"]
     DICE --> COC_DICE["CoC 7e Roller"]
     CAMPAIGNS --> CAMPAIGN["Campaign Overview"]
     CAMPAIGN --> SHARED_CHARACTER["Read-only linked character"]
@@ -41,13 +42,14 @@ flowchart TD
     CAMPAIGN --> NOTES["4G Shared and GM-private Notes"]
 ```
 
-Phase 4E refines Campaign and Game Room UX/UI without adding a route or product capability. Unavailable placeholders must remain visibly disabled and must not expose fake routes or behavior.
+Phase 4E adds the standalone, system-neutral Go First Dice route under the existing Dice Rollers hub. It does not add Campaign Dice, Game Room, persistence, or account behavior. Unavailable campaign placeholders must remain visibly disabled and must not expose fake routes or behavior.
 
 Campaign Gallery contains four fixed image-only sections: Handouts, NPC, Maps & Plans, and Other. NPC and Maps & Plans are image categories, not structured systems. Phase 4C2 added presentation, not a general document Handouts feature. Notes do not imply Sessions, Chronicle, NPC records, clues, structured maps, or wiki modules.
 
 ## Later approved areas
 
-- Phase 5 site-wide UI Technical Refinement adds no product routes;
+- Phase 5A Campaign and Game Room UX/UI Refinement adds no product routes;
+- Phase 5B site-wide UI Technical Refinement adds no product routes;
 - Phase 6 Visual Identity adds no product routes by itself;
 - Phase 7 implements Delta Green parity using established shared routes and system-specific routes justified at implementation time;
 - Phase 8 adds system hubs in CoC, Delta Green, then Vampire order;
@@ -65,6 +67,7 @@ Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and
 | Campaign Gallery | Four-section private image library and Game Room presentation implemented | Retain; Campaign Wallpaper remains uncommitted `IDEA-007` only |
 | VtM dice | Personal and Campaign Dice implemented | Retain; direct Game Room roller with no submenu |
 | CoC dice | Personal and Campaign Dice implemented | Retain; Game Room defaults to Percentile with its internal submenu |
+| Go First Dice | Standalone local tool implemented; Production acceptance pending | Retain as a system-neutral, non-persistent utility |
 | VtM characters | Implemented | 4F2 linked-character Game Room integration |
 | CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
 | Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |
