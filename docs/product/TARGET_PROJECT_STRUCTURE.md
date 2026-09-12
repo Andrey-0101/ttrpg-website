@@ -37,9 +37,9 @@ CoC deterministic rules and random generation live in the CoC game-system domain
 
 Common Game Room selection and authorization remain system-neutral. Personal and campaign-authoritative persistence are implemented as separate trust boundaries.
 
-### Phase 4E — Go First Dice Roller
+### Phase 4E — Fair Turn Order Dice
 
-Keep the fixed Paul Meyer face allocation and pure roller contract under `lib/dice/`, the interactive UI under `components/dice-rollers/`, and the localized public route under `app/[locale]/dice-rollers/go-first/`. Reuse the shared secure-random primitive and keep persistence, accounts, campaigns, and APIs outside this standalone boundary.
+Keep the Fair Turn Order Dice implementation of the Go First Dice model under the existing boundaries: the fixed Paul Meyer face allocation and pure roller contract under `lib/dice/`, the interactive UI under `components/dice-rollers/`, and the localized public route under `app/[locale]/dice-rollers/go-first/`. Reuse the shared secure-random primitive and keep persistence, accounts, campaigns, and APIs outside this standalone boundary.
 
 ### Phase 4F1 and 4F2 — Characters
 

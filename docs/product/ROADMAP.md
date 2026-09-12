@@ -22,7 +22,7 @@ Completed foundation:
 
 Implemented with final Production acceptance pending:
 
-- Phase 4E — Go First Dice Roller.
+- Phase 4E — Fair Turn Order Dice.
 
 Next planned product stage after Phase 4E acceptance:
 
@@ -203,11 +203,11 @@ Journal and Game Session state propagate through Supabase Realtime, with lightwe
 
 Phase 4D2 passed automated verification, multi-user Production acceptance, and the focused final UI-polish re-test. It is closed.
 
-### Phase 4E — Go First Dice Roller
+### Phase 4E — Fair Turn Order Dice
 
-**Status: Implemented / Production acceptance pending**
+**Status: Implemented / deployed / Production acceptance pending**
 
-Deliver the standalone, system-neutral Go First Dice utility at `/{locale}/dice-rollers/go-first` and expose it through the public Dice Rollers hub.
+Deliver the standalone, system-neutral Fair Turn Order Dice utility at `/{locale}/dice-rollers/go-first` and expose it through the public Dice Rollers hub. The site tool implements the published Go First Dice mathematical model without presenting itself as the original project or an official digital product.
 
 - uses Paul Meyer's fixed permutation-fair five-d60 configuration discovered in 2023;
 - supports two through five players with optional localized player names and one complete descending turn order;

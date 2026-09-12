@@ -6,8 +6,28 @@ import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { resolveDiceRollerReturnTo } from "@/lib/dice/dice-roller-navigation";
 
-const LEARN_MORE_URL =
-  "https://www.livescience.com/physics-mathematics/mathematics/mathematicians-say-these-60-sided-dice-are-the-fairest-in-the-world-designing-them-took-15-years";
+const SOURCE_LINKS = [
+  {
+    labelKey: "sourceOriginal",
+    href: "https://web.archive.org/web/20231002203517/http://gofirstdice.ericharshbarger.org/doku.php?id=significant_solutions",
+  },
+  {
+    labelKey: "sourcePaper",
+    href: "https://doi.org/10.2478/rmm-2023-0004",
+  },
+  {
+    labelKey: "sourceDiceLab",
+    href: "https://mathartfun.com/thedicelab.com/GFD5.html",
+  },
+  {
+    labelKey: "sourceScientificAmerican",
+    href: "https://www.scientificamerican.com/article/unique-mathematical-60-sided-go-first-dice-go-on-display/",
+  },
+  {
+    labelKey: "sourceLiveScience",
+    href: "https://www.livescience.com/physics-mathematics/mathematics/mathematicians-say-these-60-sided-dice-are-the-fairest-in-the-world-designing-them-took-15-years",
+  },
+] as const;
 
 type GoFirstDicePageProps = {
   params: Promise<{ locale: Locale }>;
@@ -56,6 +76,20 @@ export default async function GoFirstDicePage({
         <p className="mt-4 break-words text-base text-white/80 sm:text-lg">
           {translations("description")}
         </p>
+        <section
+          aria-labelledby="go-first-acknowledgement-title"
+          className="mt-4 rounded-lg border border-white/20 bg-white/5 p-4"
+        >
+          <h2
+            id="go-first-acknowledgement-title"
+            className="text-sm font-bold uppercase tracking-wide text-red-200"
+          >
+            {translations("acknowledgementTitle")}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-white/75">
+            {translations("acknowledgementText")}
+          </p>
+        </section>
         <p className="mt-3 rounded-lg border border-white/15 bg-white/5 p-3 text-sm text-white/75">
           {translations("privacyNote")}
         </p>
@@ -66,20 +100,28 @@ export default async function GoFirstDicePage({
       <section className="mt-10 max-w-3xl rounded-xl border border-white/20 bg-black/20 p-5 sm:p-6">
         <h2 className="text-2xl font-bold">{translations("howTitle")}</h2>
         <p className="mt-3 text-white/80">{translations("howText")}</p>
-        <p className="mt-4 text-sm text-white/70">
-          {translations("attribution")}{" "}
-          <a
-            href={LEARN_MORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded underline decoration-white/50 underline-offset-4 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-red-300"
-          >
-            {translations("learnMore")}
-          </a>
-        </p>
-        <p className="mt-2 text-xs text-white/55">
-          {translations("noAffiliation")}
-        </p>
+        <div className="mt-6 border-t border-white/15 pt-5">
+          <h3 className="text-lg font-semibold">
+            {translations("sourcesTitle")}
+          </h3>
+          <ul className="mt-3 space-y-2 text-sm text-white/70">
+            {SOURCE_LINKS.map((source) => (
+              <li key={source.href}>
+                <a
+                  href={source.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded underline decoration-white/50 underline-offset-4 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-red-300"
+                >
+                  {translations(source.labelKey)}
+                  <span className="sr-only">
+                    {translations("opensInNewTab")}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
     </main>
   );
