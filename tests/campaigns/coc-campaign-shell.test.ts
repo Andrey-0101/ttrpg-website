@@ -310,7 +310,7 @@ test("campaign creation validation rejects planned and malformed values", () => 
   );
 });
 
-test("campaign display keeps CoC character creation planned in both locales", () => {
+test("campaign display keeps localized CoC labels and the generic planned fallback", () => {
   const english = JSON.parse(
     readFileSync(resolve("messages/en.json"), "utf8"),
   ) as Record<string, Record<string, unknown>>;

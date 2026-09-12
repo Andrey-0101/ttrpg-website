@@ -176,11 +176,12 @@ test("Call of Cthulhu 7e exposes only its implemented capabilities", () => {
     status: "available",
     route: "/games/call-of-cthulhu/tools/dice",
   });
+  assert.deepEqual(callOfCthulhu.capabilities.characterCreation, {
+    status: "available",
+    route: "/characters/new/call-of-cthulhu-7e",
+  });
 
-  for (const capabilityName of [
-    "gameArea",
-    "characterCreation",
-  ] as const) {
+  for (const capabilityName of ["gameArea"] as const) {
     assert.deepEqual(callOfCthulhu.capabilities[capabilityName], {
       status: "planned",
     });
@@ -331,13 +332,13 @@ test("only VtM V5 and Call of Cthulhu 7e allow campaign creation", () => {
   );
 });
 
-test("only VtM V5 is available for character creation", () => {
+test("only VtM V5 and Call of Cthulhu 7e are available for character creation", () => {
   assert.deepEqual(
     GAME_SYSTEM_CATALOGUE.filter(
       (system) =>
         system.capabilities.characterCreation.status === "available",
     ).map((system) => system.id),
-    ["vtm-v5"],
+    ["vtm-v5", "call-of-cthulhu-7e"],
   );
 });
 

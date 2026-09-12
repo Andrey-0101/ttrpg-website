@@ -194,7 +194,7 @@ Behavior:
 - changing the linked character's game system closes its assignment;
 - campaign completion closes all active assignments.
 
-VtM and Call of Cthulhu characters are not cross-compatible. Because Call of Cthulhu character sheets are not implemented yet, a CoC campaign presents a localized planned state instead of offering VtM characters or a placeholder character route.
+VtM and Call of Cthulhu characters are not cross-compatible. CoC character creation now uses the existing Character Library and the same campaign-compatible assignment/read-only sharing boundary as VtM, while system matching continues to prevent incompatible linking. Game Room Character remains disabled until Phase 4F2.
 
 ### Campaign video data foundation
 
@@ -442,7 +442,7 @@ ADR-008 defines the accepted boundary.
 Outside the completed Campaign Foundation:
 
 - Phase 5A Campaign & Game Room UX/UI refinement;
-- Phase 4F1 CoC character sheets and Phase 4F2 system-aware linked-character integration;
+- Phase 4F2 system-aware linked-character Game Room integration;
 - Phase 4G shared notes and GM-private notes;
 - campaign discovery;
 - ownership transfer;
@@ -451,7 +451,7 @@ Outside the completed Campaign Foundation:
 - Game Master editing of Player characters;
 - public campaign pages.
 
-Phase 4D2 is deployed, accepted, and closed. Its GM-controlled Game Sessions, exact-session Journal, and system-aware Campaign Dice for VtM V5 and CoC 7e are current behavior. Rolls outside an active session remain local to the roller and non-persisted; active-session rolls are public Journal events delivered through Supabase Realtime. The campaign system selects the existing system roller automatically; no parallel campaign dice mechanics exist. Server-authoritative execution, exact-session binding across End → Start races, and the absence of direct authenticated Journal writes preserve the shared-history trust boundary. Hidden/private campaign rolls remain unimplemented. LiveKit remains independent except for the existing Gallery image-presentation transport. CoC character sheets remain planned for Phase 4F1. Archive UI, hidden rolls, Keeper-specific tools, NPCs, clues, general Handouts, richer Sessions, and Chronicle records are not active roadmap commitments.
+Phase 4D2 is deployed, accepted, and closed. Its GM-controlled Game Sessions, exact-session Journal, and system-aware Campaign Dice for VtM V5 and CoC 7e are current behavior. Rolls outside an active session remain local to the roller and non-persisted; active-session rolls are public Journal events delivered through Supabase Realtime. The campaign system selects the existing system roller automatically; no parallel campaign dice mechanics exist. Server-authoritative execution, exact-session binding across End → Start races, and the absence of direct authenticated Journal writes preserve the shared-history trust boundary. Hidden/private campaign rolls remain unimplemented. LiveKit remains independent except for the existing Gallery image-presentation transport. Phase 4F1 CoC character sheets reuse the existing campaign assignment and read-only character route; exposing linked characters inside the Game Room remains Phase 4F2. Archive UI, hidden rolls, Keeper-specific tools, NPCs, clues, general Handouts, richer Sessions, and Chronicle records are not active roadmap commitments.
 
 ## Open questions for later milestones
 

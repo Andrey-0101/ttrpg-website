@@ -11,6 +11,7 @@ import {
 } from "@/lib/characters/game-systems";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
 import { normalizeVtmV5SheetData } from "@/lib/characters/vtm-v5/schema";
+import { normalizeCoc7eSheetData } from "@/lib/characters/call-of-cthulhu-7e/schema";
 import { createClient } from "@/utils/supabase/server";
 
 type CharactersPageProps = {
@@ -70,9 +71,13 @@ export default async function CharactersPage({
           const normalizedSystemId = normalizeGameSystemId(
             character.game_system,
           );
-          const identity =
+          const vtmIdentity =
             normalizedSystemId === "vtm-v5"
               ? normalizeVtmV5SheetData(character.sheet_data).identity
+              : null;
+          const cocIdentity =
+            normalizedSystemId === "call-of-cthulhu-7e"
+              ? normalizeCoc7eSheetData(character.sheet_data).identity
               : null;
           const portraitUrl = await getCharacterPortraitSignedUrl(
             supabase,
@@ -85,7 +90,8 @@ export default async function CharactersPage({
 
           return {
             ...character,
-            identity,
+            vtmIdentity,
+            cocIdentity,
             portraitUrl,
             gameSystemName: translationKey
               ? catalogueTranslations(`systems.${translationKey}.name`)
@@ -144,7 +150,8 @@ export default async function CharactersPage({
               visibility={character.visibility}
               portraitPath={character.portrait_url}
               portraitUrl={character.portraitUrl}
-              identity={character.identity}
+              vtmIdentity={character.vtmIdentity}
+              cocIdentity={character.cocIdentity}
             />
           ))}
         </div>

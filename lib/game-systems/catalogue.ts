@@ -80,6 +80,10 @@ export const GAME_SYSTEM_CATALOGUE = [
     legacyValues: ["Call of Cthulhu", "Call of Cthulhu 7th Edition"],
     capabilities: {
       ...plannedCapabilities,
+      characterCreation: {
+        status: "available",
+        route: "/characters/new/call-of-cthulhu-7e",
+      },
       campaignCreation: {
         status: "available",
         route: "/campaigns/new",

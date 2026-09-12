@@ -1,0 +1,175 @@
+{
+  "Coc7eCharacterSheet": {
+    "pageNavigationLabel": "Страницы листа сыщика",
+    "pages": {
+      "investigator": "Страница 1 — Сыщик",
+      "story": "Страница 2 — История и предыстория"
+    },
+    "portrait": "Портрет",
+    "uploadPortrait": "Загрузить портрет",
+    "replacePortrait": "Заменить портрет",
+    "removePortrait": "Удалить портрет",
+    "portraitHelp": "JPEG, PNG или WebP. Не более 5 МБ.",
+    "portraitInvalidType": "Выберите изображение JPEG, PNG или WebP.",
+    "portraitTooLarge": "Размер портрета не должен превышать 5 МБ.",
+    "portraitUploadError": "Не удалось загрузить портрет. Персонаж не был создан.",
+    "identity": {
+      "name": "Имя",
+      "occupation": "Род занятий",
+      "birthplace": "Место рождения",
+      "residence": "Место жительства",
+      "age": "Возраст",
+      "gender": "Пол"
+    },
+    "characteristics": {
+      "title": "Характеристики",
+      "str": "СИЛ",
+      "con": "ТЕЛ",
+      "siz": "РАЗ",
+      "dex": "ЛВК",
+      "app": "ВНЕ",
+      "int": "ИНТ",
+      "pow": "ВОЛ",
+      "edu": "ОБР",
+      "idea": "Идея",
+      "know": "Знания"
+    },
+    "thresholds": {
+      "regular": "Обычный",
+      "hard": "Сложный",
+      "extreme": "Экстремальный",
+      "regularShort": "Об.",
+      "hardShort": "Сл.",
+      "extremeShort": "Экст."
+    },
+    "derived": {
+      "hitPoints": "Здоровье",
+      "magicPoints": "Магия",
+      "luck": "Удача",
+      "sanity": "Рассудок",
+      "maximum": "Максимум",
+      "current": "Текущее",
+      "starting": "Начальное",
+      "maximumSanity": "Макс. рассудок",
+      "insaneThreshold": "Порог безумия",
+      "move": "Скорость",
+      "build": "Комплекция",
+      "damageBonus": "Бонус к урону",
+      "none": "Нет"
+    },
+    "conditions": {
+      "title": "Состояния",
+      "temporaryInsanity": "Временное безумие",
+      "indefiniteInsanity": "Бессрочное безумие",
+      "majorWound": "Серьёзная рана",
+      "unconscious": "Без сознания",
+      "dying": "При смерти"
+    },
+    "skills": {
+      "title": "Навыки",
+      "developmentMark": "Отметить навык «{skill}» для развития",
+      "specialtyName": "Название специализации",
+      "regularValue": "Обычное значение навыка «{skill}»",
+      "base": "Базовый шанс",
+      "baseShort": "База",
+      "fixed": {
+        "accounting": "Бухгалтерское дело",
+        "anthropology": "Антропология",
+        "appraise": "Оценка",
+        "archaeology": "Археология",
+        "charm": "Обаяние",
+        "climb": "Лазанье",
+        "creditRating": "Средства",
+        "cthulhuMythos": "Мифы Ктулху",
+        "disguise": "Маскировка",
+        "dodge": "Уклонение",
+        "driveAuto": "Вождение",
+        "electricalRepair": "Электрика",
+        "fastTalk": "Красноречие",
+        "fightingBrawl": "Ближний бой (драка)",
+        "firearmsHandgun": "Стрельба (пистолет)",
+        "firearmsRifleShotgun": "Стрельба (винтовка/дробовик)",
+        "firstAid": "Первая помощь",
+        "history": "История",
+        "intimidate": "Запугивание",
+        "jump": "Прыжок",
+        "law": "Юриспруденция",
+        "libraryUse": "Работа в библиотеке",
+        "listen": "Слух",
+        "locksmith": "Взлом",
+        "mechanicalRepair": "Механика",
+        "medicine": "Медицина",
+        "naturalWorld": "Естествознание",
+        "navigate": "Ориентирование",
+        "occult": "Оккультизм",
+        "persuade": "Убеждение",
+        "psychoanalysis": "Психоанализ",
+        "psychology": "Психология",
+        "ride": "Верховая езда",
+        "sleightOfHand": "Ловкость рук",
+        "spotHidden": "Внимание",
+        "stealth": "Скрытность",
+        "swim": "Плавание",
+        "throw": "Метание",
+        "track": "Чтение следов"
+      },
+      "specialties": {
+        "artCraft": "Искусство/ремесло",
+        "fighting": "Ближний бой",
+        "firearms": "Стрельба",
+        "languageOther": "Язык, иностранный",
+        "languageOwn": "Язык, родной",
+        "pilot": "Пилотирование",
+        "science": "Наука",
+        "survival": "Выживание",
+        "custom": "Другой навык"
+      }
+    },
+    "combat": {
+      "title": "Бой",
+      "weapon": "Оружие",
+      "skill": "Навык",
+      "skillSource": "Источник навыка",
+      "customSkill": "Другой навык",
+      "customSkillName": "Название навыка",
+      "damage": "Урон",
+      "attacks": "Атаки",
+      "range": "Дальность",
+      "ammo": "Боезапас",
+      "malfunction": "Осечка",
+      "brawl": "Драка"
+    },
+    "story": {
+      "title": "История",
+      "label": "История"
+    },
+    "backstory": {
+      "title": "Предыстория",
+      "personalDescription": "Описание",
+      "ideologyBeliefs": "Идеалы и принципы",
+      "significantPeople": "Значимые люди",
+      "meaningfulLocations": "Важные места",
+      "treasuredPossessions": "Ценное имущество",
+      "traits": "Черты",
+      "injuriesScars": "Травмы и шрамы",
+      "phobiasManias": "Фобии и мании",
+      "arcaneTomesSpells": "Магические книги, заклинания, артефакты",
+      "encountersWithStrangeEntities": "Встречи со сверхъестественным"
+    },
+    "gearAndPossessions": "Снаряжение и имущество",
+    "wealth": {
+      "title": "Благосостояние",
+      "spendingLevel": "Уровень расходов",
+      "cash": "Наличные",
+      "assets": "Активы"
+    },
+    "validation": {
+      "specialtyNameRequired": "Укажите название каждой специализации или другого навыка, где заполнены значения.",
+      "weaponSkillNameRequired": "Укажите название каждого пользовательского боевого навыка, где заполнено значение.",
+      "invalidLinkedWeaponSkill": "Оружие ссылается на недоступный навык. Выберите другой навык или используйте пользовательский."
+    },
+    "fanMaterial": {
+      "title": "Уведомление Chaosium Fan Material"
+    }
+  }
+}

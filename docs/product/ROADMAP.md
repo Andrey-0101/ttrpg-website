@@ -18,15 +18,16 @@ Completed foundation:
 - Phase 4C1 — image-only Campaign Gallery;
 - Phase 4C2 — Game Room Image Presentation;
 - Phase 4D1 — CoC 7e Dice Roller, including contextual Back navigation, roller-scoped history, and live CoC Target bands;
-- Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice in the Game Room.
+- Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice in the Game Room;
+- Phase 4E — Fair Turn Order Dice.
 
 Implemented with final Production acceptance pending:
 
-- Phase 4E — Fair Turn Order Dice.
-
-Next planned product stage after Phase 4E acceptance:
-
 - Phase 4F1 — CoC 7e Character Sheets.
+
+Next planned product stage after Phase 4F1 acceptance:
+
+- Phase 4F2 — Game Room Character Integration.
 
 Current Production facts:
 
@@ -35,7 +36,7 @@ Current Production facts:
 - supported capacity is one GM plus up to six Players;
 - the last human Production group test passed with one GM and four Players;
 - quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred;
-- the generic Call of Cthulhu 7e campaign shell and personal Dice Roller are deployed, but CoC character sheets are not yet in Production;
+- the generic Call of Cthulhu 7e campaign shell, personal Dice Roller, and two-page character sheet are deployed; final owner acceptance of the character sheet remains pending;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
 - Phase 4C2 is implemented and accepted in Production; Phase 4D1, its focused UX follow-up, and all three personal-history migrations are deployed.
@@ -205,7 +206,7 @@ Phase 4D2 passed automated verification, multi-user Production acceptance, and t
 
 ### Phase 4E — Fair Turn Order Dice
 
-**Status: Implemented / deployed / Production acceptance pending**
+**Status: Complete / deployed / accepted in Production**
 
 Deliver the standalone, system-neutral Fair Turn Order Dice utility at `/{locale}/dice-rollers/go-first` and expose it through the public Dice Rollers hub. The site tool implements the published Go First Dice mathematical model without presenting itself as the original project or an official digital product.
 
@@ -215,13 +216,17 @@ Deliver the standalone, system-neutral Fair Turn Order Dice utility at `/{locale
 - has no account state, history, presets, persistence, Campaign Dice, Game Room, Realtime, or API boundary;
 - includes exact deterministic tests for the five fixed face tables and every permutation of every two-to-five-die subset.
 
-The implementation must not be marked manually accepted until the focused Production checklist passes.
+The focused Production checklist passed. Phase 4E is closed.
 
 ### Phase 4F1 — CoC 7e Character Sheets
 
-**Status: Planned**
+**Status: Implemented / deployed / Production acceptance pending**
 
-Implement CoC 7e schema, normalization, validation, character creation/editing, summary cards, EN/RU presentation, and tests within the accepted game-system boundary.
+Delivered a versioned CoC 7e `sheet_data` schema, safe normalization and validation, two responsive sheet pages, derived thresholds and characteristics-based formulas, the complete fixed skill catalogue and specialty slots, combat rows, Story/Backstory/Gear/Wealth, EN/RU presentation, portraits, drafts, summary cards, and the existing create/view/edit/save/delete workflow.
+
+The implementation reuses `public.characters`, JSONB, portrait Storage, visibility, owner CRUD, campaign-compatible linking, RLS, and read-only campaign sharing. It adds no database migration or parallel character persistence. The CoC rules remain in the CoC system module, while the shared portrait UI preserves the existing VtM behavior.
+
+The sheet follows the functional hierarchy of the supplied two-page reference without copying official trade dress: Page 1 uses the approved upper-left portrait, identity, Characteristics, derived/status, three-column Skills, and Combat composition; Page 2 contains Story, the approved Backstory fields, Gear & Possessions, and string-based Wealth. The required Chaosium Fan Material Policy notice is shown beneath the CoC sheet. Game Room Character remains disabled until Phase 4F2.
 
 ### Phase 4F2 — Game Room Character Integration
 
