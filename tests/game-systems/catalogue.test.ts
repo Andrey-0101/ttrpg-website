@@ -236,7 +236,7 @@ test("Dice Rollers catalogue uses the shared localized capability link", () => {
   assert.match(cardSource, /href=\{action\.href\}/u);
 });
 
-test("Dice Rollers hub exposes localized standalone Go First Dice", () => {
+test("Dice Rollers hub exposes localized Fair Turn Order Dice", () => {
   const pageSource = readFileSync(
     resolve("app/[locale]/dice-rollers/page.tsx"),
     "utf8",
@@ -256,6 +256,55 @@ test("Dice Rollers hub exposes localized standalone Go First Dice", () => {
   assert.match(pageSource, /withDiceRollerReturnTo/u);
   assert.match(routeSource, /<GoFirstDiceRoller \/>/u);
   assert.match(routeSource, /resolveDiceRollerReturnTo/u);
+  const acknowledgementIndex = routeSource.indexOf(
+    'translations("acknowledgementTitle")',
+  );
+  const rollerIndex = routeSource.indexOf("<GoFirstDiceRoller />");
+  const explanationIndex = routeSource.indexOf('translations("howTitle")');
+
+  assert.notEqual(acknowledgementIndex, -1);
+  assert.notEqual(rollerIndex, -1);
+  assert.notEqual(explanationIndex, -1);
+  assert.ok(
+    acknowledgementIndex < rollerIndex,
+  );
+  assert.ok(rollerIndex < explanationIndex);
+  for (const sourceUrl of [
+    "https://web.archive.org/web/20231002203517/http://gofirstdice.ericharshbarger.org/doku.php?id=significant_solutions",
+    "https://doi.org/10.2478/rmm-2023-0004",
+    "https://mathartfun.com/thedicelab.com/GFD5.html",
+    "https://www.scientificamerican.com/article/unique-mathematical-60-sided-go-first-dice-go-on-display/",
+  ]) {
+    assert.ok(routeSource.includes(sourceUrl));
+  }
+  assert.equal(
+    (englishMessages.DiceRollersPage as Record<string, unknown>)
+      .goFirstCardTitle,
+    "Fair Turn Order Dice",
+  );
+  assert.equal(
+    (russianMessages.DiceRollersPage as Record<string, unknown>)
+      .goFirstCardTitle,
+    "Fair Turn Order Dice",
+  );
+  for (const messages of [englishMessages, russianMessages]) {
+    const goFirstMessages = messages.GoFirstDice as Record<string, string>;
+
+    assert.equal(goFirstMessages.title, "Fair Turn Order Dice");
+    assert.equal(goFirstMessages.metadataTitle, "Fair Turn Order Dice");
+    for (const creditedName of [
+      "Robert Ford",
+      "Eric Harshbarger",
+      "James Grime",
+      "Brian Pollock",
+      "James Ernest",
+      "Paul Meyer",
+    ]) {
+      assert.match(goFirstMessages.acknowledgementText, new RegExp(creditedName, "u"));
+    }
+    assert.match(goFirstMessages.acknowledgementText, /Go First Dice/u);
+    assert.match(goFirstMessages.acknowledgementText, /2023/u);
+  }
   assert.deepEqual(
     Object.keys(englishMessages.GoFirstDice as Record<string, unknown>),
     Object.keys(russianMessages.GoFirstDice as Record<string, unknown>),

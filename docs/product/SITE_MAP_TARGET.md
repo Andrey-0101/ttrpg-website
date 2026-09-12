@@ -20,7 +20,7 @@ flowchart TD
     ROOT --> PRIVATE["Authenticated areas"]
     PUBLIC --> GAMES["Games catalogue"]
     PUBLIC --> DICE["Dice Rollers"]
-    DICE --> GO_FIRST_DICE["4E Go First Dice"]
+    DICE --> GO_FIRST_DICE["4E Fair Turn Order Dice"]
     PUBLIC --> AUTH["Authentication"]
     PRIVATE --> DASHBOARD["Dashboard"]
     PRIVATE --> CHARACTERS["Characters"]

@@ -22,7 +22,7 @@ Describe the intended structure without presenting speculative routes or uncommi
 5. Phase 4C2 Game Room Image Presentation — complete and Production accepted;
 6. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
 7. Phase 4D2 system-aware Game Room Dice Integration — complete and Production accepted;
-8. Phase 4E Go First Dice Roller — implemented, Production acceptance pending;
+8. Phase 4E Fair Turn Order Dice — implemented and deployed, Production acceptance pending;
 9. Phase 4F1 CoC 7e Character Sheets;
 10. Phase 4F2 system-aware linked-character Game Room integration;
 11. Phase 4G Campaign Notes;
