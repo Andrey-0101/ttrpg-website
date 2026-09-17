@@ -36,38 +36,40 @@ export default function Coc7eDerivedStatusSection({
   const buildAndDamage = getCoc7eBuildAndDamageBonus(sheetData);
 
   return (
-    <div className="grid gap-2 p-2 lg:grid-cols-[2fr_1fr]">
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        <TrackGroup
-          label={translations("derived.hitPoints")}
-          maximum={getCoc7eMaximumHitPoints(sheetData)}
-          current={sheetData.vitals.hitPoints.current}
-          isEditing={isEditing}
-          onCurrentChange={(current) =>
-            onChange({
-              ...sheetData,
-              vitals: {
-                ...sheetData.vitals,
-                hitPoints: { current },
-              },
-            })
-          }
-        />
-        <TrackGroup
-          label={translations("derived.magicPoints")}
-          maximum={getCoc7eMaximumMagicPoints(sheetData)}
-          current={sheetData.vitals.magicPoints.current}
-          isEditing={isEditing}
-          onCurrentChange={(current) =>
-            onChange({
-              ...sheetData,
-              vitals: {
-                ...sheetData.vitals,
-                magicPoints: { current },
-              },
-            })
-          }
-        />
+    <div className="p-2">
+      <div className="grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.45fr_1.25fr]">
+        <div className="grid content-start gap-2">
+          <TrackGroup
+            label={translations("derived.hitPoints")}
+            maximum={getCoc7eMaximumHitPoints(sheetData)}
+            current={sheetData.vitals.hitPoints.current}
+            isEditing={isEditing}
+            onCurrentChange={(current) =>
+              onChange({
+                ...sheetData,
+                vitals: {
+                  ...sheetData.vitals,
+                  hitPoints: { current },
+                },
+              })
+            }
+          />
+          <TrackGroup
+            label={translations("derived.magicPoints")}
+            maximum={getCoc7eMaximumMagicPoints(sheetData)}
+            current={sheetData.vitals.magicPoints.current}
+            isEditing={isEditing}
+            onCurrentChange={(current) =>
+              onChange({
+                ...sheetData,
+                vitals: {
+                  ...sheetData.vitals,
+                  magicPoints: { current },
+                },
+              })
+            }
+          />
+        </div>
         <DoubleTrack
           label={translations("derived.luck")}
           starting={sheetData.vitals.luck.starting}
@@ -80,10 +82,11 @@ export default function Coc7eDerivedStatusSection({
             })
           }
         />
-        <DoubleTrack
-          label={translations("derived.sanity")}
+        <SanityGroup
           starting={sheetData.vitals.sanity.starting}
           current={sheetData.vitals.sanity.current}
+          maximum={getCoc7eMaximumSanity(sheetData)}
+          insaneThreshold={getCoc7eInsaneThreshold(sheetData)}
           isEditing={isEditing}
           onChange={(sanity) =>
             onChange({
@@ -92,21 +95,25 @@ export default function Coc7eDerivedStatusSection({
             })
           }
         />
+        <div className="grid content-start grid-cols-2 gap-1 rounded border border-neutral-300 p-1.5">
+          <DerivedValue label={translations("derived.move")}>
+            {getCoc7eMove(sheetData)}
+          </DerivedValue>
+          <DerivedValue label={translations("derived.build")}>
+            {buildAndDamage?.build ?? null}
+          </DerivedValue>
+          <DerivedValue
+            label={translations("derived.damageBonus")}
+            className="col-span-2"
+          >
+            {buildAndDamage?.damageBonus === "none"
+              ? translations("derived.none")
+              : (buildAndDamage?.damageBonus ?? null)}
+          </DerivedValue>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 lg:grid-cols-2">
-        <DerivedValue label={translations("derived.maximumSanity")}>{getCoc7eMaximumSanity(sheetData)}</DerivedValue>
-        <DerivedValue label={translations("derived.insaneThreshold")}>{getCoc7eInsaneThreshold(sheetData)}</DerivedValue>
-        <DerivedValue label={translations("derived.move")}>{getCoc7eMove(sheetData)}</DerivedValue>
-        <DerivedValue label={translations("derived.build")}>{buildAndDamage?.build ?? null}</DerivedValue>
-        <DerivedValue label={translations("derived.damageBonus")} className="col-span-2 sm:col-span-1 lg:col-span-2">
-          {buildAndDamage?.damageBonus === "none"
-            ? translations("derived.none")
-            : (buildAndDamage?.damageBonus ?? null)}
-        </DerivedValue>
-      </div>
-
-      <fieldset className="lg:col-span-2">
+      <fieldset className="mt-2">
         <legend className="text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
           {translations("conditions.title")}
         </legend>
@@ -136,6 +143,56 @@ export default function Coc7eDerivedStatusSection({
   );
 }
 
+function SanityGroup({
+  starting,
+  current,
+  maximum,
+  insaneThreshold,
+  isEditing,
+  onChange,
+}: {
+  starting: number | null;
+  current: number | null;
+  maximum: number | null;
+  insaneThreshold: number | null;
+  isEditing: boolean;
+  onChange: (value: { starting: number | null; current: number | null }) => void;
+}) {
+  const translations = useTranslations("Coc7eCharacterSheet");
+
+  return (
+    <fieldset className="self-start rounded border border-neutral-300 p-1.5">
+      <legend className="px-1 text-xs font-bold">
+        {translations("derived.sanity")}
+      </legend>
+      <div className="grid grid-cols-2 gap-1">
+        <NumberField
+          label={translations("derived.starting")}
+          value={starting}
+          onChange={(value) => onChange({ starting: value, current })}
+          disabled={!isEditing}
+          titleCaseLabel
+        />
+        <NumberField
+          label={translations("derived.current")}
+          value={current}
+          onChange={(value) => onChange({ starting, current: value })}
+          disabled={!isEditing}
+          titleCaseLabel
+        />
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-1 border-t border-neutral-200 pt-2">
+        <DerivedValue label={translations("derived.maximumSanity")}>
+          {maximum}
+        </DerivedValue>
+        <DerivedValue label={translations("derived.insaneThreshold")}>
+          {insaneThreshold}
+        </DerivedValue>
+      </div>
+    </fieldset>
+  );
+}
+
 function TrackGroup({
   label,
   maximum,
@@ -152,11 +209,17 @@ function TrackGroup({
   const translations = useTranslations("Coc7eCharacterSheet");
 
   return (
-    <fieldset className="rounded border border-neutral-300 p-1.5">
+    <fieldset className="self-start rounded border border-neutral-300 p-1.5">
       <legend className="px-1 text-xs font-bold">{label}</legend>
       <div className="grid grid-cols-2 gap-1">
         <DerivedValue label={translations("derived.maximum")}>{maximum}</DerivedValue>
-        <NumberField label={translations("derived.current")} value={current} onChange={onCurrentChange} disabled={!isEditing} />
+        <NumberField
+          label={translations("derived.current")}
+          value={current}
+          onChange={onCurrentChange}
+          disabled={!isEditing}
+          titleCaseLabel
+        />
       </div>
     </fieldset>
   );
@@ -178,11 +241,23 @@ function DoubleTrack({
   const translations = useTranslations("Coc7eCharacterSheet");
 
   return (
-    <fieldset className="rounded border border-neutral-300 p-1.5">
+    <fieldset className="self-start rounded border border-neutral-300 p-1.5">
       <legend className="px-1 text-xs font-bold">{label}</legend>
       <div className="grid grid-cols-2 gap-1">
-        <NumberField label={translations("derived.starting")} value={starting} onChange={(value) => onChange({ starting: value, current })} disabled={!isEditing} />
-        <NumberField label={translations("derived.current")} value={current} onChange={(value) => onChange({ starting, current: value })} disabled={!isEditing} />
+        <NumberField
+          label={translations("derived.starting")}
+          value={starting}
+          onChange={(value) => onChange({ starting: value, current })}
+          disabled={!isEditing}
+          titleCaseLabel
+        />
+        <NumberField
+          label={translations("derived.current")}
+          value={current}
+          onChange={(value) => onChange({ starting, current: value })}
+          disabled={!isEditing}
+          titleCaseLabel
+        />
       </div>
     </fieldset>
   );
