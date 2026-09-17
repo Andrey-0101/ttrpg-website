@@ -41,6 +41,13 @@ import {
   createCharacterPortraitPath,
   validateCharacterPortraitFile,
 } from "../../lib/characters/portrait";
+import { formatCoc7eBrawlDamage } from "../../lib/characters/call-of-cthulhu-7e/combat";
+import { shouldPreventImplicitCharacterSave } from "../../lib/characters/editor-form";
+import {
+  CHARACTER_CAMPAIGN_CONTEXT_PARAM,
+  getCampaignCharacterOwnerEditHref,
+  getCharacterBackHref,
+} from "../../lib/characters/navigation";
 
 test("CoC 7e defaults use schema version 1 and the approved row counts", () => {
   const sheet = createDefaultCoc7eSheetData();
@@ -195,6 +202,87 @@ test("Build and Damage Bonus use every approved boundary", () => {
     sheet.characteristics.siz = total - sheet.characteristics.str;
     assert.deepEqual(getCoc7eBuildAndDamageBonus(sheet), { build, damageBonus });
   }
+});
+
+test("Brawl damage formats the canonical Damage Bonus result", () => {
+  const cases: readonly [number, string][] = [
+    [64, "1D3 - 2"],
+    [65, "1D3 - 1"],
+    [85, "1D3"],
+    [125, "1D3 + 1D4"],
+    [165, "1D3 + 1D6"],
+    [205, "1D3 + 2D6"],
+  ];
+
+  for (const [total, expected] of cases) {
+    const sheet = createDefaultCoc7eSheetData();
+    sheet.characteristics.str = Math.floor(total / 2);
+    sheet.characteristics.siz = total - sheet.characteristics.str;
+    const damageBonus = getCoc7eBuildAndDamageBonus(sheet)?.damageBonus;
+    assert.equal(formatCoc7eBrawlDamage(damageBonus), expected);
+  }
+});
+
+test("CharacterEditor prevents only implicit Enter saves from input fields", () => {
+  assert.equal(
+    shouldPreventImplicitCharacterSave({
+      key: "Enter",
+      isComposing: false,
+      targetTagName: "INPUT",
+      targetType: "text",
+    }),
+    true,
+  );
+  assert.equal(
+    shouldPreventImplicitCharacterSave({
+      key: "Enter",
+      isComposing: false,
+      targetTagName: "INPUT",
+      targetType: "number",
+    }),
+    true,
+  );
+  assert.equal(
+    shouldPreventImplicitCharacterSave({
+      key: "Enter",
+      isComposing: false,
+      targetTagName: "TEXTAREA",
+    }),
+    false,
+  );
+  assert.equal(
+    shouldPreventImplicitCharacterSave({
+      key: "Enter",
+      isComposing: false,
+      targetTagName: "BUTTON",
+      targetType: "submit",
+    }),
+    false,
+  );
+  assert.equal(
+    shouldPreventImplicitCharacterSave({
+      key: "Enter",
+      isComposing: true,
+      targetTagName: "INPUT",
+      targetType: "text",
+    }),
+    false,
+  );
+});
+
+test("character back navigation accepts only a bounded campaign UUID context", () => {
+  const campaignId = "94000000-0000-4000-8000-000000000001";
+  const characterId = "94000000-0000-4000-8000-000000000002";
+
+  assert.equal(getCharacterBackHref(undefined), "/characters");
+  assert.equal(getCharacterBackHref(campaignId), `/campaigns/${campaignId}`);
+  assert.equal(getCharacterBackHref([campaignId]), "/characters");
+  assert.equal(getCharacterBackHref("https://example.com"), "/characters");
+  assert.equal(getCharacterBackHref("../campaigns/other"), "/characters");
+  assert.equal(
+    getCampaignCharacterOwnerEditHref(characterId, campaignId),
+    `/characters/${characterId}?${CHARACTER_CAMPAIGN_CONTEXT_PARAM}=${campaignId}`,
+  );
 });
 
 test("POW seeds only empty Starting SAN and preserves mutable current values", () => {
@@ -456,4 +544,92 @@ test("CoC character UI is wired into existing CRUD and campaign boundaries", () 
     gameRoom,
     /<button type="button" disabled className=\{TOOL_BUTTON_CLASS\}>\s*\{translations\("tools\.character"\)\}/u,
   );
+});
+
+test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation", () => {
+  const skills = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/skills-section.tsx"),
+    "utf8",
+  );
+  const combat = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/combat-section.tsx"),
+    "utf8",
+  );
+  const characteristics = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/characteristics-section.tsx"),
+    "utf8",
+  );
+  const editor = readFileSync(resolve("components/characters/character-editor.tsx"), "utf8");
+  const ownerPage = readFileSync(resolve("app/[locale]/characters/[id]/page.tsx"), "utf8");
+  const campaignPage = readFileSync(
+    resolve("app/[locale]/campaigns/[id]/characters/[characterId]/page.tsx"),
+    "utf8",
+  );
+  const english = JSON.parse(
+    readFileSync(resolve("messages/en/call-of-cthulhu-7e.json"), "utf8"),
+  ) as { Coc7eCharacterSheet: { characteristics: Record<string, string> } };
+  const russian = JSON.parse(
+    readFileSync(resolve("messages/ru/call-of-cthulhu-7e.json"), "utf8"),
+  ) as {
+    Coc7eCharacterSheet: {
+      characteristics: Record<string, string>;
+      derived: Record<string, string>;
+    };
+  };
+
+  assert.match(skills, /lg:grid-cols-3/u);
+  assert.match(skills, /whitespace-normal break-words/u);
+  assert.doesNotMatch(skills, /truncate/u);
+  assert.doesNotMatch(skills, /value=\{state\.value\}/u);
+  assert.match(skills, /<RegularValueCell[\s\S]*value=\{effectiveValue\}/u);
+  assert.match(skills, /skills\.base/u);
+
+  assert.match(combat, /getCoc7eBuildAndDamageBonus/u);
+  assert.match(combat, /formatCoc7eBrawlDamage/u);
+  assert.doesNotMatch(combat, /1D3 \+ DB/u);
+
+  assert.deepEqual(
+    Object.values(english.Coc7eCharacterSheet.characteristics).slice(1, 9),
+    [
+      "Strength (STR)",
+      "Constitution (CON)",
+      "Size (SIZ)",
+      "Dexterity (DEX)",
+      "Appearance (APP)",
+      "Intelligence (INT)",
+      "Power (POW)",
+      "Education (EDU)",
+    ],
+  );
+  assert.deepEqual(
+    Object.values(russian.Coc7eCharacterSheet.characteristics).slice(1, 9),
+    [
+      "Сила (СИЛ)",
+      "Выносливость (ВЫН)",
+      "Телосложение (ТЕЛ)",
+      "Ловкость (ЛВК)",
+      "Наружность (НАР)",
+      "Интеллект (ИНТ)",
+      "Мощь (МОЩ)",
+      "Образование (ОБР)",
+    ],
+  );
+  assert.deepEqual(
+    {
+      maximum: russian.Coc7eCharacterSheet.derived.maximum,
+      current: russian.Coc7eCharacterSheet.derived.current,
+      starting: russian.Coc7eCharacterSheet.derived.starting,
+    },
+    { maximum: "Макс.", current: "Текущ.", starting: "Начал." },
+  );
+  assert.doesNotMatch(characteristics, /characteristics\.idea|characteristics\.know/u);
+
+  assert.match(editor, /onKeyDown=\{handleFormKeyDown\}/u);
+  assert.match(editor, /shouldPreventImplicitCharacterSave/u);
+  assert.match(editor, /<VtmCharacterSheet/u);
+  assert.match(editor, /<Coc7eCharacterSheet/u);
+  assert.match(editor, /<button\s+type="submit"/u);
+  assert.match(ownerPage, /getCharacterBackHref/u);
+  assert.match(ownerPage, /CHARACTER_CAMPAIGN_CONTEXT_PARAM/u);
+  assert.match(campaignPage, /getCampaignCharacterOwnerEditHref/u);
 });

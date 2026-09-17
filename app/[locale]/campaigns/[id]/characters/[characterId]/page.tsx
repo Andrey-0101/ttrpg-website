@@ -7,6 +7,7 @@ import CharacterEditor from "@/components/characters/character-editor";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
+import { getCampaignCharacterOwnerEditHref } from "@/lib/characters/navigation";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignCharacterPageProps = {
@@ -143,7 +144,10 @@ export default async function CampaignCharacterPage({
 
         {isOwner && (
           <Link
-            href={`/characters/${character.id}`}
+            href={getCampaignCharacterOwnerEditHref(
+              character.id,
+              campaignResult.data.id,
+            )}
             className="w-full rounded border border-white/70 px-4 py-2 text-center text-sm font-semibold hover:bg-white/10 sm:w-auto"
           >
             {translations("editOwned")}

@@ -7,12 +7,14 @@ import {
   COC7E_SPECIALTY_CATEGORIES,
 } from "@/lib/characters/call-of-cthulhu-7e/definitions";
 import {
+  getCoc7eBuildAndDamageBonus,
   getCoc7eFixedSkillValue,
   getCoc7eSpecialtyValue,
   getCoc7eThresholds,
   type Coc7eSheetData,
   type Coc7eWeaponRow,
 } from "@/lib/characters/call-of-cthulhu-7e/schema";
+import { formatCoc7eBrawlDamage } from "@/lib/characters/call-of-cthulhu-7e/combat";
 import { parseOptionalInteger, SHEET_INPUT_CLASS } from "./sheet-fields";
 
 type SkillOption = {
@@ -53,6 +55,9 @@ export default function Coc7eCombatSection({
   const brawl = getCoc7eThresholds(
     getCoc7eFixedSkillValue(sheetData, "fightingBrawl"),
   );
+  const brawlDamage = formatCoc7eBrawlDamage(
+    getCoc7eBuildAndDamageBonus(sheetData)?.damageBonus,
+  );
 
   function updateWeapon(index: number, value: Coc7eWeaponRow) {
     const weapons = [...sheetData.weapons];
@@ -81,7 +86,7 @@ export default function Coc7eCombatSection({
         <CombatValue label={translations("thresholds.regular")} value={brawl.regular} />
         <CombatValue label={translations("thresholds.hard")} value={brawl.hard} />
         <CombatValue label={translations("thresholds.extreme")} value={brawl.extreme} />
-        <CombatValue label={translations("combat.damage")} value="1D3 + DB" />
+        <CombatValue label={translations("combat.damage")} value={brawlDamage} />
         <CombatValue label={translations("combat.attacks")} value="1" />
         <CombatValue label={translations("combat.range")} value="—" />
         <CombatValue label={translations("combat.ammo")} value="—" />
