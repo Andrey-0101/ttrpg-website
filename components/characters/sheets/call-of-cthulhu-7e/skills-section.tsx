@@ -86,7 +86,6 @@ export default function Coc7eSkillsSection({
                 key={id}
                 label={translations(`skills.fixed.${id}`)}
                 baseValue={baseValue}
-                value={state.value}
                 developmentMarked={state.developmentMarked}
                 developmentAllowed={definition.developmentAllowed}
                 isEditing={isEditing}
@@ -148,7 +147,6 @@ export default function Coc7eSkillsSection({
 function SkillRow({
   label,
   baseValue,
-  value,
   developmentMarked,
   developmentAllowed,
   isEditing,
@@ -158,7 +156,6 @@ function SkillRow({
 }: {
   label: string;
   baseValue: number | null;
-  value: number | null;
   developmentMarked: boolean;
   developmentAllowed: boolean;
   isEditing: boolean;
@@ -170,7 +167,7 @@ function SkillRow({
   const thresholds = getCoc7eThresholds(effectiveValue);
 
   return (
-    <div className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.25rem_2.25rem_2.25rem] items-end gap-1">
+    <div className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.5rem_2.5rem_2.5rem] items-end gap-1">
       {developmentAllowed ? (
         <input
           type="checkbox"
@@ -183,24 +180,23 @@ function SkillRow({
       ) : (
         <span aria-hidden="true" />
       )}
-      <label className="min-w-0">
-        <span className="block truncate text-[11px] font-medium" title={label}>
-          {label} {baseValue === null ? "" : `(${baseValue}%)`}
+      <div className="min-w-0 self-center">
+        <span className="block whitespace-normal break-words text-[11px] font-medium leading-tight">
+          {label}
         </span>
-        <input
-          type="number"
-          min={0}
-          max={999}
-          step={1}
-          inputMode="numeric"
-          value={value ?? ""}
-          onChange={(event) => onValueChange(parseOptionalInteger(event.target.value))}
-          disabled={!isEditing}
-          aria-label={`${label}: ${translations("thresholds.regular")}`}
-          className={`${SHEET_INPUT_CLASS} text-center tabular-nums`}
-        />
-      </label>
-      <ThresholdCell label={translations("thresholds.regularShort")} value={thresholds.regular} />
+        {baseValue !== null ? (
+          <span className="mt-0.5 block text-[9px] leading-tight text-neutral-500">
+            {translations("skills.base")}: {baseValue}%
+          </span>
+        ) : null}
+      </div>
+      <RegularValueCell
+        label={translations("thresholds.regularShort")}
+        ariaLabel={`${label}: ${translations("thresholds.regular")}`}
+        value={effectiveValue}
+        disabled={!isEditing}
+        onChange={onValueChange}
+      />
       <ThresholdCell label={translations("thresholds.hardShort")} value={thresholds.hard} />
       <ThresholdCell label={translations("thresholds.extremeShort")} value={thresholds.extreme} />
     </div>
@@ -230,7 +226,7 @@ function SpecialtyRow({
   const thresholds = getCoc7eThresholds(effectiveValue);
 
   return (
-    <div className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.25rem_2.25rem_2.25rem] items-end gap-1">
+    <div className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.5rem_2.5rem_2.5rem] items-end gap-1">
       <input
         type="checkbox"
         checked={row.developmentMarked}
@@ -242,7 +238,7 @@ function SpecialtyRow({
         className="mb-2"
       />
       <div className="min-w-0">
-        <div className={`grid gap-1 ${variableBase ? "grid-cols-[minmax(0,1fr)_3rem]" : ""}`}>
+        <div className={`grid items-end gap-1 ${variableBase ? "grid-cols-[minmax(0,1fr)_3rem]" : ""}`}>
           <label className="min-w-0">
             <span className="sr-only">{translations("skills.specialtyName")}</span>
             <input
@@ -256,7 +252,9 @@ function SpecialtyRow({
           </label>
           {variableBase ? (
             <label>
-              <span className="sr-only">{translations("skills.base")}</span>
+              <span className="block text-center text-[8px] leading-tight text-neutral-500">
+                {translations("skills.baseShort")}
+              </span>
               <input
                 type="number"
                 min={0}
@@ -273,26 +271,56 @@ function SpecialtyRow({
             </label>
           ) : null}
         </div>
-        <input
-          type="number"
-          min={0}
-          max={999}
-          step={1}
-          inputMode="numeric"
-          value={row.value ?? ""}
-          onChange={(event) => onChange({ ...row, value: parseOptionalInteger(event.target.value) })}
-          disabled={!isEditing}
-          aria-label={translations("skills.regularValue", {
-            skill: row.specialty || translations(`skills.specialties.${category}`),
-          })}
-          placeholder={baseValue === null ? "" : String(baseValue)}
-          className={`${SHEET_INPUT_CLASS} mt-1 text-center tabular-nums`}
-        />
+        {!variableBase && baseValue !== null ? (
+          <span className="mt-0.5 block text-[9px] leading-tight text-neutral-500">
+            {translations("skills.base")}: {baseValue}%
+          </span>
+        ) : null}
       </div>
-      <ThresholdCell label={translations("thresholds.regularShort")} value={thresholds.regular} />
+      <RegularValueCell
+        label={translations("thresholds.regularShort")}
+        ariaLabel={translations("skills.regularValue", {
+          skill: row.specialty || translations(`skills.specialties.${category}`),
+        })}
+        value={effectiveValue}
+        disabled={!isEditing}
+        onChange={(value) => onChange({ ...row, value })}
+      />
       <ThresholdCell label={translations("thresholds.hardShort")} value={thresholds.hard} />
       <ThresholdCell label={translations("thresholds.extremeShort")} value={thresholds.extreme} />
     </div>
+  );
+}
+
+function RegularValueCell({
+  label,
+  ariaLabel,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  ariaLabel: string;
+  value: number | null;
+  disabled: boolean;
+  onChange: (value: number | null) => void;
+}) {
+  return (
+    <label>
+      <span className="block text-center text-[8px] text-neutral-500">{label}</span>
+      <input
+        type="number"
+        min={0}
+        max={999}
+        step={1}
+        inputMode="numeric"
+        value={value ?? ""}
+        onChange={(event) => onChange(parseOptionalInteger(event.target.value))}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        className={`${SHEET_INPUT_CLASS} px-0.5 text-center text-xs tabular-nums`}
+      />
+    </label>
   );
 }
 

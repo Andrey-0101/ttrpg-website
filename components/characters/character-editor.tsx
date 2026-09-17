@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 
 import { useTranslations } from "next-intl";
 
 import { createClient } from "@/utils/supabase/client";
 import { useUnsavedChangesGuard } from "@/lib/navigation/unsaved-changes";
+import { shouldPreventImplicitCharacterSave } from "@/lib/characters/editor-form";
 import {
   getGameSystemTranslationKey,
   normalizeGameSystemId,
@@ -484,6 +492,22 @@ export default function CharacterEditor({
     }
   }
 
+  function handleFormKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    const target = event.target;
+
+    if (
+      target instanceof HTMLElement &&
+      shouldPreventImplicitCharacterSave({
+        key: event.key,
+        isComposing: event.nativeEvent.isComposing,
+        targetTagName: target.tagName,
+        targetType: target instanceof HTMLInputElement ? target.type : undefined,
+      })
+    ) {
+      event.preventDefault();
+    }
+  }
+
   function handleClear() {
     if (readOnly || saveLockRef.current) {
       return;
@@ -560,6 +584,7 @@ export default function CharacterEditor({
   return (
     <form
       onSubmit={handleSave}
+      onKeyDown={handleFormKeyDown}
       className="mt-6 min-w-0 rounded-lg border p-2 sm:p-4"
       aria-busy={saving}
     >

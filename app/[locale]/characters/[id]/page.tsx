@@ -7,6 +7,10 @@ import CharacterEditor from "@/components/characters/character-editor";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
+import {
+  CHARACTER_CAMPAIGN_CONTEXT_PARAM,
+  getCharacterBackHref,
+} from "@/lib/characters/navigation";
 import { createClient } from "@/utils/supabase/server";
 
 type CharacterPageProps = {
@@ -14,6 +18,7 @@ type CharacterPageProps = {
     locale: string;
     id: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({
@@ -47,8 +52,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function CharacterPage({ params }: CharacterPageProps) {
+export default async function CharacterPage({
+  params,
+  searchParams,
+}: CharacterPageProps) {
   const { locale: requestedLocale, id } = await params;
+  const query = await searchParams;
   const locale = hasLocale(routing.locales, requestedLocale)
     ? requestedLocale
     : routing.defaultLocale;
@@ -92,7 +101,9 @@ export default async function CharacterPage({ params }: CharacterPageProps) {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-4xl px-3 py-6 sm:px-6 lg:p-8">
-      <Link href="/characters">
+      <Link
+        href={getCharacterBackHref(query[CHARACTER_CAMPAIGN_CONTEXT_PARAM])}
+      >
         <span aria-hidden="true">&larr;</span> {translations("back")}
       </Link>
 

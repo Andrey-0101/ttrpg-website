@@ -28,17 +28,10 @@ export default function Coc7eCharacteristicsSection({
       {COC7E_CHARACTERISTIC_KEYS.map((key) => {
         const value = sheetData.characteristics[key];
         const thresholds = getCoc7eThresholds(value);
-        const alias = key === "int" ? "idea" : key === "edu" ? "know" : null;
-
         return (
           <fieldset key={key} className="min-w-0 rounded border border-neutral-300 p-1.5">
-            <legend className="px-1 text-xs font-bold uppercase">
+            <legend className="px-1 text-[11px] font-bold leading-tight">
               {translations(`characteristics.${key}`)}
-              {alias ? (
-                <span className="ml-1 font-normal text-neutral-500">
-                  ({translations(`characteristics.${alias}`)})
-                </span>
-              ) : null}
             </legend>
             <div className="grid grid-cols-3 gap-1">
               <label>
