@@ -16,6 +16,15 @@ export function parseOptionalInteger(value: string): number | null {
 export const SHEET_INPUT_CLASS =
   "min-w-0 w-full rounded-sm border border-neutral-400 bg-white px-1.5 py-1 text-sm text-neutral-950 outline-none focus:border-black focus:ring-1 focus:ring-black disabled:cursor-default disabled:bg-transparent disabled:opacity-100";
 
+export const SHEET_NUMERIC_LABEL_CLASS =
+  "block h-3 text-center text-[9px] leading-3 text-neutral-500";
+
+export const SHEET_EDITABLE_NUMERIC_CLASS =
+  "box-border h-8 min-w-0 w-full appearance-none rounded-sm border border-neutral-400 bg-white px-1 py-0 text-center text-sm leading-none tabular-nums text-neutral-950 outline-none focus:border-black focus:ring-1 focus:ring-black disabled:cursor-default disabled:bg-transparent disabled:opacity-100";
+
+export const SHEET_READONLY_NUMERIC_CLASS =
+  "box-border flex h-8 min-w-0 w-full items-center justify-center rounded-sm border border-neutral-300 bg-stone-100 px-1 py-0 text-center text-sm leading-none tabular-nums";
+
 export function TextField({
   label,
   value,
@@ -53,16 +62,22 @@ export function NumberField({
   onChange,
   disabled,
   className = "",
+  titleCaseLabel = false,
 }: {
   label: string;
   value: number | null;
   onChange: (value: number | null) => void;
   disabled: boolean;
   className?: string;
+  titleCaseLabel?: boolean;
 }) {
   return (
     <label className={`min-w-0 ${className}`}>
-      <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+      <span
+        className={`mb-0.5 block text-[10px] font-semibold text-neutral-600 ${
+          titleCaseLabel ? "" : "uppercase tracking-wide"
+        }`}
+      >
         {label}
       </span>
       <input
@@ -74,7 +89,7 @@ export function NumberField({
         value={value ?? ""}
         onChange={(event) => onChange(parseOptionalInteger(event.target.value))}
         disabled={disabled}
-        className={`${SHEET_INPUT_CLASS} tabular-nums`}
+        className={SHEET_EDITABLE_NUMERIC_CLASS}
       />
     </label>
   );
@@ -122,10 +137,10 @@ export function DerivedValue({
 }) {
   return (
     <div className={`min-w-0 ${className}`}>
-      <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
+      <span className="mb-0.5 block text-[10px] font-semibold text-neutral-600">
         {label}
       </span>
-      <output className="block min-h-8 rounded-sm border border-neutral-400 bg-stone-100 px-1.5 py-1 text-sm tabular-nums">
+      <output className={SHEET_READONLY_NUMERIC_CLASS}>
         {children ?? "—"}
       </output>
     </div>

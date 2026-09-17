@@ -10,7 +10,11 @@ import {
   getCoc7eThresholds,
   type Coc7eSheetData,
 } from "@/lib/characters/call-of-cthulhu-7e/schema";
-import { SHEET_INPUT_CLASS } from "./sheet-fields";
+import {
+  SHEET_EDITABLE_NUMERIC_CLASS,
+  SHEET_NUMERIC_LABEL_CLASS,
+  SHEET_READONLY_NUMERIC_CLASS,
+} from "./sheet-fields";
 
 export default function Coc7eCharacteristicsSection({
   isEditing,
@@ -35,7 +39,7 @@ export default function Coc7eCharacteristicsSection({
             </legend>
             <div className="grid grid-cols-3 gap-1">
               <label>
-                <span className="block text-center text-[9px] text-neutral-500">
+                <span className={SHEET_NUMERIC_LABEL_CLASS}>
                   {translations("thresholds.regular")}
                 </span>
                 <input
@@ -56,7 +60,7 @@ export default function Coc7eCharacteristicsSection({
                     );
                   }}
                   disabled={!isEditing}
-                  className={`${SHEET_INPUT_CLASS} text-center tabular-nums`}
+                  className={SHEET_EDITABLE_NUMERIC_CLASS}
                 />
               </label>
               <Threshold label={translations("thresholds.hard")} value={thresholds.hard} />
@@ -72,8 +76,8 @@ export default function Coc7eCharacteristicsSection({
 function Threshold({ label, value }: { label: string; value: number | null }) {
   return (
     <div>
-      <span className="block text-center text-[9px] text-neutral-500">{label}</span>
-      <output className="block min-h-8 rounded-sm border border-neutral-300 bg-stone-100 px-1 py-1 text-center text-sm tabular-nums">
+      <span className={SHEET_NUMERIC_LABEL_CLASS}>{label}</span>
+      <output className={SHEET_READONLY_NUMERIC_CLASS}>
         {value ?? "—"}
       </output>
     </div>

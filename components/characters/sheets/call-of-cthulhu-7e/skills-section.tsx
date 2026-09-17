@@ -18,13 +18,22 @@ import {
   type Coc7eSheetData,
   type Coc7eSkillInstance,
 } from "@/lib/characters/call-of-cthulhu-7e/schema";
-import { parseOptionalInteger, SHEET_INPUT_CLASS } from "./sheet-fields";
+import {
+  parseOptionalInteger,
+  SHEET_EDITABLE_NUMERIC_CLASS,
+  SHEET_INPUT_CLASS,
+  SHEET_NUMERIC_LABEL_CLASS,
+  SHEET_READONLY_NUMERIC_CLASS,
+} from "./sheet-fields";
 
 const SPECIALTIES_BY_COLUMN: readonly (readonly Coc7eSpecialtyCategory[])[] = [
   ["artCraft", "fighting", "firearms"],
   ["languageOther", "languageOwn"],
   ["pilot", "science", "survival", "custom"],
 ];
+
+const SKILL_ROW_CLASS =
+  "grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.75rem_2.75rem_2.75rem] items-end gap-x-1";
 
 export default function Coc7eSkillsSection({
   isEditing,
@@ -167,7 +176,7 @@ function SkillRow({
   const thresholds = getCoc7eThresholds(effectiveValue);
 
   return (
-    <div className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.5rem_2.5rem_2.5rem] items-end gap-1">
+    <div className={SKILL_ROW_CLASS}>
       {developmentAllowed ? (
         <input
           type="checkbox"
@@ -175,21 +184,12 @@ function SkillRow({
           onChange={(event) => onDevelopmentChange(event.target.checked)}
           disabled={!isEditing}
           aria-label={translations("skills.developmentMark", { skill: label })}
-          className="mb-2"
+          className="mb-2 justify-self-center"
         />
       ) : (
         <span aria-hidden="true" />
       )}
-      <div className="min-w-0 self-center">
-        <span className="block whitespace-normal break-words text-[11px] font-medium leading-tight">
-          {label}
-        </span>
-        {baseValue !== null ? (
-          <span className="mt-0.5 block text-[9px] leading-tight text-neutral-500">
-            {translations("skills.base")}: {baseValue}%
-          </span>
-        ) : null}
-      </div>
+      <SkillNameAndBase label={label} baseValue={baseValue} />
       <RegularValueCell
         label={translations("thresholds.regularShort")}
         ariaLabel={`${label}: ${translations("thresholds.regular")}`}
@@ -226,7 +226,7 @@ function SpecialtyRow({
   const thresholds = getCoc7eThresholds(effectiveValue);
 
   return (
-    <div className="grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.5rem_2.5rem_2.5rem] items-end gap-1">
+    <div className={`${SKILL_ROW_CLASS} gap-y-1`}>
       <input
         type="checkbox"
         checked={row.developmentMarked}
@@ -235,48 +235,47 @@ function SpecialtyRow({
         aria-label={translations("skills.developmentMark", {
           skill: row.specialty || translations(`skills.specialties.${category}`),
         })}
-        className="mb-2"
+        className="col-start-1 row-start-2 mb-2 justify-self-center"
       />
-      <div className="min-w-0">
-        <div className={`grid items-end gap-1 ${variableBase ? "grid-cols-[minmax(0,1fr)_3rem]" : ""}`}>
-          <label className="min-w-0">
-            <span className="sr-only">{translations("skills.specialtyName")}</span>
-            <input
-              value={row.specialty}
-              onChange={(event) => onChange({ ...row, specialty: event.target.value })}
-              disabled={!isEditing}
-              required={requiresName}
-              placeholder={translations(`skills.specialties.${category}`)}
-              className={`${SHEET_INPUT_CLASS} text-[11px]`}
-            />
-          </label>
-          {variableBase ? (
-            <label>
-              <span className="block text-center text-[8px] leading-tight text-neutral-500">
-                {translations("skills.baseShort")}
-              </span>
-              <input
-                type="number"
-                min={0}
-                max={999}
-                step={1}
-                value={row.baseValue ?? ""}
-                onChange={(event) =>
-                  onChange({ ...row, baseValue: parseOptionalInteger(event.target.value) })
-                }
-                disabled={!isEditing}
-                placeholder={translations("skills.baseShort")}
-                className={`${SHEET_INPUT_CLASS} text-center text-[10px] tabular-nums`}
-              />
-            </label>
-          ) : null}
-        </div>
-        {!variableBase && baseValue !== null ? (
-          <span className="mt-0.5 block text-[9px] leading-tight text-neutral-500">
-            {translations("skills.base")}: {baseValue}%
+      <label
+        className={`col-start-2 row-start-1 min-w-0 ${
+          variableBase ? "col-span-3" : "col-span-4"
+        }`}
+      >
+        <span className="sr-only">{translations("skills.specialtyName")}</span>
+        <input
+          value={row.specialty}
+          onChange={(event) => onChange({ ...row, specialty: event.target.value })}
+          disabled={!isEditing}
+          required={requiresName}
+          placeholder={translations(`skills.specialties.${category}`)}
+          className={`${SHEET_INPUT_CLASS} h-8 text-[11px]`}
+        />
+      </label>
+      {variableBase ? (
+        <label className="col-start-5 row-start-1">
+          <span className={SHEET_NUMERIC_LABEL_CLASS}>
+            {translations("skills.baseShort")}
           </span>
-        ) : null}
-      </div>
+          <input
+            type="number"
+            min={0}
+            max={999}
+            step={1}
+            inputMode="numeric"
+            value={row.baseValue ?? ""}
+            onChange={(event) =>
+              onChange({ ...row, baseValue: parseOptionalInteger(event.target.value) })
+            }
+            disabled={!isEditing}
+            aria-label={translations("skills.base")}
+            className={SHEET_EDITABLE_NUMERIC_CLASS}
+          />
+        </label>
+      ) : null}
+      <span className="col-start-2 row-start-2 self-center text-[10px] font-medium leading-tight text-neutral-500">
+        {!variableBase && baseValue !== null ? `${baseValue}%` : ""}
+      </span>
       <RegularValueCell
         label={translations("thresholds.regularShort")}
         ariaLabel={translations("skills.regularValue", {
@@ -285,9 +284,18 @@ function SpecialtyRow({
         value={effectiveValue}
         disabled={!isEditing}
         onChange={(value) => onChange({ ...row, value })}
+        className="col-start-3 row-start-2"
       />
-      <ThresholdCell label={translations("thresholds.hardShort")} value={thresholds.hard} />
-      <ThresholdCell label={translations("thresholds.extremeShort")} value={thresholds.extreme} />
+      <ThresholdCell
+        label={translations("thresholds.hardShort")}
+        value={thresholds.hard}
+        className="col-start-4 row-start-2"
+      />
+      <ThresholdCell
+        label={translations("thresholds.extremeShort")}
+        value={thresholds.extreme}
+        className="col-start-5 row-start-2"
+      />
     </div>
   );
 }
@@ -298,16 +306,18 @@ function RegularValueCell({
   value,
   disabled,
   onChange,
+  className = "",
 }: {
   label: string;
   ariaLabel: string;
   value: number | null;
   disabled: boolean;
   onChange: (value: number | null) => void;
+  className?: string;
 }) {
   return (
-    <label>
-      <span className="block text-center text-[8px] text-neutral-500">{label}</span>
+    <label className={className}>
+      <span className={SHEET_NUMERIC_LABEL_CLASS}>{label}</span>
       <input
         type="number"
         min={0}
@@ -318,19 +328,65 @@ function RegularValueCell({
         onChange={(event) => onChange(parseOptionalInteger(event.target.value))}
         disabled={disabled}
         aria-label={ariaLabel}
-        className={`${SHEET_INPUT_CLASS} px-0.5 text-center text-xs tabular-nums`}
+        className={SHEET_EDITABLE_NUMERIC_CLASS}
       />
     </label>
   );
 }
 
-function ThresholdCell({ label, value }: { label: string; value: number | null }) {
+function ThresholdCell({
+  label,
+  value,
+  className = "",
+}: {
+  label: string;
+  value: number | null;
+  className?: string;
+}) {
   return (
-    <div>
-      <span className="block text-center text-[8px] text-neutral-500">{label}</span>
-      <output className="block min-h-8 rounded-sm border border-neutral-300 bg-stone-100 px-0.5 py-1 text-center text-xs tabular-nums">
+    <div className={className}>
+      <span className={SHEET_NUMERIC_LABEL_CLASS}>{label}</span>
+      <output className={SHEET_READONLY_NUMERIC_CLASS}>
         {value ?? "—"}
       </output>
+    </div>
+  );
+}
+
+function SkillNameAndBase({
+  label,
+  baseValue,
+}: {
+  label: string;
+  baseValue: number | null;
+}) {
+  const parenthetical = /^(.*?)\s+(\([^()]+\))$/u.exec(label);
+  const percentage = baseValue === null ? null : `${baseValue}%`;
+
+  return (
+    <div className="min-w-0 self-center text-[11px] font-medium leading-4">
+      {parenthetical ? (
+        <>
+          <span className="block">{parenthetical[1]}</span>
+          <span className="block text-[10px] tracking-tight">
+            {parenthetical[2]}{" "}
+            {percentage ? (
+              <span className="whitespace-nowrap text-neutral-500">
+                {percentage}
+              </span>
+            ) : null}
+          </span>
+        </>
+      ) : (
+        <span className="block whitespace-normal break-words">
+          {label}{" "}
+          {percentage ? (
+            <span className="whitespace-nowrap text-neutral-500">
+              {percentage}
+            </span>
+          ) : null}
+        </span>
+      )}
     </div>
   );
 }

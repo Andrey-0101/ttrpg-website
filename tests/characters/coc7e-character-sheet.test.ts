@@ -134,6 +134,11 @@ test("regular values derive Hard and Extreme thresholds with floor rounding", ()
     hard: 36,
     extreme: 14,
   });
+  assert.deepEqual(getCoc7eThresholds(100), {
+    regular: 100,
+    hard: 50,
+    extreme: 20,
+  });
 });
 
 test("HP, MP, maximum SAN, and Insane threshold use approved sources", () => {
@@ -559,6 +564,14 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
     resolve("components/characters/sheets/call-of-cthulhu-7e/characteristics-section.tsx"),
     "utf8",
   );
+  const derivedStatus = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/derived-status-section.tsx"),
+    "utf8",
+  );
+  const sheetFields = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/sheet-fields.tsx"),
+    "utf8",
+  );
   const editor = readFileSync(resolve("components/characters/character-editor.tsx"), "utf8");
   const ownerPage = readFileSync(resolve("app/[locale]/characters/[id]/page.tsx"), "utf8");
   const campaignPage = readFileSync(
@@ -567,7 +580,12 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
   );
   const english = JSON.parse(
     readFileSync(resolve("messages/en/call-of-cthulhu-7e.json"), "utf8"),
-  ) as { Coc7eCharacterSheet: { characteristics: Record<string, string> } };
+  ) as {
+    Coc7eCharacterSheet: {
+      characteristics: Record<string, string>;
+      derived: Record<string, string>;
+    };
+  };
   const russian = JSON.parse(
     readFileSync(resolve("messages/ru/call-of-cthulhu-7e.json"), "utf8"),
   ) as {
@@ -582,7 +600,27 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
   assert.doesNotMatch(skills, /truncate/u);
   assert.doesNotMatch(skills, /value=\{state\.value\}/u);
   assert.match(skills, /<RegularValueCell[\s\S]*value=\{effectiveValue\}/u);
-  assert.match(skills, /skills\.base/u);
+  assert.doesNotMatch(skills, /\{translations\("skills\.base"\)\}: /u);
+  assert.match(skills, /function SkillNameAndBase/u);
+  assert.match(skills, /variableBase \? "col-span-3" : "col-span-4"/u);
+  assert.match(skills, /SHEET_EDITABLE_NUMERIC_CLASS/u);
+  assert.match(skills, /SHEET_READONLY_NUMERIC_CLASS/u);
+
+  assert.match(characteristics, /SHEET_EDITABLE_NUMERIC_CLASS/u);
+  assert.match(characteristics, /SHEET_READONLY_NUMERIC_CLASS/u);
+  assert.match(sheetFields, /SHEET_EDITABLE_NUMERIC_CLASS[\s\S]*h-8/u);
+  assert.match(sheetFields, /SHEET_READONLY_NUMERIC_CLASS[\s\S]*h-8/u);
+  assert.match(derivedStatus, /grid items-start/u);
+  assert.ok(
+    derivedStatus.indexOf('label={translations("derived.hitPoints")}') <
+      derivedStatus.indexOf('label={translations("derived.magicPoints")}'),
+  );
+  assert.match(derivedStatus, /<SanityGroup/u);
+  assert.match(derivedStatus, /derived\.maximumSanity/u);
+  assert.match(derivedStatus, /derived\.insaneThreshold/u);
+  assert.match(derivedStatus, /derived\.move/u);
+  assert.match(derivedStatus, /derived\.build/u);
+  assert.match(derivedStatus, /derived\.damageBonus/u);
 
   assert.match(combat, /getCoc7eBuildAndDamageBonus/u);
   assert.match(combat, /formatCoc7eBrawlDamage/u);
@@ -613,6 +651,14 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
       "Мощь (МОЩ)",
       "Образование (ОБР)",
     ],
+  );
+  assert.deepEqual(
+    {
+      maximum: english.Coc7eCharacterSheet.derived.maximum,
+      current: english.Coc7eCharacterSheet.derived.current,
+      starting: english.Coc7eCharacterSheet.derived.starting,
+    },
+    { maximum: "Max.", current: "Curr.", starting: "Start." },
   );
   assert.deepEqual(
     {
