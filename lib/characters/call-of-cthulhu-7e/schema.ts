@@ -666,15 +666,8 @@ export function validateCoc7eSheetData(
   );
 
   for (const category of COC7E_SPECIALTY_CATEGORIES) {
-    const definition = COC7E_SPECIALTY_DEFINITIONS.find(
-      (item) => item.category === category,
-    );
-
     for (const row of sheetData.skills.specialties[category]) {
-      const hasContent =
-        row.value !== null ||
-        row.developmentMarked ||
-        (definition?.baseValue === null && row.baseValue !== null);
+      const hasContent = row.value !== null || row.developmentMarked;
 
       if (hasContent && !row.specialty.trim()) {
         errors.add("specialtyNameRequired");
