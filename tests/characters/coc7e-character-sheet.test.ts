@@ -370,6 +370,39 @@ test("static specialty bases stay in system definitions instead of JSONB", () =>
   );
 });
 
+test("legacy specialty baseValue remains loadable and yields to explicit Reg", () => {
+  const sheet = normalizeCoc7eSheetData({
+    skills: {
+      specialties: {
+        fighting: [
+          {
+            id: "legacy-fighting-1",
+            specialty: "",
+            baseValue: 35,
+            value: null,
+            developmentMarked: false,
+          },
+        ],
+      },
+    },
+  });
+  const row = sheet.skills.specialties.fighting[0];
+
+  assert.equal(row.baseValue, 35);
+  assert.equal(getCoc7eSpecialtyValue(sheet, "fighting", row), 35);
+  assert.ok(!validateCoc7eSheetData(sheet).includes("specialtyNameRequired"));
+
+  row.specialty = "Sword";
+  row.value = 45;
+  assert.equal(getCoc7eSpecialtyValue(sheet, "fighting", row), 45);
+
+  const roundTripped = normalizeCoc7eSheetData(
+    JSON.parse(JSON.stringify(sheet)) as Coc7eSheetData,
+  );
+  assert.equal(roundTripped.skills.specialties.fighting[0].baseValue, 35);
+  assert.equal(roundTripped.skills.specialties.fighting[0].value, 45);
+});
+
 test("specialty and weapon validation rejects unnamed custom values", () => {
   const sheet = createDefaultCoc7eSheetData();
   sheet.skills.specialties.custom[0].value = 30;
@@ -584,6 +617,7 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
     Coc7eCharacterSheet: {
       characteristics: Record<string, string>;
       derived: Record<string, string>;
+      skills: { specialties: Record<string, string> };
     };
   };
   const russian = JSON.parse(
@@ -592,6 +626,7 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
     Coc7eCharacterSheet: {
       characteristics: Record<string, string>;
       derived: Record<string, string>;
+      skills: { specialties: Record<string, string> };
     };
   };
 
@@ -600,9 +635,16 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
   assert.doesNotMatch(skills, /truncate/u);
   assert.doesNotMatch(skills, /value=\{state\.value\}/u);
   assert.match(skills, /<RegularValueCell[\s\S]*value=\{effectiveValue\}/u);
-  assert.doesNotMatch(skills, /\{translations\("skills\.base"\)\}: /u);
+  assert.match(skills, /2\.5rem_2\.5rem_2\.5rem/u);
+  assert.doesNotMatch(skills, /skills\.baseShort/u);
+  assert.doesNotMatch(skills, /getCoc7eSpecialtyBase/u);
+  assert.doesNotMatch(skills, /row\.baseValue \?\?/u);
   assert.match(skills, /function SkillNameAndBase/u);
-  assert.match(skills, /variableBase \? "col-span-3" : "col-span-4"/u);
+  assert.match(skills, /grid-rows-\[0\.75rem_2rem\]/u);
+  assert.match(skills, /placeholder=\{translations\("skills\.specialtyName"\)\}/u);
+  assert.match(skills, /<span aria-hidden="true">\(<\/span>/u);
+  assert.match(skills, /<span aria-hidden="true">\)<\/span>/u);
+  assert.ok(skills.indexOf('"languageOwn"') < skills.indexOf('"languageOther"'));
   assert.match(skills, /SHEET_EDITABLE_NUMERIC_CLASS/u);
   assert.match(skills, /SHEET_READONLY_NUMERIC_CLASS/u);
 
@@ -668,6 +710,13 @@ test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation
     },
     { maximum: "Макс.", current: "Текущ.", starting: "Начал." },
   );
+  assert.equal(
+    english.Coc7eCharacterSheet.skills.specialties.languageOwn,
+    "Language (Native)",
+  );
+  assert.equal(english.Coc7eCharacterSheet.skills.specialties.languageOther, "Language");
+  assert.equal(russian.Coc7eCharacterSheet.skills.specialties.languageOwn, "Язык, родной");
+  assert.equal(russian.Coc7eCharacterSheet.skills.specialties.languageOther, "Язык");
   assert.doesNotMatch(characteristics, /characteristics\.idea|characteristics\.know/u);
 
   assert.match(editor, /onKeyDown=\{handleFormKeyDown\}/u);

@@ -5,14 +5,12 @@ import { useTranslations } from "next-intl";
 import {
   COC7E_FIXED_SKILLS,
   COC7E_SKILL_COLUMNS,
-  COC7E_SPECIALTY_DEFINITIONS,
   type Coc7eFixedSkillId,
   type Coc7eSpecialtyCategory,
 } from "@/lib/characters/call-of-cthulhu-7e/definitions";
 import {
   getCoc7eFixedSkillBase,
   getCoc7eFixedSkillValue,
-  getCoc7eSpecialtyBase,
   getCoc7eSpecialtyValue,
   getCoc7eThresholds,
   type Coc7eSheetData,
@@ -28,12 +26,12 @@ import {
 
 const SPECIALTIES_BY_COLUMN: readonly (readonly Coc7eSpecialtyCategory[])[] = [
   ["artCraft", "fighting", "firearms"],
-  ["languageOther", "languageOwn"],
+  ["languageOwn", "languageOther"],
   ["pilot", "science", "survival", "custom"],
 ];
 
 const SKILL_ROW_CLASS =
-  "grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_2.75rem_2.75rem_2.75rem] items-end gap-x-1";
+  "grid min-w-0 grid-cols-[0.875rem_minmax(0,1fr)_2.5rem_2.5rem_2.5rem] items-end gap-x-px";
 
 export default function Coc7eSkillsSection({
   isEditing,
@@ -108,13 +106,9 @@ export default function Coc7eSkillsSection({
           })}
 
           {SPECIALTIES_BY_COLUMN[columnIndex].map((category) => {
-            const definition = COC7E_SPECIALTY_DEFINITIONS.find(
-              (item) => item.category === category,
-            )!;
-
             return (
-              <fieldset key={category} className="mt-2 rounded border border-neutral-300 p-1.5">
-                <legend className="px-1 text-[10px] font-bold uppercase tracking-wide text-neutral-600">
+              <fieldset key={category} className="mt-2 min-w-0">
+                <legend className="sr-only">
                   {translations(`skills.specialties.${category}`)}
                 </legend>
                 <div className="space-y-1.5">
@@ -124,18 +118,14 @@ export default function Coc7eSkillsSection({
                       category,
                       row,
                     );
-                    const requiresName =
-                      row.value !== null ||
-                      row.developmentMarked ||
-                      (definition.baseValue === null && row.baseValue !== null);
+                    const requiresName = row.value !== null || row.developmentMarked;
 
                     return (
                       <SpecialtyRow
                         key={row.id}
                         row={row}
                         category={category}
-                        baseValue={getCoc7eSpecialtyBase(sheetData, category, row)}
-                        variableBase={definition.baseValue === null}
+                        label={translations(`skills.specialties.${category}`)}
                         effectiveValue={effectiveValue}
                         isEditing={isEditing}
                         requiresName={requiresName}
@@ -206,8 +196,7 @@ function SkillRow({
 function SpecialtyRow({
   row,
   category,
-  baseValue,
-  variableBase,
+  label,
   effectiveValue,
   isEditing,
   requiresName,
@@ -215,8 +204,7 @@ function SpecialtyRow({
 }: {
   row: Coc7eSkillInstance;
   category: Coc7eSpecialtyCategory;
-  baseValue: number | null;
-  variableBase: boolean;
+  label: string;
   effectiveValue: number | null;
   isEditing: boolean;
   requiresName: boolean;
@@ -226,7 +214,7 @@ function SpecialtyRow({
   const thresholds = getCoc7eThresholds(effectiveValue);
 
   return (
-    <div className={`${SKILL_ROW_CLASS} gap-y-1`}>
+    <div className={`${SKILL_ROW_CLASS} grid-rows-[0.75rem_2rem] gap-y-0`}>
       <input
         type="checkbox"
         checked={row.developmentMarked}
@@ -237,45 +225,25 @@ function SpecialtyRow({
         })}
         className="col-start-1 row-start-2 mb-2 justify-self-center"
       />
-      <label
-        className={`col-start-2 row-start-1 min-w-0 ${
-          variableBase ? "col-span-3" : "col-span-4"
-        }`}
-      >
-        <span className="sr-only">{translations("skills.specialtyName")}</span>
-        <input
-          value={row.specialty}
-          onChange={(event) => onChange({ ...row, specialty: event.target.value })}
-          disabled={!isEditing}
-          required={requiresName}
-          placeholder={translations(`skills.specialties.${category}`)}
-          className={`${SHEET_INPUT_CLASS} h-8 text-[11px]`}
-        />
-      </label>
-      {variableBase ? (
-        <label className="col-start-5 row-start-1">
-          <span className={SHEET_NUMERIC_LABEL_CLASS}>
-            {translations("skills.baseShort")}
-          </span>
+      <span className="col-start-2 row-start-1 h-3 text-[10px] font-bold leading-3 text-neutral-700">
+        {label}
+      </span>
+      <div className="col-start-2 row-start-2 flex min-w-0 items-center text-[11px]">
+        <span aria-hidden="true">(</span>
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">{translations("skills.specialtyName")}</span>
           <input
-            type="number"
-            min={0}
-            max={999}
-            step={1}
-            inputMode="numeric"
-            value={row.baseValue ?? ""}
-            onChange={(event) =>
-              onChange({ ...row, baseValue: parseOptionalInteger(event.target.value) })
-            }
+            value={row.specialty}
+            onChange={(event) => onChange({ ...row, specialty: event.target.value })}
             disabled={!isEditing}
-            aria-label={translations("skills.base")}
-            className={SHEET_EDITABLE_NUMERIC_CLASS}
+            required={requiresName}
+            placeholder={translations("skills.specialtyName")}
+            className={`${SHEET_INPUT_CLASS} h-8 text-[11px]`}
+            style={{ paddingInline: 1 }}
           />
         </label>
-      ) : null}
-      <span className="col-start-2 row-start-2 self-center text-[10px] font-medium leading-tight text-neutral-500">
-        {!variableBase && baseValue !== null ? `${baseValue}%` : ""}
-      </span>
+        <span aria-hidden="true">)</span>
+      </div>
       <RegularValueCell
         label={translations("thresholds.regularShort")}
         ariaLabel={translations("skills.regularValue", {
@@ -284,17 +252,17 @@ function SpecialtyRow({
         value={effectiveValue}
         disabled={!isEditing}
         onChange={(value) => onChange({ ...row, value })}
-        className="col-start-3 row-start-2"
+        className="col-start-3 row-start-1 row-span-2"
       />
       <ThresholdCell
         label={translations("thresholds.hardShort")}
         value={thresholds.hard}
-        className="col-start-4 row-start-2"
+        className="col-start-4 row-start-1 row-span-2"
       />
       <ThresholdCell
         label={translations("thresholds.extremeShort")}
         value={thresholds.extreme}
-        className="col-start-5 row-start-2"
+        className="col-start-5 row-start-1 row-span-2"
       />
     </div>
   );
@@ -368,7 +336,7 @@ function SkillNameAndBase({
       {parenthetical ? (
         <>
           <span className="block">{parenthetical[1]}</span>
-          <span className="block text-[10px] tracking-tight">
+          <span className="block whitespace-nowrap text-[10px] tracking-tight">
             {parenthetical[2]}{" "}
             {percentage ? (
               <span className="whitespace-nowrap text-neutral-500">
