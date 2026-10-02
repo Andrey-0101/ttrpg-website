@@ -12,6 +12,10 @@ import { useTranslations } from "next-intl";
 
 import CampaignDiceJournalEvent from "@/components/campaigns/campaign-dice-journal-event";
 import CampaignDiceRoller from "@/components/campaigns/campaign-dice-roller";
+import GameRoomCharactersList from "@/components/campaigns/game-room-characters-list";
+import CharacterEditor from "@/components/characters/character-editor";
+import type { OpenGameRoomCharacter } from "@/lib/campaign-characters/contracts";
+import { requestUnsavedChangesNavigation } from "@/lib/navigation/unsaved-changes";
 import {
   CAMPAIGN_GALLERY_CATEGORIES,
   type CampaignGalleryCategory,
@@ -92,7 +96,7 @@ export default function CampaignGameRoomWorkspace({
   const galleryTranslations = useTranslations("CampaignHandouts");
   const cocTranslations = useTranslations("Coc7eDiceRoller");
   const [activeTool, setActiveTool] = useState<
-    "journal" | "gallery" | "dice"
+    "journal" | "gallery" | "dice" | "characters"
   >("journal");
   const [activeCategory, setActiveCategory] =
     useState<CampaignGalleryCategory | null>(null);
@@ -102,6 +106,7 @@ export default function CampaignGameRoomWorkspace({
   const [selectedImage, setSelectedImage] =
     useState<CampaignGameRoomGalleryItem | null>(null);
   const journalEndRef = useRef<HTMLDivElement | null>(null);
+  const [openedCharacter, setOpenedCharacter] = useState<OpenGameRoomCharacter | null>(null);
 
   useEffect(() => {
     if (activeTool === "journal" && gameSession.journal.length > 0) {
@@ -259,6 +264,21 @@ export default function CampaignGameRoomWorkspace({
               ) : null}
             </div>
           </div>
+        ) : activeTool === "characters" ? (
+          openedCharacter ? (
+            <div className="min-h-0 w-full overflow-y-auto p-2" data-game-room-character-sheet>
+              <CharacterEditor
+                key={openedCharacter.character.id}
+                character={openedCharacter.character}
+                embedded
+                readOnly={openedCharacter.readOnly}
+                assignmentSessionLocked={sessionLoading ? openedCharacter.assignmentSessionLocked : Boolean(gameSession.session)}
+                onSavedName={(name) => setOpenedCharacter((current) => current ? {
+                  ...current, character: { ...current.character, name },
+                } : current)}
+              />
+            </div>
+          ) : <GameRoomCharactersList campaignId={campaignId} onOpen={setOpenedCharacter} />
         ) : isGameMaster && selectedImage?.localSignedUrl ? (
           <div className="relative min-h-0 w-full" data-game-room-local-image>
             <Image
@@ -346,7 +366,18 @@ export default function CampaignGameRoomWorkspace({
           {translations("workspace.tools")}
         </h2>
 
-        {selectedImage ? (
+        {activeTool === "characters" && openedCharacter ? (
+          <div className="grid h-14 grid-cols-[3rem_minmax(0,1fr)] gap-2" data-game-room-character-tools>
+            <button type="button" onClick={() => {
+              if (requestUnsavedChangesNavigation()) setOpenedCharacter(null);
+            }} aria-label={translations("tools.back")} className={TOOL_BUTTON_CLASS}>
+              <span aria-hidden="true">&larr;</span>
+            </button>
+            <div className={`${gameToolButtonClass(true)} flex items-center justify-center`}>
+              <span className="truncate">{openedCharacter.character.name}</span>
+            </div>
+          </div>
+        ) : selectedImage ? (
           <div
             className="grid h-14 grid-cols-3 gap-2"
             data-game-room-image-tools
@@ -527,8 +558,10 @@ export default function CampaignGameRoomWorkspace({
                 </span>
               </span>
             </button>
-            <button type="button" disabled className={TOOL_BUTTON_CLASS}>
-              {translations("tools.character")}
+            <button type="button" onClick={() => setActiveTool("characters")}
+              aria-pressed={activeTool === "characters"}
+              className={gameToolButtonClass(activeTool === "characters")}>
+              <span className="block truncate">{translations("tools.characters")}</span>
             </button>
           </div>
         )}

@@ -51,7 +51,7 @@ export default async function CharactersPage({
     });
   }
 
-  const { data: characters, error } = await supabase
+  const { data: characters, error: charactersError } = await supabase
     .from("characters")
     .select(
       "id, name, game_system, visibility, portrait_url, sheet_data",
@@ -59,6 +59,12 @@ export default async function CharactersPage({
     .order("created_at", {
       ascending: false,
     });
+
+  const assignmentsResult = characters?.length ? await supabase.from("campaign_characters")
+    .select("character_id").in("character_id", characters.map((character) => character.id))
+    .is("unlinked_at", null) : { data: [], error: null };
+  const error = charactersError || assignmentsResult.error;
+  const linkedIds = new Set((assignmentsResult.data ?? []).map((assignment) => assignment.character_id));
 
   if (error) {
     console.error("Failed to load characters:", error);
@@ -152,6 +158,7 @@ export default async function CharactersPage({
               portraitUrl={character.portraitUrl}
               vtmIdentity={character.vtmIdentity}
               cocIdentity={character.cocIdentity}
+              activelyLinked={linkedIds.has(character.id)}
             />
           ))}
         </div>

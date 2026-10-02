@@ -56,16 +56,8 @@ import {
 } from "@/lib/characters/call-of-cthulhu-7e/schema";
 import Coc7eCharacterSheet from "./sheets/call-of-cthulhu-7e/coc7e-character-sheet";
 import VtmCharacterSheet from "./sheets/vtm-v5/vtm-character-sheet";
-import type { Database } from "@/types/database.types";
-
-type CharacterRow = Database["public"]["Tables"]["characters"]["Row"];
-
-type CharacterData = Pick<
-  CharacterRow,
-  "id" | "name" | "game_system" | "visibility" | "sheet_data" | "portrait_url"
-> & {
-  portraitSignedUrl: string | null;
-};
+import type { EditorCharacterData } from "@/lib/campaign-characters/contracts";
+import styles from "./character-editor.module.css";
 
 type CharacterVisibility = VtmV5DraftVisibility;
 
@@ -77,9 +69,15 @@ type MutationMessage = {
 export default function CharacterEditor({
   character,
   readOnly = false,
+  embedded = false,
+  assignmentSessionLocked = false,
+  onSavedName,
 }: {
-  character: CharacterData;
+  character: EditorCharacterData;
   readOnly?: boolean;
+  embedded?: boolean;
+  assignmentSessionLocked?: boolean;
+  onSavedName?(name: string): void;
 }) {
   const formTranslations = useTranslations("CharacterForm");
   const translations = useTranslations("CharacterEditor");
@@ -87,6 +85,7 @@ export default function CharacterEditor({
   const cocSheetTranslations = useTranslations("Coc7eCharacterSheet");
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const catalogueTranslations = useTranslations("GameSystemCatalogue");
+  const [initialAssignmentSessionLocked] = useState(assignmentSessionLocked);
 
   const normalizedSystemId = normalizeGameSystemId(character.game_system);
   const gameSystemTranslationKey = getGameSystemTranslationKey(
@@ -203,7 +202,7 @@ export default function CharacterEditor({
             setVisibility(
               draft.visibility === "public" && initialVisibility !== "public"
                 ? initialVisibility
-                : draft.visibility,
+                : initialAssignmentSessionLocked ? initialVisibility : draft.visibility,
             );
             setCocSheetData(draft.sheetData);
             setCocActivePage(draft.activePage);
@@ -220,7 +219,7 @@ export default function CharacterEditor({
             setVisibility(
               draft.visibility === "public" && initialVisibility !== "public"
                 ? initialVisibility
-                : draft.visibility,
+                : initialAssignmentSessionLocked ? initialVisibility : draft.visibility,
             );
             setVtmSheetData(draft.sheetData);
             setVtmActivePage(draft.activePage);
@@ -245,6 +244,7 @@ export default function CharacterEditor({
     normalizedSystemId,
     pageStorageKey,
     readOnly,
+    initialAssignmentSessionLocked,
   ]);
 
   useEffect(() => {
@@ -427,7 +427,9 @@ export default function CharacterEditor({
             .remove([uploadedPortraitPath]);
         }
 
-        setMessage({ kind: "error", text: translations("saveError") });
+        setMessage({ kind: "error", text: translations(
+          error.message.includes("campaign_character_active_session") ? "assignmentSessionLocked" : "saveError",
+        ) });
         return;
       }
 
@@ -476,6 +478,7 @@ export default function CharacterEditor({
       }
       setMessage({ kind: "success", text: translations("changesSaved") });
       setIsEditing(false);
+      onSavedName?.(name);
     } catch (error) {
       console.error(error);
 
@@ -520,7 +523,7 @@ export default function CharacterEditor({
     }
 
     setName("");
-    setVisibility("private");
+    setVisibility(assignmentSessionLocked ? initialVisibility : "private");
     setPortraitFile(null);
     setPortraitPreviewUrl(null);
     setPortraitRemoved(true);
@@ -585,7 +588,8 @@ export default function CharacterEditor({
     <form
       onSubmit={handleSave}
       onKeyDown={handleFormKeyDown}
-      className="mt-6 min-w-0 rounded-lg border p-2 sm:p-4"
+      className={`mt-6 min-w-0 rounded-lg border p-2 sm:p-4 ${embedded ? styles.embedded : ""}`}
+      data-character-editor-embedded={embedded || undefined}
       aria-busy={saving}
     >
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -648,7 +652,7 @@ export default function CharacterEditor({
             onChange={(event) =>
               setVisibility(event.target.value as CharacterVisibility)
             }
-            disabled={readOnly || !isEditing || saving}
+            disabled={readOnly || !isEditing || saving || assignmentSessionLocked}
             className={fieldStyle}
           >
             <option value="private">
@@ -676,6 +680,9 @@ export default function CharacterEditor({
                     : "visibilityInactiveHelp",
             )}
           </p>
+          {!readOnly && assignmentSessionLocked ? (
+            <p className="mt-1 text-xs text-amber-700">{translations("assignmentSessionLocked")}</p>
+          ) : null}
         </label>
       </div>
 

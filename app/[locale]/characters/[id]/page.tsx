@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import CharacterEditor from "@/components/characters/character-editor";
+import { isCharacterAssignmentSessionLocked } from "@/lib/campaign-characters/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
@@ -113,6 +114,7 @@ export default async function CharacterPage({
           portraitSignedUrl,
         }}
         readOnly={character.owner_id !== userId}
+        assignmentSessionLocked={await isCharacterAssignmentSessionLocked(supabase, character.id)}
       />
     </main>
   );

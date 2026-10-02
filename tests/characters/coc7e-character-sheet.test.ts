@@ -580,7 +580,7 @@ test("CoC character UI is wired into existing CRUD and campaign boundaries", () 
   assert.match(campaignCharacter, /<CharacterEditor[\s\S]*readOnly/u);
   assert.match(
     gameRoom,
-    /<button type="button" disabled className=\{TOOL_BUTTON_CLASS\}>\s*\{translations\("tools\.character"\)\}/u,
+    /translations\("tools\.characters"\)/u,
   );
 });
 

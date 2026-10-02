@@ -1,0 +1,39 @@
+.embedded {
+  container-type: inline-size;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+  padding: 0.5rem;
+}
+
+/* Sheet breakpoints normally follow the page viewport. In Display, follow the
+   available sheet width instead, keeping every existing section and control. */
+@container (max-width: 48rem) {
+  .embedded :global([class*="lg:grid-cols-"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .embedded :global([class*="hidden grid-cols-"]) {
+    display: none;
+  }
+  .embedded :global([class*="lg:aspect-"]) {
+    aspect-ratio: auto;
+    border-width: 1.5mm;
+  }
+  .embedded :global([class*="lg:min-h-[47rem]"]) {
+    min-height: 0;
+  }
+  .embedded :global([class*="sm:grid-cols-5"]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 32rem) {
+  .embedded :global([class*="sm:grid-cols-"]),
+  .embedded :global([class*="md:grid-cols-"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .embedded :global([class*="sm:flex-row"]) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

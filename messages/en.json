@@ -212,6 +212,7 @@
     "savingStatus": "Saving changes. Please wait.",
     "changesSaved": "Changes saved.",
     "saveError": "Unable to save the character.",
+    "assignmentSessionLocked": "Campaign visibility cannot change during an active Game Session.",
     "clear": "Clear Form",
     "clearConfirm": "Clear all character fields? The changes will not be saved until you select Save Changes.",
     "clearNotice": "The form has been cleared. Select Save Changes to save the empty values.",
@@ -227,7 +228,8 @@
     "delete": "Delete",
     "deleting": "Deleting...",
     "confirm": "Delete character \"{name}\"? This action cannot be undone.",
-    "error": "Unable to delete the character."
+    "error": "Unable to delete the character.",
+    "linkedCharacter": "Unlink this character from its campaign before deleting it."
   },
   "ShortDescription": {
     "label": "Short Description",
@@ -612,7 +614,7 @@
       "gallery": "Gallery",
       "display": "Display",
       "dice": "Dice",
-      "character": "Character",
+      "characters": "Characters",
       "back": "Back",
       "share": "Share",
       "stopShare": "Stop Share",
@@ -639,6 +641,11 @@
       "unlabelledPercentile": "Unlabelled Percentile",
       "difficulty": "Difficulty {value}",
       "target": "Target {value}"
+    },
+    "characters": {
+      "noCharacter": "No character",
+      "loading": "Loading characters...",
+      "unavailable": "Characters could not be loaded. Reopen Characters or refresh the page."
     },
     "dice": {
       "localOnly": "No active Game Session. This result is visible only to you and is not saved.",
@@ -888,6 +895,9 @@
     "cancel": "Cancel"
   },
   "CampaignCharacters": {
+    "activeSession": "Characters cannot be unlinked during an active Game Session.",
+    "oneCharacter": "Each player can link only one character to this campaign. Unlink the current character first.",
+    "gameMasterForbidden": "The Game Master cannot link a campaign character.",
     "title": "Campaign characters",
     "description": "Link one of your compatible characters to share it with the campaign. Linked sheets are read-only for other participants.",
     "completedDescription": "This campaign is completed. Active character links have been closed, and new linking is disabled.",

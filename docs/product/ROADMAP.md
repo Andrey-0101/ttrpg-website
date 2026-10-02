@@ -19,13 +19,10 @@ Completed foundation:
 - Phase 4C2 — Game Room Image Presentation;
 - Phase 4D1 — CoC 7e Dice Roller, including contextual Back navigation, roller-scoped history, and live CoC Target bands;
 - Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice in the Game Room;
-- Phase 4E — Fair Turn Order Dice.
+- Phase 4E — Fair Turn Order Dice;
+- Phase 4F1 — CoC 7e Character Sheets (closed / deployed / accepted).
 
-Implemented with final Production acceptance pending:
-
-- Phase 4F1 — CoC 7e Character Sheets.
-
-Next planned product stage after Phase 4F1 acceptance:
+Current product implementation stage:
 
 - Phase 4F2 — Game Room Character Integration.
 
@@ -220,19 +217,21 @@ The focused Production checklist passed. Phase 4E is closed.
 
 ### Phase 4F1 — CoC 7e Character Sheets
 
-**Status: Implemented / deployed / Production acceptance pending**
+**Status: CLOSED / DEPLOYED / ACCEPTED**
 
 Delivered a versioned CoC 7e `sheet_data` schema, safe normalization and validation, two responsive sheet pages, derived thresholds and characteristics-based formulas, the complete fixed skill catalogue and specialty slots, combat rows, Story/Backstory/Gear/Wealth, EN/RU presentation, portraits, drafts, summary cards, and the existing create/view/edit/save/delete workflow.
 
 The implementation reuses `public.characters`, JSONB, portrait Storage, visibility, owner CRUD, campaign-compatible linking, RLS, and read-only campaign sharing. It adds no database migration or parallel character persistence. The CoC rules remain in the CoC system module, while the shared portrait UI preserves the existing VtM behavior.
 
-The sheet follows the functional hierarchy of the supplied two-page reference without copying official trade dress: Page 1 uses the approved upper-left portrait, identity, Characteristics, derived/status, three-column Skills, and Combat composition; Page 2 contains Story, the approved Backstory fields, Gear & Possessions, and string-based Wealth. The required Chaosium Fan Material Policy notice is shown beneath the CoC sheet. Game Room Character remains disabled until Phase 4F2.
+The sheet follows the functional hierarchy of the supplied two-page reference without copying official trade dress: Page 1 uses the approved upper-left portrait, identity, Characteristics, derived/status, three-column Skills, and Combat composition; Page 2 contains Story, the approved Backstory fields, Gear & Possessions, and string-based Wealth. The required Chaosium Fan Material Policy notice is shown beneath the CoC sheet.
 
 ### Phase 4F2 — Game Room Character Integration
 
-**Status: Planned**
+**Status: Implementation under review / Production deployment pending / manual acceptance pending**
 
-Expose only the current campaign's linked participant characters in the Game Room, using the campaign system and existing read-only sharing boundary. VtM campaigns show linked VtM characters; CoC campaigns show linked CoC characters after Phase 4F1. Unlinked, incompatible, inaccessible, and private characters remain unavailable.
+The Characters tool lists current players in the existing player-slot order, excluding GM. Each player has at most one active campaign character. Owners open the existing editable VtM/CoC CharacterEditor inside Display; GM opens linked player sheets read-only through existing RLS. Other players' rows and empty rows are not interactive. Reopening uses ordinary fresh requests, with no character Realtime or polling.
+
+Forward migration `20261002160849_game_room_character_invariants.sql` adds one-active-character-per-player enforcement, prohibits GM assignment, prevents deleting actively linked characters, and blocks explicit or indirect unlink while the canonical Game Session is active. Campaign completion closes the session before assignments. Unlinked, incompatible, inaccessible, wrong-owner, and private characters remain unavailable. Production migration and release must follow conflict-free read-only preflight and the required Preview verification gate; acceptance is not yet recorded.
 
 ### Phase 4G — Campaign Notes
 

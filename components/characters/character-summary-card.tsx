@@ -15,6 +15,7 @@ type CharacterSummaryCardProps = {
   portraitUrl: string | null;
   vtmIdentity: VtmV5Identity | null;
   cocIdentity: Coc7eIdentity | null;
+  activelyLinked?: boolean;
 };
 
 type SummaryFieldProps = {
@@ -51,6 +52,7 @@ export default async function CharacterSummaryCard({
   portraitUrl,
   vtmIdentity,
   cocIdentity,
+  activelyLinked = false,
 }: CharacterSummaryCardProps) {
   const translations = await getTranslations("Characters");
   const vtmSheetTranslations = await getTranslations("VtmCharacterSheet");
@@ -207,6 +209,7 @@ export default async function CharacterSummaryCard({
             characterId={id}
             characterName={name}
             portraitPath={portraitPath}
+            activelyLinked={activelyLinked}
           />
         </div>
       </div>
