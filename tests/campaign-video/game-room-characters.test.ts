@@ -106,6 +106,15 @@ test("character data loads only on ordinary open and no new Realtime, polling or
   assert.doesNotMatch(source("supabase/migrations/20261002160849_game_room_character_invariants.sql"), /alter publication/u);
 });
 
+test("embedded width keeps Combat labels visible and prevents implicit extra grid columns", () => {
+  const styles = source("components/characters/character-editor.module.css");
+  assert.match(styles, /container-type: inline-size/u);
+  assert.match(styles, /@container \(max-width: 48rem\)/u);
+  assert.match(styles, /lg:sr-only[\s\S]*?position: static;[\s\S]*?clip: auto;/u);
+  assert.match(styles, /col-span-2[\s\S]*?grid-column: auto;/u);
+  assert.doesNotMatch(styles, /portrait|opacity: 0|visibility: hidden/u);
+});
+
 test("new invariant messages and entire EN/RU dictionary keys remain in parity", () => {
   const en = JSON.parse(source("messages/en.json"));
   const ru = JSON.parse(source("messages/ru.json"));
