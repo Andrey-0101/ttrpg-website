@@ -584,7 +584,7 @@ test("CoC character UI is wired into existing CRUD and campaign boundaries", () 
   );
 });
 
-test("embedded Investigator layout scopes portrait and 2/3-column grids without replacing fields", () => {
+test("embedded Investigator layout scopes portrait and section grids without replacing fields", () => {
   const styles = readFileSync(resolve("components/characters/character-editor.module.css"), "utf8");
   const sheetPath = "components/characters/sheets/call-of-cthulhu-7e/";
   const identity = readFileSync(resolve(`${sheetPath}identity-section.tsx`), "utf8");
@@ -601,8 +601,8 @@ test("embedded Investigator layout scopes portrait and 2/3-column grids without 
   assert.match(styles, /data-coc7e-identity\] > :first-child\)[\s\S]*?min-height: 0;/u);
   assert.match(styles, /data-coc7e-identity\] img\)[\s\S]*?object-fit: contain;/u);
   assert.match(styles, /data-coc7e-characteristics\]\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u);
-  assert.match(styles, /data-coc7e-resources\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?"hp sanity move" "mp \. build" "luck damage damage"/u);
-  assert.match(styles, /data-coc7e-conditions\]\)[\s\S]*?data-coc7e-skills\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/u);
+  assert.match(styles, /data-coc7e-resources\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?"hp sanity move" "mp sanity build" "luck damage damage"/u);
+  assert.match(styles, /data-coc7e-skills\]\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u);
   assert.match(derived, /derived\.luck/u);
   for (const content of ["SkillNameAndBase", "RegularValueCell", "ThresholdCell", "developmentMarked", "SPECIALTIES_BY_COLUMN"]) assert.ok(skills.includes(content));
 });
@@ -630,6 +630,10 @@ test("embedded derived blocks retain their fields and occupy the exact accepted 
     "utf8",
   );
   const scope = '.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]';
+  assert.match(styles, /grid-template-areas: "hp sanity move" "mp sanity build" "luck damage damage";/u);
+  const resourceRules = styles.match(/\.embedded :global\([^{}]*data-coc7e-resources[^{}]*\{[^}]*\}/gu) ?? [];
+  assert.ok(resourceRules.length > 5);
+  for (const rule of resourceRules) assert.doesNotMatch(rule, /"mp \. build"|grid-template-rows:|(?:^|[;{\s])(?:min-|max-)?height:/u);
   assert.ok(styles.includes(`${scope} > :first-child) {\n  display: contents;`));
   assert.ok(styles.includes(`${scope} > :last-child) {\n  display: contents;`));
   for (const [selector, area] of [
@@ -649,6 +653,37 @@ test("embedded derived blocks retain their fields and occupy the exact accepted 
     "getCoc7eMove(sheetData)", "buildAndDamage?.build", "buildAndDamage?.damageBonus",
     "sheetData.vitals.luck.starting", "sheetData.vitals.luck.current",
   ]) assert.ok(derived.includes(content));
+});
+
+test("embedded Skills reflow existing rows into two columns and preserve specialty groups", () => {
+  const styles = readFileSync(resolve("components/characters/character-editor.module.css"), "utf8");
+  const skills = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/skills-section.tsx"),
+    "utf8",
+  );
+  const scope = '.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills]';
+  assert.ok(styles.includes(`${scope} > div) {\n  display: contents;`));
+  assert.ok(styles.includes(`${scope} > div > fieldset) {\n  grid-column: 1 / -1;`));
+  assert.match(styles, /data-coc7e-skills\] > div > fieldset > div\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u);
+  assert.match(styles, /@container \(max-width: 32rem\)[\s\S]*?data-coc7e-skills\] > div > fieldset > div\)[\s\S]*?grid-template-columns: minmax\(0, 1fr\);/u);
+  for (const content of ["COC7E_SKILL_COLUMNS.map", "SPECIALTIES_BY_COLUMN", "<SkillNameAndBase", "<RegularValueCell", "<ThresholdCell", "developmentMarked", "updateSpecialty", "lg:grid-cols-3"]) assert.ok(skills.includes(content));
+});
+
+test("embedded Conditions place insanity first, then wound/unconscious/dying without changing logical order", () => {
+  const styles = readFileSync(resolve("components/characters/character-editor.module.css"), "utf8");
+  const derived = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/derived-status-section.tsx"),
+    "utf8",
+  );
+  const scope = '.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]';
+  assert.ok(styles.includes(`${scope}) {\n  grid-template-columns: repeat(6, minmax(0, 1fr));`));
+  assert.ok(styles.includes(`${scope} > label) {\n  grid-column: span 2;`));
+  assert.ok(styles.includes(`${scope} > label:nth-child(-n+2)) {\n  grid-column: span 3;`));
+  assert.ok(styles.includes(`${scope} > label:nth-child(n)) {\n    grid-column: auto;`));
+  assert.match(derived, /"temporaryInsanity",\s*"indefiniteInsanity",\s*"majorWound",\s*"unconscious",\s*"dying"/u);
+  assert.match(derived, /checked=\{sheetData\.conditions\[key\]\}/u);
+  assert.match(derived, /disabled=\{!isEditing\}/u);
+  assert.match(derived, /lg:grid-cols-5/u);
 });
 
 test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation", () => {
