@@ -601,7 +601,7 @@ test("embedded Investigator layout scopes portrait and 2/3-column grids without 
   assert.match(styles, /data-coc7e-identity\] > :first-child\)[\s\S]*?min-height: 0;/u);
   assert.match(styles, /data-coc7e-identity\] img\)[\s\S]*?object-fit: contain;/u);
   assert.match(styles, /data-coc7e-characteristics\]\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u);
-  assert.match(styles, /data-coc7e-resources\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?"hp mp sanity" "luck secondary secondary"/u);
+  assert.match(styles, /data-coc7e-resources\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?"hp sanity move" "mp \. build" "luck damage damage"/u);
   assert.match(styles, /data-coc7e-conditions\]\)[\s\S]*?data-coc7e-skills\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/u);
   assert.match(derived, /derived\.luck/u);
   for (const content of ["SkillNameAndBase", "RegularValueCell", "ThresholdCell", "developmentMarked", "SPECIALTIES_BY_COLUMN"]) assert.ok(skills.includes(content));
@@ -616,11 +616,39 @@ test("compact CoC rules require embedded first page and retain usable narrow lay
     assert.ok(selector.includes('[data-coc7e-sheet-page="1"]'));
   }
   assert.doesNotMatch(compact, /data-coc7e-sheet-page="2"|display: none|visibility: hidden|opacity: 0/u);
-  assert.match(compact, /@container \(max-width: 32rem\)[\s\S]*?"hp mp" "sanity luck" "secondary secondary"/u);
+  assert.match(compact, /@container \(max-width: 32rem\)[\s\S]*?"hp sanity" "mp move" "luck build" "damage damage"/u);
   assert.match(compact, /@container \(max-width: 24rem\)/u);
   assert.match(compact, /white-space: normal;[\s\S]*?overflow-wrap: anywhere;/u);
   assert.match(compact, /input\[type="number"\]\)[\s\S]*?appearance: textfield;/u);
   assert.match(compact, /input\)::-webkit-inner-spin-button/u);
+});
+
+test("embedded derived blocks retain their fields and occupy the exact accepted grid areas", () => {
+  const styles = readFileSync(resolve("components/characters/character-editor.module.css"), "utf8");
+  const derived = readFileSync(
+    resolve("components/characters/sheets/call-of-cthulhu-7e/derived-status-section.tsx"),
+    "utf8",
+  );
+  const scope = '.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]';
+  assert.ok(styles.includes(`${scope} > :first-child) {\n  display: contents;`));
+  assert.ok(styles.includes(`${scope} > :last-child) {\n  display: contents;`));
+  for (const [selector, area] of [
+    [" > :first-child > :first-child", "hp"],
+    [" > :first-child > :last-child", "mp"],
+    [" > fieldset:nth-of-type(1)", "luck"],
+    [" > fieldset:nth-of-type(2)", "sanity"],
+    [" > :last-child > :nth-child(1)", "move"],
+    [" > :last-child > :nth-child(2)", "build"],
+    [" > :last-child > :nth-child(3)", "damage"],
+  ]) assert.ok(styles.includes(`${scope}${selector}) {\n  grid-area: ${area};`));
+  assert.match(styles, /data-coc7e-resources\] > :last-child > div\)[\s\S]*?border: 1px solid #d4d4d4;[\s\S]*?padding: 0\.375rem;/u);
+  assert.match(styles, /@container \(max-width: 24rem\)[\s\S]*?"hp" "mp" "sanity" "luck" "move" "build" "damage"/u);
+  for (const content of [
+    "getCoc7eMaximumHitPoints(sheetData)", "getCoc7eMaximumMagicPoints(sheetData)",
+    "getCoc7eMaximumSanity(sheetData)", "getCoc7eInsaneThreshold(sheetData)",
+    "getCoc7eMove(sheetData)", "buildAndDamage?.build", "buildAndDamage?.damageBonus",
+    "sheetData.vitals.luck.starting", "sheetData.vitals.luck.current",
+  ]) assert.ok(derived.includes(content));
 });
 
 test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation", () => {
