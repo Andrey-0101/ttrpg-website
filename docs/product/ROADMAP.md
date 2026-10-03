@@ -227,11 +227,13 @@ The sheet follows the functional hierarchy of the supplied two-page reference wi
 
 ### Phase 4F2 — Game Room Character Integration
 
-**Status: Implementation under review / Production deployment pending / manual acceptance pending**
+**Status: Implemented / manual Production acceptance pending**
 
 The Characters tool lists current players in the existing player-slot order, excluding GM. Each player has at most one active campaign character. Owners open the existing editable VtM/CoC CharacterEditor inside Display; GM opens linked player sheets read-only through existing RLS. Other players' rows and empty rows are not interactive. Reopening uses ordinary fresh requests, with no character Realtime or polling.
 
-Forward migration `20261002160849_game_room_character_invariants.sql` adds one-active-character-per-player enforcement, prohibits GM assignment, prevents deleting actively linked characters, and blocks explicit or indirect unlink while the canonical Game Session is active. Campaign completion closes the session before assignments. Unlinked, incompatible, inaccessible, wrong-owner, and private characters remain unavailable. Production migration and release must follow conflict-free read-only preflight and the required Preview verification gate; acceptance is not yet recorded.
+Forward migration `20261002160849_game_room_character_invariants.sql` adds one-active-character-per-player enforcement, prohibits GM assignment, prevents deleting actively linked characters, and blocks explicit or indirect unlink while the canonical Game Session is active. Campaign completion closes the session before assignments. Unlinked, incompatible, inaccessible, wrong-owner, and private characters remain unavailable. Production migration and release require conflict-free read-only preflight and green release checks.
+
+The user reviewed the authenticated Phase 4F2 Preview. The only requested correction was the embedded CoC Investigator layout: portrait left, identity fields right, two-column Characteristics and three-column resources, Conditions and Skills, with narrower responsive layouts. The normal Character page and the accepted CoC Story page are unchanged. No additional user Preview approval gate is required for this correction; final Production manual acceptance remains pending.
 
 ### Phase 4G — Campaign Notes
 

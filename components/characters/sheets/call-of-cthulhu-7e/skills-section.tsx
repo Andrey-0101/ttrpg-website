@@ -80,7 +80,7 @@ export default function Coc7eSkillsSection({
   }
 
   return (
-    <div className="grid min-w-0 gap-3 p-2 lg:grid-cols-3 lg:gap-2">
+    <div className="grid min-w-0 gap-3 p-2 lg:grid-cols-3 lg:gap-2" data-coc7e-skills>
       {COC7E_SKILL_COLUMNS.map((skillIds, columnIndex) => (
         <div key={columnIndex} className="min-w-0 space-y-1.5">
           {skillIds.map((id) => {
