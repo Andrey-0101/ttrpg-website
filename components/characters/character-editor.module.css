@@ -77,7 +77,7 @@
 
 .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]) {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-areas: "hp mp sanity" "luck secondary secondary";
+  grid-template-areas: "hp sanity move" "mp . build" "luck damage damage";
 }
 
 .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :first-child) {
@@ -101,7 +101,25 @@
 }
 
 .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :last-child) {
-  grid-area: secondary;
+  display: contents;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :last-child > div) {
+  border: 1px solid #d4d4d4;
+  border-radius: 0.25rem;
+  padding: 0.375rem;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :last-child > :nth-child(1)) {
+  grid-area: move;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :last-child > :nth-child(2)) {
+  grid-area: build;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :last-child > :nth-child(3)) {
+  grid-area: damage;
 }
 
 .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]),
@@ -134,7 +152,7 @@
 @container (max-width: 32rem) {
   .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas: "hp mp" "sanity luck" "secondary secondary";
+    grid-template-areas: "hp sanity" "mp move" "luck build" "damage damage";
   }
   .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -152,6 +170,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]) {
-    grid-template-areas: "hp" "mp" "sanity" "luck" "secondary";
+    grid-template-areas: "hp" "mp" "sanity" "luck" "move" "build" "damage";
   }
 }
