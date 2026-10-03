@@ -28,7 +28,7 @@ export default function Coc7eCharacteristicsSection({
   const translations = useTranslations("Coc7eCharacterSheet");
 
   return (
-    <div className="grid gap-2 p-2 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-2 p-2 sm:grid-cols-2 lg:grid-cols-4" data-coc7e-characteristics>
       {COC7E_CHARACTERISTIC_KEYS.map((key) => {
         const value = sheetData.characteristics[key];
         const thresholds = getCoc7eThresholds(value);

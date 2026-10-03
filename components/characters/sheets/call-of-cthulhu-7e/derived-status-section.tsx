@@ -37,7 +37,7 @@ export default function Coc7eDerivedStatusSection({
 
   return (
     <div className="p-2">
-      <div className="grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.45fr_1.25fr]">
+      <div className="grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.45fr_1.25fr]" data-coc7e-resources>
         <div className="grid content-start gap-2">
           <TrackGroup
             label={translations("derived.hitPoints")}
@@ -117,7 +117,7 @@ export default function Coc7eDerivedStatusSection({
         <legend className="text-[10px] font-semibold uppercase tracking-wide text-neutral-600">
           {translations("conditions.title")}
         </legend>
-        <div className="mt-1 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-1 grid gap-2 sm:grid-cols-2 lg:grid-cols-5" data-coc7e-conditions>
           {CONDITION_KEYS.map((key) => (
             <label key={key} className="flex min-h-9 items-center gap-2 rounded border border-neutral-300 px-2 py-1 text-xs">
               <input

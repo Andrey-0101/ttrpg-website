@@ -1,0 +1,157 @@
+.embedded {
+  container-type: inline-size;
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+  padding: 0.5rem;
+}
+
+/* Sheet breakpoints normally follow the page viewport. In Display, follow the
+   available sheet width instead, keeping every existing section and control. */
+@container (max-width: 48rem) {
+  .embedded :global([class*="lg:grid-cols-"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .embedded :global([class*="hidden grid-cols-"]) {
+    display: none;
+  }
+  .embedded :global([class*="lg:sr-only"]) {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  .embedded :global([class*="lg:aspect-"]) {
+    aspect-ratio: auto;
+    border-width: 1.5mm;
+  }
+  .embedded :global([class*="lg:min-h-[47rem]"]) {
+    min-height: 0;
+  }
+  .embedded :global([class*="sm:grid-cols-5"]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 32rem) {
+  .embedded :global([class*="sm:grid-cols-"]),
+  .embedded :global([class*="md:grid-cols-"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .embedded :global([class*="sm:flex-row"]) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .embedded :global([class*="col-span-2"]) {
+    grid-column: auto;
+  }
+}
+
+/* Only the embedded Investigator page uses this compact layout. The normal
+   Character page, CoC Story page and VtM keep their existing presentation. */
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-identity]) {
+  grid-template-columns: minmax(0, 27%) minmax(0, 1fr);
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-identity] > :first-child) {
+  min-height: 0;
+  border-right: 1px solid;
+  border-bottom: 0;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-identity] img) {
+  object-fit: contain;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-identity-fields]),
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-characteristics]) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-identity-fields] > :first-child) {
+  grid-column: 1 / -1;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas: "hp mp sanity" "luck secondary secondary";
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :first-child) {
+  display: contents;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :first-child > :first-child) {
+  grid-area: hp;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :first-child > :last-child) {
+  grid-area: mp;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > fieldset:nth-of-type(1)) {
+  grid-area: luck;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > fieldset:nth-of-type(2)) {
+  grid-area: sanity;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :last-child) {
+  grid-area: secondary;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]),
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills]) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Keep the existing checkbox/name/three-value skill row and numeric widths;
+   wrap long labels rather than hiding any skill content. */
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] [class*="whitespace-nowrap"]) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] input[type="number"]) {
+  appearance: textfield;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] input)::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] input)::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+@container (max-width: 32rem) {
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas: "hp mp" "sanity luck" "secondary secondary";
+  }
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 24rem) {
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-identity-fields]),
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-characteristics]),
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]),
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]) {
+    grid-template-areas: "hp" "mp" "sanity" "luck" "secondary";
+  }
+}

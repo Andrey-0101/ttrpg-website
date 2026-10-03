@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { campaignCharacterErrorKey } from "@/lib/campaign-characters/contracts";
 
 type LinkedCharacter = {
   assignmentId: string;
@@ -37,6 +38,7 @@ type CampaignCharactersPanelProps = {
   initialLinkedCharacters: LinkedCharacter[];
   availableCharacters: AvailableCharacter[];
   loadError: boolean;
+  activeGameSession: boolean;
 };
 
 type MutationMessage = {
@@ -82,6 +84,7 @@ export default function CampaignCharactersPanel({
   initialLinkedCharacters,
   availableCharacters,
   loadError,
+  activeGameSession,
 }: CampaignCharactersPanelProps) {
   const translations = useTranslations("CampaignCharacters");
   const router = useRouter();
@@ -91,11 +94,13 @@ export default function CampaignCharactersPanel({
   );
   const [message, setMessage] = useState<MutationMessage>(null);
   const isActiveCampaign = campaignStatus === "active";
+  const hasOwnLinkedCharacter = initialLinkedCharacters.some((character) => character.ownerId === currentUserId);
 
   async function handleLink(character: AvailableCharacter) {
     if (
       mutationLockRef.current ||
       !isActiveCampaign ||
+      isGameMaster || hasOwnLinkedCharacter ||
       character.visibility !== "campaign" ||
       character.linkedElsewhere
     ) {
@@ -126,7 +131,7 @@ export default function CampaignCharactersPanel({
         console.error(error);
         setMessage({
           kind: "error",
-          text: translations("linkError"),
+          text: translations(campaignCharacterErrorKey(error) ?? "linkError"),
         });
         return;
       }
@@ -151,7 +156,7 @@ export default function CampaignCharactersPanel({
   }
 
   async function handleUnlink(character: LinkedCharacter) {
-    if (mutationLockRef.current || !isActiveCampaign) {
+    if (mutationLockRef.current || !isActiveCampaign || activeGameSession) {
       return;
     }
 
@@ -189,7 +194,7 @@ export default function CampaignCharactersPanel({
         console.error(error);
         setMessage({
           kind: "error",
-          text: translations("unlinkError"),
+          text: translations(campaignCharacterErrorKey(error) ?? "unlinkError"),
         });
         return;
       }
@@ -237,6 +242,10 @@ export default function CampaignCharactersPanel({
           </Link>
         )}
       </div>
+
+      {isActiveCampaign && (isGameMaster || hasOwnLinkedCharacter) ? (
+        <p className="mt-3 text-sm text-amber-100">{translations(isGameMaster ? "gameMasterForbidden" : "oneCharacter")}</p>
+      ) : null}
 
       {loadError ? (
         <div
@@ -306,7 +315,7 @@ export default function CampaignCharactersPanel({
                             <button
                               type="button"
                               onClick={() => handleUnlink(character)}
-                              disabled={mutatingCharacterId !== null}
+                              disabled={activeGameSession || mutatingCharacterId !== null}
                               className="rounded border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-950/30 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               {isMutating
@@ -314,6 +323,7 @@ export default function CampaignCharactersPanel({
                                 : translations("unlink")}
                             </button>
                           )}
+                          {canUnlink && activeGameSession ? <p className="text-xs text-amber-100 sm:col-span-2">{translations("activeSession")}</p> : null}
                         </div>
                       </div>
                     </li>
@@ -356,6 +366,7 @@ export default function CampaignCharactersPanel({
                       character.visibility !== "campaign";
                     const canLink =
                       isActiveCampaign &&
+                      !isGameMaster && !hasOwnLinkedCharacter &&
                       !needsCampaignVisibility &&
                       !character.linkedElsewhere;
                     const isMutating = mutatingCharacterId === character.id;

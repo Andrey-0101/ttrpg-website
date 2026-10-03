@@ -33,7 +33,7 @@ export default function Coc7eIdentitySection({
 
   return (
     <section className="overflow-hidden border border-neutral-400 bg-white">
-      <div className="grid lg:grid-cols-[27%_73%]">
+      <div className="grid lg:grid-cols-[27%_73%]" data-coc7e-identity>
         <SharedCharacterPortraitField
           isEditing={isEditing}
           portraitUrl={portraitUrl}
@@ -52,7 +52,7 @@ export default function Coc7eIdentitySection({
           }}
         />
 
-        <div className="grid content-start gap-2 p-2 sm:grid-cols-2 sm:p-3">
+        <div className="grid content-start gap-2 p-2 sm:grid-cols-2 sm:p-3" data-coc7e-identity-fields>
           <TextField
             label={translations("identity.name")}
             value={name}

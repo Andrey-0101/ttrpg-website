@@ -580,8 +580,47 @@ test("CoC character UI is wired into existing CRUD and campaign boundaries", () 
   assert.match(campaignCharacter, /<CharacterEditor[\s\S]*readOnly/u);
   assert.match(
     gameRoom,
-    /<button type="button" disabled className=\{TOOL_BUTTON_CLASS\}>\s*\{translations\("tools\.character"\)\}/u,
+    /translations\("tools\.characters"\)/u,
   );
+});
+
+test("embedded Investigator layout scopes portrait and 2/3-column grids without replacing fields", () => {
+  const styles = readFileSync(resolve("components/characters/character-editor.module.css"), "utf8");
+  const sheetPath = "components/characters/sheets/call-of-cthulhu-7e/";
+  const identity = readFileSync(resolve(`${sheetPath}identity-section.tsx`), "utf8");
+  const characteristics = readFileSync(resolve(`${sheetPath}characteristics-section.tsx`), "utf8");
+  const derived = readFileSync(resolve(`${sheetPath}derived-status-section.tsx`), "utf8");
+  const skills = readFileSync(resolve(`${sheetPath}skills-section.tsx`), "utf8");
+  assert.match(identity, /data-coc7e-identity/u);
+  assert.match(identity, /data-coc7e-identity-fields/u);
+  assert.match(characteristics, /data-coc7e-characteristics/u);
+  assert.match(derived, /data-coc7e-resources/u);
+  assert.match(derived, /data-coc7e-conditions/u);
+  assert.match(skills, /data-coc7e-skills/u);
+  assert.match(styles, /data-coc7e-identity\]\)[\s\S]*?grid-template-columns: minmax\(0, 27%\) minmax\(0, 1fr\);/u);
+  assert.match(styles, /data-coc7e-identity\] > :first-child\)[\s\S]*?min-height: 0;/u);
+  assert.match(styles, /data-coc7e-identity\] img\)[\s\S]*?object-fit: contain;/u);
+  assert.match(styles, /data-coc7e-characteristics\]\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u);
+  assert.match(styles, /data-coc7e-resources\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);[\s\S]*?"hp mp sanity" "luck secondary secondary"/u);
+  assert.match(styles, /data-coc7e-conditions\]\)[\s\S]*?data-coc7e-skills\]\)[\s\S]*?grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/u);
+  assert.match(derived, /derived\.luck/u);
+  for (const content of ["SkillNameAndBase", "RegularValueCell", "ThresholdCell", "developmentMarked", "SPECIALTIES_BY_COLUMN"]) assert.ok(skills.includes(content));
+});
+
+test("compact CoC rules require embedded first page and retain usable narrow layouts", () => {
+  const styles = readFileSync(resolve("components/characters/character-editor.module.css"), "utf8");
+  const compact = styles.slice(styles.indexOf("/* Only the embedded Investigator page"));
+  const selectors = compact.match(/\.embedded[^{}]+\{/gu) ?? [];
+  assert.ok(selectors.length > 10);
+  for (const selector of selectors) {
+    assert.ok(selector.includes('[data-coc7e-sheet-page="1"]'));
+  }
+  assert.doesNotMatch(compact, /data-coc7e-sheet-page="2"|display: none|visibility: hidden|opacity: 0/u);
+  assert.match(compact, /@container \(max-width: 32rem\)[\s\S]*?"hp mp" "sanity luck" "secondary secondary"/u);
+  assert.match(compact, /@container \(max-width: 24rem\)/u);
+  assert.match(compact, /white-space: normal;[\s\S]*?overflow-wrap: anywhere;/u);
+  assert.match(compact, /input\[type="number"\]\)[\s\S]*?appearance: textfield;/u);
+  assert.match(compact, /input\)::-webkit-inner-spin-button/u);
 });
 
 test("Phase 4F1 acceptance UI keeps one skill value and shared editor navigation", () => {

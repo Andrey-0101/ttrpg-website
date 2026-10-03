@@ -14,12 +14,14 @@ type DeleteCharacterButtonProps = {
   characterId: string;
   characterName: string;
   portraitPath?: string | null;
+  activelyLinked?: boolean;
 };
 
 export default function DeleteCharacterButton({
   characterId,
   characterName,
   portraitPath = null,
+  activelyLinked = false,
 }: DeleteCharacterButtonProps) {
   const translations = useTranslations("CharacterDelete");
   const router = useRouter();
@@ -27,6 +29,7 @@ export default function DeleteCharacterButton({
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleDelete() {
+    if (activelyLinked || deleting) return;
     const confirmed = window.confirm(
       translations("confirm", { name: characterName }),
     );
@@ -46,7 +49,7 @@ export default function DeleteCharacterButton({
 
     if (error) {
       console.error(error);
-      setErrorMessage(translations("error"));
+      setErrorMessage(translations(error.message.includes("campaign_character_linked_delete") ? "linkedCharacter" : "error"));
       setDeleting(false);
       return;
     }
@@ -69,11 +72,12 @@ export default function DeleteCharacterButton({
       <button
         type="button"
         onClick={handleDelete}
-        disabled={deleting}
+        disabled={deleting || activelyLinked}
         className="w-full rounded border border-red-600 bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:py-1.5"
       >
         {deleting ? translations("deleting") : translations("delete")}
       </button>
+      {activelyLinked ? <p className="mt-1 text-xs text-red-700">{translations("linkedCharacter")}</p> : null}
 
       {errorMessage && (
         <p className="mt-1 text-xs text-red-700" role="alert">

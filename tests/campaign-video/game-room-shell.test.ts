@@ -246,7 +246,7 @@ test("Game Room workspace preserves the role-specific tool shell", () => {
   assert.match(workspace, /translations\("tools\.journal"\)/u);
   assert.match(workspace, /translations\("tools\.gallery"\)/u);
   assert.match(workspace, /translations\("tools\.dice"\)/u);
-  assert.match(workspace, /translations\("tools\.character"\)/u);
+  assert.match(workspace, /translations\("tools\.characters"\)/u);
   assert.match(workspace, /data-game-room-gallery-tools/u);
   assert.match(workspace, /CAMPAIGN_GALLERY_CATEGORIES\.map/u);
   assert.match(workspace, /aria-pressed=\{active\}/u);

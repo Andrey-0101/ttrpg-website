@@ -119,6 +119,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     assignmentsResult,
     ownCharactersResult,
     handoutCountResult,
+    gameSessionResult,
   ] = await Promise.all([
       loadCampaignParticipantDirectory({
         supabase,
@@ -153,6 +154,9 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         .from("campaign_images")
         .select("id", { count: "exact", head: true })
         .eq("campaign_id", campaign.id),
+      supabase.from("game_sessions").select("id")
+        .eq("campaign_id", campaign.id).is("ended_at", null)
+        .gt("presence_expires_at", new Date().toISOString()).limit(1),
     ]);
 
   if (!participantDirectoryResult.ready) {
@@ -510,7 +514,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           gameSystemName={gameSystemName}
           initialLinkedCharacters={linkedCharacters}
           availableCharacters={availableCharacters}
-          loadError={characterLoadError}
+          loadError={characterLoadError || Boolean(gameSessionResult.error)}
+          activeGameSession={Boolean(gameSessionResult.data?.length)}
         />
       </div>
     </main>
