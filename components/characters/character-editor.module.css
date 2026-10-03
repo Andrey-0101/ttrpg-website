@@ -77,7 +77,7 @@
 
 .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources]) {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-areas: "hp sanity move" "mp . build" "luck damage damage";
+  grid-template-areas: "hp sanity move" "mp sanity build" "luck damage damage";
 }
 
 .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-resources] > :first-child) {
@@ -122,9 +122,38 @@
   grid-area: damage;
 }
 
-.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]),
-.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills]) {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]) {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions] > label) {
+  grid-column: span 2;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions] > label:nth-child(-n+2)) {
+  grid-column: span 3;
+}
+
+/* Reflow the existing rows, not the three standalone column wrappers. Keep
+   specialty fieldsets intact, with their existing rows in the same two columns. */
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills]),
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] > div > fieldset > div) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.375rem 0.5rem;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] > div) {
+  display: contents;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] > div > *),
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] > div > fieldset > div > *) {
+  margin-top: 0;
+}
+
+.embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] > div > fieldset) {
+  grid-column: 1 / -1;
 }
 
 /* Keep the existing checkbox/name/three-value skill row and numeric widths;
@@ -157,7 +186,11 @@
   .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions]) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills]) {
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-conditions] > label:nth-child(n)) {
+    grid-column: auto;
+  }
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills]),
+  .embedded :global([data-coc7e-sheet-page="1"] [data-coc7e-skills] > div > fieldset > div) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
