@@ -41,7 +41,7 @@ Current Production facts:
 - Phase 4C2 is implemented and accepted in Production; Phase 4D1, its focused UX follow-up, and all three personal-history migrations are deployed.
 - Phase 4D2 and its focused Game Room navigation polish are deployed and passed multi-user and final UI-polish Production acceptance.
 
-Character-access maintenance after Phase 4 removes the three-state visibility model: sheets are owner-private, and an eligible active assignment grants only the exact campaign GM read-only sheet/portrait access. Linking needs no sharing setting; other Players are denied. Maintenance status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
+Character-access maintenance after Phase 4 removes the three-state visibility model: sheets are owner-private, and an eligible active assignment grants only the exact campaign GM read-only sheet/portrait access. Linking needs no sharing setting; other Players are denied. Maintenance status: CLOSED / DEPLOYED / ACCEPTED; manual Production acceptance passed successfully. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
 
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
