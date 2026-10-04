@@ -125,6 +125,10 @@ This foundation is current in Production. All seven campaign-video tables use RL
 - GM and Players receive read only;
 - automatic unlink after Player removal, departure, completion, or character ineligibility.
 
+### Dynamic Game Room membership
+
+Game Room membership synchronization is a maintenance correction, not a new access model. Realtime publishes only a campaign-scoped revision signal protected by existing participant access rules, not member DELETE payloads. The directory refresh endpoint authenticates and checks campaign visibility with the user-scoped RLS client before reusing the canonical server loader; it returns only the safe directory already present on the Game Room page. Provider identities remain untrusted until included in that directory. Removal suppresses UI/media mapping immediately after successful authoritative refresh, but does not revoke an already-established LiveKit session or implement provider-kick moderation. Failed reads keep the last valid directory and never terminate video.
+
 ### Campaign lifecycle
 
 - completion confirmation;

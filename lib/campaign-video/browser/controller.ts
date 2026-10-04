@@ -31,6 +31,7 @@ export type CampaignVideoRoomControllerOptions = {
   participantDirectory: CampaignVideoParticipantDirectoryEntry[];
   createSession: CampaignVideoRoomSessionFactory;
   fetcher?: CampaignVideoFetch;
+  onDirectoryRefreshNeeded?(): void;
   onChange(snapshot: CampaignVideoRoomSnapshot): void;
 };
 
@@ -125,11 +126,15 @@ export function createCampaignVideoRoomController(
   const presentationRequests = new Set<AbortController>();
   let generation = 0;
   let disposed = false;
-  const gameMasterIdentity = options.participantDirectory.find(
+  let participantDirectory = options.participantDirectory;
+  let directoryReady = options.directoryReady;
+  let providerParticipants: CampaignVideoProviderParticipant[] = [];
+  let unknownIdentities = new Set<string>();
+  let gameMasterIdentity = participantDirectory.find(
     (participant) => participant.role === "game_master",
   )?.providerIdentity;
-  const playerIdentities = new Set(
-    options.participantDirectory
+  let playerIdentities = new Set(
+    participantDirectory
       .filter((participant) => participant.role === "player")
       .map((participant) => participant.providerIdentity),
   );
@@ -230,6 +235,53 @@ export function createCampaignVideoRoomController(
     } satisfies CampaignVideoConnectionCredentials;
   }
 
+  function sendCurrentPresentation(identity: string) {
+    if (!options.isGameMaster || !playerIdentities.has(identity) || !activePresentationImageId) return;
+    const currentGeneration = generation;
+    const imageId = activePresentationImageId;
+    void enqueuePresentation(async () => {
+      if (
+        !isCurrent(currentGeneration) || !session ||
+        snapshot.phase !== "connected" || activePresentationImageId !== imageId ||
+        !playerIdentities.has(identity)
+      ) return;
+      try {
+        await requestPresentation({
+          action: "show", imageId,
+          expanded: snapshot.presentationExpanded,
+          revision: activePresentationRevision,
+          destinationIdentity: identity,
+        });
+        if (isCurrent(currentGeneration)) publish({ presentationError: null });
+      } catch {
+        if (isCurrent(currentGeneration)) publish({ presentationError: "presentation_unavailable" });
+      }
+    });
+  }
+
+  function updateParticipantDirectory(
+    directory: CampaignVideoParticipantDirectoryEntry[],
+    ready = true,
+  ) {
+    if (disposed || !ready) return;
+    const previousPlayers = playerIdentities;
+    const previousGameMaster = gameMasterIdentity;
+    participantDirectory = directory;
+    directoryReady = true;
+    gameMasterIdentity = directory.find((entry) => entry.role === "game_master")?.providerIdentity;
+    playerIdentities = new Set(directory.filter((entry) => entry.role === "player").map((entry) => entry.providerIdentity));
+    publish({ participants: orderCampaignVideoParticipants(providerParticipants, participantDirectory) });
+    if (!options.isGameMaster && previousGameMaster !== gameMasterIdentity) {
+      lastReceivedPresentationRevision = 0;
+      clearPresentation();
+    }
+    for (const participant of providerParticipants) {
+      if (!participant.isLocal && !previousPlayers.has(participant.identity)) {
+        sendCurrentPresentation(participant.identity);
+      }
+    }
+  }
+
   function clientError(error: unknown): CampaignVideoClientErrorCode {
     if (error instanceof Error) {
       const allowed: CampaignVideoClientErrorCode[] = [
@@ -257,7 +309,7 @@ export function createCampaignVideoRoomController(
       publish({ phase: "terminal_error", error: "campaign_inactive" });
       return;
     }
-    if (!options.directoryReady) {
+    if (!directoryReady) {
       publish({ phase: "terminal_error", error: "campaign_unavailable" });
       return;
     }
@@ -282,6 +334,8 @@ export function createCampaignVideoRoomController(
     activePresentationImageId = null;
     activePresentationRevision = 0;
     lastReceivedPresentationRevision = 0;
+    providerParticipants = [];
+    unknownIdentities.clear();
     try {
       const credentials = await requestCredentials(credentialRequest.signal);
       if (!isCurrent(currentGeneration)) return;
@@ -291,50 +345,23 @@ export function createCampaignVideoRoomController(
         {
           onParticipants(participants) {
             if (isCurrent(currentGeneration)) {
+              providerParticipants = participants;
+              const validIdentities = new Set(participantDirectory.map((entry) => entry.providerIdentity));
+              const unknown = new Set(participants.filter((entry) => !validIdentities.has(entry.identity)).map((entry) => entry.identity));
+              const needsRefresh = [...unknown].some((identity) => !unknownIdentities.has(identity));
+              unknownIdentities = unknown;
               publish({
                 participants: orderCampaignVideoParticipants(
                   participants,
-                  options.participantDirectory,
+                  participantDirectory,
                 ),
               });
+              // Provider presence can invalidate a stale directory, never authorize it.
+              if (needsRefresh) options.onDirectoryRefreshNeeded?.();
             }
           },
           onParticipantConnected(identity) {
-            if (
-              !isCurrent(currentGeneration) ||
-              !options.isGameMaster ||
-              !playerIdentities.has(identity) ||
-              !activePresentationImageId
-            ) {
-              return;
-            }
-            const imageId = activePresentationImageId;
-            void enqueuePresentation(async () => {
-              if (
-                !isCurrent(currentGeneration) ||
-                !session ||
-                snapshot.phase !== "connected" ||
-                activePresentationImageId !== imageId
-              ) {
-                return;
-              }
-              try {
-                await requestPresentation({
-                  action: "show",
-                  imageId,
-                  expanded: snapshot.presentationExpanded,
-                  revision: activePresentationRevision,
-                  destinationIdentity: identity,
-                });
-                if (isCurrent(currentGeneration)) {
-                  publish({ presentationError: null });
-                }
-              } catch {
-                if (isCurrent(currentGeneration)) {
-                  publish({ presentationError: "presentation_unavailable" });
-                }
-              }
-            });
+            if (isCurrent(currentGeneration)) sendCurrentPresentation(identity);
           },
           onParticipantDisconnected(identity) {
             if (
@@ -389,6 +416,8 @@ export function createCampaignVideoRoomController(
           },
           onTerminalDisconnect() {
             if (!isCurrent(currentGeneration)) return;
+            providerParticipants = [];
+            unknownIdentities.clear();
             session = null;
             publish({
               phase: "terminal_error",
@@ -425,6 +454,8 @@ export function createCampaignVideoRoomController(
       publish({ phase: "connected", restored: false, error: null });
     } catch (error) {
       if (!isCurrent(currentGeneration)) return;
+      providerParticipants = [];
+      unknownIdentities.clear();
       publish({
         phase: "terminal_error",
         participants: [],
@@ -460,6 +491,8 @@ export function createCampaignVideoRoomController(
 
   async function leave() {
     generation += 1;
+    providerParticipants = [];
+    unknownIdentities.clear();
     credentialRequest?.abort();
     credentialRequest = null;
     for (const request of presentationRequests) request.abort();
@@ -702,6 +735,8 @@ export function createCampaignVideoRoomController(
   async function dispose() {
     if (disposed) return;
     disposed = true;
+    providerParticipants = [];
+    unknownIdentities.clear();
     generation += 1;
     credentialRequest?.abort();
     for (const request of presentationRequests) request.abort();
@@ -715,6 +750,7 @@ export function createCampaignVideoRoomController(
 
   return {
     getSnapshot: () => snapshot,
+    updateParticipantDirectory,
     join,
     leave,
     setCameraEnabled: (enabled: boolean) => runMediaOperation("camera", enabled),
