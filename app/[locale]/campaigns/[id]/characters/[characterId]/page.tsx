@@ -21,7 +21,7 @@ type CampaignCharacterPageProps = {
 export async function generateMetadata({
   params,
 }: CampaignCharacterPageProps): Promise<Metadata> {
-  const { locale: requestedLocale, characterId } = await params;
+  const { locale: requestedLocale } = await params;
   const locale = hasLocale(routing.locales, requestedLocale)
     ? requestedLocale
     : routing.defaultLocale;
@@ -29,23 +29,8 @@ export async function generateMetadata({
     locale,
     namespace: "PageMetadata",
   });
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-
-  if (!claimsData?.claims) {
-    return {
-      title: translations("characterDetails"),
-    };
-  }
-
-  const { data: character } = await supabase
-    .from("characters")
-    .select("name")
-    .eq("id", characterId)
-    .maybeSingle();
-
   return {
-    title: character?.name || translations("characterDetails"),
+    title: translations("characterDetails"),
   };
 }
 
@@ -75,12 +60,12 @@ export default async function CampaignCharacterPage({
   const [campaignResult, assignmentResult] = await Promise.all([
     supabase
       .from("campaigns")
-      .select("id, name, status")
+      .select("id, name, status, game_master_id, game_system")
       .eq("id", campaignId)
       .maybeSingle(),
     supabase
       .from("campaign_characters")
-      .select("id")
+      .select("id, linked_by")
       .eq("campaign_id", campaignId)
       .eq("character_id", characterId)
       .is("unlinked_at", null)
@@ -105,7 +90,9 @@ export default async function CampaignCharacterPage({
     campaignResult.error ||
     assignmentResult.error ||
     !campaignResult.data ||
-    !assignmentResult.data
+    !assignmentResult.data ||
+    campaignResult.data.status !== "active" ||
+    (userId !== campaignResult.data.game_master_id && userId !== assignmentResult.data.linked_by)
   ) {
     notFound();
   }
@@ -113,16 +100,18 @@ export default async function CampaignCharacterPage({
   const { data: character, error: characterError } = await supabase
     .from("characters")
     .select(
-      "id, name, owner_id, game_system, visibility, sheet_data, portrait_url",
+      "id, name, owner_id, game_system, sheet_data, portrait_url",
     )
     .eq("id", characterId)
+    .eq("owner_id", assignmentResult.data.linked_by)
+    .eq("game_system", campaignResult.data.game_system)
     .maybeSingle();
 
   if (characterError) {
     console.error("Failed to load shared campaign character:", characterError);
   }
 
-  if (characterError || !character) {
+  if (characterError || !character || character.owner_id === campaignResult.data.game_master_id) {
     notFound();
   }
 

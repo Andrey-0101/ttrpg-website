@@ -22,7 +22,6 @@ type LinkedCharacter = {
 type AvailableCharacter = {
   id: string;
   name: string;
-  visibility: string;
   portraitUrl: string | null;
   linkedElsewhere: boolean;
 };
@@ -101,7 +100,6 @@ export default function CampaignCharactersPanel({
       mutationLockRef.current ||
       !isActiveCampaign ||
       isGameMaster || hasOwnLinkedCharacter ||
-      character.visibility !== "campaign" ||
       character.linkedElsewhere
     ) {
       return;
@@ -304,12 +302,12 @@ export default function CampaignCharactersPanel({
                         </div>
 
                         <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
-                          <Link
+                          {(isGameMaster || character.ownerId === currentUserId) && <Link
                             href={`/campaigns/${campaignId}/characters/${character.characterId}`}
                             className="rounded border border-white/70 px-3 py-2 text-center text-sm font-semibold hover:bg-white/10"
                           >
                             {translations("open")}
-                          </Link>
+                          </Link>}
 
                           {canUnlink && (
                             <button
@@ -362,12 +360,9 @@ export default function CampaignCharactersPanel({
               ) : (
                 <ul className="mt-3 grid gap-3">
                   {availableCharacters.map((character) => {
-                    const needsCampaignVisibility =
-                      character.visibility !== "campaign";
                     const canLink =
                       isActiveCampaign &&
                       !isGameMaster && !hasOwnLinkedCharacter &&
-                      !needsCampaignVisibility &&
                       !character.linkedElsewhere;
                     const isMutating = mutatingCharacterId === character.id;
 
@@ -389,9 +384,7 @@ export default function CampaignCharactersPanel({
                             <p className="mt-1 text-sm text-white/70">
                               {character.linkedElsewhere
                                 ? translations("linkedElsewhere")
-                                : needsCampaignVisibility
-                                  ? translations("needsCampaignVisibility")
-                                  : translations("readyToLink")}
+                                : translations("readyToLink")}
                             </p>
                           </div>
 
@@ -400,9 +393,7 @@ export default function CampaignCharactersPanel({
                               href={`/characters/${character.id}`}
                               className="rounded border border-white/70 px-3 py-2 text-center text-sm font-semibold hover:bg-white/10"
                             >
-                              {needsCampaignVisibility
-                                ? translations("editVisibility")
-                                : translations("openOwned")}
+                              {translations("openOwned")}
                             </Link>
 
                             <button

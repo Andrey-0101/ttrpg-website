@@ -54,8 +54,9 @@ export default async function CharactersPage({
   const { data: characters, error: charactersError } = await supabase
     .from("characters")
     .select(
-      "id, name, game_system, visibility, portrait_url, sheet_data",
+      "id, name, game_system, portrait_url, sheet_data",
     )
+    .eq("owner_id", claimsData.claims.sub)
     .order("created_at", {
       ascending: false,
     });
@@ -153,7 +154,6 @@ export default async function CharactersPage({
               id={character.id}
               name={character.name}
               gameSystemName={character.gameSystemName}
-              visibility={character.visibility}
               portraitPath={character.portrait_url}
               portraitUrl={character.portraitUrl}
               vtmIdentity={character.vtmIdentity}

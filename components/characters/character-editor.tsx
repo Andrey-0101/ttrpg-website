@@ -32,7 +32,6 @@ import {
   removeVtmV5EditorDraft,
   writeVtmV5EditorDraft,
   writeVtmV5SheetPage,
-  type VtmV5DraftVisibility,
   type VtmV5SheetPage,
 } from "@/lib/characters/vtm-v5/editor-draft";
 import {
@@ -59,8 +58,6 @@ import VtmCharacterSheet from "./sheets/vtm-v5/vtm-character-sheet";
 import type { EditorCharacterData } from "@/lib/campaign-characters/contracts";
 import styles from "./character-editor.module.css";
 
-type CharacterVisibility = VtmV5DraftVisibility;
-
 type MutationMessage = {
   kind: "status" | "success" | "error" | "info";
   text: string;
@@ -85,7 +82,6 @@ export default function CharacterEditor({
   const cocSheetTranslations = useTranslations("Coc7eCharacterSheet");
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const catalogueTranslations = useTranslations("GameSystemCatalogue");
-  const [initialAssignmentSessionLocked] = useState(assignmentSessionLocked);
 
   const normalizedSystemId = normalizeGameSystemId(character.game_system);
   const gameSystemTranslationKey = getGameSystemTranslationKey(
@@ -94,10 +90,6 @@ export default function CharacterEditor({
   const gameSystemName = gameSystemTranslationKey
     ? catalogueTranslations(`systems.${gameSystemTranslationKey}.name`)
     : character.game_system;
-  const initialVisibility =
-    character.visibility === "campaign" || character.visibility === "public"
-      ? character.visibility
-      : "private";
 
   const draftStorageKey = useMemo(
     () =>
@@ -117,8 +109,6 @@ export default function CharacterEditor({
   const [isEditing, setIsEditing] = useState(false);
   const [draftReady, setDraftReady] = useState(readOnly);
   const [name, setName] = useState(character.name);
-  const [visibility, setVisibility] =
-    useState<CharacterVisibility>(initialVisibility);
   const [vtmSheetData, setVtmSheetData] = useState(() =>
     normalizeVtmV5SheetData(character.sheet_data),
   );
@@ -141,7 +131,6 @@ export default function CharacterEditor({
   const [savedFormSnapshot, setSavedFormSnapshot] = useState(() =>
     JSON.stringify({
       name: character.name,
-      visibility: initialVisibility,
       sheetData:
         normalizedSystemId === "call-of-cthulhu-7e"
           ? normalizeCoc7eSheetData(character.sheet_data)
@@ -151,8 +140,6 @@ export default function CharacterEditor({
   const [savedPortraitPath, setSavedPortraitPath] = useState(
     character.portrait_url,
   );
-  const [savedVisibility, setSavedVisibility] =
-    useState<CharacterVisibility>(initialVisibility);
   const currentSheetData =
     normalizedSystemId === "call-of-cthulhu-7e"
       ? cocSheetData
@@ -161,10 +148,9 @@ export default function CharacterEditor({
     () =>
       JSON.stringify({
         name,
-        visibility,
         sheetData: currentSheetData,
       }),
-    [currentSheetData, name, visibility],
+    [currentSheetData, name],
   );
   const currentPortraitPath = portraitRemoved ? null : portraitPath;
   const hasUnsavedPortraitChanges =
@@ -199,11 +185,6 @@ export default function CharacterEditor({
 
           if (draft) {
             setName(draft.name);
-            setVisibility(
-              draft.visibility === "public" && initialVisibility !== "public"
-                ? initialVisibility
-                : initialAssignmentSessionLocked ? initialVisibility : draft.visibility,
-            );
             setCocSheetData(draft.sheetData);
             setCocActivePage(draft.activePage);
             setIsEditing(true);
@@ -216,11 +197,6 @@ export default function CharacterEditor({
 
           if (draft) {
             setName(draft.name);
-            setVisibility(
-              draft.visibility === "public" && initialVisibility !== "public"
-                ? initialVisibility
-                : initialAssignmentSessionLocked ? initialVisibility : draft.visibility,
-            );
             setVtmSheetData(draft.sheetData);
             setVtmActivePage(draft.activePage);
             setIsEditing(true);
@@ -240,11 +216,9 @@ export default function CharacterEditor({
     };
   }, [
     draftStorageKey,
-    initialVisibility,
     normalizedSystemId,
     pageStorageKey,
     readOnly,
-    initialAssignmentSessionLocked,
   ]);
 
   useEffect(() => {
@@ -274,7 +248,6 @@ export default function CharacterEditor({
       writeCoc7eEditorDraft(draftStorageKey, {
         version: 1,
         name,
-        visibility,
         activePage: cocActivePage,
         sheetData: cocSheetData,
       });
@@ -282,7 +255,6 @@ export default function CharacterEditor({
       writeVtmV5EditorDraft(draftStorageKey, {
         version: 1,
         name,
-        visibility,
         activePage: vtmActivePage,
         sheetData: vtmSheetData,
       });
@@ -296,7 +268,6 @@ export default function CharacterEditor({
     name,
     normalizedSystemId,
     readOnly,
-    visibility,
     vtmActivePage,
     vtmSheetData,
   ]);
@@ -411,7 +382,6 @@ export default function CharacterEditor({
         .from("characters")
         .update({
           name,
-          visibility,
           sheet_data: sheetDataToSave,
           portrait_url: nextPortraitPath,
           updated_at: new Date().toISOString(),
@@ -470,7 +440,6 @@ export default function CharacterEditor({
       setPortraitRemoved(false);
       setSavedFormSnapshot(currentFormSnapshot);
       setSavedPortraitPath(nextPortraitPath);
-      setSavedVisibility(visibility);
       if (normalizedSystemId === "call-of-cthulhu-7e") {
         removeCoc7eEditorDraft(draftStorageKey);
       } else if (normalizedSystemId === "vtm-v5") {
@@ -523,7 +492,6 @@ export default function CharacterEditor({
     }
 
     setName("");
-    setVisibility(assignmentSessionLocked ? initialVisibility : "private");
     setPortraitFile(null);
     setPortraitPreviewUrl(null);
     setPortraitRemoved(true);
@@ -625,14 +593,8 @@ export default function CharacterEditor({
         </div>
       )}
 
-      <div
-        className={`mt-4 grid gap-3 ${
-          showExternalNameField
-            ? "md:grid-cols-[minmax(0,2fr)_minmax(12rem,1fr)]"
-            : "md:grid-cols-[minmax(12rem,1fr)] md:justify-end"
-        }`}
-      >
-        {showExternalNameField && (
+      {showExternalNameField && (
+        <div className="mt-4">
           <label>
             {formTranslations("characterName")}
             <input
@@ -643,48 +605,11 @@ export default function CharacterEditor({
               required
             />
           </label>
-        )}
-
-        <label className="md:max-w-sm md:justify-self-end md:w-full">
-          {formTranslations("visibility")}
-          <select
-            value={visibility}
-            onChange={(event) =>
-              setVisibility(event.target.value as CharacterVisibility)
-            }
-            disabled={readOnly || !isEditing || saving || assignmentSessionLocked}
-            className={fieldStyle}
-          >
-            <option value="private">
-              {formTranslations("visibilityPrivate")}
-            </option>
-            <option value="campaign">
-              {formTranslations("visibilityCampaign")}
-            </option>
-            <option value="public" disabled={savedVisibility !== "public"}>
-              {formTranslations(
-                savedVisibility === "public"
-                  ? "visibilityPublicInactive"
-                  : "visibilityPublicUnavailable",
-              )}
-            </option>
-          </select>
-          <p className="mt-1 text-xs text-amber-700">
-            {formTranslations(
-              readOnly
-                ? "visibilityReadOnlyHelp"
-                : visibility === "private"
-                  ? "visibilityOwnerOnlyHelp"
-                  : visibility === "campaign"
-                    ? "visibilityCampaignHelp"
-                    : "visibilityInactiveHelp",
-            )}
-          </p>
-          {!readOnly && assignmentSessionLocked ? (
-            <p className="mt-1 text-xs text-amber-700">{translations("assignmentSessionLocked")}</p>
-          ) : null}
-        </label>
-      </div>
+        </div>
+      )}
+      {!readOnly && assignmentSessionLocked ? (
+        <p className="mt-4 text-xs text-amber-700">{translations("assignmentSessionLocked")}</p>
+      ) : null}
 
       {normalizedSystemId === "vtm-v5" ? (
         draftReady ? (

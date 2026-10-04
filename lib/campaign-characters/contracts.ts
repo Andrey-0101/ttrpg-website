@@ -2,7 +2,7 @@ import type { Database } from "../../types/database.types";
 
 export type EditorCharacterData = Pick<
   Database["public"]["Tables"]["characters"]["Row"],
-  "id" | "name" | "game_system" | "visibility" | "sheet_data" | "portrait_url"
+  "id" | "name" | "game_system" | "sheet_data" | "portrait_url"
 > & { portraitSignedUrl: string | null };
 
 export type GameRoomCharacterRow = {
@@ -21,7 +21,7 @@ export type OpenGameRoomCharacter = {
 
 type Member = { userId: string; displayName: string | null; username: string | null };
 type Assignment = { campaign_id: string; character_id: string; linked_by: string; unlinked_at: string | null };
-type Character = { id: string; name: string; owner_id: string; visibility: string; game_system: string };
+type Character = { id: string; name: string; owner_id: string; game_system: string };
 
 // Preserve the directory's ordering (the same display_order used by player slots).
 export function buildGameRoomCharacterRows({
@@ -37,7 +37,7 @@ export function buildGameRoomCharacterRows({
     );
     // Fail closed on an invalid legacy relationship; never choose a winner.
     const candidate = active.length === 1 ? byId.get(active[0].character_id) : undefined;
-    const character = candidate?.owner_id === member.userId && candidate.visibility === "campaign" && candidate.game_system === gameSystem
+    const character = candidate?.owner_id === member.userId && candidate.game_system === gameSystem
       ? candidate : null;
     return {
       playerId: member.userId,

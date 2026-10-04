@@ -147,20 +147,21 @@ Invitation rules:
 | Operation | Game Master | Character-owning Player | Other campaign Player | Outsider | Anonymous |
 |---|---:|---:|---:|---:|---:|
 | Select campaign assignment list | Allow | Allow | Allow | Deny | Deny |
-| Link own eligible character | Allow for own character | Allow | Deny | Deny | Deny |
+| Link own eligible character | Deny | Allow | Deny | Deny | Deny |
 | Link another user's character | Deny | Deny | Deny | Deny | Deny |
-| Unlink own character | Allow for own character | Allow | Deny | Deny | Deny |
-| Unlink another Player's character | Allow | Deny | Deny | Deny | Deny |
+| Unlink own character | N/A (GM assignment prohibited) | Allow subject to session lock | Deny | Deny | Deny |
+| Unlink another Player's character | Allow subject to session lock | Deny | Deny | Deny | Deny |
 | Delete assignment history | Deny in first version | Deny | Deny | Deny | Deny |
 
 Eligibility rules:
 
 - character owner equals `auth.uid()`;
 - campaign is active;
-- actor is campaign Game Master or Player;
-- character visibility equals `campaign`;
+- actor is a current campaign Player, not GM;
+- character owner equals assignment `linked_by`; no visibility setting exists;
 - character and campaign game systems match;
-- character has no other active campaign assignment.
+- character has no other active campaign assignment;
+- the Player has no other active character in this campaign.
 
 Assignments use `unlinked_at` rather than deleting history.
 
@@ -170,20 +171,20 @@ Existing owner policies remain authoritative for insert, update, and delete.
 
 | Operation | Owner | Same campaign GM | Same campaign Player | Removed Player | Outsider | Anonymous |
 |---|---:|---:|---:|---:|---:|---:|
-| Select private character | Allow | Deny | Deny | Deny | Deny | Deny |
-| Select actively linked `campaign` character | Allow | Allow | Allow | Deny | Deny | Deny |
+| Select unlinked own character | Allow | Deny | Deny | Deny | Deny | Deny |
+| Select actively linked eligible character | Allow | Allow | Deny | Deny | Deny | Deny |
 | Update character | Allow | Deny | Deny | Deny | Deny | Deny |
-| Delete character | Allow | Deny | Deny | Deny | Deny | Deny |
+| Delete character | Allow only when not actively linked | Deny | Deny | Deny | Deny | Deny |
 
 Campaign-derived read access requires all of:
 
-- `characters.visibility = campaign`;
+- active campaign;
 - character and campaign game systems match;
 - active `campaign_characters` assignment;
-- character owner is still the campaign Game Master or Player;
-- viewer is the campaign Game Master or Player.
+- character owner equals `linked_by` and remains a current Player, not GM;
+- viewer is the exact campaign Game Master.
 
-Changing visibility away from `campaign` or changing the linked character's game system ends the active assignment.
+An incompatible game-system change ends the active assignment, subject to the existing active Game Session unlink lock. No character visibility state exists. Owner access survives member removal; removed-viewer columns above refer only to another owner's data.
 
 ## Character portraits
 
@@ -192,7 +193,7 @@ Existing owner-folder policies remain unchanged for upload, update, and delete.
 | Operation | Owner | Same campaign GM | Same campaign Player | Removed Player | Outsider | Anonymous |
 |---|---:|---:|---:|---:|---:|---:|
 | Read own portrait | Allow | N/A | N/A | N/A | Deny | Deny |
-| Read actively shared campaign portrait | Allow | Allow | Allow | Deny | Deny | Deny |
+| Read actively linked eligible portrait | Allow | Allow | Deny | Deny | Deny | Deny |
 | Upload portrait | Allow in own folder | Deny | Deny | Deny | Deny | Deny |
 | Update/delete portrait | Allow in own folder | Deny | Deny | Deny | Deny | Deny |
 
@@ -257,12 +258,12 @@ Verify:
 6. The same token cannot be reused, and B cannot consume another invitation for the same campaign.
 7. B can read campaign and member list.
 8. C cannot read campaign or member list.
-9. B can link only B's own `campaign` character with the same game system as the campaign.
+9. B can link only B's own eligible matching-system character, without a sharing setting; GM assignment remains prohibited.
 10. A and B can read B's linked character and portrait.
-11. A and B cannot update or delete B's character.
+11. A cannot update/delete B's character or mutate its portrait. B retains editing and portrait management; linked deletion is blocked. Another current Player cannot read B's sheet/portrait.
 12. C cannot read B's linked character or portrait.
 13. A portrait path with a mismatched owner segment does not receive campaign read access.
-14. Changing the linked character's visibility or game system ends the active assignment.
+14. An incompatible system change ends the assignment only when the active Game Session lock permits; explicit unlink has the same lock.
 15. B leaves; B's active assignment ends.
 16. B loses campaign-derived access immediately.
 17. A cannot change `game_master_id`.

@@ -17,7 +17,6 @@ name
 game_system
 description
 portrait_url
-visibility
 sheet_data
 created_at
 updated_at
@@ -39,7 +38,7 @@ Current status:
 | System | Status |
 |---|---|
 | `vtm-v5` | Implemented |
-| `call-of-cthulhu-7e` | Implemented / deployed / Production acceptance pending |
+| `call-of-cthulhu-7e` | Closed / deployed / accepted |
 
 ## VtM V5 schema
 
@@ -396,37 +395,31 @@ Game-creation conventions should generally be warnings rather than universal har
 
 The schema must allow empty Clan, Sire, Predator Type, and Disciplines.
 
-## Visibility
+## Character access
 
-Current values:
+Characters are owner-private by invariant. There is no selectable or persisted character visibility, public route, or public character policy.
 
-```text
-private
-campaign
-public
-```
-
-Current behavior:
-
-| Value | Access |
+| Actor | Access |
 |---|---|
-| `private` | owner only |
-| `campaign` | owner; plus active campaign participants when an active eligible assignment exists |
-| `public` | owner only; no public route or public RLS policy exists |
+| Owner | Own list/editor, save and portrait management; deletion only when not actively linked |
+| Exact campaign GM | Read-only linked sheet and portrait when every assignment requirement below passes |
+| Other Players, removed viewers, outsiders, anonymous users | No access to another owner's sheet or portrait |
 
-Campaign visibility alone does not share a character.
-
-Campaign-derived read access also requires:
+Assignment-derived GM read access requires:
 
 - an active campaign;
 - an active `campaign_characters` assignment;
+- the viewer is that exact campaign's GM;
+- character owner equals `linked_by` and is a current Player, not the GM;
 - matching character and campaign game systems;
-- continued participation by the character owner;
-- current participation by the viewer.
 
-Campaign participants receive read-only access through the campaign character route. Only the owner can edit or delete the character.
+The campaign route reuses the normalized read-only renderer. Ordinary character routes explicitly filter by owner; broad SELECT permission never grants a non-owner an editor. Game Room owners retain the existing editable renderer, GM receives read-only, and other Players' rows remain non-interactive. Portraits remain private signed delivery with owner-only mutation.
 
-The owner or campaign Game Master may unlink an active assignment. Unlinking never deletes the character.
+Linking an eligible own matching-system character requires no sharing step. One active character per Player and per character, GM assignment prohibition, and active Game Session unlink locks remain enforced. The owner or GM may unlink only when the session lock permits; unlinking never deletes the character. Incompatible system changes, member removal and completion close assignments under the existing lifecycle rules. Ended assignments grant no historical GM sheet access.
+
+Both version-1 draft parsers ignore obsolete properties in old browser drafts; newly written VtM/CoC drafts omit the removed property. Sheet content and system mechanics are unchanged.
+
+Character-access simplification maintenance status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. This does not reopen Phase 4 (CLOSED / DEPLOYED / ACCEPTED) or start Phase 5A (PLANNED / NOT STARTED).
 
 ## Deferred work
 

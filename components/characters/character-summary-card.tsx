@@ -10,7 +10,6 @@ type CharacterSummaryCardProps = {
   id: string;
   name: string;
   gameSystemName: string;
-  visibility: string;
   portraitPath: string | null;
   portraitUrl: string | null;
   vtmIdentity: VtmV5Identity | null;
@@ -47,7 +46,6 @@ export default async function CharacterSummaryCard({
   id,
   name,
   gameSystemName,
-  visibility,
   portraitPath,
   portraitUrl,
   vtmIdentity,
@@ -57,13 +55,6 @@ export default async function CharacterSummaryCard({
   const translations = await getTranslations("Characters");
   const vtmSheetTranslations = await getTranslations("VtmCharacterSheet");
   const cocSheetTranslations = await getTranslations("Coc7eCharacterSheet");
-
-  const visibilityLabel =
-    visibility === "public"
-      ? translations("visibility.public")
-      : visibility === "campaign"
-        ? translations("visibility.campaign")
-        : translations("visibility.private");
 
   return (
     <article className="overflow-hidden rounded-lg border border-neutral-400 bg-white text-neutral-950 shadow-sm">
@@ -188,13 +179,6 @@ export default async function CharacterSummaryCard({
         <div className="mb-1.5 text-xs text-neutral-700">
           <span className="font-semibold">{gameSystemName}</span>
 
-          <span className="mx-2" aria-hidden="true">
-            ·
-          </span>
-
-          <span>
-            {translations("visibility.label")}: {visibilityLabel}
-          </span>
         </div>
 
         <div className="grid grid-cols-2 items-end gap-2">

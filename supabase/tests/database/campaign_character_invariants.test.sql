@@ -11,11 +11,11 @@ values ('95000000-0000-4000-8000-000000000010', '95000000-0000-4000-8000-0000000
 insert into public.campaign_members (campaign_id, user_id, display_order)
 values ('95000000-0000-4000-8000-000000000010', '95000000-0000-4000-8000-000000000002', 1),
 ('95000000-0000-4000-8000-000000000010', '95000000-0000-4000-8000-000000000003', 2);
-insert into public.characters (id, owner_id, game_system, name, visibility)
+insert into public.characters (id, owner_id, game_system, name)
 values
-('95000000-0000-4000-8000-000000000020', '95000000-0000-4000-8000-000000000002', 'vtm-v5', 'First', 'campaign'),
-('95000000-0000-4000-8000-000000000021', '95000000-0000-4000-8000-000000000002', 'vtm-v5', 'Second', 'campaign'),
-('95000000-0000-4000-8000-000000000022', '95000000-0000-4000-8000-000000000001', 'vtm-v5', 'GM character', 'campaign');
+('95000000-0000-4000-8000-000000000020', '95000000-0000-4000-8000-000000000002', 'vtm-v5', 'First'),
+('95000000-0000-4000-8000-000000000021', '95000000-0000-4000-8000-000000000002', 'vtm-v5', 'Second'),
+('95000000-0000-4000-8000-000000000022', '95000000-0000-4000-8000-000000000001', 'vtm-v5', 'GM character');
 
 set local role authenticated;
 set local request.jwt.claim.sub = '95000000-0000-4000-8000-000000000002';
@@ -53,8 +53,6 @@ set local role authenticated;
 set local request.jwt.claim.sub = '95000000-0000-4000-8000-000000000002';
 select throws_ok($$update public.campaign_characters set unlinked_at = now() where character_id = '95000000-0000-4000-8000-000000000021' and unlinked_at is null$$,
 'P0001', 'campaign_character_active_session', 'player cannot unlink during a session');
-select throws_ok($$update public.characters set visibility = 'private' where id = '95000000-0000-4000-8000-000000000021'$$,
-'P0001', 'campaign_character_active_session', 'visibility change cannot indirectly unlink');
 select throws_ok($$update public.characters set game_system = 'call-of-cthulhu-7e' where id = '95000000-0000-4000-8000-000000000021'$$,
 'P0001', 'campaign_character_active_session', 'system change cannot indirectly unlink');
 select throws_ok($$delete from public.campaign_members where campaign_id = '95000000-0000-4000-8000-000000000010' and user_id = '95000000-0000-4000-8000-000000000002'$$,
@@ -88,9 +86,9 @@ insert into public.game_sessions (campaign_id, started_at, presence_expires_at)
 values ('95000000-0000-4000-8000-000000000010', now() - interval '2 hours', now() - interval '1 hour');
 set local role authenticated;
 set local request.jwt.claim.sub = '95000000-0000-4000-8000-000000000002';
-select lives_ok($$update public.characters set visibility = 'private' where id = '95000000-0000-4000-8000-000000000021'$$, 'expired session does not block existing visibility auto-unlink');
+select lives_ok($$update public.characters set game_system = 'call-of-cthulhu-7e' where id = '95000000-0000-4000-8000-000000000021'$$, 'expired session does not block incompatible-system auto-unlink');
 reset role;
-update public.characters set visibility = 'campaign' where id = '95000000-0000-4000-8000-000000000021';
+update public.characters set game_system = 'vtm-v5' where id = '95000000-0000-4000-8000-000000000021';
 insert into public.campaign_characters (campaign_id, character_id, linked_by)
 values ('95000000-0000-4000-8000-000000000010', '95000000-0000-4000-8000-000000000021', '95000000-0000-4000-8000-000000000002');
 set local role authenticated;

@@ -21,7 +21,7 @@ flowchart TD
     DICE --> GO_FIRST_DICE["Fair Turn Order Dice"]
     DICE --> COC_DICE["CoC 7e Roller"]
     CAMPAIGNS --> CAMPAIGN["Campaign Overview"]
-    CAMPAIGN --> SHARED_CHARACTER["Read-only linked character"]
+    CAMPAIGN --> SHARED_CHARACTER["Owner / exact campaign GM read-only linked character"]
     CAMPAIGN --> GAME_ROOM["Campaign Game Room"]
     CAMPAIGN --> GALLERY["Image-only Campaign Gallery"]
     GAME_ROOM --> VIDEO["Campaign-authorized LiveKit video"]
@@ -30,7 +30,7 @@ flowchart TD
     GAME_ROOM --> SYSTEM_DICE["System-aware Campaign Dice"]
 ```
 
-The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D1 CoC personal dice route with contextual navigation, scoped history, and live Target bands. CoC character routes do not exist. Delta Green is a catalogue entry only. No complete game-system hub exists.
+The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D1 CoC personal dice route with contextual navigation, scoped history, and live Target bands. VtM/CoC characters use owner-private Character Library routes; only the exact eligible active campaign GM additionally receives read-only linked sheet/portrait access. Delta Green is a catalogue entry only. No complete game-system hub exists.
 
 ## Approved Phase 4 additions
 

@@ -23,7 +23,6 @@ import {
   removeVtmV5EditorDraft,
   writeVtmV5EditorDraft,
   writeVtmV5SheetPage,
-  type VtmV5DraftVisibility,
   type VtmV5SheetPage,
 } from "@/lib/characters/vtm-v5/editor-draft";
 import {
@@ -53,8 +52,6 @@ type CharacterCreatorProps = {
   systemId: AvailableCharacterCreationSystemId;
   systemName: string;
 };
-
-type CharacterVisibility = VtmV5DraftVisibility;
 
 type MutationMessage = {
   kind: "status" | "error";
@@ -88,7 +85,6 @@ export default function CharacterCreator({
 
   const [draftReady, setDraftReady] = useState(false);
   const [name, setName] = useState("");
-  const [visibility, setVisibility] = useState<CharacterVisibility>("private");
   const [vtmSheetData, setVtmSheetData] = useState<VtmV5SheetData>(() =>
     createDefaultVtmV5SheetData(),
   );
@@ -110,7 +106,6 @@ export default function CharacterCreator({
   const cleanFormSnapshot = useMemo(
     () => JSON.stringify({
       name: "",
-      visibility: "private",
       sheetData:
         systemId === "call-of-cthulhu-7e"
           ? createDefaultCoc7eSheetData()
@@ -122,10 +117,9 @@ export default function CharacterCreator({
     () =>
       JSON.stringify({
         name,
-        visibility,
         sheetData: currentSheetData,
       }),
-    [currentSheetData, name, visibility],
+    [currentSheetData, name],
   );
   const hasUnsavedPortraitChanges = portraitFile !== null;
   const hasUnsavedChanges =
@@ -151,7 +145,6 @@ export default function CharacterCreator({
 
           if (draft) {
             setName(draft.name);
-            setVisibility(draft.visibility === "campaign" ? "campaign" : "private");
             setCocSheetData(draft.sheetData);
             setCocActivePage(draft.activePage);
           } else if (storedPage) {
@@ -163,7 +156,6 @@ export default function CharacterCreator({
 
           if (draft) {
             setName(draft.name);
-            setVisibility(draft.visibility === "campaign" ? "campaign" : "private");
             setVtmSheetData(draft.sheetData);
             setVtmActivePage(draft.activePage);
           } else if (storedPage) {
@@ -203,7 +195,6 @@ export default function CharacterCreator({
       writeCoc7eEditorDraft(draftStorageKey, {
         version: 1,
         name,
-        visibility,
         activePage: cocActivePage,
         sheetData: cocSheetData,
       });
@@ -211,7 +202,6 @@ export default function CharacterCreator({
       writeVtmV5EditorDraft(draftStorageKey, {
         version: 1,
         name,
-        visibility,
         activePage: vtmActivePage,
         sheetData: vtmSheetData,
       });
@@ -223,7 +213,6 @@ export default function CharacterCreator({
     draftStorageKey,
     name,
     systemId,
-    visibility,
     vtmActivePage,
     vtmSheetData,
   ]);
@@ -303,7 +292,6 @@ export default function CharacterCreator({
           owner_id: userData.user.id,
           name,
           game_system: validatedSystemId,
-          visibility,
           sheet_data: normalizedSheetData,
         })
         .select("id")
@@ -416,14 +404,8 @@ export default function CharacterCreator({
           </div>
         </div>
 
-        <div
-          className={`mt-4 grid gap-3 ${
-            showExternalNameField
-              ? "md:grid-cols-[minmax(0,2fr)_minmax(12rem,1fr)]"
-              : "md:grid-cols-[minmax(12rem,1fr)] md:justify-end"
-          }`}
-        >
-          {showExternalNameField && (
+        {showExternalNameField && (
+          <div className="mt-4">
             <label>
               {translations("characterName")}
               <input
@@ -434,37 +416,8 @@ export default function CharacterCreator({
                 required
               />
             </label>
-          )}
-
-          <label className="md:max-w-sm md:justify-self-end md:w-full">
-            {translations("visibility")}
-            <select
-              value={visibility}
-              onChange={(event) =>
-                setVisibility(event.target.value as CharacterVisibility)
-              }
-              disabled={creating}
-              className={fieldStyle}
-            >
-              <option value="private">
-                {translations("visibilityPrivate")}
-              </option>
-              <option value="campaign">
-                {translations("visibilityCampaign")}
-              </option>
-              <option value="public" disabled>
-                {translations("visibilityPublicUnavailable")}
-              </option>
-            </select>
-            <p className="mt-1 text-xs text-amber-700">
-              {translations(
-                visibility === "campaign"
-                  ? "visibilityCampaignHelp"
-                  : "visibilityOwnerOnlyHelp",
-              )}
-            </p>
-          </label>
-        </div>
+          </div>
+        )}
       </section>
 
       {systemId === "vtm-v5" && draftReady && (

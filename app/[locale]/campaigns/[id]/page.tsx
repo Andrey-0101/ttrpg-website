@@ -145,7 +145,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         }),
       supabase
         .from("characters")
-        .select("id, name, game_system, visibility, portrait_url")
+        .select("id, name, game_system, portrait_url")
         .eq("owner_id", userId)
         .eq("game_system", campaign.game_system)
         .order("created_at", {
@@ -191,7 +191,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     linkedCharacterIds.length > 0
       ? await supabase
           .from("characters")
-          .select("id, name, owner_id, game_system, visibility, portrait_url")
+          .select("id, name, owner_id, game_system, portrait_url")
           .in("id", linkedCharacterIds)
       : {
           data: [],
@@ -285,7 +285,6 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       .map(async (character) => ({
         id: character.id,
         name: character.name,
-        visibility: character.visibility,
         portraitUrl: await getCharacterPortraitSignedUrl(
           supabase,
           character.portrait_url,
