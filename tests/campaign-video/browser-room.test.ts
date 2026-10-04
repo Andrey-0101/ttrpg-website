@@ -8,9 +8,13 @@ import {
   orderCampaignVideoParticipants,
 } from "../../lib/campaign-video/browser/controller";
 import type {
+  CampaignVideoParticipantDirectoryEntry,
+  CampaignVideoProviderParticipant,
+  CampaignVideoTrackAttachment,
   CampaignVideoRoomSession,
   CampaignVideoRoomSessionCallbacks,
 } from "../../lib/campaign-video/browser/contracts";
+import { createCampaignParticipantDirectorySync } from "../../lib/campaign-video/browser/directory-sync";
 import { classifyCampaignVideoMediaError } from "../../lib/campaign-video/browser/errors";
 import { attachCampaignVideoTrack } from "../../lib/campaign-video/browser/media";
 import { getCampaignVideoParticipantSlots } from "../../lib/campaign-video/browser/presentation";
@@ -89,6 +93,7 @@ function presentationResponse(command: CampaignVideoPresentationCommand) {
 }
 
 function createSessionHarness() {
+  let creations = 0;
   let callbacks: CampaignVideoRoomSessionCallbacks | null = null;
   let credentials: { token: string } | null = null;
   let disconnects = 0;
@@ -114,6 +119,7 @@ function createSessionHarness() {
       value: { token: string },
       nextCallbacks: CampaignVideoRoomSessionCallbacks,
     ) => {
+      creations += 1;
       credentials = value;
       callbacks = nextCallbacks;
       return session;
@@ -121,11 +127,195 @@ function createSessionHarness() {
     callbacks: () => callbacks as CampaignVideoRoomSessionCallbacks,
     credentialToken: () => credentials?.token,
     disconnects: () => disconnects,
+    creations: () => creations,
     cameraCalls: () => cameraCalls,
     microphoneCalls: () => microphoneCalls,
     audioStarts: () => audioStarts,
   };
 }
+
+const NEW_PLAYER = {
+  providerIdentity: `participant-${"c".repeat(48)}`,
+  displayName: "Dr. Armitage",
+  role: "player" as const,
+  playerPosition: 6,
+  isCurrentUser: false,
+};
+const UPDATED_DIRECTORY = [...DIRECTORY, NEW_PLAYER];
+
+function providerParticipant(identity: string, isLocal = false) {
+  const attachments: string[] = [];
+  const track = (kind: "camera" | "microphone"): CampaignVideoTrackAttachment => ({
+    id: `${identity}-${kind}`, kind,
+    attach: () => { attachments.push(`attach-${kind}`); },
+    detach: () => { attachments.push(`detach-${kind}`); },
+  });
+  return { identity, isLocal, camera: track("camera"), microphone: track("microphone"), attachments };
+}
+
+for (const providerFirst of [true, false]) {
+  test(`dynamic membership: ${providerFirst ? "LiveKit first" : "directory first"}, no reconnect or track reset`, async () => {
+    const session = createSessionHarness();
+    let credentials = 0;
+    let invalidations = 0;
+    const controller = createCampaignVideoRoomController({
+      campaignId: CAMPAIGN_ID, campaignActive: true, directoryReady: true,
+      participantDirectory: DIRECTORY, createSession: session.factory,
+      fetcher: async () => { credentials += 1; return joinResponse(); },
+      onChange: () => undefined,
+      onDirectoryRefreshNeeded: () => { invalidations += 1; },
+    });
+    await controller.join();
+    await controller.setCameraEnabled(true);
+    await controller.setMicrophoneEnabled(true);
+    const gm = providerParticipant("gm-safe");
+    const local = providerParticipant("player-1-safe", true);
+    const existing = providerParticipant("player-2-safe");
+    const newcomer = providerParticipant(NEW_PLAYER.providerIdentity);
+    const unknown = providerParticipant("untrusted-outsider");
+    const raw: CampaignVideoProviderParticipant[] = [newcomer, existing, local, gm, unknown];
+    session.callbacks().onParticipants([gm, local, existing]);
+    const element = {} as HTMLMediaElement;
+    const cleanupCamera = attachCampaignVideoTrack(existing.camera, element);
+    const cleanupAudio = attachCampaignVideoTrack(existing.microphone, element);
+    if (providerFirst) {
+      session.callbacks().onParticipants(raw);
+      session.callbacks().onParticipantConnected(newcomer.identity);
+      assert.equal(controller.getSnapshot().participants.length, 3);
+      controller.updateParticipantDirectory(UPDATED_DIRECTORY);
+      // No subsequent provider callback: the rejected raw snapshot must recover now.
+    } else {
+      controller.updateParticipantDirectory(UPDATED_DIRECTORY);
+      session.callbacks().onParticipants(raw);
+      session.callbacks().onParticipantConnected(newcomer.identity);
+    }
+    const snapshot = controller.getSnapshot();
+    assert.equal(snapshot.phase, "connected");
+    assert.equal(snapshot.cameraEnabled, true);
+    assert.equal(snapshot.microphoneEnabled, true);
+    assert.equal(session.disconnects(), 0);
+    assert.equal(session.creations(), 1);
+    assert.equal(credentials, 1);
+    assert.equal(invalidations, 1);
+    assert.equal(session.cameraCalls(), 1);
+    assert.equal(session.microphoneCalls(), 1);
+    assert.deepEqual(snapshot.participants.map((entry) => entry.providerIdentity),
+      [gm.identity, local.identity, existing.identity, newcomer.identity]);
+    const newSlot = getCampaignVideoParticipantSlots(UPDATED_DIRECTORY, snapshot.participants)[6];
+    assert.equal(newSlot?.directoryEntry?.displayName, "Dr. Armitage");
+    assert.equal(newSlot?.participant?.camera, newcomer.camera);
+    assert.equal(newSlot?.participant?.microphone, newcomer.microphone);
+    assert.equal(snapshot.participants[2]?.camera, existing.camera);
+    assert.equal(snapshot.participants[2]?.microphone, existing.microphone);
+    controller.updateParticipantDirectory(UPDATED_DIRECTORY.map((entry) => ({ ...entry, displayName: `${entry.displayName}!` })));
+    assert.deepEqual(existing.attachments, ["attach-camera", "attach-microphone"]);
+    const cleanNewCamera = attachCampaignVideoTrack(newSlot!.participant!.camera, element);
+    const cleanNewAudio = attachCampaignVideoTrack(newSlot!.participant!.microphone, element);
+    assert.deepEqual(newcomer.attachments, ["attach-camera", "attach-microphone"]);
+    controller.updateParticipantDirectory(DIRECTORY);
+    assert.equal(controller.getSnapshot().participants.some((entry) => entry.providerIdentity === newcomer.identity), false);
+    assert.equal(session.disconnects(), 0);
+    controller.updateParticipantDirectory([], false);
+    assert.equal(controller.getSnapshot().participants.length, 3);
+    cleanNewCamera(); cleanNewAudio(); cleanupCamera(); cleanupAudio();
+    await controller.leave();
+    controller.updateParticipantDirectory(UPDATED_DIRECTORY);
+    assert.equal(controller.getSnapshot().participants.length, 0);
+    await controller.dispose();
+  });
+}
+
+for (const providerFirst of [true, false]) {
+  test(`dynamic GM presentation reaches newcomer (${providerFirst ? "LiveKit" : "membership"} first) and Stop Share still works`, async () => {
+    const session = createSessionHarness();
+    const commands: CampaignVideoPresentationCommand[] = [];
+    let received!: () => void;
+    const delivered = new Promise<void>((resolve) => { received = resolve; });
+    const controller = createCampaignVideoRoomController({
+      campaignId: CAMPAIGN_ID, campaignActive: true, directoryReady: true, isGameMaster: true,
+      participantDirectory: DIRECTORY, createSession: session.factory,
+      fetcher: async (input, init) => {
+        if (String(input).endsWith("/join")) return joinResponse();
+        const command = JSON.parse(String(init?.body)) as CampaignVideoPresentationCommand;
+        commands.push(command);
+        if (command.action === "show" && command.destinationIdentity) received();
+        return presentationResponse(command);
+      }, onChange: () => undefined,
+    });
+    await controller.join();
+    await controller.shareImage(IMAGE_ID);
+    await controller.setPresentationExpanded(true);
+    if (!providerFirst) controller.updateParticipantDirectory(UPDATED_DIRECTORY);
+    session.callbacks().onParticipants([providerParticipant(NEW_PLAYER.providerIdentity)]);
+    session.callbacks().onParticipantConnected(NEW_PLAYER.providerIdentity);
+    if (providerFirst) {
+      assert.equal(commands.length, 2);
+      controller.updateParticipantDirectory(UPDATED_DIRECTORY);
+    }
+    await delivered;
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.deepEqual(commands[2], { action: "show", imageId: IMAGE_ID,
+      expanded: true, revision: 2, destinationIdentity: NEW_PLAYER.providerIdentity });
+    controller.updateParticipantDirectory(UPDATED_DIRECTORY);
+    assert.equal(commands.length, 3);
+    assert.equal(controller.getSnapshot().presentationExpanded, true);
+    assert.equal(await controller.stopPresentation(), true);
+    assert.equal(controller.getSnapshot().isPresenting, false);
+    assert.equal(session.disconnects(), 0);
+    await controller.dispose();
+  });
+}
+
+test("directory refresh retains the last valid view on failure, retries, and coalesces in-flight signals", async (context) => {
+  context.mock.timers.enable({ apis: ["setTimeout"] });
+  let calls = 0;
+  let errors = 0;
+  let directory: CampaignVideoParticipantDirectoryEntry[] = DIRECTORY;
+  let release!: (response: Response) => void;
+  const sync = createCampaignParticipantDirectorySync({
+    campaignId: CAMPAIGN_ID, locale: "ru",
+    fetcher: async (input, init) => {
+      assert.equal(String(input), `/api/campaigns/${CAMPAIGN_ID}/participant-directory?locale=ru`);
+      assert.equal(init?.cache, "no-store");
+      calls += 1;
+      if (calls === 1) return Response.json({ ok: false }, { status: 503 });
+      if (calls === 2) return new Promise<Response>((resolve) => { release = resolve; });
+      return Response.json({ ok: true, participantDirectory: UPDATED_DIRECTORY });
+    },
+    onDirectory: (value) => { directory = value; }, onError: () => { errors += 1; },
+  });
+  await sync.refresh();
+  assert.equal(directory, DIRECTORY);
+  assert.equal(errors, 1);
+  context.mock.timers.tick(1000);
+  const inFlight = sync.refresh();
+  release(Response.json({ ok: true, participantDirectory: DIRECTORY }));
+  await inFlight;
+  assert.equal(calls, 3);
+  assert.deepEqual(directory, UPDATED_DIRECTORY);
+  sync.dispose();
+  await sync.refresh();
+  assert.equal(calls, 3);
+});
+
+test("directory refresh cleanup aborts reads and suppresses late updates", async () => {
+  let signal: AbortSignal | undefined;
+  let release!: (response: Response) => void;
+  let updates = 0;
+  const sync = createCampaignParticipantDirectorySync({
+    campaignId: CAMPAIGN_ID, locale: "en",
+    fetcher: async (_input, init) => {
+      signal = init?.signal as AbortSignal;
+      return new Promise<Response>((resolve) => { release = resolve; });
+    }, onDirectory: () => { updates += 1; }, onError: () => assert.fail("cleanup is not an error"),
+  });
+  const request = sync.refresh();
+  sync.dispose();
+  assert.equal(signal?.aborted, true);
+  release(Response.json({ ok: true, participantDirectory: UPDATED_DIRECTORY }));
+  await request;
+  assert.equal(updates, 0);
+});
 
 test("presentation packets reject unsupported fields", () => {
   const packet = new TextEncoder().encode(

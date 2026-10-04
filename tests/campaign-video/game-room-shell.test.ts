@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
+import { ModuleKind, transpileModule } from "typescript";
 
 import { CAMPAIGN_VIDEO_PARTICIPANT_SLOTS } from "../../lib/campaign-video/browser/presentation";
 import { resolveCampaignVideoParticipantLabel } from "../../lib/campaign-video/participant-label";
@@ -9,6 +11,72 @@ import { resolveCampaignVideoParticipantLabel } from "../../lib/campaign-video/p
 function source(...segments: string[]) {
   return readFileSync(path.join(process.cwd(), ...segments), "utf8");
 }
+
+test("directory changes update video in place with RLS-scoped Realtime invalidation", () => {
+  const room = source("components", "campaigns", "campaign-video-room.tsx");
+  const key = room.slice(room.indexOf("const instanceKey"));
+  const construction = room.slice(room.indexOf("const controller = createCampaignVideoRoomController"), room.indexOf("controllerRef.current?.updateParticipantDirectory"));
+  assert.doesNotMatch(key, /participantDirectory|directoryReady/u);
+  assert.doesNotMatch(construction.slice(construction.indexOf("}, [")), /participantDirectory|directoryReady/u);
+  assert.match(room, /updateParticipantDirectory\(directory\.participantDirectory, directory\.directoryReady\)/u);
+  assert.match(room, /campaign_membership_signals/u);
+  assert.match(room, /campaign_id=eq\.\$\{campaignId\}/u);
+  assert.match(room, /status === "SUBSCRIBED"/u);
+  assert.match(room, /sync\.dispose\(\)/u);
+  assert.doesNotMatch(room, /router\.refresh|location\.reload|setInterval/u);
+  const endpoint = source("app", "api", "campaigns", "[campaignId]", "participant-directory", "route.ts");
+  assert.match(endpoint, /getClaims\(\)/u);
+  assert.match(endpoint, /if \(!campaign\)/u);
+  assert.match(endpoint, /loadCampaignParticipantDirectory/u);
+  assert.match(endpoint, /Cache-Control.*no-store/u);
+  assert.doesNotMatch(endpoint, /service_role|SECRET_KEY|members:|profiles:/u);
+});
+
+test("directory GET authorizes before the canonical loader and returns only localized safe entries", async () => {
+  const route = source("app", "api", "campaigns", "[campaignId]", "participant-directory", "route.ts");
+  const code = transpileModule(route, { compilerOptions: { module: ModuleKind.CommonJS } }).outputText;
+  const campaignId = "a1000000-0000-4000-8000-000000000001";
+  for (const scenario of ["anonymous", "outsider", "removed", "member", "gm", "load-failure"]) {
+    let loads = 0;
+    const safeEntry = { providerIdentity: "scoped-identity", displayName: "Игрок кампании", role: "player", playerPosition: 2, isCurrentUser: true };
+    const exports: { GET?: (request: Request, context: unknown) => Promise<Response> } = {};
+    runInNewContext(code, {
+      exports, Request, Response, URL, console: { error: () => undefined },
+      require(name: string) {
+        if (name === "next-intl") return { hasLocale: (locales: string[], locale: string) => locales.includes(locale) };
+        if (name === "next-intl/server") return { getTranslations: async ({ locale }: { locale: string }) => {
+          assert.equal(locale, "ru"); return () => "Игрок кампании";
+        } };
+        if (name === "@/i18n/routing") return { routing: { locales: ["en", "ru"], defaultLocale: "en" } };
+        if (name === "@/lib/campaign-video/contracts") return { parseCampaignId: (value: string) => value === campaignId ? value : null };
+        if (name === "@/utils/supabase/server") return { createClient: async () => ({
+          auth: { getClaims: async () => ({ data: { claims: { sub: scenario === "anonymous" ? undefined : "caller" } }, error: null }) },
+          from(table: string) {
+            assert.equal(table, "campaigns");
+            return { select: () => ({ eq: (column: string, id: string) => {
+              assert.equal(column, "id"); assert.equal(id, campaignId);
+              return { maybeSingle: async () => ({ error: null, data:
+                ["outsider", "removed"].includes(scenario) ? null : { id: campaignId, game_system: "coc_7e", game_master_id: "gm" } }) };
+            } }) };
+          },
+        }) };
+        if (name === "@/lib/campaign-video/participant-directory.server") return { loadCampaignParticipantDirectory: async (options: { currentUserId: string; labels: { playerFallback: string } }) => {
+          loads += 1; assert.equal(options.currentUserId, "caller");
+          assert.equal(options.labels.playerFallback, "Игрок кампании");
+          return { ready: scenario !== "load-failure", participantDirectory: [safeEntry], members: ["internal"], profiles: ["private"] };
+        } };
+        assert.fail(`Unexpected route dependency: ${name}`);
+      },
+    });
+    const response = await exports.GET!(new Request(`http://test.invalid/api/campaigns/${campaignId}/participant-directory?locale=ru`), { params: Promise.resolve({ campaignId }) });
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.equal(response.status, scenario === "anonymous" ? 401 : ["outsider", "removed"].includes(scenario) ? 404 : scenario === "load-failure" ? 503 : 200);
+    assert.equal(loads, ["anonymous", "outsider", "removed"].includes(scenario) ? 0 : 1);
+    const result = await response.json();
+    if (response.ok) assert.deepEqual(result, { ok: true, participantDirectory: [safeEntry] });
+    else assert.deepEqual(result, { ok: false });
+  }
+});
 
 function messageKeys(value: Record<string, unknown>, prefix = ""): string[] {
   return Object.entries(value).flatMap(([key, entry]) => {

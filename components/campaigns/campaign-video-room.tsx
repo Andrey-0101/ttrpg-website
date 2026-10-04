@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import CampaignGameRoomWorkspace, {
   type CampaignGameRoomGalleryItem,
@@ -18,6 +18,8 @@ import type {
 } from "@/lib/campaign-video/browser/contracts";
 import { createLiveKitCampaignVideoSession } from "@/lib/campaign-video/browser/livekit";
 import { attachCampaignVideoTrack } from "@/lib/campaign-video/browser/media";
+import { createCampaignParticipantDirectorySync } from "@/lib/campaign-video/browser/directory-sync";
+import { createClient } from "@/utils/supabase/client";
 import {
   getCampaignVideoParticipantSlots,
   type CampaignVideoParticipantSlot,
@@ -508,7 +510,11 @@ function CampaignVideoRoomInstance({
   onJournalEvent,
 }: CampaignVideoRoomProps) {
   const controllerRef = useRef<CampaignVideoRoomController | null>(null);
-  const participantDirectoryJson = JSON.stringify(participantDirectory);
+  const directorySyncRef = useRef<ReturnType<typeof createCampaignParticipantDirectorySync> | null>(null);
+  const initialDirectory = useRef({ participantDirectory, directoryReady });
+  const [directory, setDirectory] = useState(() => ({ participantDirectory, directoryReady }));
+  const locale = useLocale();
+  const [supabase] = useState(createClient);
   const [snapshot, setSnapshot] = useState(createInitialCampaignVideoRoomSnapshot);
   const [seenParticipantIdentities, setSeenParticipantIdentities] = useState(
     () => new Set<string>(),
@@ -518,12 +524,11 @@ function CampaignVideoRoomInstance({
     const controller = createCampaignVideoRoomController({
       campaignId,
       campaignActive: campaignStatus === "active",
-      directoryReady,
+      directoryReady: initialDirectory.current.directoryReady,
       isGameMaster,
-      participantDirectory: JSON.parse(
-        participantDirectoryJson,
-      ) as CampaignVideoParticipantDirectoryEntry[],
+      participantDirectory: initialDirectory.current.participantDirectory,
       createSession: createLiveKitCampaignVideoSession,
+      onDirectoryRefreshNeeded() { void directorySyncRef.current?.refresh(); },
       onChange(nextSnapshot) {
         setSeenParticipantIdentities((previousIdentities) => {
           const newIdentities = nextSnapshot.participants
@@ -543,20 +548,52 @@ function CampaignVideoRoomInstance({
   }, [
     campaignId,
     campaignStatus,
-    directoryReady,
     isGameMaster,
-    participantDirectoryJson,
   ]);
+
+  useEffect(() => {
+    controllerRef.current?.updateParticipantDirectory(directory.participantDirectory, directory.directoryReady);
+  }, [directory]);
+
+  useEffect(() => {
+    const sync = createCampaignParticipantDirectorySync({
+      campaignId, locale,
+      onDirectory(nextDirectory) {
+        setDirectory({ participantDirectory: nextDirectory, directoryReady: true });
+      },
+    });
+    directorySyncRef.current = sync;
+    const refreshDirectory = () => void sync.refresh();
+    const channel = supabase.channel(`game-room-membership-${campaignId}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "campaign_membership_signals",
+        filter: `campaign_id=eq.${campaignId}`,
+      }, refreshDirectory)
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "campaign_membership_signals",
+        filter: `campaign_id=eq.${campaignId}`,
+      }, refreshDirectory)
+      .subscribe((status) => { if (status === "SUBSCRIBED") refreshDirectory(); });
+    window.addEventListener("focus", refreshDirectory);
+    window.addEventListener("online", refreshDirectory);
+    return () => {
+      directorySyncRef.current = null;
+      sync.dispose();
+      window.removeEventListener("focus", refreshDirectory);
+      window.removeEventListener("online", refreshDirectory);
+      void supabase.removeChannel(channel);
+    };
+  }, [campaignId, locale, supabase]);
 
   return (
     <CampaignVideoRoomLayout
       campaignId={campaignId}
       campaignGameSystem={campaignGameSystem}
       campaignStatus={campaignStatus}
-      directoryReady={directoryReady}
+      directoryReady={directory.directoryReady}
       isGameMaster={isGameMaster}
       galleryItems={galleryItems}
-      participantDirectory={participantDirectory}
+      participantDirectory={directory.participantDirectory}
       gameSession={gameSession}
       sessionLoading={sessionLoading}
       sessionBusy={sessionBusy}
@@ -593,8 +630,7 @@ export default function CampaignVideoRoom(props: CampaignVideoRoomProps) {
   const instanceKey = JSON.stringify([
     props.campaignId,
     props.campaignStatus,
-    props.directoryReady,
-    props.participantDirectory,
+    props.isGameMaster,
   ]);
   return <CampaignVideoRoomInstance key={instanceKey} {...props} />;
 }
