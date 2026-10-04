@@ -129,6 +129,8 @@ This foundation is current in Production. All seven campaign-video tables use RL
 
 Game Room membership synchronization is a maintenance correction, not a new access model. Realtime publishes only a campaign-scoped revision signal protected by existing participant access rules, not member DELETE payloads. The directory refresh endpoint authenticates and checks campaign visibility with the user-scoped RLS client before reusing the canonical server loader; it returns only the safe directory already present on the Game Room page. Provider identities remain untrusted until included in that directory. Removal suppresses UI/media mapping immediately after successful authoritative refresh, but does not revoke an already-established LiveKit session or implement provider-kick moderation. Failed reads keep the last valid directory and never terminate video.
 
+The maintenance fix in [PR #67](https://github.com/Andrey-0101/ttrpg-website/pull/67) is CLOSED / DEPLOYED / ACCEPTED. The manual multi-user Production re-test passed for a real user joining the campaign and video room while existing participants remained connected: mutual audio/video worked without page refresh or video rejoin, and the existing call was uninterrupted. This acceptance does not expand the authorization or moderation boundary above.
+
 ### Campaign lifecycle
 
 - completion confirmation;
@@ -303,7 +305,7 @@ The Stage 2 join endpoint accepts only the campaign route identifier and an empt
 
 The localized Game Room route loads only RLS-visible campaign and participant data. Opening either Campaign Overview or Game Room does not request credentials, connect to LiveKit, or request camera/microphone access. The browser constructs a provider session only after explicit Join; camera and microphone remain off until their own explicit controls are used, and Leave or component disposal tears down the temporary session.
 
-The last Production human group test passed for the accepted current scope with one GM and four Players. Quantitative packet-loss, latency, jitter, reconnect-timeline, and per-participant connection-quality telemetry was not collected. That evidence boundary is non-blocking, and no additional media/layout/human acceptance retest is currently required unless a relevant regression is reported, the implementation changes materially, or the user explicitly requests it.
+The earlier Production human group test passed for the accepted scope with one GM and four Players. Quantitative packet-loss, latency, jitter, reconnect-timeline, and per-participant connection-quality telemetry was not collected for that test. That evidence boundary is non-blocking, and no additional media/layout/human acceptance retest is currently required unless a relevant regression is reported, the implementation changes materially, or the user explicitly requests it.
 
 ## Level A requirements for approved later campaign content
 
