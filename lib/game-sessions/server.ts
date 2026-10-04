@@ -69,7 +69,7 @@ async function readState(
 
   const { data: row, error: sessionError } = await supabase
     .from("game_sessions")
-    .select("id, campaign_id, started_at, presence_expires_at")
+    .select("id, campaign_id, started_at, presence_expires_at, session_number, title")
     .eq("campaign_id", campaignId)
     .is("ended_at", null)
     .gt("presence_expires_at", new Date().toISOString())
@@ -85,6 +85,8 @@ async function readState(
         campaignId: row.campaign_id,
         startedAt: row.started_at,
         presenceExpiresAt: row.presence_expires_at,
+        sessionNumber: row.session_number,
+        title: row.title,
       }
     : null;
   if (!session) return { ok: true, session: null, journal: [] };
@@ -117,6 +119,7 @@ export async function getGameSessionState(campaignId: string): Promise<Response>
 export async function mutateGameSession(
   campaignId: string,
   action: GameSessionAction,
+  title = "",
 ): Promise<Response> {
   const supabase = await createClient();
   const functionName = {
@@ -124,7 +127,9 @@ export async function mutateGameSession(
     end: "end_game_session",
     renew: "renew_game_session_presence",
   } as const;
-  const { error } = await supabase.rpc(functionName[action], {
+  const { error } = action === "start" ? await supabase.rpc("start_named_game_session", {
+    target_campaign_id: campaignId, session_title: title.trim(),
+  }) : await supabase.rpc(functionName[action], {
     target_campaign_id: campaignId,
   });
   if (error) {

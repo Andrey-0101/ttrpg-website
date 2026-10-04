@@ -4,11 +4,11 @@
 
 **Implemented and verified.**
 
-Campaign Foundation through Phase 4D2 are complete in the accepted Production code baseline:
+Campaign Foundation through Phase 4F2 are complete in the accepted Production code baseline:
 
 ```text
 main
-01d917688ddadb5366949a714bba462b7c5c44b2
+371df4e74354306f673f4224008712608d943ce6
 ```
 
 It includes the database schema, RLS, invitation lifecycle, membership controls, campaign character sharing, campaign management UI, EN/RU localization, mobile layouts, and multi-user security testing.
@@ -31,10 +31,7 @@ The current implementation connects:
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
-Approved later Phase 4 work will add:
-
-- system-aware linked-character presentation in the Game Room;
-- shared notes for permitted participants and GM-private notes.
+Phase 4F2 linked-character presentation is accepted. Phase 4G adds personal owner-private Notes for every participant; it is implemented/deployed with manual Production acceptance pending.
 
 Document/text Handouts, NPCs, richer session records, Chronicle records, clues, and other broad campaign-content modules are not active roadmap commitments. The narrow Game Session lifecycle used to scope Game Room Journal events is not a general campaign-content module.
 
@@ -194,7 +191,7 @@ Behavior:
 - changing the linked character's game system closes its assignment;
 - campaign completion closes all active assignments.
 
-VtM and Call of Cthulhu characters are not cross-compatible. CoC character creation now uses the existing Character Library and the same campaign-compatible assignment/read-only sharing boundary as VtM, while system matching continues to prevent incompatible linking. Game Room Character remains disabled until Phase 4F2.
+VtM and Call of Cthulhu characters are not cross-compatible. CoC character creation now uses the existing Character Library and the same campaign-compatible assignment/read-only sharing boundary as VtM, while system matching continues to prevent incompatible linking. Game Room Characters is deployed and accepted in Phase 4F2.
 
 ### Campaign video data foundation
 
@@ -319,7 +316,7 @@ Players do not see management controls.
 
 `/[locale]/campaigns/[id]/game-room` is the dedicated localized virtual tabletop for an authorized campaign participant. The Campaign Overview contains a compact entry card and no longer mounts or connects the active video component.
 
-The Game Room owns the room-level Game Session state and non-video tools. Its stable one-row order is `Journal | Gallery | Dice | Character`: Journal opens by default in the shared Display and has no back arrow, Gallery opens directly in Handouts and keeps its internal back arrow, Campaign Dice is available for VtM V5 and CoC 7e, and Character remains unavailable until its roadmap phase. CoC Dice opens directly in Percentile with the internal `← | Percentile | Other Dice` submenu; VtM Dice opens directly without a submenu.
+The Game Room owns the room-level Game Session state and non-video tools. Its stable one-row order is `Journal | Gallery | Dice | Characters | Notes`: Journal opens by default in the shared Display and has no back arrow, Gallery opens directly in Handouts and keeps its internal back arrow, Campaign Dice is available for VtM V5 and CoC 7e, Characters is deployed and accepted, and Notes opens the current owner's private journal. CoC Dice opens directly in Percentile with the internal `← | Percentile | Other Dice` submenu; VtM Dice opens directly without a submenu.
 
 Journal shows only the exact active Game Session and creates no synthetic events. Without an active session there are no persistent Journal events; every new session starts with an empty current Journal, while ended session rows and events remain stored for future archive/history UI. Entries append at the bottom, older entries remain above, the Journal auto-scrolls to the newest entry, and the GM Start/End control stays fixed while the event list scrolls. Journal events and Game Session Start/End state propagate through Supabase Realtime; lightweight polling is only fallback reconciliation.
 
@@ -442,8 +439,6 @@ ADR-008 defines the accepted boundary.
 Outside the completed Campaign Foundation:
 
 - Phase 5A Campaign & Game Room UX/UI refinement;
-- Phase 4F2 system-aware linked-character Game Room integration;
-- Phase 4G shared notes and GM-private notes;
 - campaign discovery;
 - ownership transfer;
 - multiple Game Masters;
@@ -451,11 +446,26 @@ Outside the completed Campaign Foundation:
 - Game Master editing of Player characters;
 - public campaign pages.
 
-Phase 4D2 is deployed, accepted, and closed. Its GM-controlled Game Sessions, exact-session Journal, and system-aware Campaign Dice for VtM V5 and CoC 7e are current behavior. Rolls outside an active session remain local to the roller and non-persisted; active-session rolls are public Journal events delivered through Supabase Realtime. The campaign system selects the existing system roller automatically; no parallel campaign dice mechanics exist. Server-authoritative execution, exact-session binding across End → Start races, and the absence of direct authenticated Journal writes preserve the shared-history trust boundary. Hidden/private campaign rolls remain unimplemented. LiveKit remains independent except for the existing Gallery image-presentation transport. Phase 4F1 CoC character sheets reuse the existing campaign assignment and read-only character route; exposing linked characters inside the Game Room remains Phase 4F2. Archive UI, hidden rolls, Keeper-specific tools, NPCs, clues, general Handouts, richer Sessions, and Chronicle records are not active roadmap commitments.
+Phase 4D2 is deployed, accepted, and closed. Its GM-controlled Game Sessions, exact-session Journal, and system-aware Campaign Dice for VtM V5 and CoC 7e are current behavior. Rolls outside an active session remain local to the roller and non-persisted; active-session rolls are public Journal events delivered through Supabase Realtime. The campaign system selects the existing system roller automatically; no parallel campaign dice mechanics exist. Server-authoritative execution, exact-session binding across End → Start races, and the absence of direct authenticated Journal writes preserve the shared-history trust boundary. Hidden/private campaign rolls remain unimplemented. LiveKit remains independent except for the existing Gallery image-presentation transport. Phase 4F1 CoC character sheets reuse the existing campaign assignment and read-only character route; linked Game Room Characters is deployed and accepted in Phase 4F2. Archive UI, hidden rolls, Keeper-specific tools, NPCs, clues, general Handouts, richer Sessions, and Chronicle records are not active roadmap commitments.
+
+## Personal Campaign Notes — Phase 4G
+
+Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 4F2 is CLOSED / DEPLOYED / ACCEPTED; Phase 5 is not started.
+
+Every participant, including GM, has an owner-private continuous journal. GM cannot read Player Notes; Players cannot read others' or GM Notes. There is no shared Notes scope or special GM area. Campaign Overview offers Gallery and Notes actions; `/{locale}/campaigns/{id}/notes` and Game Room's `Journal | Gallery | Dice | Characters | Notes` row reuse the same journal. Notes scroll internally inside Display and require neither LiveKit nor an active Game Session.
+
+Entries are oldest-first with stable ID ordering, initially scrolled to the newest entry. Inline Create/Save, Edit/Save/Cancel, and Delete/Yes/No are explicit; only one create/edit mode is allowed. Unsaved text is discarded on tool change, navigation or refresh, without autosave, browser draft or navigation warning. Bodies are safe plain text, normal weight, justified and paragraph-separated; no editable headings, Markdown, formatting controls, attachments, tags or collaboration.
+
+Bold headings use the immutable campaign-name snapshot and authoritative creation time with the browser timezone captured at Save (UTC fallback). Latest edit time uses its separately saved timezone and localized Edit/Ред. marker; there is no edit history. Search is one input and All/Text/Date/Session select: whole entries, case-insensitive body, creation date in saved timezone (localized and ISO), and linked immutable session number/title. Edited date/time and campaign names are not search fields. No ranking, highlighting or UI pagination.
+
+New entries link only to the canonical unended, unexpired session at successful creation, including from Overview. No session means no subtitle. Only the nullable FK is stored; the italic localized subtitle resolves `Session N[. title]` from `game_sessions`. Editing never rebinds it or changes creation metadata. Session deletion clears the FK, not the entry; campaign deletion cascades Notes consistently with campaign-owned records.
+
+Current active participants may mutate only their own entries through the authoritative RPC. Completion makes Notes read/search-only on the Campaign page. Removal retains owner-readable, read-only rows but no removed-player navigation entry point. Global Personal Notes and future archive metadata handling are deferred in IDEA-008. Notes has no Realtime: opening/refreshing loads fresh data; mutations update this screen; another open screen changes only after reopening/refresh.
+
+Game Sessions now have immutable per-campaign sequential numbers (starting at 1, never reused) and optional immutable titles. Historical rows are numbered by `started_at, id` without changing IDs or Journal links. GM Start first opens a compact optional-name input with Start/Cancel; blank trimmed input creates no title. Legacy Start remains compatible. End, renew, expiry, completion, Journal, Dice and LiveKit separation remain unchanged.
 
 ## Open questions for later milestones
 
-- Can a Player have multiple active characters in one campaign?
 - What information is retained in a richer completed-campaign archive?
 - Which campaign events appear in activity history?
 - Should account deletion offer an export before a Game Master's campaigns are cascade-deleted?

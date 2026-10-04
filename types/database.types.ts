@@ -377,6 +377,60 @@ export type Database = {
           },
         ]
       }
+      campaign_note_entries: {
+        Row: {
+          body: string
+          campaign_id: string
+          campaign_name_snapshot: string
+          created_at: string
+          created_timezone: string
+          edited_at: string | null
+          edited_timezone: string | null
+          game_session_id: string | null
+          id: string
+          owner_id: string
+        }
+        Insert: {
+          body: string
+          campaign_id: string
+          campaign_name_snapshot: string
+          created_at: string
+          created_timezone: string
+          edited_at?: string | null
+          edited_timezone?: string | null
+          game_session_id?: string | null
+          id?: string
+          owner_id: string
+        }
+        Update: {
+          body?: string
+          campaign_id?: string
+          campaign_name_snapshot?: string
+          created_at?: string
+          created_timezone?: string
+          edited_at?: string | null
+          edited_timezone?: string | null
+          game_session_id?: string | null
+          id?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_note_entries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_note_session_campaign_fk"
+            columns: ["campaign_id", "game_session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["campaign_id", "id"]
+          },
+        ]
+      }
       campaign_player_publication_permissions: {
         Row: {
           audio_allowed: boolean
@@ -501,7 +555,7 @@ export type Database = {
           name: string
           owner_id: string
           portrait_url: string | null
-          sheet_data: Json
+          sheet_data: NonNullable<Json>
           updated_at: string
           visibility: string
         }
@@ -513,7 +567,7 @@ export type Database = {
           name: string
           owner_id: string
           portrait_url?: string | null
-          sheet_data?: Json
+          sheet_data?: NonNullable<Json>
           updated_at?: string
           visibility?: string
         }
@@ -525,7 +579,7 @@ export type Database = {
           name?: string
           owner_id?: string
           portrait_url?: string | null
-          sheet_data?: Json
+          sheet_data?: NonNullable<Json>
           updated_at?: string
           visibility?: string
         }
@@ -586,7 +640,7 @@ export type Database = {
         Row: {
           actor_id: string | null
           created_at: string
-          event_data: Json
+          event_data: NonNullable<Json>
           event_kind: string
           game_session_id: string
           id: string
@@ -595,7 +649,7 @@ export type Database = {
         Insert: {
           actor_id?: string | null
           created_at?: string
-          event_data: Json
+          event_data: NonNullable<Json>
           event_kind: string
           game_session_id: string
           id?: string
@@ -604,7 +658,7 @@ export type Database = {
         Update: {
           actor_id?: string | null
           created_at?: string
-          event_data?: Json
+          event_data?: NonNullable<Json>
           event_kind?: string
           game_session_id?: string
           id?: string
@@ -627,8 +681,10 @@ export type Database = {
           ended_at: string | null
           id: string
           presence_expires_at: string
+          session_number: number
           started_at: string
           started_by: string | null
+          title: string | null
         }
         Insert: {
           campaign_id: string
@@ -636,8 +692,10 @@ export type Database = {
           ended_at?: string | null
           id?: string
           presence_expires_at?: string
+          session_number: number
           started_at?: string
           started_by?: string | null
+          title?: string | null
         }
         Update: {
           campaign_id?: string
@@ -645,8 +703,10 @@ export type Database = {
           ended_at?: string | null
           id?: string
           presence_expires_at?: string
+          session_number?: number
           started_at?: string
           started_by?: string | null
+          title?: string | null
         }
         Relationships: [
           {
@@ -664,8 +724,8 @@ export type Database = {
           created_at: string
           id: string
           owner_id: string
-          request_data: Json
-          result_data: Json
+          request_data: NonNullable<Json>
+          result_data: NonNullable<Json>
           roller_kind: string
           schema_version: number
           sequence_number: number
@@ -675,8 +735,8 @@ export type Database = {
           created_at?: string
           id?: string
           owner_id: string
-          request_data: Json
-          result_data: Json
+          request_data: NonNullable<Json>
+          result_data: NonNullable<Json>
           roller_kind: string
           schema_version: number
           sequence_number?: never
@@ -686,8 +746,8 @@ export type Database = {
           created_at?: string
           id?: string
           owner_id?: string
-          request_data?: Json
-          result_data?: Json
+          request_data?: NonNullable<Json>
+          result_data?: NonNullable<Json>
           roller_kind?: string
           schema_version?: number
           sequence_number?: never
@@ -730,7 +790,10 @@ export type Database = {
         Args: { raw_token: string }
         Returns: string
       }
-      clear_personal_roll_history: { Args: never; Returns: number }
+      clear_personal_roll_history: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       clear_personal_roll_history_by_kinds: {
         Args: { p_roller_kinds: string[] }
         Returns: number
@@ -835,12 +898,41 @@ export type Database = {
           ended_at: string | null
           id: string
           presence_expires_at: string
+          session_number: number
           started_at: string
           started_by: string | null
+          title: string | null
         }[]
         SetofOptions: {
           from: "*"
           to: "game_sessions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      mutate_campaign_note: {
+        Args: {
+          action: string
+          entry_body?: string
+          entry_timezone?: string
+          target_campaign_id: string
+          target_entry_id?: string
+        }
+        Returns: {
+          body: string
+          campaign_id: string
+          campaign_name_snapshot: string
+          created_at: string
+          created_timezone: string
+          edited_at: string | null
+          edited_timezone: string | null
+          game_session_id: string | null
+          id: string
+          owner_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "campaign_note_entries"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -857,7 +949,7 @@ export type Database = {
         Returns: {
           actor_id: string | null
           created_at: string
-          event_data: Json
+          event_data: NonNullable<Json>
           event_kind: string
           game_session_id: string
           id: string
@@ -883,8 +975,8 @@ export type Database = {
           created_at: string
           id: string
           owner_id: string
-          request_data: Json
-          result_data: Json
+          request_data: NonNullable<Json>
+          result_data: NonNullable<Json>
           roller_kind: string
           schema_version: number
           sequence_number: number
@@ -904,8 +996,10 @@ export type Database = {
           ended_at: string | null
           id: string
           presence_expires_at: string
+          session_number: number
           started_at: string
           started_by: string | null
+          title: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -942,8 +1036,30 @@ export type Database = {
           ended_at: string | null
           id: string
           presence_expires_at: string
+          session_number: number
           started_at: string
           started_by: string | null
+          title: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "game_sessions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      start_named_game_session: {
+        Args: { session_title: string; target_campaign_id: string }
+        Returns: {
+          campaign_id: string
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          presence_expires_at: string
+          session_number: number
+          started_at: string
+          started_by: string | null
+          title: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -1033,8 +1149,7 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -1058,8 +1173,7 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -1083,8 +1197,7 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }

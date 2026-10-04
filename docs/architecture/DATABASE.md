@@ -2,11 +2,11 @@
 
 ## Status
 
-Current applied Production database state:
+Phase 4G release baseline before its forward-only migration:
 
 ```text
 main
-01d917688ddadb5366949a714bba462b7c5c44b2
+371df4e74354306f673f4224008712608d943ce6
 ```
 
 Applied migrations:
@@ -29,9 +29,12 @@ supabase/migrations/20260910122247_game_sessions_and_journal.sql
 supabase/migrations/20260911120000_campaign_dice_journal.sql
 supabase/migrations/20260911120001_bind_campaign_dice_to_expected_session.sql
 supabase/migrations/20260911121613_publish_game_session_state_realtime.sql
+supabase/migrations/20261002160849_game_room_character_invariants.sql
+supabase/migrations/20261004112908_personal_campaign_notes.sql
+supabase/migrations/20261004121513_index_personal_notes_campaign.sql
 ```
 
-All seventeen listed migrations are current in Production. The first Phase 4D2 migration creates `game_sessions`, `game_session_journal_events`, lifecycle RPCs, participant-readable RLS, Journal-write guards, and the autonomous `pg_cron` expiry job. The next migration adds the service-role-only authoritative Campaign Dice writer and publishes Journal events through Supabase Realtime. The binding migration replaces that RPC signature with an exact expected Game Session ID so an in-flight roll cannot attach to a newly started session. `20260911121613_publish_game_session_state_realtime.sql` idempotently adds `game_sessions` to the `supabase_realtime` publication so Start/End state propagates in realtime.
+All listed migrations are current in Production after the Phase 4G release. The first Phase 4D2 migration creates `game_sessions`, `game_session_journal_events`, lifecycle RPCs, participant-readable RLS, Journal-write guards, and the autonomous `pg_cron` expiry job. The next migration adds the service-role-only authoritative Campaign Dice writer and publishes Journal events through Supabase Realtime. The binding migration replaces that RPC signature with an exact expected Game Session ID so an in-flight roll cannot attach to a newly started session. `20260911121613_publish_game_session_state_realtime.sql` idempotently adds `game_sessions` to the `supabase_realtime` publication so Start/End state propagates in realtime.
 
 The earlier Phase 4D1 combined-CoC migration preserves the generic personal-history table and RPC signature, changes prospective CoC pruning to the newest six rows total across both CoC kinds, and leaves VtM and Custom at six rows per kind. No existing rows were bulk-rewritten. The application registry remains authoritative for supported personal kinds and versions.
 
@@ -268,6 +271,7 @@ custom_dice_presets
 personal_roll_history
 game_sessions
 game_session_journal_events
+campaign_note_entries
 campaigns
 campaign_members
 campaign_invitations
@@ -498,15 +502,28 @@ Security and lifecycle verification exposed three issues that were corrected thr
 - campaign tables remain game-system neutral;
 - applied migrations are immutable.
 
+## Personal Campaign Notes — Phase 4G
+
+`20261004112908_personal_campaign_notes.sql` adds:
+
+- `game_sessions.session_number`: immutable positive integer, unique per campaign, deterministic backfill by `started_at, id`;
+- immutable nullable `title`, trimmed/blank-to-null, maximum 120 characters;
+- private `game_session_counters` (no application grants), atomically incremented before INSERT; deleted/ended/expired numbers are never reused;
+- `start_named_game_session(uuid,text)`; existing `start_game_session(uuid)` stays compatible as an unnamed wrapper;
+- `campaign_note_entries`: campaign/owner FKs, plain body (1–20,000 characters, nonblank), immutable campaign-name snapshot, server creation timestamp/saved timezone, nullable latest-edit pair and nullable session FK;
+- same-campaign composite session FK with ON DELETE SET NULL for session ID only; campaign/Auth-owner deletion cascades Notes, membership removal does not;
+- owner-only SELECT RLS/grant, no authenticated direct writes or anonymous access;
+- authenticated `mutate_campaign_note(uuid,text,uuid,text,text)` for create/edit/delete, with authoritative identity/session/metadata and active-participant/ownership checks.
+
+The campaign lock serializes writes with completion/removal; creation locks/revalidates the canonical session against expiry. Editing changes only body/latest edit metadata; a trigger protects immutable identity/creation fields and original session association, except FK cleanup. Removed/completed owners retain SELECT, with writes denied. The API never reads another owner's rows; whole journal loading internally batches beyond the PostgREST row cap, without UI pagination. Notes is NOT in `supabase_realtime`; existing session/Journal publications and cron expiry are unchanged. Types are regenerated, never manually maintained.
+
+Historical session/Journal rows and IDs are preserved. Production release verifies counts/digests, numbering, constraints, grants/RLS and migration history without fixtures. Global Notes/removed-archive metadata handling is deferred in IDEA-008.
+
+`20261004121513_index_personal_notes_campaign.sql` adds the full campaign FK index, including session-unlinked entries. It is a separate forward-only migration because the preceding migration was already applied locally; neither applied migration is rewritten.
+
 ## Future schema areas
 
-Approved but not implemented:
-
-```text
-campaign_notes for Phase 4G shared and GM-private scope
-```
-
-The Phase 4C1 image-only Campaign Gallery uses the existing campaign image tables and private Storage bucket. Its four fixed categories are metadata on `campaign_images`; no broad Handout, NPC, or Maps table was added. The narrow Game Session and Journal event envelope does not introduce richer session content, Chronicle records, notes, or archives. General document Handouts, structured NPCs or maps, richer Sessions, Chronicle records, and standalone provider-room mappings are not active roadmap schema areas.
+The Phase 4C1 image-only Campaign Gallery uses the existing campaign image tables and private Storage bucket. Its four fixed categories are metadata on `campaign_images`; no broad Handout, NPC, or Maps table was added. The narrow Game Session and Journal event envelope does not introduce richer session content, Chronicle records or a richer archive product. General document Handouts, structured NPCs or maps, richer Sessions, Chronicle records, and standalone provider-room mappings are not active roadmap schema areas.
 
 Each future domain requires:
 

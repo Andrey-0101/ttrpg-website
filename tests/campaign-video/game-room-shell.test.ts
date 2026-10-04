@@ -240,7 +240,7 @@ test("Game Room workspace preserves the role-specific tool shell", () => {
   assert.match(workspace, /data-game-room-tool-navigation/u);
   assert.match(
     workspace,
-    /activeTool === "journal"[\s\S]*?"grid-cols-4"[\s\S]*?"grid-cols-\[3rem_repeat\(4,minmax\(0,1fr\)\)\]"/u,
+    /activeTool === "journal"[\s\S]*?"grid-cols-5"[\s\S]*?"grid-cols-\[2rem_repeat\(5,minmax\(0,1fr\)\)\]"/u,
   );
   assert.match(workspace, /disabled=\{!isGameMaster\}/u);
   assert.match(workspace, /translations\("tools\.journal"\)/u);
