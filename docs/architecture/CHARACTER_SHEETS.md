@@ -419,7 +419,7 @@ Linking an eligible own matching-system character requires no sharing step. One 
 
 Both version-1 draft parsers ignore obsolete properties in old browser drafts; newly written VtM/CoC drafts omit the removed property. Sheet content and system mechanics are unchanged.
 
-Character-access simplification maintenance status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. This does not reopen Phase 4 (CLOSED / DEPLOYED / ACCEPTED) or start Phase 5A (PLANNED / NOT STARTED).
+Character-access simplification maintenance status: CLOSED / DEPLOYED / ACCEPTED. Successful manual Production acceptance is recorded in [SECURITY.md](SECURITY.md#campaign-characters). Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
 
 ## Deferred work
 
