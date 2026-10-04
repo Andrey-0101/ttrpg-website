@@ -480,7 +480,6 @@ test("CoC draft and active-page storage use a separate versioned namespace", () 
     const draft = {
       version: 1 as const,
       name: "Harvey Walters",
-      visibility: "private" as const,
       activePage: "story" as const,
       sheetData: createDefaultCoc7eSheetData(),
     };

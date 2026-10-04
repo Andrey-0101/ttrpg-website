@@ -208,18 +208,17 @@ Implemented:
 Implemented:
 
 - system selection;
-- VtM V5 creation;
+- VtM V5 and CoC 7e creation;
 - explicit create status;
 - duplicate-submit protection;
 - unsaved-change protection;
 - optional portrait;
-- Private or Campaign visibility.
+- owner-private characters without a visibility selector or persistence field.
 
-Planned catalogue entries are displayed but have no active controls or routes. Only the VtM V5 creation route is available; direct unsupported system IDs remain unavailable.
-
-Examples of registered but unavailable systems include:
+Supported character system IDs:
 
 ```text
+vtm-v5
 call-of-cthulhu-7e
 ```
 
@@ -232,15 +231,14 @@ call-of-cthulhu-7e
 Implemented:
 
 - owner view and edit;
-- two logical VtM pages;
+- existing system-specific VtM/CoC pages;
 - explicit Save;
 - local draft restoration;
 - portrait replacement/removal;
-- Private or Campaign visibility;
 - unavailable direct-route state;
-- campaign-sharing indication when applicable.
+- explicit owner-filtered route; no non-owner editor access.
 
-### Shared campaign character
+### Campaign GM read-only character
 
 ```text
 /[locale]/campaigns/[id]/characters/[characterId]
@@ -250,7 +248,8 @@ Implemented:
 
 - read-only normalized sheet;
 - signed portrait;
-- campaign participant access;
+- exact active campaign GM access through an eligible active Player assignment (owner may also view their own sheet);
+- other Players denied another owner's sheet and portrait;
 - safe unavailable state;
 - return navigation to Campaign Overview.
 
@@ -351,7 +350,7 @@ The accepted participant model is one GM plus up to six Players. The responsive 
 | Dashboard | authenticated user |
 | My Characters | authenticated owner |
 | Character edit/delete | owner only |
-| Campaign shared character | active campaign GM or Player; read only |
+| Campaign linked character | owner or exact eligible active campaign GM; campaign route read only; other Players denied |
 | My Campaigns | authenticated participant |
 | Campaign Overview | campaign GM or active Player |
 | Campaign Gallery | campaign GM; active Players see only RLS-authorized images; completed GM read-only; completed Players denied image access |

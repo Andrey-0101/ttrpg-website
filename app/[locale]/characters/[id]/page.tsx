@@ -46,6 +46,7 @@ export async function generateMetadata({
     .from("characters")
     .select("name")
     .eq("id", id)
+    .eq("owner_id", claimsData.claims.sub)
     .maybeSingle();
 
   return {
@@ -82,9 +83,10 @@ export default async function CharacterPage({
   const { data: character, error } = await supabase
     .from("characters")
     .select(
-      "id, name, owner_id, game_system, visibility, sheet_data, portrait_url",
+      "id, name, owner_id, game_system, sheet_data, portrait_url",
     )
     .eq("id", id)
+    .eq("owner_id", userId)
     .single();
 
   if (error) {
@@ -113,7 +115,6 @@ export default async function CharacterPage({
           ...character,
           portraitSignedUrl,
         }}
-        readOnly={character.owner_id !== userId}
         assignmentSessionLocked={await isCharacterAssignmentSessionLocked(supabase, character.id)}
       />
     </main>

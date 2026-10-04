@@ -57,7 +57,8 @@ A trusted group reduces product scope. It does not make missing authorization sa
 
 - owner-only insert, update, and delete;
 - owner read;
-- campaign-derived read-only SELECT;
+- exact active-assignment GM read-only SELECT; other Players receive no sheet access;
+- ordinary character list/editor queries explicitly filter owner ID;
 - no GM or Player edit permission for another user's character;
 - safe unavailable state for missing or inaccessible direct routes;
 - explicit mutation locks and unsaved-change protection.
@@ -68,7 +69,7 @@ A trusted group reduces product scope. It does not make missing authorization sa
 - MIME and size limits;
 - owner-folder upload, update, delete, and read;
 - signed URLs;
-- campaign-derived read-only portrait access;
+- exact active-assignment GM read-only portrait access, using the same sheet predicate;
 - owner ID and character ID validation in the object path;
 - no public bucket access.
 
@@ -117,13 +118,17 @@ This foundation is current in Production. All seven campaign-video tables use RL
 
 - owner-only linking;
 - active campaign required;
-- campaign visibility required;
+- no character visibility or separate sharing step;
 - matching game system required;
-- active owner participation required;
+- current Player ownership (`owner_id = linked_by`) required; GM assignment prohibited;
 - one active campaign per character;
 - owner or GM unlink;
-- GM and Players receive read only;
-- automatic unlink after Player removal, departure, completion, or character ineligibility.
+- one active character per Player;
+- only the exact campaign GM receives read-only sheet/portrait access; other Players, outsiders and anonymous users are denied;
+- owner or GM unlink is blocked by an active Game Session; actively linked characters cannot be deleted;
+- automatic unlink after Player removal, departure, completion, or an incompatible game-system change, preserving the existing session locks.
+
+The character-access simplification is IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Local DB tests cover owner CRUD, GM read-only access, other-Player/outsider/anonymous denial, portrait policies, unlink/removal/completion, and existing assignment invariants. Expand compatibility is tested separately before contract cleanup. Production release applies the compatible authorization migration first, activates/verifies the exact new application SHA, then removes the obsolete column; no Production fixtures are created. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED and Phase 5A remains PLANNED / NOT STARTED.
 
 ### Dynamic Game Room membership
 
@@ -262,7 +267,7 @@ The four Phase 4D2 migrations are applied in Production. Game Session state and 
 ### Known non-blocking advisor items
 
 - hosted leaked-password protection is currently disabled;
-- the intentionally separate owner and campaign-sharing SELECT paths on `characters` produce an existing multiple-permissive-policy performance warning;
+- the intentionally separate owner and assignment-derived GM SELECT paths on `characters` produce an existing multiple-permissive-policy performance warning;
 - the advisor reports the intentional authenticated `SECURITY DEFINER` RPC surface; authorization remains enforced inside the reviewed functions, and this aggregate warning is not by itself evidence of unauthorized access;
 - unused-index notices remain informational on the young/low-volume schema;
 - two informational unindexed-foreign-key notices currently apply to `game_session_journal_events.actor_id` and `game_sessions.started_by`.

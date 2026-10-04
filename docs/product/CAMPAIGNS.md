@@ -178,20 +178,19 @@ Behavior:
 - a character can have only one active campaign assignment;
 - historical unlinked rows may remain;
 - the character owner creates the assignment;
-- the character must use `visibility = campaign`;
+- no visibility or separate sharing step is required;
 - character and campaign game systems must match;
-- the owner must still participate in the campaign;
+- the owner must be a current Player, not the Game Master;
 - linking does not transfer ownership;
-- only the owner can edit or delete the character;
-- campaign participants receive read-only access while the assignment remains active;
+- only the owner can edit; actively linked characters cannot be deleted;
+- only that campaign's Game Master receives additional read-only sheet and portrait access while the eligible assignment remains active;
 - the owner or Game Master can unlink;
 - unlinking never deletes the character;
 - removal of a Player closes assignments for that Player's characters;
-- changing a linked character away from Campaign visibility closes its assignment;
-- changing the linked character's game system closes its assignment;
+- an incompatible game-system change closes the assignment, subject to the existing active Game Session unlink lock;
 - campaign completion closes all active assignments.
 
-VtM and Call of Cthulhu characters are not cross-compatible. CoC character creation now uses the existing Character Library and the same campaign-compatible assignment/read-only sharing boundary as VtM, while system matching continues to prevent incompatible linking. Game Room Characters is deployed and accepted in Phase 4F2.
+VtM and Call of Cthulhu characters are not cross-compatible. Both use the existing Character Library and the same owner-private/assignment-derived GM read-only boundary; system matching continues to prevent incompatible linking. Game Room Characters is deployed and accepted in Phase 4F2. One active character per Player, GM assignment prohibition and active Game Session unlink locks remain enforced.
 
 ### Campaign video data foundation
 
@@ -209,25 +208,24 @@ The GM is never a media-group member. Removing a prohibition does not activate a
 
 | Actor | Active linked campaign character |
 |---|---|
-| Character owner | Read, update, and delete through owner policies |
+| Character owner | Read and update through owner policies; delete only when not actively linked |
 | Campaign Game Master | Read only through campaign access |
-| Active campaign Player | Read only through campaign access |
+| Another active campaign Player | No sheet or portrait access |
 | Removed or departed Player | No campaign-derived access |
 | Unrelated authenticated user | No access |
 | Anonymous user | No access |
 
 Campaign-derived access requires all of the following:
 
-- `visibility = campaign`;
 - character and campaign game systems match;
 - an active assignment exists;
 - the campaign is active;
-- the character owner is still the Game Master or an active Player;
-- the viewer is the Game Master or an active Player.
+- the character owner equals assignment `linked_by` and is still a current Player, not the GM;
+- the viewer is the exact campaign's Game Master.
 
 Private portrait access follows the same campaign boundary. The Storage policy validates the owner ID and character ID encoded in the object path.
 
-`public` visibility still has no public route or public RLS policy.
+No character visibility state or public character access exists. Ordinary My Characters routes explicitly filter by owner, even when a GM has assignment-derived SELECT access. The owner retains own sheet access after leaving a campaign; other Players never gain another owner's sheet access from membership alone.
 
 ## Current routes
 
@@ -291,12 +289,12 @@ Only game systems marked available in the game-system registry may be selected.
 ### Characters
 
 - campaign-compatible owned characters are shown;
-- Private characters are not linkable;
+- linking requires no visibility setting or sharing step;
 - characters already active in another campaign are not linkable;
-- linked characters are visible to current participants;
-- shared sheets use a campaign route and are read-only;
+- assignment rows remain visible to current participants, but sheets/portraits are accessible only to their owner and the exact eligible campaign GM;
+- GM sheets use the existing campaign read-only route; other Players receive no sheet link;
 - owner editing remains under My Characters;
-- owner or Game Master may unlink while active.
+- owner or Game Master may unlink only when the active Game Session lock permits.
 
 ### Campaign management
 
@@ -399,7 +397,7 @@ docs/architecture/DATABASE.md
 
 The current campaign-video and Game Room scope is accepted in Production. LiveKit is the accepted provider for this campaign implementation. Standalone Video Rooms are not active roadmap scope and would require a separate future product, authorization, and provider review.
 
-The Campaign Foundation security script tested:
+The historical Campaign Foundation security script tested (its original participant-sharing semantics were later narrowed by the character-access maintenance fix):
 
 - GM creation;
 - prevention of delegated or second GM creation;

@@ -6,12 +6,10 @@ import {
 } from "./schema";
 
 export type Coc7eSheetPage = "investigator" | "story";
-export type Coc7eDraftVisibility = "private" | "campaign" | "public";
 
 export type Coc7eEditorDraft = {
   version: 1;
   name: string;
-  visibility: Coc7eDraftVisibility;
   activePage: Coc7eSheetPage;
   sheetData: Coc7eSheetData;
 };
@@ -24,10 +22,6 @@ function getSessionStorage(): StorageLike | null {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isVisibility(value: unknown): value is Coc7eDraftVisibility {
-  return value === "private" || value === "campaign" || value === "public";
 }
 
 function isSheetPage(value: unknown): value is Coc7eSheetPage {
@@ -89,7 +83,6 @@ export function readCoc7eEditorDraft(
       !isObject(parsed) ||
       parsed.version !== 1 ||
       typeof parsed.name !== "string" ||
-      !isVisibility(parsed.visibility) ||
       !isSheetPage(parsed.activePage) ||
       !("sheetData" in parsed)
     ) {
@@ -100,7 +93,6 @@ export function readCoc7eEditorDraft(
     return {
       version: 1,
       name: parsed.name,
-      visibility: parsed.visibility,
       activePage: parsed.activePage,
       sheetData: normalizeCoc7eSheetData(parsed.sheetData as Json),
     };
@@ -115,7 +107,7 @@ export function writeCoc7eEditorDraft(
   draft: Coc7eEditorDraft,
 ): void {
   try {
-    getSessionStorage()?.setItem(storageKey, JSON.stringify(draft));
+    getSessionStorage()?.setItem(storageKey, JSON.stringify({ version: draft.version, name: draft.name, activePage: draft.activePage, sheetData: draft.sheetData }));
   } catch {
     // Draft persistence is optional when browser storage is unavailable.
   }

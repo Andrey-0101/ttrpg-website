@@ -27,7 +27,7 @@ New object paths use:
 USER_ID/CHARACTER_ID/UNIQUE_FILE_NAME
 ```
 
-Use owner-folder Storage policies and signed URLs.
+Use owner-folder Storage policies and signed URLs. An eligible active Player assignment additionally grants only that exact active campaign's GM portrait SELECT through the same predicate as sheet access. Other Players receive no portrait access, and all mutation remains owner-only.
 
 Limits:
 
@@ -76,4 +76,4 @@ Deferred to avoid a migration with limited user value.
 - define orphan cleanup before public launch;
 - retain old portrait until new upload and row update succeed;
 - review focal-point/crop metadata separately;
-- update Storage tests when campaign/public sharing is implemented.
+- retain owner/assignment-derived GM Storage tests; no public portrait or campaign-wide sheet-sharing access exists.

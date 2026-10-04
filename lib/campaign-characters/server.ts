@@ -33,7 +33,7 @@ export async function getGameRoomCharacters(campaignId: string, playerId?: strin
   if (assignmentError) return failure(503);
   const ids = (assignments ?? []).map((assignment) => assignment.character_id);
   const characterResult = ids.length ? await supabase.from("characters")
-    .select("id, name, owner_id, visibility, game_system").in("id", ids)
+    .select("id, name, owner_id, game_system").in("id", ids)
     : { data: [], error: null };
   if (characterResult.error) return failure(503);
   const rows = buildGameRoomCharacterRows({
@@ -45,9 +45,9 @@ export async function getGameRoomCharacters(campaignId: string, playerId?: strin
   if (!row?.canOpen || !row.characterId || campaign.status !== "active") return failure(404);
   // Resolve through the player's CURRENT campaign assignment, never an arbitrary character ID.
   const { data: character, error: sheetError } = await supabase.from("characters")
-    .select("id, name, owner_id, game_system, visibility, sheet_data, portrait_url")
+    .select("id, name, owner_id, game_system, sheet_data, portrait_url")
     .eq("id", row.characterId).eq("owner_id", playerId)
-    .eq("visibility", "campaign").eq("game_system", campaign.game_system).maybeSingle();
+    .eq("game_system", campaign.game_system).maybeSingle();
   if (sheetError || !character || !["vtm-v5", "call-of-cthulhu-7e"].includes(normalizeGameSystemId(character.game_system) ?? "")) return failure(404);
   // Recheck after reading the sheet in case the assignment closed between requests.
   const { data: currentAssignment, error: currentError } = await supabase.from("campaign_characters")

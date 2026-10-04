@@ -5,7 +5,7 @@
 
 ## Context
 
-The platform must support multiple TTRPG systems with different character-sheet structures. Common character data is useful for lists, ownership, visibility, and navigation, while system-specific fields vary significantly.
+The platform must support multiple TTRPG systems with different character-sheet structures. Common character data is useful for lists, ownership, authorization, and navigation, while system-specific fields vary significantly. Character access is owner-private with eligible active-assignment GM read-only access, not a stored visibility mode.
 
 ## Decision
 

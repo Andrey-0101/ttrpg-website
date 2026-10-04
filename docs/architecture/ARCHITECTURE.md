@@ -210,11 +210,11 @@ Owns:
 Character lifecycle
 Common character columns
 Portrait lifecycle
-Visibility
+Owner-private access
 Sheet selection
 Draft lifecycle
 Owner editing
-Campaign shareability state
+Assignment-derived GM read-only access
 ```
 
 It delegates system-specific data and rendering to a game-system domain.
@@ -424,16 +424,17 @@ Campaign authorization is derived from:
 
 There is no role column in `campaign_members`.
 
-Shared character read access requires:
+Assignment-derived character read access is restricted to the exact campaign GM and requires:
 
 - an active campaign;
-- current campaign participation;
 - active assignment;
-- `visibility = campaign`;
+- the viewer is that campaign's GM;
+- character owner equals `linked_by` and remains a current Player, not the GM;
 - matching game systems;
-- continued owner participation.
 
-Owner editing remains separate from campaign read access.
+Owner editing remains separate: ordinary list/editor routes explicitly filter owner ID, while the campaign route reuses the read-only renderer. Other Players, outsiders and anonymous users cannot read another owner's sheet or portrait. No character visibility flag exists. Linking needs only the existing ownership, membership, system and assignment rules; one-active-character constraints, GM assignment prohibition and active-session unlink locks remain intact. Private portrait SELECT follows the same owner/GM predicate; mutation remains owner-only.
+
+The maintenance release uses an expand/contract sequence: `20261004161535_character_assignment_gm_read_access.sql` keeps the legacy column while replacing authorization and eligibility; the exact new app must be READY and active on `ttrpg.fans` before `20261004161539_remove_character_visibility.sql` drops the column. Neither migration rewrites character content or assignments. Old browser draft properties are ignored, and new drafts omit them.
 
 Campaign completion:
 

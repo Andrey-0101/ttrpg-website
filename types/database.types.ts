@@ -580,7 +580,6 @@ export type Database = {
           portrait_url: string | null
           sheet_data: NonNullable<Json>
           updated_at: string
-          visibility: string
         }
         Insert: {
           created_at?: string
@@ -592,7 +591,6 @@ export type Database = {
           portrait_url?: string | null
           sheet_data?: NonNullable<Json>
           updated_at?: string
-          visibility?: string
         }
         Update: {
           created_at?: string
@@ -604,7 +602,6 @@ export type Database = {
           portrait_url?: string | null
           sheet_data?: NonNullable<Json>
           updated_at?: string
-          visibility?: string
         }
         Relationships: []
       }

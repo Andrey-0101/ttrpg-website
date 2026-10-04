@@ -447,7 +447,7 @@ Use fixed die arrays for:
 - removed Player;
 - Outsider;
 - selected own character;
-- selected shared character where policy permits;
+- selected actively linked character through owner or exact campaign GM read policy (other Players denied);
 - inaccessible character;
 - Realtime consistency;
 - immutable persisted result.

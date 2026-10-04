@@ -41,6 +41,8 @@ Current Production facts:
 - Phase 4C2 is implemented and accepted in Production; Phase 4D1, its focused UX follow-up, and all three personal-history migrations are deployed.
 - Phase 4D2 and its focused Game Room navigation polish are deployed and passed multi-user and final UI-polish Production acceptance.
 
+Character-access maintenance after Phase 4 removes the three-state visibility model: sheets are owner-private, and an eligible active assignment grants only the exact campaign GM read-only sheet/portrait access. Linking needs no sharing setting; other Players are denied. Maintenance status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
+
 Standalone Video Rooms are not part of the active roadmap. They remain an uncommitted idea in [`IDEAS_BACKLOG.md`](IDEAS_BACKLOG.md). ADR-009 selects LiveKit only for the accepted campaign Game Room and does not automatically select a provider or product model for any future standalone product.
 
 > **Vampire edition note:** The current implementation targets Vampire: The Masquerade 5th Edition (V5). White Wolf announced Vampire: The Masquerade 6th Edition (V6) in July 2026; V6 is currently in alpha development, introduces materially different mechanics, and has no announced release date. Depending on V6 development and release timing relative to this project, V5 support may be migrated to or replaced by V6 before public release.
@@ -61,7 +63,7 @@ Delivered the project architecture, database/RLS/Storage documentation, localiza
 
 **Status: Complete**
 
-Delivered the usable VtM V5 character workflow, explicit save and lifecycle controls, private portraits, responsive sheets, campaign visibility, read-only campaign sharing, and verified friend-alpha behavior.
+Delivered the usable VtM V5 character workflow, explicit save and lifecycle controls, private portraits, responsive sheets, and verified friend-alpha behavior. Post-Phase-4 maintenance replaces its former visibility model with owner-private sheets and assignment-derived GM read-only access.
 
 Deferred items such as print/PDF, portrait crop controls, public character sharing, and final decorative design remain outside this completed milestone.
 
@@ -69,7 +71,7 @@ Deferred items such as print/PDF, portrait crop controls, public character shari
 
 **Status: Complete**
 
-Delivered the campaign authorization boundary: one immutable GM, up to six Players, invitations, membership lifecycle, character assignment, shared read-only character access, campaign lifecycle, RLS, Storage policies, and multi-user security verification.
+Delivered the campaign authorization boundary: one immutable GM, up to six Players, invitations, membership lifecycle, character assignment, campaign lifecycle, RLS, Storage policies, and multi-user security verification. Current assignment-derived sheet/portrait reading is restricted to the exact eligible campaign GM; other Players receive no access to another owner's sheet.
 
 The generic campaign shell supports V5 and CoC 7e. System-specific capabilities remain independently gated.
 
@@ -223,7 +225,7 @@ The focused Production checklist passed. Phase 4E is closed.
 
 Delivered a versioned CoC 7e `sheet_data` schema, safe normalization and validation, two responsive sheet pages, derived thresholds and characteristics-based formulas, the complete fixed skill catalogue and specialty slots, combat rows, Story/Backstory/Gear/Wealth, EN/RU presentation, portraits, drafts, summary cards, and the existing create/view/edit/save/delete workflow.
 
-The implementation reuses `public.characters`, JSONB, portrait Storage, visibility, owner CRUD, campaign-compatible linking, RLS, and read-only campaign sharing. It adds no database migration or parallel character persistence. The CoC rules remain in the CoC system module, while the shared portrait UI preserves the existing VtM behavior.
+The implementation reuses `public.characters`, JSONB, portrait Storage, owner CRUD, campaign-compatible linking, RLS, and the existing read-only renderer. Phase 4F1 itself added no database migration or parallel character persistence. Later character-access maintenance removes visibility and restricts assignment-derived sheet/portrait reading to the exact campaign GM. CoC rules remain in the CoC system module, while the shared portrait UI preserves existing VtM behavior.
 
 The sheet follows the functional hierarchy of the supplied two-page reference without copying official trade dress: Page 1 uses the approved upper-left portrait, identity, Characteristics, derived/status, three-column Skills, and Combat composition; Page 2 contains Story, the approved Backstory fields, Gear & Possessions, and string-based Wealth. The required Chaosium Fan Material Policy notice is shown beneath the CoC sheet.
 
@@ -233,7 +235,7 @@ The sheet follows the functional hierarchy of the supplied two-page reference wi
 
 The Characters tool lists current players in the existing player-slot order, excluding GM. Each player has at most one active campaign character. Owners open the existing editable VtM/CoC CharacterEditor inside Display; GM opens linked player sheets read-only through existing RLS. Other players' rows and empty rows are not interactive. Reopening uses ordinary fresh requests, with no character Realtime or polling.
 
-Forward migration `20261002160849_game_room_character_invariants.sql` adds one-active-character-per-player enforcement, prohibits GM assignment, prevents deleting actively linked characters, and blocks explicit or indirect unlink while the canonical Game Session is active. Campaign completion closes the session before assignments. Unlinked, incompatible, inaccessible, wrong-owner, and private characters remain unavailable. Production migration and release require conflict-free read-only preflight and green release checks.
+Forward migration `20261002160849_game_room_character_invariants.sql` adds one-active-character-per-player enforcement, prohibits GM assignment, prevents deleting actively linked characters, and blocks explicit or indirect unlink while the canonical Game Session is active. Campaign completion closes the session before assignments. Unlinked, incompatible, inaccessible and wrong-owner assignments remain unavailable. Current maintenance removes visibility eligibility without weakening these invariants and uses a compatible authorization migration, exact new app activation, then contract cleanup.
 
 The user accepted Phase 4F2 in Production, including the focused embedded CoC layout correction. The normal Character page and the accepted CoC Story page are unchanged.
 

@@ -6,15 +6,9 @@ import {
 
 export type VtmV5SheetPage = "core" | "background";
 
-export type VtmV5DraftVisibility =
-  | "private"
-  | "campaign"
-  | "public";
-
 export type VtmV5EditorDraft = {
   version: 1;
   name: string;
-  visibility: VtmV5DraftVisibility;
   activePage: VtmV5SheetPage;
   sheetData: VtmV5SheetData;
 };
@@ -26,16 +20,6 @@ function isObject(
     typeof value === "object" &&
     value !== null &&
     !Array.isArray(value)
-  );
-}
-
-function isVisibility(
-  value: unknown,
-): value is VtmV5DraftVisibility {
-  return (
-    value === "private" ||
-    value === "campaign" ||
-    value === "public"
   );
 }
 
@@ -127,7 +111,6 @@ export function readVtmV5EditorDraft(
       !isObject(parsed) ||
       parsed.version !== 1 ||
       typeof parsed.name !== "string" ||
-      !isVisibility(parsed.visibility) ||
       !isSheetPage(parsed.activePage) ||
       !("sheetData" in parsed)
     ) {
@@ -138,7 +121,6 @@ export function readVtmV5EditorDraft(
     return {
       version: 1,
       name: parsed.name,
-      visibility: parsed.visibility,
       activePage: parsed.activePage,
       sheetData: normalizeVtmV5SheetData(
         parsed.sheetData as Json,
@@ -161,7 +143,7 @@ export function writeVtmV5EditorDraft(
   try {
     window.sessionStorage.setItem(
       storageKey,
-      JSON.stringify(draft),
+      JSON.stringify({ version: draft.version, name: draft.name, activePage: draft.activePage, sheetData: draft.sheetData }),
     );
   } catch {
     // Draft persistence is optional when browser storage is unavailable.

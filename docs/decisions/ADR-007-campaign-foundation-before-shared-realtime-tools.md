@@ -36,11 +36,13 @@ The Game Master is stored directly on the campaign as `game_master_id`.
 
 Direct membership insertion is denied. Player membership is created only through atomic acceptance of a valid, unexpired, unrevoked, unused invitation.
 
-A character remains owned and editable only by its owner. Campaign participants receive read-only access only when the character:
+A character remains owned and editable only by its owner. As clarified by post-Phase-4 character-access maintenance, only the exact campaign GM receives additional read-only access when the character:
 
-- has `visibility = campaign`;
-- has an active campaign assignment;
-- belongs to a campaign the viewer can access.
+- has an active assignment to that active campaign;
+- belongs to assignment `linked_by`, who remains a current Player, not GM;
+- matches the campaign game system.
+
+This clarification removes the former three-state visibility model and campaign-wide Player sheet access; it does not reverse the Campaign Foundation sequencing or immutable single-GM decision. Linking requires no sharing setting. Other Players, outsiders and anonymous users cannot read another owner's sheet or portrait. The owner-only editor and existing GM read-only renderer remain separate, and portrait SELECT follows the same predicate. Existing assignment/session locks and lifecycle invariants remain enforced.
 
 Personal, non-shared dice may be implemented independently. Persisted campaign rolls, realtime feeds, and video-room tokens must use the campaign authorization boundary.
 
@@ -53,7 +55,7 @@ Positive:
 - a second Game Master cannot be created accidentally;
 - removing a Player removes future campaign-derived access;
 - invitation expiry and revocation are part of the foundation;
-- character ownership and campaign visibility remain separate;
+- character ownership and assignment-derived GM read-only access remain separate;
 - future dice and video features do not invent independent invite systems.
 
 Costs:
