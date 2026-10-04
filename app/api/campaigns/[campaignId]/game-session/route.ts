@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const MAX_BODY_BYTES = 256;
+const MAX_BODY_BYTES = 1024;
 
 export async function GET(
   _request: Request,
@@ -53,5 +53,5 @@ export async function POST(
   }
 
   const { campaignId } = await context.params;
-  return mutateGameSession(campaignId, action);
+  return mutateGameSession(campaignId, action, (body as { title?: string }).title);
 }

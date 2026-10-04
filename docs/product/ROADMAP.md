@@ -20,11 +20,12 @@ Completed foundation:
 - Phase 4D1 — CoC 7e Dice Roller, including contextual Back navigation, roller-scoped history, and live CoC Target bands;
 - Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice in the Game Room;
 - Phase 4E — Fair Turn Order Dice;
-- Phase 4F1 — CoC 7e Character Sheets (closed / deployed / accepted).
+- Phase 4F1 — CoC 7e Character Sheets (closed / deployed / accepted);
+- Phase 4F2 — Game Room Character Integration (closed / deployed / accepted).
 
 Current product implementation stage:
 
-- Phase 4F2 — Game Room Character Integration.
+- Phase 4G — Personal Campaign Notes (implemented / deployed / manual Production acceptance pending).
 
 Current Production facts:
 
@@ -33,7 +34,7 @@ Current Production facts:
 - supported capacity is one GM plus up to six Players;
 - the last human Production group test passed with one GM and four Players;
 - quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred;
-- the generic Call of Cthulhu 7e campaign shell, personal Dice Roller, and two-page character sheet are deployed; final owner acceptance of the character sheet remains pending;
+- the generic Call of Cthulhu 7e campaign shell, personal Dice Roller, and two-page character sheet are deployed and accepted;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
 - Phase 4C2 is implemented and accepted in Production; Phase 4D1, its focused UX follow-up, and all three personal-history migrations are deployed.
@@ -227,24 +228,30 @@ The sheet follows the functional hierarchy of the supplied two-page reference wi
 
 ### Phase 4F2 — Game Room Character Integration
 
-**Status: Implemented / manual Production acceptance pending**
+**Status: CLOSED / DEPLOYED / ACCEPTED**
 
 The Characters tool lists current players in the existing player-slot order, excluding GM. Each player has at most one active campaign character. Owners open the existing editable VtM/CoC CharacterEditor inside Display; GM opens linked player sheets read-only through existing RLS. Other players' rows and empty rows are not interactive. Reopening uses ordinary fresh requests, with no character Realtime or polling.
 
 Forward migration `20261002160849_game_room_character_invariants.sql` adds one-active-character-per-player enforcement, prohibits GM assignment, prevents deleting actively linked characters, and blocks explicit or indirect unlink while the canonical Game Session is active. Campaign completion closes the session before assignments. Unlinked, incompatible, inaccessible, wrong-owner, and private characters remain unavailable. Production migration and release require conflict-free read-only preflight and green release checks.
 
-The user reviewed the authenticated Phase 4F2 Preview. The only requested correction was the embedded CoC Investigator layout: portrait left, identity fields right, two-column Characteristics and three-column resources, Conditions and Skills, with narrower responsive layouts. The normal Character page and the accepted CoC Story page are unchanged. No additional user Preview approval gate is required for this correction; final Production manual acceptance remains pending.
+The user accepted Phase 4F2 in Production, including the focused embedded CoC layout correction. The normal Character page and the accepted CoC Story page are unchanged.
 
-### Phase 4G — Campaign Notes
+### Phase 4G — Personal Campaign Notes
 
-**Status: Planned**
+**Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING**
 
-Deliver only:
+Delivered scope:
 
-- shared notes editable or readable by permitted active campaign participants under an explicit authorization contract;
-- GM-private notes readable and writable only by the campaign GM.
+- completely private owner-only entries for every GM and Player; no shared Notes or special GM area;
+- continuous oldest-first plain-text journal, inline explicit create/edit/delete, no rich text, autosave, drafts, or unsaved-navigation warning;
+- active current participants can mutate their own entries; completed campaigns are a personal read-only archive;
+- removed owners retain a DB-readable, read-only archive, without a new removed-player navigation entry point;
+- shared component in Campaign Overview's Gallery/Notes actions and Game Room's `Journal | Gallery | Dice | Characters | Notes` row;
+- body / saved-timezone creation-date / linked Game Session search; no Realtime or UI pagination;
+- immutable campaign-name snapshot, server creation timestamp/timezone, original session link, and latest edit timestamp/timezone;
+- immutable sequential Game Session number and optional title, deterministic historical backfill, compatible legacy Start RPC, compact GM Start/Cancel name prompt.
 
-This phase does not add Sessions, Chronicle records, NPCs, Handouts, clues, maps, wikis, or general campaign-content modules.
+This phase extends only the existing canonical Game Session metadata. It does not add a richer Sessions product, Chronicle records, NPCs, Handouts, clues, maps, wikis, or general campaign-content modules. Global Personal Notes is deferred as IDEA-008. Phase 5 has not started; manual Production acceptance of Phase 4G is still required.
 
 ### Phase 4 exit result
 

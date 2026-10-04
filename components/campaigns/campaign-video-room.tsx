@@ -40,7 +40,7 @@ type CampaignVideoRoomProps = {
   sessionLoading: boolean;
   sessionBusy: boolean;
   sessionError: boolean;
-  onStartSession(): Promise<void>;
+  onStartSession(title?: string): Promise<void>;
   onEndSession(): Promise<void>;
   onJournalEvent(event: GameSessionState["journal"][number]): void;
 };

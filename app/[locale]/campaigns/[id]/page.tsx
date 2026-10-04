@@ -85,6 +85,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     locale,
     namespace: "CampaignHandouts",
   });
+  const notesTranslations = await getTranslations({ locale, namespace: "CampaignNotes" });
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } =
     await supabase.auth.getClaims();
@@ -453,6 +454,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       </section>
 
       <div className="mt-6 grid gap-6">
+        <div className="grid min-w-0 gap-4 md:grid-cols-2" data-campaign-gallery-notes>
         <CampaignHandoutsCard
           campaignId={campaign.id}
           title={handoutTranslations("title")}
@@ -461,6 +463,14 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           accessibleCount={handoutCountResult.count ?? 0}
           openLabel={handoutTranslations("overview.open")}
         />
+        <section className="min-w-0 rounded-lg border border-amber-200/35 bg-amber-950/20 p-5 sm:p-6">
+          <h2 className="text-2xl font-bold">{notesTranslations("title")}</h2>
+          <p className="mt-2 text-sm text-white/80">{notesTranslations("description")}</p>
+          <Link href={`/campaigns/${campaign.id}/notes`} className="mt-4 inline-flex min-h-11 items-center justify-center rounded border border-amber-200 px-4 py-2 font-semibold text-amber-50 hover:bg-amber-900/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200">
+            {notesTranslations("open")}
+          </Link>
+        </section>
+        </div>
 
         <CampaignGameRoomCard
           campaignId={campaign.id}

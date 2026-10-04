@@ -8,7 +8,7 @@ Phase 4D1 extends this architecture with a deployed CoC 7e personal dice domain,
 
 Phase 4D2 is deployed, manually accepted, and closed. It adds server-authoritative VtM V5 and CoC 7e Campaign Dice, exact-session Journal persistence, and Supabase Realtime for Journal and Game Session state without coupling those capabilities to LiveKit.
 
-Phase 4F1 adds the versioned CoC 7e character schema, responsive two-page sheet, system-specific normalization and formulas, EN/RU presentation, and existing Character Library/campaign-sharing integration without a database migration. Production manual acceptance remains pending.
+Phase 4F1 adds the versioned CoC 7e character schema, responsive two-page sheet, system-specific normalization and formulas, EN/RU presentation, and existing Character Library/campaign-sharing integration without a database migration. Production manual acceptance is complete.
 
 Verified production baseline:
 
@@ -83,7 +83,7 @@ The campaign Game Room is the parent application boundary. It owns session state
 
 Persistent `game_sessions` rows provide the exact scope for the current Journal and Campaign Dice events. A partial unique index permits only one unended session per campaign. GM presence is renewed from the mounted Game Room approximately every 30 minutes, extending a 60-minute deadline; in normal timing this produces the accepted approximately 30–60 minute expiry window after GM disappearance. `pg_cron` invokes a private expiry function every minute so abandoned sessions close without visitor traffic. Completion closes the campaign's active session through the existing lifecycle trigger. Authenticated clients can read only their campaign's session and Journal rows and have no generic Journal writer.
 
-The Game Room opens without joining LiveKit or starting a Game Session and exposes its normal tools immediately. Its stable one-row order is `Journal | Gallery | Dice | Character`. Journal is the default/root Display view and has no back arrow. Gallery opens in Handouts and retains its internal back arrow. CoC Dice opens in Percentile with `← | Percentile | Other Dice`; VtM Dice opens directly without a submenu. These UI states do not change the available Display height through navigation wrapping.
+The Game Room opens without joining LiveKit or starting a Game Session and exposes its normal tools immediately. Its stable one-row order is `Journal | Gallery | Dice | Characters | Notes`. Journal is the default/root Display view and has no back arrow. Gallery opens in Handouts and retains its internal back arrow. CoC Dice opens in Percentile with `← | Percentile | Other Dice`; VtM Dice opens directly without a submenu. These UI states do not change the available Display height through navigation wrapping.
 
 ## Route architecture
 
@@ -337,7 +337,7 @@ Personal dice execution
 System-aware Campaign Dice execution through the Phase 4D2 session-scoped Journal contract
 Campaign image library and shared current-image presentation
 Linked campaign-character presentation
-Shared and GM-private campaign notes
+Personal owner-private campaign notes
 Video room access
 Connection state
 ```
@@ -353,7 +353,7 @@ Standalone authorization adapter (not implemented; no active roadmap phase)
 
 The current campaign Game Room is implemented at `/{locale}/campaigns/{campaignId}/game-room` for one GM plus up to six Players. Image presentation, system-aware dice, linked characters, and notes must reuse campaign authorization and must not establish competing access models. A future standalone video idea would remain independent, but no schema, route, provider, or delivery phase is approved.
 
-LiveKit owns video/audio and Gallery image-presentation transport only. It does not control Game Room access, Game Session lifecycle, Journal, or Campaign Dice. Join, Leave, camera, microphone, refresh, and disconnect therefore cannot start or end a Game Session. Browsing Gallery requires no LiveKit connection; Share/Presentation requires the GM to be connected and reaches only LiveKit-connected participants.
+LiveKit owns video/audio and Gallery image-presentation transport only. It does not control Game Room access, Game Session lifecycle, Journal, Campaign Dice, or Personal Notes. Join, Leave, camera, microphone, refresh, and disconnect therefore cannot start or end a Game Session. Browsing Gallery requires no LiveKit connection; Share/Presentation requires the GM to be connected and reaches only LiveKit-connected participants.
 
 ### Campaign-content domain
 
@@ -363,11 +363,10 @@ Implemented scope:
 Image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other sections
 ```
 
-Approved planned scope:
+Implemented Phase 4G scope (manual Production acceptance pending):
 
 ```text
-Shared notes
-GM-private notes
+Personal owner-private campaign Notes for every GM and Player
 ```
 
 General Handouts, NPCs, Sessions, Chronicle records, clues, maps, and wikis are not active roadmap scope.
@@ -461,6 +460,16 @@ The database stores the object path in `characters.portrait_url`. Legacy externa
 
 Campaign Gallery image bytes are stored in the private `campaign-images` bucket under the exact represented path `CAMPAIGN_UUID/IMAGE_UUID/RANDOM_OBJECT_UUID.ext`. The immutable `campaign_images.category` value (`handout`, `npc`, `maps_plans`, or `other`) is organizational metadata only and never participates in authorization. Server rendering creates short-lived signed URLs only after campaign-image RLS selects the current user's permitted metadata. Upload creates `gm_only` metadata before the exact object because the Storage INSERT policy requires representation. Individual deletion and final campaign deletion remove and verify represented objects before metadata or campaign rows. Completed GMs retain read access but no individual image mutation; the dedicated delete policy permits only represented-object cleanup required before final campaign deletion.
 
+## Personal Campaign Notes and Game Session metadata — Phase 4G
+
+`campaign_note_entries` is a system-neutral, owner-private platform domain. Shared `CampaignNotesJournal` serves the localized Notes page and Game Room Display. Overview has Gallery/Notes actions; root tools are `Journal | Gallery | Dice | Characters | Notes`. Notes requires no LiveKit or active session, uses fresh no-store requests and explicit mutations, not Realtime or collaboration.
+
+The narrow `mutate_campaign_note` RPC derives owner, active participation, campaign-name snapshot, server timestamps, and canonical session at creation. Campaign locking serializes writes with completion/removal. Reads remain owner-only for completed/removed archives; ordinary campaign RLS still blocks removed-player navigation. Plain body and latest edit metadata alone change on edit. Saved timezones preserve historical localized headings; the nullable original session FK resolves an immutable subtitle and clears on session deletion without deleting the entry. Search uses body, saved-zone creation date, and session number/title.
+
+Game Session historical backfill orders by `started_at, id`; a private per-campaign counter atomically assigns immutable numbers without reuse. `start_named_game_session(uuid,text)` adds immutable optional naming; legacy `start_game_session(uuid)` remains compatible. GM confirms a compact Start/Cancel optional-name prompt. Lifecycle, cron expiry, Journal/Dice and LiveKit are unchanged.
+
+Notes deliberately does not use the character form's drafts or navigation guard below. One inline create/edit mode, explicit Save/Cancel and Delete confirmation, full oldest-first journal/internal bottom scroll and EN/RU presentation are reused across both surfaces. Global Notes is deferred as IDEA-008. Phase 4G is implemented/deployed with manual Production acceptance pending; Phase 5 is not started.
+
 ## State and persistence
 
 Current character and campaign forms use:
@@ -524,9 +533,9 @@ Approved sequence:
 9. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
 10. Phase 4D2 system-aware Game Room Dice Integration — complete, deployed, and accepted in Production;
 11. Phase 4E Fair Turn Order Dice — complete, deployed, and accepted in Production;
-12. Phase 4F1 CoC 7e Character Sheets — implemented and deployed, with Production manual acceptance pending;
-13. Phase 4F2 system-aware linked-character Game Room integration;
-14. Phase 4G narrowly scoped Campaign Notes;
+12. Phase 4F1 CoC 7e Character Sheets — closed, deployed, accepted;
+13. Phase 4F2 system-aware linked-character Game Room integration — closed, deployed, accepted;
+14. Phase 4G Personal Campaign Notes — implemented/deployed; manual Production acceptance pending;
 15. Phase 5 site-wide UI Technical Refinement;
 16. Phase 6 Visual Identity;
 17. Phase 7 Delta Green system parity;

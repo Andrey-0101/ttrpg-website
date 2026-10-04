@@ -105,7 +105,7 @@ export default function CampaignGameRoom({
   }, [applyResult, campaignId]);
 
   const mutate = useCallback(
-    async (action: GameSessionAction, background = false) => {
+    async (action: GameSessionAction, background = false, title?: string) => {
       if (mutationInFlight.current) return;
       mutationInFlight.current = true;
       if (!background) setSessionBusy(true);
@@ -117,7 +117,7 @@ export default function CampaignGameRoom({
             method: "POST",
             cache: "no-store",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action }),
+            body: JSON.stringify({ action, ...(action === "start" ? { title: title ?? "" } : {}) }),
           },
         );
         const result = (await response.json()) as GameSessionApiResult;
@@ -241,7 +241,7 @@ export default function CampaignGameRoom({
       sessionLoading={sessionLoading}
       sessionBusy={sessionBusy}
       sessionError={sessionError}
-      onStartSession={() => mutate("start")}
+      onStartSession={(title) => mutate("start", false, title)}
       onEndSession={() => mutate("end")}
       onJournalEvent={appendJournalEvent}
     />

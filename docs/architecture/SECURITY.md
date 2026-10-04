@@ -311,9 +311,15 @@ Phase 4C2 implements GM-only presentation selection and stop controls, server-or
 
 ### Campaign notes — Phase 4G
 
-- explicit shared-permitted versus GM-private records;
-- no accidental GM-private exposure;
-- RLS tests with GM, Player, and Outsider.
+- strictly owner-private SELECT using `owner_id = (select auth.uid())`; GM campaign authority never expands Notes access;
+- authenticated SELECT only; anonymous and direct INSERT/UPDATE/DELETE denied;
+- explicitly granted `mutate_campaign_note` uses empty search path and derives authenticated owner, snapshot, timestamps and session; no client metadata/owner/session parameters;
+- every mutation locks the campaign, requires active status/current participation, and matches entry ID, campaign and owner; completion/removal deny writes;
+- completed/removed owners retain private readable data; only completed current participants retain ordinary Campaign-page archive navigation;
+- same-campaign session FK, immutable creation metadata/original session link, validated body/timezone and safe text rendering;
+- private counter and session-identity trigger enforce immutable sequential number/title; legacy unnamed Start is preserved;
+- local tests cover GM/Player/other Player/removed/completed/outsider/anonymous, direct forgery, metadata/session invariants and concurrent completion/write denial;
+- no Notes Realtime, Storage, shared scope, special GM area, autosave, drafts or unsaved-navigation warning.
 
 General Handouts, NPCs, Sessions, Chronicle records, clues, and maps are not active roadmap commitments. Their historical checklist concepts do not pre-approve a schema or implementation.
 
@@ -427,7 +433,7 @@ Before unrestricted use, verify that a non-member cannot:
 - obtain a video token;
 - use a revoked, expired, or accepted invitation;
 - modify any campaign resource;
-- access GM-private notes;
+- access another user's personal campaign Notes, including as GM;
 - read another user's private portrait.
 
 Also verify operational readiness, legal pages, account deletion/export, monitoring, backups, and incident ownership.

@@ -19,7 +19,7 @@ export default function CampaignHandoutsCard({
 }: CampaignHandoutsCardProps) {
   return (
     <section className="rounded-lg border border-amber-200/35 bg-amber-950/20 p-5 sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 flex-col items-start gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-2xl font-bold">{title}</h2>

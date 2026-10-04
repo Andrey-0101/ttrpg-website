@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl";
 
 import CampaignDiceJournalEvent from "@/components/campaigns/campaign-dice-journal-event";
 import CampaignDiceRoller from "@/components/campaigns/campaign-dice-roller";
+import CampaignNotesJournal from "@/components/campaigns/campaign-notes-journal";
 import GameRoomCharactersList from "@/components/campaigns/game-room-characters-list";
 import CharacterEditor from "@/components/characters/character-editor";
 import type { OpenGameRoomCharacter } from "@/lib/campaign-characters/contracts";
@@ -85,7 +86,7 @@ export default function CampaignGameRoomWorkspace({
   sessionLoading: boolean;
   sessionBusy: boolean;
   sessionError: boolean;
-  onStartSession(): Promise<void>;
+  onStartSession(title?: string): Promise<void>;
   onEndSession(): Promise<void>;
   onJournalEvent(event: GameSessionState["journal"][number]): void;
   onShareImage(imageId: string): Promise<boolean>;
@@ -96,7 +97,7 @@ export default function CampaignGameRoomWorkspace({
   const galleryTranslations = useTranslations("CampaignHandouts");
   const cocTranslations = useTranslations("Coc7eDiceRoller");
   const [activeTool, setActiveTool] = useState<
-    "journal" | "gallery" | "dice" | "characters"
+    "journal" | "gallery" | "dice" | "characters" | "notes"
   >("journal");
   const [activeCategory, setActiveCategory] =
     useState<CampaignGalleryCategory | null>(null);
@@ -107,6 +108,8 @@ export default function CampaignGameRoomWorkspace({
     useState<CampaignGameRoomGalleryItem | null>(null);
   const journalEndRef = useRef<HTMLDivElement | null>(null);
   const [openedCharacter, setOpenedCharacter] = useState<OpenGameRoomCharacter | null>(null);
+  const [startPrompt, setStartPrompt] = useState(false);
+  const [sessionTitle, setSessionTitle] = useState("");
 
   useEffect(() => {
     if (activeTool === "journal" && gameSession.journal.length > 0) {
@@ -185,7 +188,9 @@ export default function CampaignGameRoomWorkspace({
           {translations("workspace.display")}
         </h2>
 
-        {activeTool === "dice" ? (
+        {activeTool === "notes" ? (
+          <CampaignNotesJournal campaignId={campaignId} />
+        ) : activeTool === "dice" ? (
           <CampaignDiceRoller
             campaignId={campaignId}
             gameSystem={campaignGameSystem}
@@ -218,11 +223,10 @@ export default function CampaignGameRoomWorkspace({
                 <button
                   type="button"
                   disabled={sessionBusy}
-                  onClick={() =>
-                    void (gameSession.session
-                      ? onEndSession()
-                      : onStartSession())
-                  }
+                  onClick={() => {
+                    if (gameSession.session) void onEndSession();
+                    else { setSessionTitle(""); setStartPrompt(true); }
+                  }}
                   className={TOOL_BUTTON_CLASS}
                 >
                   {translations(
@@ -231,6 +235,21 @@ export default function CampaignGameRoomWorkspace({
                 </button>
               ) : null}
             </div>
+            {isGameMaster && startPrompt && !gameSession.session ? (
+              <form className="flex shrink-0 flex-wrap items-end gap-2 px-4 pb-3" onSubmit={(event) => {
+                event.preventDefault();
+                if (!sessionBusy) void onStartSession(sessionTitle).then(() => setStartPrompt(false));
+              }}>
+                <label className="min-w-0 flex-1 text-sm">
+                  {translations("journal.sessionName")}
+                  <input autoFocus maxLength={120} value={sessionTitle} disabled={sessionBusy}
+                    onChange={(event) => setSessionTitle(event.target.value)}
+                    className="mt-1 min-h-11 w-full rounded border border-white/40 bg-neutral-950 p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200" />
+                </label>
+                <button type="submit" disabled={sessionBusy} className={TOOL_BUTTON_CLASS}>{translations("journal.confirmStart")}</button>
+                <button type="button" disabled={sessionBusy} onClick={() => setStartPrompt(false)} className={TOOL_BUTTON_CLASS}>{translations("journal.cancelStart")}</button>
+              </form>
+            ) : null}
             <div
               className="min-h-0 flex-1 overflow-y-auto px-4 pb-4"
               data-game-room-journal-scroll
@@ -500,10 +519,10 @@ export default function CampaignGameRoomWorkspace({
           </div>
         ) : (
           <div
-            className={`grid h-14 gap-2 ${
+            className={`grid h-14 gap-2 [&>button]:px-1 [&>button]:text-[10px] sm:[&>button]:px-2 sm:[&>button]:text-sm ${
               activeTool === "journal"
-                ? "grid-cols-4"
-                : "grid-cols-[3rem_repeat(4,minmax(0,1fr))]"
+                ? "grid-cols-5"
+                : "grid-cols-[2rem_repeat(5,minmax(0,1fr))]"
             }`}
             data-game-room-tool-navigation
           >
@@ -562,6 +581,11 @@ export default function CampaignGameRoomWorkspace({
               aria-pressed={activeTool === "characters"}
               className={gameToolButtonClass(activeTool === "characters")}>
               <span className="block truncate">{translations("tools.characters")}</span>
+            </button>
+            <button type="button" onClick={() => setActiveTool("notes")}
+              aria-pressed={activeTool === "notes"}
+              className={gameToolButtonClass(activeTool === "notes")}>
+              <span className="block truncate">{translations("tools.notes")}</span>
             </button>
           </div>
         )}

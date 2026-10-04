@@ -35,6 +35,7 @@ Items in this document are not commitments and are not automatically part of the
 | IDEA-005 | AI-assisted character generation | Characters / AI assistance | Inbox | Unassigned; not committed roadmap scope |
 | IDEA-006 | Standalone Video Rooms | Video / Separate product | Deferred | Unassigned; removed from active roadmap |
 | IDEA-007 | Campaign Wallpaper | Campaigns / Game Room / Presentation | Inbox | Unassigned; explicitly outside Phase 4C2 |
+| IDEA-008 | Global Personal Notes | Notes / Personal tools | Deferred | Unassigned; future review required |
 
 ---
 
@@ -455,6 +456,35 @@ The reusable campaign media core may inform that review, but it does not create 
 #### Decision
 
 Removed from the active roadmap. Retained only as an uncommitted future idea requiring a fresh product and authorization review. No route, provider, schema, or delivery phase is approved.
+
+---
+
+## Personal tools
+
+### IDEA-008 — Global Personal Notes
+
+- **Status:** Deferred
+- **Area:** Notes / Personal tools
+- **Added:** 2026-10-04
+- **Suggested milestone:** Unassigned; future review required
+- **Source:** Accepted Phase 4G product contract
+- **Related documents:** `CAMPAIGNS.md`, `ROADMAP.md`, `../architecture/DATABASE.md`
+
+#### Problem
+
+Campaign-scoped personal Notes have no single cross-campaign entry point. Removed owners retain their private read-only data but cannot open the normal Campaign page. Standalone personal notes are not part of Phase 4G.
+
+#### Idea
+
+Eventually add a top-level Notes navigation section: find entries across campaigns; read/edit active-campaign Notes only where current writes are authorized; read completed-campaign and removed-member archives; create personal Notes without a campaign, game system, or Game Session.
+
+#### Risks or questions
+
+Review future standalone schema and lifecycle, cross-campaign navigation, owner privacy, and authoritative write eligibility. Define how archived campaign/session metadata is retained and displayed when the owner no longer has ordinary campaign access, when sessions/campaigns are deleted, and without granting access to other participants' data. Phase 4G stores a campaign-name snapshot but only a nullable session FK; it does not solve those future archive metadata questions.
+
+#### Decision
+
+Deferred. No Global Notes route, standalone Notes schema, or cross-campaign browser is implemented or authorized in Phase 4G.
 
 ---
 

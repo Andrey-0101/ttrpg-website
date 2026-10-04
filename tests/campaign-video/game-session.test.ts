@@ -77,7 +77,7 @@ test("Journal is the arrow-free root and Gallery opens at Handouts", () => {
     toolNavigation.indexOf('tools.dice') <
       toolNavigation.indexOf('tools.characters'),
   );
-  assert.match(workspace, /activeTool === "journal"[\s\S]*?"grid-cols-4"/u);
+  assert.match(workspace, /activeTool === "journal"[\s\S]*?"grid-cols-5"/u);
   assert.match(
     toolNavigation,
     /activeTool !== "journal" \? \([\s\S]*?tools\.back/u,
