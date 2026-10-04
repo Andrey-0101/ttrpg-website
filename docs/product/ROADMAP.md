@@ -21,11 +21,12 @@ Completed foundation:
 - Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice in the Game Room;
 - Phase 4E — Fair Turn Order Dice;
 - Phase 4F1 — CoC 7e Character Sheets (closed / deployed / accepted);
-- Phase 4F2 — Game Room Character Integration (closed / deployed / accepted).
+- Phase 4F2 — Game Room Character Integration (closed / deployed / accepted);
+- Phase 4G — Personal Campaign Notes (closed / deployed / accepted; manual Production acceptance passed).
 
 Current product implementation stage:
 
-- Phase 4G — Personal Campaign Notes (implemented / deployed / manual Production acceptance pending).
+Phase 4 is complete. The next planned stage is Phase 5A — Campaign & Game Room UX/UI Refinement (PLANNED / NOT STARTED). No Phase 5 implementation is in progress.
 
 Current Production facts:
 
@@ -238,7 +239,9 @@ The user accepted Phase 4F2 in Production, including the focused embedded CoC la
 
 ### Phase 4G — Personal Campaign Notes
 
-**Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING**
+**Status: CLOSED / DEPLOYED / ACCEPTED**
+
+Manual Production acceptance passed successfully and was confirmed by the user. Phase 4G is closed.
 
 Delivered scope:
 
@@ -251,11 +254,11 @@ Delivered scope:
 - immutable campaign-name snapshot, server creation timestamp/timezone, original session link, and latest edit timestamp/timezone;
 - immutable sequential Game Session number and optional title, deterministic historical backfill, compatible legacy Start RPC, compact GM Start/Cancel name prompt.
 
-This phase extends only the existing canonical Game Session metadata. It does not add a richer Sessions product, Chronicle records, NPCs, Handouts, clues, maps, wikis, or general campaign-content modules. Global Personal Notes is deferred as IDEA-008. Phase 5 has not started; manual Production acceptance of Phase 4G is still required.
+This phase extends only the existing canonical Game Session metadata. It does not add a richer Sessions product, Chronicle records, NPCs, Handouts, clues, maps, wikis, or general campaign-content modules. Global Personal Notes remains deferred as IDEA-008. Phase 5 has not started.
 
 ### Phase 4 exit result
 
-The private group can use system-aware dice and linked characters, campaign images and presentation, campaign video, and narrowly scoped notes through one coherent Campaign Game Room. No additional active campaign capability is committed after Phase 4G.
+Phase 4 is complete, deployed, and accepted. The private group can use system-aware dice and linked characters, campaign images and presentation, campaign video, and owner-private Personal Campaign Notes through one coherent Campaign Game Room. Phase 4G passed manual Production acceptance. No additional active campaign capability is committed after Phase 4G; the next planned stage is Phase 5A, which has not started.
 
 ---
 
@@ -263,7 +266,7 @@ The private group can use system-aware dice and linked characters, campaign imag
 
 ### Phase 5A — Campaign & Game Room UX/UI Refinement
 
-**Status: Planned**
+**Status: PLANNED / NOT STARTED**
 
 Refine the existing Campaign and Game Room experience without adding new product capabilities:
 

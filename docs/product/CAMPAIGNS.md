@@ -31,7 +31,7 @@ The current implementation connects:
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
-Phase 4F2 linked-character presentation is accepted. Phase 4G adds personal owner-private Notes for every participant; it is implemented/deployed with manual Production acceptance pending.
+Phase 4F2 linked-character presentation is accepted. Phase 4G adds personal owner-private Notes for every participant; it is closed, deployed, and accepted after successful manual Production acceptance.
 
 Document/text Handouts, NPCs, richer session records, Chronicle records, clues, and other broad campaign-content modules are not active roadmap commitments. The narrow Game Session lifecycle used to scope Game Room Journal events is not a general campaign-content module.
 
@@ -450,7 +450,7 @@ Phase 4D2 is deployed, accepted, and closed. Its GM-controlled Game Sessions, ex
 
 ## Personal Campaign Notes — Phase 4G
 
-Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 4F2 is CLOSED / DEPLOYED / ACCEPTED; Phase 5 is not started.
+Status: CLOSED / DEPLOYED / ACCEPTED. Manual Production acceptance passed successfully. Phase 4F2 is CLOSED / DEPLOYED / ACCEPTED; Phase 5 is not started.
 
 Every participant, including GM, has an owner-private continuous journal. GM cannot read Player Notes; Players cannot read others' or GM Notes. There is no shared Notes scope or special GM area. Campaign Overview offers Gallery and Notes actions; `/{locale}/campaigns/{id}/notes` and Game Room's `Journal | Gallery | Dice | Characters | Notes` row reuse the same journal. Notes scroll internally inside Display and require neither LiveKit nor an active Game Session.
 

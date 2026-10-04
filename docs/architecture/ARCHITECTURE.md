@@ -363,7 +363,7 @@ Implemented scope:
 Image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other sections
 ```
 
-Implemented Phase 4G scope (manual Production acceptance pending):
+Accepted Phase 4G scope (closed / deployed / accepted; manual Production acceptance passed):
 
 ```text
 Personal owner-private campaign Notes for every GM and Player
@@ -468,7 +468,7 @@ The narrow `mutate_campaign_note` RPC derives owner, active participation, campa
 
 Game Session historical backfill orders by `started_at, id`; a private per-campaign counter atomically assigns immutable numbers without reuse. `start_named_game_session(uuid,text)` adds immutable optional naming; legacy `start_game_session(uuid)` remains compatible. GM confirms a compact Start/Cancel optional-name prompt. Lifecycle, cron expiry, Journal/Dice and LiveKit are unchanged.
 
-Notes deliberately does not use the character form's drafts or navigation guard below. One inline create/edit mode, explicit Save/Cancel and Delete confirmation, full oldest-first journal/internal bottom scroll and EN/RU presentation are reused across both surfaces. Global Notes is deferred as IDEA-008. Phase 4G is implemented/deployed with manual Production acceptance pending; Phase 5 is not started.
+Notes deliberately does not use the character form's drafts or navigation guard below. One inline create/edit mode, explicit Save/Cancel and Delete confirmation, full oldest-first journal/internal bottom scroll and EN/RU presentation are reused across both surfaces. Global Notes remains deferred as IDEA-008. Phase 4G is closed, deployed, and accepted after successful manual Production acceptance; Phase 5 is not started.
 
 ## State and persistence
 
@@ -535,7 +535,7 @@ Approved sequence:
 11. Phase 4E Fair Turn Order Dice — complete, deployed, and accepted in Production;
 12. Phase 4F1 CoC 7e Character Sheets — closed, deployed, accepted;
 13. Phase 4F2 system-aware linked-character Game Room integration — closed, deployed, accepted;
-14. Phase 4G Personal Campaign Notes — implemented/deployed; manual Production acceptance pending;
+14. Phase 4G Personal Campaign Notes — closed, deployed, accepted; manual Production acceptance passed;
 15. Phase 5 site-wide UI Technical Refinement;
 16. Phase 6 Visual Identity;
 17. Phase 7 Delta Green system parity;
