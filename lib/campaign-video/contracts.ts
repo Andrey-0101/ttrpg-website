@@ -10,6 +10,7 @@ export type CampaignVideoRole = "game_master" | "player";
 export type CampaignVideoPublicationPermissions = {
   audio: boolean;
   video: boolean;
+  computerAudio: boolean;
 };
 
 export type AuthorizedCampaignVideoParticipant = {

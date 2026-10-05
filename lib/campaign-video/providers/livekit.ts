@@ -67,6 +67,9 @@ function publicationSources(
   const sources: TrackSource[] = [];
   if (request.publication.video) sources.push(TrackSource.CAMERA);
   if (request.publication.audio) sources.push(TrackSource.MICROPHONE);
+  if (request.role === "game_master" && request.publication.computerAudio) {
+    sources.push(TrackSource.SCREEN_SHARE_AUDIO);
+  }
   return sources;
 }
 

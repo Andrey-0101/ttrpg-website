@@ -641,6 +641,28 @@
     }
   },
   "CampaignVideoRoom": {
+    "computerAudio": {
+      "title": "Computer audio",
+      "active": "Computer audio is shared",
+      "help": "GM capture: Windows 11 with current Chrome or Edge. Choose Entire screen and enable system audio. Other applications and notifications may also be heard. Sharing requires confirmed own-audio exclusion.",
+      "quality": "Quality",
+      "start": "Share computer audio",
+      "stop": "Stop computer audio",
+      "status": {
+        "idle": "Computer audio is not shared.",
+        "starting": "Starting safe audio capture...",
+        "sharing": "Sharing computer audio · {quality} kbps target.",
+        "stopping": "Stopping computer audio..."
+      },
+      "errors": {
+        "unsupported_browser": "Safe system audio capture is unavailable. Use current Chrome or Edge on Windows 11.",
+        "unsafe_audio_capture": "Own-audio exclusion was not confirmed. Nothing was shared; the call is unchanged.",
+        "capture_cancelled": "Audio sharing was cancelled.",
+        "no_audio_track": "No usable audio was selected. Enable system audio in the picker.",
+        "video_stop_ended_audio": "This capture stops audio when video is stopped. Nothing was shared.",
+        "publish_failed": "Computer audio could not be shared. The call is unchanged."
+      }
+    },
     "title": "Campaign video room",
     "description": "Join the campaign room, then choose whether to enable your camera or microphone. Media stays off until you use a control.",
     "join": "Join room",

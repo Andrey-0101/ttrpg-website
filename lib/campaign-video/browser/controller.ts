@@ -16,6 +16,7 @@ import type {
   CampaignVideoRoomSession,
   CampaignVideoRoomSessionFactory,
   CampaignVideoRoomSnapshot,
+  ComputerAudioQuality,
 } from "./contracts";
 
 type CampaignVideoFetch = (
@@ -35,7 +36,8 @@ export type CampaignVideoRoomControllerOptions = {
   onChange(snapshot: CampaignVideoRoomSnapshot): void;
 };
 
-const NO_PUBLICATION = { audio: false, video: false } as const;
+const NO_PUBLICATION = { audio: false, video: false, computerAudio: false } as const;
+const IDLE_COMPUTER_AUDIO = { phase: "idle", error: null } as const;
 
 export function createInitialCampaignVideoRoomSnapshot(): CampaignVideoRoomSnapshot {
   return {
@@ -44,6 +46,8 @@ export function createInitialCampaignVideoRoomSnapshot(): CampaignVideoRoomSnaps
     publication: NO_PUBLICATION,
     cameraEnabled: false,
     microphoneEnabled: false,
+    computerAudio: IDLE_COMPUTER_AUDIO,
+    computerAudioQuality: 192,
     audioBlocked: false,
     restored: false,
     error: null,
@@ -107,6 +111,8 @@ export function orderCampaignVideoParticipants(
       isLocal: participant.isLocal,
       camera: participant.camera,
       microphone: participant.microphone,
+      computerAudio: directoryByIdentity.get(participant.identity)!.role === "game_master"
+        ? participant.computerAudio : null,
     }))
     .sort((left, right) => participantOrder(left) - participantOrder(right));
 }
@@ -223,7 +229,8 @@ export function createCampaignVideoRoomController(
       typeof connection.token !== "string" ||
       typeof connection.expiresAt !== "string" ||
       typeof participant.publication?.audio !== "boolean" ||
-      typeof participant.publication?.video !== "boolean"
+      typeof participant.publication?.video !== "boolean" ||
+      typeof participant.publication?.computerAudio !== "boolean"
     ) {
       throw new Error("unexpected_error");
     }
@@ -322,6 +329,7 @@ export function createCampaignVideoRoomController(
       publication: NO_PUBLICATION,
       cameraEnabled: false,
       microphoneEnabled: false,
+      computerAudio: IDLE_COMPUTER_AUDIO,
       audioBlocked: false,
       restored: false,
       error: null,
@@ -424,6 +432,7 @@ export function createCampaignVideoRoomController(
               participants: [],
               cameraEnabled: false,
               microphoneEnabled: false,
+              computerAudio: IDLE_COMPUTER_AUDIO,
               audioBlocked: false,
               restored: false,
               error: "connection_failed",
@@ -443,6 +452,9 @@ export function createCampaignVideoRoomController(
           onMediaError(error) {
             if (isCurrent(currentGeneration)) publish({ error });
           },
+          onComputerAudio(computerAudio) {
+            if (isCurrent(currentGeneration)) publish({ computerAudio });
+          },
         },
         credentialRequest.signal,
       );
@@ -461,6 +473,7 @@ export function createCampaignVideoRoomController(
         participants: [],
         cameraEnabled: false,
         microphoneEnabled: false,
+        computerAudio: IDLE_COMPUTER_AUDIO,
         audioBlocked: false,
         restored: false,
         error: clientError(error),
@@ -509,6 +522,7 @@ export function createCampaignVideoRoomController(
         publication: NO_PUBLICATION,
         cameraEnabled: false,
         microphoneEnabled: false,
+        computerAudio: IDLE_COMPUTER_AUDIO,
         audioBlocked: false,
         restored: false,
         error: null,
@@ -732,6 +746,25 @@ export function createCampaignVideoRoomController(
     }
   }
 
+  function setComputerAudioQuality(quality: ComputerAudioQuality) {
+    if ((quality === 128 || quality === 192) && snapshot.computerAudio.phase === "idle") {
+      publish({ computerAudioQuality: quality });
+    }
+  }
+
+  function startComputerAudio() {
+    if (!options.isGameMaster || !snapshot.publication.computerAudio ||
+      !session || snapshot.phase !== "connected" || snapshot.computerAudio.phase !== "idle") {
+      return Promise.resolve();
+    }
+    // Invoke synchronously from the click, without a queue that loses activation.
+    return session.startComputerAudio(snapshot.computerAudioQuality);
+  }
+
+  function stopComputerAudio() {
+    return session?.stopComputerAudio() ?? Promise.resolve();
+  }
+
   async function dispose() {
     if (disposed) return;
     disposed = true;
@@ -760,6 +793,9 @@ export function createCampaignVideoRoomController(
     setPresentationExpanded,
     stopPresentation,
     enableSound,
+    setComputerAudioQuality,
+    startComputerAudio,
+    stopComputerAudio,
     dispose,
   };
 }

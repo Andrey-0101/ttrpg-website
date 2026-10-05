@@ -55,7 +55,7 @@ const DIRECTORY = [
 ];
 
 function joinResponse(
-  publication = { audio: true, video: true },
+  publication: { audio: boolean; video: boolean; computerAudio?: boolean } = { audio: true, video: true },
   token = "temporary-token",
 ) {
   return new Response(
@@ -69,7 +69,7 @@ function joinResponse(
       participant: {
         role: "player",
         playerPosition: 1,
-        publication,
+        publication: { computerAudio: false, ...publication },
       },
     }),
     { status: 200, headers: { "Content-Type": "application/json" } },
@@ -110,6 +110,8 @@ function createSessionHarness() {
     async startAudio() {
       audioStarts += 1;
     },
+    async startComputerAudio() {},
+    async stopComputerAudio() {},
     async disconnect() {
       disconnects += 1;
     },
@@ -150,7 +152,7 @@ function providerParticipant(identity: string, isLocal = false) {
     attach: () => { attachments.push(`attach-${kind}`); },
     detach: () => { attachments.push(`detach-${kind}`); },
   });
-  return { identity, isLocal, camera: track("camera"), microphone: track("microphone"), attachments };
+  return { identity, isLocal, camera: track("camera"), microphone: track("microphone"), computerAudio: null, attachments };
 }
 
 for (const providerFirst of [true, false]) {
@@ -399,11 +401,11 @@ test("denied join fails safely before browser provider construction", async () =
 test("participant presentation is directory-owned, deduplicated, and role ordered", () => {
   const ordered = orderCampaignVideoParticipants(
     [
-      { identity: "player-2-safe", isLocal: false, camera: null, microphone: null },
-      { identity: "unknown", isLocal: false, camera: null, microphone: null },
-      { identity: "gm-safe", isLocal: true, camera: null, microphone: null },
-      { identity: "player-2-safe", isLocal: false, camera: null, microphone: null },
-      { identity: "player-1-safe", isLocal: false, camera: null, microphone: null },
+      { identity: "player-2-safe", isLocal: false, camera: null, microphone: null, computerAudio: null },
+      { identity: "unknown", isLocal: false, camera: null, microphone: null, computerAudio: null },
+      { identity: "gm-safe", isLocal: true, camera: null, microphone: null, computerAudio: null },
+      { identity: "player-2-safe", isLocal: false, camera: null, microphone: null, computerAudio: null },
+      { identity: "player-1-safe", isLocal: false, camera: null, microphone: null, computerAudio: null },
     ],
     DIRECTORY,
   );
@@ -424,9 +426,9 @@ test("participant presentation is directory-owned, deduplicated, and role ordere
 test("seven campaign slots remain stable across camera-off and disconnect states", () => {
   const connected = orderCampaignVideoParticipants(
     [
-      { identity: "player-2-safe", isLocal: false, camera: null, microphone: null },
-      { identity: "gm-safe", isLocal: false, camera: null, microphone: null },
-      { identity: "player-1-safe", isLocal: true, camera: null, microphone: null },
+      { identity: "player-2-safe", isLocal: false, camera: null, microphone: null, computerAudio: null },
+      { identity: "gm-safe", isLocal: false, camera: null, microphone: null, computerAudio: null },
+      { identity: "player-1-safe", isLocal: true, camera: null, microphone: null, computerAudio: null },
     ],
     DIRECTORY,
   );
@@ -492,6 +494,7 @@ test("permission-disabled media sources never reach the room session", async () 
   assert.deepEqual(controller.getSnapshot().publication, {
     audio: false,
     video: false,
+    computerAudio: false,
   });
 });
 
@@ -536,12 +539,12 @@ test("sound unlock and leave dispose only the current temporary session", async 
   });
   await controller.join();
   session.callbacks().onParticipants([
-    { identity: "gm-safe", isLocal: true, camera: null, microphone: null },
-    { identity: "player-1-safe", isLocal: false, camera: null, microphone: null },
+    { identity: "gm-safe", isLocal: true, camera: null, microphone: null, computerAudio: null },
+    { identity: "player-1-safe", isLocal: false, camera: null, microphone: null, computerAudio: null },
   ]);
   assert.equal(controller.getSnapshot().participants.length, 2);
   session.callbacks().onParticipants([
-    { identity: "gm-safe", isLocal: true, camera: null, microphone: null },
+    { identity: "gm-safe", isLocal: true, camera: null, microphone: null, computerAudio: null },
   ]);
   assert.equal(controller.getSnapshot().participants.length, 1);
   session.callbacks().onAudioBlocked(true);
@@ -1034,6 +1037,8 @@ test("late media completion cannot restore stale state after leave", async () =>
       setCameraEnabled: async () => cameraOperation,
       setMicrophoneEnabled: async () => undefined,
       startAudio: async () => undefined,
+      startComputerAudio: async () => undefined,
+      stopComputerAudio: async () => undefined,
       disconnect: async () => undefined,
     }),
     fetcher: async () => joinResponse(),

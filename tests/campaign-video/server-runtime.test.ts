@@ -355,7 +355,7 @@ test("active GM and all six valid Player positions receive credentials", async (
   assert.deepEqual(gmResult.json.participant, {
     role: "game_master",
     playerPosition: null,
-    publication: { audio: true, video: true },
+    publication: { audio: true, video: true, computerAudio: true },
   });
   assert.equal(providerOperationCount(gmHarness.provider), 2);
 
@@ -371,7 +371,7 @@ test("active GM and all six valid Player positions receive credentials", async (
     assert.deepEqual(result.json.participant, {
       role: "player",
       playerPosition: position,
-      publication: { audio: true, video: true },
+      publication: { audio: true, video: true, computerAudio: false },
     });
     assert.equal(providerOperationCount(harness.provider), 2);
   }
@@ -494,7 +494,7 @@ test("real LiveKit token path binds a short-lived token to one room with no admi
     roomName,
     participantIdentity: identity,
     role: "game_master",
-    publication: { audio: true, video: true },
+    publication: { audio: true, video: true, computerAudio: true },
     ttlSeconds: CAMPAIGN_VIDEO_TOKEN_TTL_SECONDS,
   });
   const verified = await new TokenVerifier(
@@ -509,7 +509,7 @@ test("real LiveKit token path binds a short-lived token to one room with no admi
   assert.equal(video.roomJoin, true);
   assert.equal(video.canSubscribe, true);
   assert.equal(video.canPublish, true);
-  assert.deepEqual(video.canPublishSources, ["camera", "microphone"]);
+  assert.deepEqual(video.canPublishSources, ["camera", "microphone", "screen_share_audio"]);
   assert.equal(video.canPublishData, false);
   assert.equal(video.canUpdateOwnMetadata, false);
   for (const grant of [
@@ -558,7 +558,7 @@ test("publication restrictions become source-specific fail-closed LiveKit grants
         PLAYER_IDS[0]!,
       ),
       role: "player",
-      publication: entry.publication,
+      publication: { ...entry.publication, computerAudio: false },
       ttlSeconds: CAMPAIGN_VIDEO_TOKEN_TTL_SECONDS,
     });
     const claims = await new TokenVerifier(
@@ -569,6 +569,24 @@ test("publication restrictions become source-specific fail-closed LiveKit grants
     assert.equal(video.canPublish, entry.canPublish);
     assert.deepEqual(video.canPublishSources, entry.sources);
     assert.equal(video.canPublishData, false);
+  }
+});
+
+test("computer audio requires the authoritative GM role; no token grants screen video", async () => {
+  const provider = new LiveKitCampaignVideoProvider(TEST_CONFIGURATION, new CompatibleRoomService());
+  for (const role of ["game_master", "player"] as const) {
+    for (const computerAudio of [false, true]) {
+      const connection = await provider.mintConnectionCredentials({
+        roomName: deriveCampaignVideoRoomName(CAMPAIGN_ID),
+        participantIdentity: deriveCampaignVideoParticipantIdentity(CAMPAIGN_ID, role === "game_master" ? GM_ID : PLAYER_IDS[0]!),
+        role, publication: { audio: true, video: true, computerAudio },
+        ttlSeconds: CAMPAIGN_VIDEO_TOKEN_TTL_SECONDS,
+      });
+      const verified = await new TokenVerifier(TEST_API_KEY, TEST_API_SECRET).verify(connection.token);
+      const sources = (verified.video as unknown as { canPublishSources?: string[] })?.canPublishSources ?? [];
+      assert.equal(sources.includes("screen_share_audio"), role === "game_master" && computerAudio);
+      assert.equal(sources.includes("screen_share"), false);
+    }
   }
 });
 

@@ -359,6 +359,18 @@ The current campaign Game Room is implemented at `/{locale}/campaigns/{campaignI
 
 LiveKit owns video/audio and Gallery image-presentation transport only. It does not control Game Room access, Game Session lifecycle, Journal, Campaign Dice, or Personal Notes. Join, Leave, camera, microphone, refresh, and disconnect therefore cannot start or end a Game Session. Browsing Gallery requires no LiveKit connection; Share/Presentation requires the GM to be connected and reaches only LiveKit-connected participants.
 
+#### Pre-Phase-5 Add-on — GM Computer Audio Sharing
+
+Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
+
+Native `getDisplayMedia` capture is invoked synchronously from the GM Start action. Windows 11/current Chrome or Edge is the initial supported workflow (Entire screen + system audio). The audio track must be usable and report `restrictOwnAudio: true`; recognition of the constraint is not enough. Display video stops before audio publication; a source that also ends audio fails closed. Only the validated audio track reaches the existing room's `ScreenShareAudio` source. No screen video is published or kept running in the background.
+
+`publication` explicitly contains `{ audio, video, computerAudio }`; fresh server authorization enables the last field for GM only. Client 2.21.0/server 2.17.0 remain pinned. Publication uses `audioPreset.maxBitrate` 128000 or 192000 (default), `forceStereo: true`, `dtx: false`, `red: false`. Capture requests stereo/48 kHz intent and disables echo cancellation, noise suppression, AGC and voice isolation on this source only. It adds no resampler or microphone mixer; bitrate is a target, not a constant network-rate guarantee, and original capture sample rate is not guaranteed.
+
+The source follows adapter → raw snapshot → directory-authorized controller mapping → room snapshot → UI alongside camera/microphone. Only the mapped GM can expose computer audio. Remote playback has its own second audio element with the existing attach/detach and `Room.startAudio` unlock path; local GM capture is not played back. Session-owned generation guards discard late picker/publication completions. Stop is idempotent; capture tracks/listeners are released on native audio end, Leave, terminal disconnect and disposal. Ordinary reconnect leaves the original user-provided track to LiveKit's existing republish lifecycle, with no duplicate capture/publication or new credentials. Membership refresh does not remount/reconnect the room; late Players use normal auto-subscription.
+
+Computer audio is independent of camera/mic toggles and Gallery image show/expand/collapse/stop. Quality is transient local state only. No endpoint, database/schema/migration/generated types/RLS/Storage change, new provider/service, external integration or persistent audio setting is added. Real native capture and own-voice echo safety still require manual multi-machine Production acceptance.
+
 ### Campaign-content domain
 
 Implemented scope:

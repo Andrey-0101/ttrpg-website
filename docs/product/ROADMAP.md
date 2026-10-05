@@ -28,6 +28,8 @@ Current product implementation stage:
 
 Phase 4 is complete. The next planned stage is Phase 5A — Campaign & Game Room UX/UI Refinement (PLANNED / NOT STARTED). No Phase 5 implementation is in progress.
 
+Pre-Phase-5 Add-on — GM Computer Audio Sharing: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. This separately approved audio-only addition does not reopen Phase 4 or start Phase 5A. Automated verification does not substitute for real Windows multi-machine capture and echo acceptance.
+
 Current Production facts:
 
 - campaign video is implemented only inside `/{locale}/campaigns/{campaignId}/game-room`;
@@ -260,7 +262,17 @@ This phase extends only the existing canonical Game Session metadata. It does no
 
 ### Phase 4 exit result
 
-Phase 4 is complete, deployed, and accepted. The private group can use system-aware dice and linked characters, campaign images and presentation, campaign video, and owner-private Personal Campaign Notes through one coherent Campaign Game Room. Phase 4G passed manual Production acceptance. No additional active campaign capability is committed after Phase 4G; the next planned stage is Phase 5A, which has not started.
+Phase 4 is complete, deployed, and accepted. The private group can use system-aware dice and linked characters, campaign images and presentation, campaign video, and owner-private Personal Campaign Notes through one coherent Campaign Game Room. Phase 4G passed manual Production acceptance. The separately approved pre-Phase-5 GM Computer Audio Sharing add-on is described below; the next planned roadmap stage remains Phase 5A, which has not started.
+
+### Pre-Phase-5 Add-on — GM Computer Audio Sharing
+
+**Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING**
+
+- GM-only, explicit computer/system audio capture into the existing campaign LiveKit room as a separate `ScreenShareAudio` track; microphone and camera remain independent.
+- Initial GM capture scope: Windows 11 with current stable Chrome/Edge, using Entire screen + system audio. Players receive ordinary LiveKit audio; their OS need not be Windows 11.
+- Fail closed unless the captured audio track confirms `getSettings().restrictOwnAudio === true`. Stop display video before publication; if audio ends with it, abort. No screen video or hidden continuing capture video.
+- Transient 128/192 kbps target profiles, default 192, stereo intent, DTX/RED disabled, computer-audio speech processing disabled. No new persistence, database changes, provider, mixing/resampling or external integration.
+- Manual Production acceptance remains required for native picker/capture, sound quality and own-voice echo safety on real Chrome/Edge machines. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
 
 ---
 
