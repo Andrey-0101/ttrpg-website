@@ -269,10 +269,11 @@ Phase 4 is complete, deployed, and accepted. The private group can use system-aw
 **Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING**
 
 - GM-only, explicit computer/system audio capture into the existing campaign LiveKit room as a separate `ScreenShareAudio` track; microphone and camera remain independent.
-- Initial GM capture scope: Windows 11 with current stable Chrome/Edge, using Entire screen + system audio. Players receive ordinary LiveKit audio; their OS need not be Windows 11.
-- Fail closed unless the captured audio track confirms `getSettings().restrictOwnAudio === true`. Stop display video before publication; if audio ends with it, abort. No screen video or hidden continuing capture video.
+- Initial GM capture scope: Windows 11 with current stable Chrome/Edge. Prefer a desktop application's Window and enable the native audio toggle; Entire screen + system audio remains fallback. Players receive ordinary LiveKit audio; their OS need not be Windows 11.
+- Capture requests `windowAudio: "window"`, `systemAudio: "include"` and `selfBrowserSurface: "exclude"`. The native picker remains authoritative; window/application isolation is intended, not guaranteed by the website. Do not select the Game Room browser window. System capture may include other apps/notifications.
+- Actual video-track `displaySurface` drives validation before video stops: usable Window audio does not require `restrictOwnAudio`; Monitor/system audio must confirm `getSettings().restrictOwnAudio === true` before and after video stop. Browser tabs, unknown/unreadable surfaces and invalid capture fail safely. Stop display video before publication; if audio ends with it, abort. No screen video or hidden continuing capture video.
 - Transient 128/192 kbps target profiles, default 192, stereo intent, DTX/RED disabled, computer-audio speech processing disabled. No new persistence, database changes, provider, mixing/resampling or external integration.
-- Manual Production acceptance remains required for native picker/capture, sound quality and own-voice echo safety on real Chrome/Edge machines. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
+- Manual Production acceptance remains required for native picker/audio-toggle behavior, selected-app isolation from another playing app, sound quality, own-voice echo safety and Entire screen fallback on real Chrome/Edge machines. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
 
 ---
 
