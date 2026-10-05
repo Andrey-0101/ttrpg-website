@@ -11,7 +11,20 @@ export type CampaignVideoParticipantDirectoryEntry = {
   isCurrentUser: boolean;
 };
 
-export type CampaignVideoTrackKind = "camera" | "microphone";
+export type CampaignVideoTrackKind = "camera" | "microphone" | "computerAudio";
+
+export type ComputerAudioQuality = 128 | 192;
+export type ComputerAudioError =
+  | "unsupported_browser"
+  | "unsafe_audio_capture"
+  | "capture_cancelled"
+  | "no_audio_track"
+  | "video_stop_ended_audio"
+  | "publish_failed";
+export type ComputerAudioState = {
+  phase: "idle" | "starting" | "sharing" | "stopping";
+  error: ComputerAudioError | null;
+};
 
 export type CampaignVideoTrackAttachment = {
   id: string;
@@ -25,6 +38,7 @@ export type CampaignVideoProviderParticipant = {
   isLocal: boolean;
   camera: CampaignVideoTrackAttachment | null;
   microphone: CampaignVideoTrackAttachment | null;
+  computerAudio: CampaignVideoTrackAttachment | null;
 };
 
 export type CampaignVideoParticipantView =
@@ -32,6 +46,7 @@ export type CampaignVideoParticipantView =
     isLocal: boolean;
     camera: CampaignVideoTrackAttachment | null;
     microphone: CampaignVideoTrackAttachment | null;
+    computerAudio: CampaignVideoTrackAttachment | null;
   };
 
 export type CampaignVideoRoomPhase =
@@ -62,6 +77,8 @@ export type CampaignVideoRoomSnapshot = {
   publication: CampaignVideoPublicationPermissions;
   cameraEnabled: boolean;
   microphoneEnabled: boolean;
+  computerAudio: ComputerAudioState;
+  computerAudioQuality: ComputerAudioQuality;
   audioBlocked: boolean;
   restored: boolean;
   error: CampaignVideoClientErrorCode | null;
@@ -95,12 +112,15 @@ export type CampaignVideoRoomSessionCallbacks = {
   onTerminalDisconnect(): void;
   onAudioBlocked(blocked: boolean): void;
   onMediaError(error: CampaignVideoClientErrorCode): void;
+  onComputerAudio(state: ComputerAudioState): void;
 };
 
 export interface CampaignVideoRoomSession {
   setCameraEnabled(enabled: boolean): Promise<void>;
   setMicrophoneEnabled(enabled: boolean): Promise<void>;
   startAudio(): Promise<void>;
+  startComputerAudio(quality: ComputerAudioQuality): Promise<void>;
+  stopComputerAudio(): Promise<void>;
   disconnect(): Promise<void>;
 }
 

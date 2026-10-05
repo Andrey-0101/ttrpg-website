@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -15,6 +15,7 @@ import {
 import type {
   CampaignVideoParticipantDirectoryEntry,
   CampaignVideoRoomSnapshot,
+  ComputerAudioQuality,
 } from "@/lib/campaign-video/browser/contracts";
 import { createLiveKitCampaignVideoSession } from "@/lib/campaign-video/browser/livekit";
 import { attachCampaignVideoTrack } from "@/lib/campaign-video/browser/media";
@@ -55,6 +56,9 @@ type CampaignVideoRoomLayoutProps = CampaignVideoRoomProps & {
   onCameraChange(enabled: boolean): void;
   onMicrophoneChange(enabled: boolean): void;
   onEnableSound(): void;
+  onComputerAudioQuality(quality: ComputerAudioQuality): void;
+  onStartComputerAudio(): void;
+  onStopComputerAudio(): void;
   onShareImage(imageId: string): Promise<boolean>;
   onSetPresentationExpanded(expanded: boolean): Promise<boolean>;
   onStopShare(): Promise<boolean>;
@@ -112,11 +116,13 @@ function CampaignGameRoomHeaderAction({
   label,
   compactLabel,
   onLeave,
+  computerAudioControls,
 }: {
   visible: boolean;
   label: string;
   compactLabel: string;
   onLeave(): void;
+  computerAudioControls?: ReactNode;
 }) {
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
 
@@ -132,18 +138,77 @@ function CampaignGameRoomHeaderAction({
   if (!visible || !portalHost) return null;
 
   return createPortal(
-    <button
-      type="button"
-      onClick={onLeave}
-      aria-label={label}
-      title={label}
-      data-game-room-leave
-      className="flex min-h-9 min-w-9 items-center justify-center gap-1.5 rounded border border-white/45 px-2 text-xs font-medium text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
-    >
-      <LeaveIcon />
-      <span className="hidden sm:inline">{compactLabel}</span>
-    </button>,
+    <div className="flex items-center gap-2">
+      {computerAudioControls}
+      <button
+        type="button"
+        onClick={onLeave}
+        aria-label={label}
+        title={label}
+        data-game-room-leave
+        className="flex min-h-9 min-w-9 items-center justify-center gap-1.5 rounded border border-white/45 px-2 text-xs font-medium text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+      >
+        <LeaveIcon />
+        <span className="hidden sm:inline">{compactLabel}</span>
+      </button>
+    </div>,
     portalHost,
+  );
+}
+
+function ComputerAudioControls({ snapshot, onQuality, onStart, onStop }: {
+  snapshot: CampaignVideoRoomSnapshot;
+  onQuality(quality: ComputerAudioQuality): void;
+  onStart(): void;
+  onStop(): void;
+}) {
+  const translations = useTranslations("CampaignVideoRoom.computerAudio");
+  const { phase, error } = snapshot.computerAudio;
+  const busy = phase === "starting" || phase === "stopping";
+  return (
+    <details className="relative text-xs" data-computer-audio-controls>
+      <summary
+        aria-label={translations(phase === "sharing" ? "active" : "title")}
+        title={translations(phase === "sharing" ? "active" : "title")}
+        className="flex min-h-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded border border-white/45 px-2 text-white/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5 shrink-0">
+          <path d="M4 9h4l5-4v14l-5-4H4V9Zm12-1a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className="hidden max-w-44 truncate lg:inline">{translations(phase === "sharing" ? "active" : "title")}</span>
+      </summary>
+      <div className="fixed left-2 right-2 top-16 z-50 space-y-3 rounded-lg border border-white/30 bg-neutral-950 p-3 text-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72" aria-busy={busy}>
+        <p>{translations("help")}</p>
+        <label className="flex items-center justify-between gap-2">
+          {translations("quality")}
+          <select
+            value={snapshot.computerAudioQuality}
+            disabled={phase !== "idle"}
+            onChange={(event) => {
+              const quality = Number(event.target.value);
+              if (quality === 128 || quality === 192) onQuality(quality);
+            }}
+            className="rounded border border-white/35 bg-neutral-900 px-2 py-1 disabled:opacity-50"
+          >
+            <option value={128}>128 kbps</option>
+            <option value={192}>192 kbps</option>
+          </select>
+        </label>
+        <p role="status" aria-live="polite">
+          {translations(`status.${phase}`, { quality: snapshot.computerAudioQuality })}
+        </p>
+        {error && <p role="status" aria-live="polite" className="text-amber-100">{translations(`errors.${error}`)}</p>}
+        <button
+          type="button"
+          disabled={busy}
+          aria-pressed={phase === "sharing"}
+          onClick={phase === "sharing" ? onStop : onStart}
+          className="min-h-9 rounded border border-white/45 px-3 py-1 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 disabled:opacity-50"
+        >
+          {translations(phase === "sharing" ? "stop" : "start")}
+        </button>
+      </div>
+    </details>
   );
 }
 
@@ -192,6 +257,7 @@ function ParticipantCard({
   const translations = useTranslations("CampaignVideoRoom");
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const computerAudioRef = useRef<HTMLAudioElement>(null);
   const participant = slot.participant;
 
   useEffect(
@@ -201,6 +267,10 @@ function ParticipantCard({
   useEffect(
     () => attachCampaignVideoTrack(participant?.microphone ?? null, audioRef.current),
     [participant?.microphone],
+  );
+  useEffect(
+    () => attachCampaignVideoTrack(participant?.computerAudio ?? null, computerAudioRef.current),
+    [participant?.computerAudio],
   );
 
   const role =
@@ -257,6 +327,9 @@ function ParticipantCard({
       )}
       {!slot.isCurrentUser && participant?.microphone && (
         <audio ref={audioRef} autoPlay />
+      )}
+      {!slot.isCurrentUser && slot.role === "game_master" && participant?.computerAudio && (
+        <audio ref={computerAudioRef} autoPlay data-computer-audio-playback />
       )}
 
       <div
@@ -391,6 +464,9 @@ export function CampaignVideoRoomLayout({
   onCameraChange,
   onMicrophoneChange,
   onEnableSound,
+  onComputerAudioQuality,
+  onStartComputerAudio,
+  onStopComputerAudio,
   onShareImage,
   onSetPresentationExpanded,
   onStopShare,
@@ -428,6 +504,10 @@ export function CampaignVideoRoomLayout({
         label={translations("leave")}
         compactLabel={translations("leaveCompact")}
         onLeave={onLeave}
+        computerAudioControls={isGameMaster && connected && snapshot.publication.computerAudio ? (
+          <ComputerAudioControls snapshot={snapshot} onQuality={onComputerAudioQuality}
+            onStart={onStartComputerAudio} onStop={onStopComputerAudio} />
+        ) : null}
       />
       <section
         className="game-room-grid"
@@ -612,6 +692,9 @@ function CampaignVideoRoomInstance({
         void controllerRef.current?.setMicrophoneEnabled(enabled)
       }
       onEnableSound={() => void controllerRef.current?.enableSound()}
+      onComputerAudioQuality={(quality) => controllerRef.current?.setComputerAudioQuality(quality)}
+      onStartComputerAudio={() => void controllerRef.current?.startComputerAudio()}
+      onStopComputerAudio={() => void controllerRef.current?.stopComputerAudio()}
       onShareImage={(imageId) =>
         controllerRef.current?.shareImage(imageId) ?? Promise.resolve(false)
       }

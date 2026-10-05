@@ -7,6 +7,7 @@ import type {
   CampaignVideoTrackKind,
 } from "./contracts";
 import { classifyCampaignVideoMediaError } from "./errors";
+import { createComputerAudioSharing, supportsComputerAudioCapture } from "./computer-audio";
 
 type AttachableTrack = {
   attach(element: HTMLMediaElement): unknown;
@@ -42,6 +43,16 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
     const attachments = new Map<string, CampaignVideoTrackAttachment>();
     let disposed = false;
     let requestedDisconnect = false;
+    const computerAudio = createComputerAudioSharing({
+      supported: () => credentials.publication.computerAudio &&
+        supportsComputerAudioCapture(navigator.userAgent, typeof navigator.mediaDevices?.getDisplayMedia === "function"),
+      capture: (constraints) => navigator.mediaDevices.getDisplayMedia(constraints),
+      publish: (track, settings) => room.localParticipant.publishTrack(track, {
+        ...settings, source: Track.Source.ScreenShareAudio,
+      }),
+      unpublish: (track) => room.localParticipant.unpublishTrack(track, true),
+      onChange: (state) => { if (!disposed) callbacks.onComputerAudio(state); },
+    });
 
     function attachment(
       publication: TrackPublication,
@@ -69,11 +80,14 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
     function participantView(participant: Participant) {
       let camera: CampaignVideoTrackAttachment | null = null;
       let microphone: CampaignVideoTrackAttachment | null = null;
+      let computerAudio: CampaignVideoTrackAttachment | null = null;
       for (const publication of participant.trackPublications.values()) {
         if (publication.source === Track.Source.Camera) {
           camera = attachment(publication, "camera");
         } else if (publication.source === Track.Source.Microphone) {
           microphone = attachment(publication, "microphone");
+        } else if (publication.source === Track.Source.ScreenShareAudio) {
+          computerAudio = attachment(publication, "computerAudio");
         }
       }
       return {
@@ -81,6 +95,7 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
         isLocal: participant.isLocal,
         camera,
         microphone,
+        computerAudio,
       } satisfies CampaignVideoProviderParticipant;
     }
 
@@ -99,6 +114,7 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
     const onDisconnected = () => {
       if (requestedDisconnect || disposed) return;
       disposed = true;
+      void computerAudio.dispose();
       signal.removeEventListener("abort", abort);
       removeListeners();
       attachments.clear();
@@ -168,6 +184,7 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       signal.removeEventListener("abort", abort);
       removeListeners();
       attachments.clear();
+      await computerAudio.dispose();
       await room.disconnect(true);
     }
 
@@ -215,6 +232,8 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       async startAudio() {
         await room.startAudio();
       },
+      startComputerAudio: computerAudio.start,
+      stopComputerAudio: computerAudio.stop,
       disconnect,
     };
   };

@@ -41,7 +41,7 @@ Supported capacity is one GM plus up to six Players. The last accepted human Pro
 
 Campaign membership is the application authorization boundary. A provider room name, URL, or token is never durable application authorization. Completed campaigns and unauthorized or removed users cannot obtain new campaign join credentials.
 
-Current tokens permit only the reviewed camera/microphone publication and subscription behavior. They do not grant room administration, data publication, screen sharing, recording, ingress, agent, or related elevated capabilities.
+Current tokens permit the reviewed camera/microphone publication and subscription behavior, plus GM-only `SCREEN_SHARE_AUDIO` for the separately approved computer-audio add-on. Players retain their camera/microphone restrictions. Neither role gets `SCREEN_SHARE` video, room administration, data publication, recording, ingress, agent, or related elevated capabilities.
 
 ADR-009 is Accepted only for managed infrastructure and LiveKit in the current campaign Game Room.
 
@@ -51,7 +51,21 @@ Phase 4C2 implements GM-controlled presentation of an existing Campaign Gallery 
 
 Phase 5A may refine Campaign and Game Room layout, navigation, responsive behavior, accessibility, and usability without adding new media capabilities.
 
-Recording, transcription, streaming, screen sharing, remote moderation, breakout rooms, virtual backgrounds, and similar media expansion are not active roadmap commitments.
+Recording, transcription, streaming, screen-video sharing, remote moderation, breakout rooms, virtual backgrounds, and similar media expansion are not active roadmap commitments.
+
+## Pre-Phase-5 Add-on — GM Computer Audio Sharing
+
+**Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING.** Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
+
+A connected GM explicitly captures computer audio with the browser picker into a separate LiveKit `ScreenShareAudio` publication in the existing campaign room. This is not microphone mixing/replacement, screen-video sharing, a second transport/room, an audio-file library, recording or a new service. It requires no database/schema/migration/RLS/Storage change or persistent setting. Client/server SDKs remain 2.21.0/2.17.0.
+
+Initial GM capture support is Windows 11/current stable Chrome or Edge: select Entire screen and system audio. Players receive ordinary LiveKit audio regardless of Windows 11 capture support. Other applications/notifications may be transmitted; Spotify-only capture is not promised. Windows 10, macOS/Linux, Firefox/Safari and mobile capture are outside the initial supported scope. Recognized browser/constraint support is not proof: captured audio must be usable and report `getSettings().restrictOwnAudio === true`, or all tracks stop without publication. Display video stops first and is never published or retained as a hidden fallback; if stopping it also ends audio, sharing aborts safely.
+
+Quality is a transient 128/192 kbps target, default 192; it is locked while starting/sharing/stopping. Publication uses `audioPreset.maxBitrate`, stereo intent and DTX/RED off, not obsolete `audioBitrate`; capture requests stereo/48 kHz and disables speech processing only for computer audio. These are quality targets, not original-rate/constant-network-bitrate promises; no resampling/mixing is added.
+
+The header control has localized idle/starting/sharing/stopping feedback and nonfatal cancellation, unsupported capture, unsafe own-audio, no audio, video-stop-ended-audio and publication errors. Remote GM audio uses a second audio element and existing Enable sound behavior; the local GM hears no duplicate local playback. Stop/native audio end/Leave/disposal/terminal disconnect clean owned capture, including late completions. Ordinary reconnect retains capture through SDK republishing without prompting or duplicate publication. Directory-authorized mapping preserves the accepted dynamic-membership behavior; a late Player subscribes to the current audio without GM restart. Mic, camera and Gallery image presentation remain independent.
+
+Automated mocked-capture/adapter/controller/token/UI tests do not prove native Windows capture or echo safety. Manual Production acceptance must cover Chrome and Edge, GM + real Player, external desktop sound, independent microphone, no delayed own-voice echo, no screen video, both qualities, site/native Stop, late join and reconnect without a picker.
 
 ## Standalone Video Rooms backlog boundary
 

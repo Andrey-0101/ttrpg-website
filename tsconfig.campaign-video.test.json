@@ -36,6 +36,7 @@
     "lib/campaign-characters/contracts.ts",
     "tests/campaign-video/game-room-characters.test.ts",
     "tests/campaign-video/browser-room.test.ts",
+    "tests/campaign-video/computer-audio.test.ts",
     "tests/campaign-video/campaign-dice.test.ts",
     "tests/campaign-video/game-session.test.ts",
     "tests/campaign-video/campaign-notes.test.ts",

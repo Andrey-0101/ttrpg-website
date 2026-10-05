@@ -67,7 +67,7 @@ export async function authorizeCampaignVideoJoin(
         userId,
         role: "game_master",
         playerPosition: null,
-        publication: { audio: true, video: true },
+        publication: { audio: true, video: true, computerAudio: true },
       },
     };
   }
@@ -104,6 +104,7 @@ export async function authorizeCampaignVideoJoin(
       publication: {
         audio: publication?.audioAllowed ?? true,
         video: publication?.videoAllowed ?? true,
+        computerAudio: false,
       },
     },
   };
