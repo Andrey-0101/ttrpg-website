@@ -16,6 +16,7 @@ export type CampaignVideoTrackKind = "camera" | "microphone" | "computerAudio";
 export type ComputerAudioQuality = 128 | 192;
 export type ComputerAudioError =
   | "unsupported_browser"
+  | "unsupported_surface"
   | "unsafe_audio_capture"
   | "capture_cancelled"
   | "no_audio_track"

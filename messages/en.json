@@ -644,7 +644,7 @@
     "computerAudio": {
       "title": "Computer audio",
       "active": "Computer audio is shared",
-      "help": "GM capture: Windows 11 with current Chrome or Edge. Choose Entire screen and enable system audio. Other applications and notifications may also be heard. Sharing requires confirmed own-audio exclusion.",
+      "help": "Windows 11, current Chrome or Edge: for one application's audio, select its Window and enable the browser's audio toggle (Share with system audio or equivalent). Choose Entire screen only for system audio; other apps and notifications may be heard. Do not select the Game Room browser window.",
       "quality": "Quality",
       "start": "Share computer audio",
       "stop": "Stop computer audio",
@@ -655,10 +655,11 @@
         "stopping": "Stopping computer audio..."
       },
       "errors": {
-        "unsupported_browser": "Safe system audio capture is unavailable. Use current Chrome or Edge on Windows 11.",
+        "unsupported_browser": "Computer audio capture is unavailable. Use current Chrome or Edge on Windows 11.",
+        "unsupported_surface": "Choose a desktop application's Window or Entire screen. Browser tabs and unrecognized sources are not supported; nothing was shared.",
         "unsafe_audio_capture": "Own-audio exclusion was not confirmed. Nothing was shared; the call is unchanged.",
         "capture_cancelled": "Audio sharing was cancelled.",
-        "no_audio_track": "No usable audio was selected. Enable system audio in the picker.",
+        "no_audio_track": "Computer audio wasn't enabled. Start sharing again and enable audio in the browser sharing window.",
         "video_stop_ended_audio": "This capture stops audio when video is stopped. Nothing was shared.",
         "publish_failed": "Computer audio could not be shared. The call is unchanged."
       }

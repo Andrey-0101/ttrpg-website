@@ -24,7 +24,7 @@ class CaptureTrack extends EventTarget {
   muted = false;
   stops = 0;
   listeners = 0;
-  settings: { restrictOwnAudio?: boolean } = { restrictOwnAudio: true };
+  settings: { restrictOwnAudio?: boolean; displaySurface?: string } = { restrictOwnAudio: true };
   onStop?: () => void;
   getSettings() { return this.settings; }
   stop() { this.stops += 1; this.readyState = "ended"; this.onStop?.(); }
@@ -37,8 +37,9 @@ class CaptureTrack extends EventTarget {
   }
 }
 
-function captured(audio = [new CaptureTrack()]) {
+function captured(audio = [new CaptureTrack()], displaySurface = "monitor") {
   const video = new CaptureTrack();
+  video.settings = { displaySurface };
   const stream = {
     getTracks: () => [...audio, video],
     getAudioTracks: () => audio,
@@ -67,6 +68,9 @@ function sharingHarness(value = captured(), changes: {
     publish: async (track, settings) => {
       assert.equal(value.video.readyState, "ended");
       assert.equal(track, value.audio[0]);
+      assert.equal(track.readyState, "live");
+      assert.equal(track.enabled, true);
+      assert.equal(track.muted, false);
       published.push({ track, settings });
       return changes.publish?.();
     },
@@ -77,14 +81,23 @@ function sharingHarness(value = captured(), changes: {
     unpublished: () => unpublished, state: () => states.at(-1), ...value };
 }
 
+for (const displaySurface of ["window", "monitor"]) {
 for (const quality of [128, 192] as const) {
-  test(`safe capture publishes only audio at ${quality}, with stereo and no speech processing`, async () => {
-    const h = sharingHarness();
+  test(`${displaySurface} capture publishes only audio at ${quality}, with stereo and no speech processing`, async () => {
+    const value = captured(undefined, displaySurface);
+    let surfaceRead = false;
+    value.video.getSettings = () => {
+      assert.equal(value.video.readyState, "live");
+      surfaceRead = true;
+      return { displaySurface };
+    };
+    value.video.onStop = () => assert.equal(surfaceRead, true);
+    const h = sharingHarness(value);
     const start = h.sharing.start(quality);
     await Promise.all([start, h.sharing.start(quality)]);
     assert.equal(h.captures(), 1);
     assert.deepEqual(h.constraints(), {
-      video: true, systemAudio: "include",
+      video: true, windowAudio: "window", systemAudio: "include", selfBrowserSurface: "exclude",
       audio: { restrictOwnAudio: true, channelCount: 2, sampleRate: 48000,
         echoCancellation: false, noiseSuppression: false, autoGainControl: false, voiceIsolation: false },
     });
@@ -102,6 +115,58 @@ for (const quality of [128, 192] as const) {
     assert.deepEqual(h.states.map((state) => state.phase), ["starting", "sharing", "stopping", "idle", "idle"]);
   });
 }
+}
+
+for (const safety of [undefined, false, true]) {
+  test(`window audio succeeds with restrictOwnAudio=${safety}`, async () => {
+    const value = captured(undefined, "window");
+    value.audio[0]!.settings = safety === undefined ? {} : { restrictOwnAudio: safety };
+    const h = sharingHarness(value);
+    await h.sharing.start(192);
+    assert.equal(h.state()?.phase, "sharing");
+    assert.equal(h.published.length, 1);
+    await h.sharing.stop();
+  });
+}
+
+for (const displaySurface of ["browser", undefined, "unexpected"]) {
+  test(`unsupported displaySurface=${displaySurface} stops all capture without publication`, async () => {
+    const value = captured();
+    value.video.settings = { displaySurface };
+    const h = sharingHarness(value);
+    await h.sharing.start(192);
+    assert.equal(h.state()?.error, "unsupported_surface");
+    assert.equal(h.published.length, 0);
+    assert.ok([...h.audio, h.video].every((track) => track.readyState === "ended"));
+  });
+}
+
+test("unreadable displaySurface cannot enter unrestricted window mode", async () => {
+  const value = captured();
+  value.video.getSettings = () => { throw new Error("Unavailable surface"); };
+  const h = sharingHarness(value);
+  await h.sharing.start(192);
+  assert.equal(h.state()?.error, "unsupported_surface");
+  assert.equal(h.published.length, 0);
+  assert.ok([...h.audio, h.video].every((track) => track.readyState === "ended"));
+});
+
+for (const invalid of ["missing", "multiple", "ended", "disabled"] as const) {
+  test(`${invalid} display video cannot authorize window audio`, async () => {
+    const value = captured(undefined, "window");
+    const extra = new CaptureTrack();
+    const videos = invalid === "missing" ? [] : invalid === "multiple" ? [value.video, extra] : [value.video];
+    if (invalid === "ended") value.video.readyState = "ended";
+    if (invalid === "disabled") value.video.enabled = false;
+    value.stream.getVideoTracks = () => videos as unknown as MediaStreamTrack[];
+    value.stream.getTracks = () => [...value.audio, ...videos] as unknown as MediaStreamTrack[];
+    const h = sharingHarness(value);
+    await h.sharing.start(192);
+    assert.equal(h.state()?.error, "unsupported_surface");
+    assert.equal(h.published.length, 0);
+    assert.ok([...value.audio, ...videos].every((track) => track.readyState === "ended"));
+  });
+}
 
 test("quality is a closed union; browser support is narrow and not proof of capture safety", () => {
   assert.throws(() => computerAudioPublishOptions(160 as 128), /Invalid/);
@@ -115,7 +180,7 @@ test("quality is a closed union; browser support is narrow and not proof of capt
 });
 
 for (const safety of [false, undefined]) {
-  test(`recognized browser but restrictOwnAudio=${safety} fails closed`, async () => {
+  test(`monitor audio with restrictOwnAudio=${safety} fails closed`, async () => {
     const value = captured();
     value.audio[0]!.settings = { restrictOwnAudio: safety };
     const h = sharingHarness(value);
@@ -150,14 +215,28 @@ for (const invalid of ["none", "multiple", "ended", "muted"] as const) {
   });
 }
 
-test("video stop ending audio aborts; hidden video is never retained", async () => {
-  const value = captured();
+for (const displaySurface of ["window", "monitor"]) {
+test(`${displaySurface} video stop ending audio aborts; hidden video is never retained`, async () => {
+  const value = captured(undefined, displaySurface);
   value.video.onStop = () => value.audio[0]!.end();
   const h = sharingHarness(value);
   await h.sharing.start(192);
   assert.equal(h.state()?.error, "video_stop_ended_audio");
   assert.equal(h.published.length, 0);
   assert.equal(h.audio[0]?.listeners, 0);
+  assert.ok([...h.audio, h.video].every((track) => track.readyState === "ended"));
+});
+}
+
+test("monitor own-audio safety must still hold after video stops", async () => {
+  const value = captured();
+  value.video.onStop = () => { value.audio[0]!.settings = { restrictOwnAudio: false }; };
+  const h = sharingHarness(value);
+  await h.sharing.start(192);
+  assert.equal(h.state()?.error, "unsafe_audio_capture");
+  assert.equal(h.published.length, 0);
+  assert.equal(h.audio[0]?.listeners, 0);
+  assert.ok([...h.audio, h.video].every((track) => track.readyState === "ended"));
 });
 
 test("publish failure cleans tracks/listeners and returns to idle", async () => {

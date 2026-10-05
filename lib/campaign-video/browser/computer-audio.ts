@@ -3,7 +3,9 @@ import type { ComputerAudioError, ComputerAudioQuality, ComputerAudioState } fro
 
 // DOM typings lag the Chromium screen-capture extensions. Keep them local.
 export type ComputerAudioCaptureOptions = DisplayMediaStreamOptions & {
+  windowAudio: "window";
   systemAudio: "include";
+  selfBrowserSurface: "exclude";
   audio: MediaTrackConstraints & { restrictOwnAudio: true; voiceIsolation: false };
 };
 
@@ -94,7 +96,9 @@ export function createComputerAudioSharing(options: {
           autoGainControl: false,
           voiceIsolation: false,
         },
+        windowAudio: "window",
         systemAudio: "include",
+        selfBrowserSurface: "exclude",
       });
     } catch (error) {
       if (current(operationGeneration)) {
@@ -113,7 +117,24 @@ export function createComputerAudioSharing(options: {
       update("idle", "no_audio_track");
       return;
     }
+    const video = stream.getVideoTracks();
+    let displaySurface: string | undefined;
+    try {
+      if (video.length === 1 && video[0].readyState === "live" && video[0].enabled) {
+        displaySurface = video[0].getSettings().displaySurface;
+      }
+    } catch {
+      // Unreadable or unknown surfaces must not bypass the system-audio gate.
+    }
+    if (displaySurface !== "window" && displaySurface !== "monitor") {
+      stopTracks(tracks);
+      update("idle", "unsupported_surface");
+      return;
+    }
     const safe = () => {
+      // Window audio follows the native picker's windowAudio hint; it does not
+      // require the own-audio setting used to protect whole-system capture.
+      if (displaySurface === "window") return true;
       try {
         return (track.getSettings() as MediaTrackSettings & { restrictOwnAudio?: boolean }).restrictOwnAudio === true;
       } catch {
@@ -134,7 +155,7 @@ export function createComputerAudioSharing(options: {
     const resource = { tracks, audio: track, ended, released: false };
     owned = resource;
     track.addEventListener("ended", ended);
-    stream.getVideoTracks().forEach((video) => video.stop());
+    video.forEach((track) => track.stop());
     // Let capture-source termination propagate before making any publication.
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     if (!current(operationGeneration)) return;
