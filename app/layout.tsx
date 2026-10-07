@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { getSiteOrigin } from "@/lib/site-url";
 import "./globals.css";
+import DiagnosticsProvider from "@/components/developer/diagnostics-provider";
 
 const siteOrigin = getSiteOrigin();
 
@@ -21,7 +22,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body>{children}</body>
+      <body><DiagnosticsProvider>{children}</DiagnosticsProvider></body>
     </html>
   );
 }

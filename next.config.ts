@@ -42,6 +42,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Build-time metadata only. Never expose credentials or derive an identity from URLs.
+  env: {
+    NEXT_PUBLIC_DIAGNOSTIC_BUILD_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+    NEXT_PUBLIC_DIAGNOSTIC_BUILD_DEPLOYMENT: process.env.VERCEL_DEPLOYMENT_ID ?? "",
+    NEXT_PUBLIC_DIAGNOSTIC_BUILD_ENV: process.env.VERCEL_ENV ?? "development",
+  },
   async headers() {
     return [
       {
