@@ -38,6 +38,7 @@ export class DiagnosticsCoordinator {
   private unsubscribe: (() => void) | null = null;
   private channelCleanup: (() => void) | null = null;
   private mutation: Promise<void> | null = null;
+  private closeAfterExport = false;
   private refreshPromise: Promise<void> | null = null;
   private serverOffset = 0;
   constructor(private build: BuildStamp) {}
@@ -254,13 +255,20 @@ export class DiagnosticsCoordinator {
       this.view.state?.owner &&
       ["recording", "stopping"].includes(this.view.state.run?.state ?? "")
     )
-      void this.stopExport();
+      void this.stopExport("explicit", true);
     else if (!this.view.busy) this.publish({ panel: false });
   }
-  stopExport(reason: "explicit" | "route_exit" = "explicit"): Promise<void> {
-    if (this.mutation) return this.mutation;
+  stopExport(
+    reason: "explicit" | "route_exit" = "explicit",
+    closeOnSuccess = false,
+  ): Promise<void> {
+    if (this.mutation) {
+      if (closeOnSuccess) this.closeAfterExport = true;
+      return this.mutation;
+    }
     const run = this.view.state?.run;
     if (!run || !this.view.state?.owner) return Promise.resolve();
+    this.closeAfterExport = closeOnSuccess;
     this.publish({ panel: true, busy: true, error: false, message: text.collecting });
     const operation = (async () => {
       try {
@@ -296,10 +304,14 @@ export class DiagnosticsCoordinator {
         this.collector?.dispose();
         this.collector = null;
         this.collectorRun = null;
-        this.publish({ state: { ...state, run: null } });
+        this.publish({
+          state: { ...state, run: null },
+          ...(this.closeAfterExport ? { panel: false } : {}),
+        });
       } catch {
         this.publish({ message: text.unavailable, error: true });
       } finally {
+        this.closeAfterExport = false;
         this.publish({ busy: false });
       }
     })().finally(() => {

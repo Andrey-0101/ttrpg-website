@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState, useSyncExternalStore } 
 import { DiagnosticsCoordinator } from "@/lib/diagnostics/coordinator";
 import { durationLabel, type BuildStamp } from "@/lib/diagnostics/contracts";
 import { developerEnglish as text } from "@/lib/developer/english";
+import { formatDeveloperDateTime } from "@/lib/developer/date-time";
+const WRENCH = "🔧";
 const Context = createContext<DiagnosticsCoordinator | null>(null);
 function useCoordinator() {
   const value = useContext(Context);
@@ -40,7 +42,7 @@ export function DeveloperButton() {
       onClick={() => void coordinator.open()}
       className="rounded border px-2 py-2 focus-visible:outline-2"
     >
-      🔧
+      {WRENCH}
     </button>
   );
 }
@@ -92,19 +94,13 @@ function DeveloperPanel() {
   const roster = state?.roster ?? [];
   const players = roster.filter((p) => p.role === "player");
   const gm = roster.find((p) => p.role === "game_master");
-  const local = (time: number) =>
-    new Date(time).toLocaleTimeString("en", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
   return (
     <aside
       aria-label={text.wrench}
       className="fixed right-3 top-20 z-50 w-80 max-w-[calc(100vw-1.5rem)] rounded-lg border bg-white p-4 text-sm text-black shadow-xl"
     >
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <span aria-hidden="true">{WRENCH}</span>
         <button
           type="button"
           aria-label={text.close}
@@ -126,9 +122,9 @@ function DeveloperPanel() {
           <p className="break-words font-medium">{state?.campaignName}</p>
           <dl className="mt-3 grid grid-cols-2 gap-1">
             <dt>{text.now}</dt>
-            <dd>{view.now ? local(view.now) : "—"}</dd>
+            <dd>{view.now ? formatDeveloperDateTime(view.now) : "—"}</dd>
             <dt>{text.started}</dt>
-            <dd>{run ? local(Date.parse(run.started_at)) : "—"}</dd>
+            <dd>{run ? formatDeveloperDateTime(Date.parse(run.started_at)) : "—"}</dd>
             <dt>{text.duration}</dt>
             <dd>
               {run
@@ -144,15 +140,20 @@ function DeveloperPanel() {
           </p>
           <ul className="mt-2 space-y-1">
             {gm ? (
-              <li>
-                <span title={text.status[gm.status]}>{gm.status}</span> {text.gm}:{" "}
-                {gm.name ?? text.gm}
+              <li className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-2">
+                <span>{text.gm}</span>
+                <span className="min-w-0 break-words">{gm.name?.trim() || "—"}</span>
+                <span title={text.status[gm.status]}>{gm.status}</span>
               </li>
             ) : null}
             {players.map((player) => (
-              <li key={player.identity}>
-                <span title={text.status[player.status]}>{player.status}</span> {player.slot}.{" "}
-                {player.name ?? text.player(player.slot)}
+              <li
+                key={player.identity}
+                className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-2"
+              >
+                <span>{text.player(player.slot)}</span>
+                <span className="min-w-0 break-words">{player.name?.trim() || "—"}</span>
+                <span title={text.status[player.status]}>{player.status}</span>
               </li>
             ))}
           </ul>
