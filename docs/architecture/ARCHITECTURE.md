@@ -19,6 +19,10 @@ main
 
 PR #52 delivered Phase 4D2, PR #53 refined its acceptance UX, and PR #54 delivered the final navigation polish. All are merged and deployed. Phase 4D2 multi-user acceptance and the final UI-polish re-test passed. The earlier campaign-video human Production acceptance involved one GM and four Players; no quantitative packet-loss, latency, jitter, or connection-quality telemetry was collected.
 
+## Feature-branch add-on: Developer diagnostics
+
+Developer role and distributed Game Room connection-statistics diagnostics are implemented on a separate feature branch, NOT deployed/accepted in Production. The new role does not change campaign GM/Player authority, Game Sessions, Notes privacy or LiveKit permissions/lifecycle. The root-layout coordinator, public read-only LiveKit stats adapter, private bounded chunk registry/Storage and browser ZIP Worker follow the [diagnostics contract](DEVELOPER_DIAGNOSTICS.md). Canonical fallback TTL is 12 hours after server completion; approved future cleanup is existing pg_cron → pg_net → protected Next.js POST every five minutes. Production configuration remains unchanged. Phase 5A is not started.
+
 ## Architectural goals
 
 1. Deliver practical value to a small private group before optimizing for unrestricted public use.

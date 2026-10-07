@@ -30,6 +30,8 @@ Phase 4 is complete. The next planned stage is Phase 5A — Campaign & Game Room
 
 Pre-Phase-5 Add-on — GM Computer Audio Sharing: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. This separately approved audio-only addition does not reopen Phase 4 or start Phase 5A. Automated verification does not substitute for real Windows multi-machine capture and echo acceptance.
 
+Separately approved Developer Game Room diagnostics add-on: feature-branch implementation / Production rollout and manual acceptance pending. This is not a Phase 5 milestone and does not change the closed Phase 4 or planned/not-started Phase 5A status. It adds technical connection statistics only, no media recording or active speedtest. The canonical fallback TTL is 12 hours after server-side completion; cleanup configuration awaits separate Production rollout approval. See [Developer diagnostics](../architecture/DEVELOPER_DIAGNOSTICS.md).
+
 Current Production facts:
 
 - campaign video is implemented only inside `/{locale}/campaigns/{campaignId}/game-room`;

@@ -1,1261 +1,1509 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       campaign_characters: {
         Row: {
-          campaign_id: string
-          character_id: string
-          id: string
-          linked_at: string
-          linked_by: string
-          unlinked_at: string | null
-        }
+          campaign_id: string;
+          character_id: string;
+          id: string;
+          linked_at: string;
+          linked_by: string;
+          unlinked_at: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          campaign_id: string
-          character_id: string
-          id?: string
-          linked_at?: string
-          linked_by: string
-          unlinked_at?: string | null
-        }
+          campaign_id: string;
+          character_id: string;
+          id?: string;
+          linked_at?: string;
+          linked_by: string;
+          unlinked_at?: string | null;
+        };
         Update: {
-          campaign_id?: string
-          character_id?: string
-          id?: string
-          linked_at?: string
-          linked_by?: string
-          unlinked_at?: string | null
-        }
+          campaign_id?: string;
+          character_id?: string;
+          id?: string;
+          linked_at?: string;
+          linked_by?: string;
+          unlinked_at?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_characters_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_characters_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "campaign_characters_character_id_fkey"
-            columns: ["character_id"]
-            isOneToOne: false
-            referencedRelation: "characters"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_characters_character_id_fkey";
+            columns: ["character_id"];
+            isOneToOne: false;
+            referencedRelation: "characters";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_image_recipients: {
         Row: {
-          campaign_id: string
-          created_at: string
-          created_by: string
-          image_id: string
-          user_id: string
-        }
+          campaign_id: string;
+          created_at: string;
+          created_by: string;
+          image_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          campaign_id: string
-          created_at?: string
-          created_by: string
-          image_id: string
-          user_id: string
-        }
+          campaign_id: string;
+          created_at?: string;
+          created_by: string;
+          image_id: string;
+          user_id: string;
+        };
         Update: {
-          campaign_id?: string
-          created_at?: string
-          created_by?: string
-          image_id?: string
-          user_id?: string
-        }
+          campaign_id?: string;
+          created_at?: string;
+          created_by?: string;
+          image_id?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_image_recipients_image_fkey"
-            columns: ["campaign_id", "image_id"]
-            isOneToOne: false
-            referencedRelation: "campaign_images"
-            referencedColumns: ["campaign_id", "id"]
+            foreignKeyName: "campaign_image_recipients_image_fkey";
+            columns: ["campaign_id", "image_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_images";
+            referencedColumns: ["campaign_id", "id"];
           },
           {
-            foreignKeyName: "campaign_image_recipients_player_fkey"
-            columns: ["campaign_id", "user_id"]
-            isOneToOne: false
-            referencedRelation: "campaign_members"
-            referencedColumns: ["campaign_id", "user_id"]
+            foreignKeyName: "campaign_image_recipients_player_fkey";
+            columns: ["campaign_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_members";
+            referencedColumns: ["campaign_id", "user_id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_images: {
         Row: {
-          byte_size: number
-          campaign_id: string
-          category: string
-          created_at: string
-          display_name: string
-          id: string
-          mime_type: string
-          storage_object_name: string
-          updated_at: string
-          uploader_id: string
-          visibility: string
-        }
+          byte_size: number;
+          campaign_id: string;
+          category: string;
+          created_at: string;
+          display_name: string;
+          id: string;
+          mime_type: string;
+          storage_object_name: string;
+          updated_at: string;
+          uploader_id: string;
+          visibility: string;
+        };
+        ComputedFields: never;
         Insert: {
-          byte_size: number
-          campaign_id: string
-          category?: string
-          created_at?: string
-          display_name: string
-          id?: string
-          mime_type: string
-          storage_object_name: string
-          updated_at?: string
-          uploader_id: string
-          visibility?: string
-        }
+          byte_size: number;
+          campaign_id: string;
+          category?: string;
+          created_at?: string;
+          display_name: string;
+          id?: string;
+          mime_type: string;
+          storage_object_name: string;
+          updated_at?: string;
+          uploader_id: string;
+          visibility?: string;
+        };
         Update: {
-          byte_size?: number
-          campaign_id?: string
-          category?: string
-          created_at?: string
-          display_name?: string
-          id?: string
-          mime_type?: string
-          storage_object_name?: string
-          updated_at?: string
-          uploader_id?: string
-          visibility?: string
-        }
+          byte_size?: number;
+          campaign_id?: string;
+          category?: string;
+          created_at?: string;
+          display_name?: string;
+          id?: string;
+          mime_type?: string;
+          storage_object_name?: string;
+          updated_at?: string;
+          uploader_id?: string;
+          visibility?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_images_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_images_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "campaign_images_uploader_fkey"
-            columns: ["campaign_id", "uploader_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id", "game_master_id"]
+            foreignKeyName: "campaign_images_uploader_fkey";
+            columns: ["campaign_id", "uploader_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id", "game_master_id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_invitations: {
         Row: {
-          accepted_at: string | null
-          accepted_by: string | null
-          campaign_id: string
-          created_at: string
-          created_by: string
-          expires_at: string
-          id: string
-          revoked_at: string | null
-          token_hash: string
-        }
+          accepted_at: string | null;
+          accepted_by: string | null;
+          campaign_id: string;
+          created_at: string;
+          created_by: string;
+          expires_at: string;
+          id: string;
+          revoked_at: string | null;
+          token_hash: string;
+        };
+        ComputedFields: never;
         Insert: {
-          accepted_at?: string | null
-          accepted_by?: string | null
-          campaign_id: string
-          created_at?: string
-          created_by: string
-          expires_at: string
-          id?: string
-          revoked_at?: string | null
-          token_hash: string
-        }
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          campaign_id: string;
+          created_at?: string;
+          created_by: string;
+          expires_at: string;
+          id?: string;
+          revoked_at?: string | null;
+          token_hash: string;
+        };
         Update: {
-          accepted_at?: string | null
-          accepted_by?: string | null
-          campaign_id?: string
-          created_at?: string
-          created_by?: string
-          expires_at?: string
-          id?: string
-          revoked_at?: string | null
-          token_hash?: string
-        }
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          campaign_id?: string;
+          created_at?: string;
+          created_by?: string;
+          expires_at?: string;
+          id?: string;
+          revoked_at?: string | null;
+          token_hash?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_invitations_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_invitations_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_media_group_members: {
         Row: {
-          assigned_at: string
-          assigned_by: string
-          campaign_id: string
-          group_id: string
-          user_id: string
-        }
+          assigned_at: string;
+          assigned_by: string;
+          campaign_id: string;
+          group_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          assigned_at?: string
-          assigned_by: string
-          campaign_id: string
-          group_id: string
-          user_id: string
-        }
+          assigned_at?: string;
+          assigned_by: string;
+          campaign_id: string;
+          group_id: string;
+          user_id: string;
+        };
         Update: {
-          assigned_at?: string
-          assigned_by?: string
-          campaign_id?: string
-          group_id?: string
-          user_id?: string
-        }
+          assigned_at?: string;
+          assigned_by?: string;
+          campaign_id?: string;
+          group_id?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_media_group_members_group_fkey"
-            columns: ["campaign_id", "group_id"]
-            isOneToOne: false
-            referencedRelation: "campaign_media_groups"
-            referencedColumns: ["campaign_id", "id"]
+            foreignKeyName: "campaign_media_group_members_group_fkey";
+            columns: ["campaign_id", "group_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_media_groups";
+            referencedColumns: ["campaign_id", "id"];
           },
           {
-            foreignKeyName: "campaign_media_group_members_player_fkey"
-            columns: ["campaign_id", "user_id"]
-            isOneToOne: true
-            referencedRelation: "campaign_members"
-            referencedColumns: ["campaign_id", "user_id"]
+            foreignKeyName: "campaign_media_group_members_player_fkey";
+            columns: ["campaign_id", "user_id"];
+            isOneToOne: true;
+            referencedRelation: "campaign_members";
+            referencedColumns: ["campaign_id", "user_id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_media_groups: {
         Row: {
-          campaign_id: string
-          created_at: string
-          display_order: number
-          id: string
-          name: string
-          updated_at: string
-        }
+          campaign_id: string;
+          created_at: string;
+          display_order: number;
+          id: string;
+          name: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          campaign_id: string
-          created_at?: string
-          display_order: number
-          id?: string
-          name: string
-          updated_at?: string
-        }
+          campaign_id: string;
+          created_at?: string;
+          display_order: number;
+          id?: string;
+          name: string;
+          updated_at?: string;
+        };
         Update: {
-          campaign_id?: string
-          created_at?: string
-          display_order?: number
-          id?: string
-          name?: string
-          updated_at?: string
-        }
+          campaign_id?: string;
+          created_at?: string;
+          display_order?: number;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_media_groups_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_media_groups_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_media_restrictions: {
         Row: {
-          campaign_id: string
-          created_at: string
-          created_by: string
-          id: string
-          media_kind: string
-          source_group_id: string | null
-          source_type: string
-          target_group_id: string | null
-          target_type: string
-        }
+          campaign_id: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          media_kind: string;
+          source_group_id: string | null;
+          source_type: string;
+          target_group_id: string | null;
+          target_type: string;
+        };
+        ComputedFields: never;
         Insert: {
-          campaign_id: string
-          created_at?: string
-          created_by: string
-          id?: string
-          media_kind: string
-          source_group_id?: string | null
-          source_type: string
-          target_group_id?: string | null
-          target_type: string
-        }
+          campaign_id: string;
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          media_kind: string;
+          source_group_id?: string | null;
+          source_type: string;
+          target_group_id?: string | null;
+          target_type: string;
+        };
         Update: {
-          campaign_id?: string
-          created_at?: string
-          created_by?: string
-          id?: string
-          media_kind?: string
-          source_group_id?: string | null
-          source_type?: string
-          target_group_id?: string | null
-          target_type?: string
-        }
+          campaign_id?: string;
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          media_kind?: string;
+          source_group_id?: string | null;
+          source_type?: string;
+          target_group_id?: string | null;
+          target_type?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_media_restrictions_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_media_restrictions_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "campaign_media_restrictions_source_group_fkey"
-            columns: ["campaign_id", "source_group_id"]
-            isOneToOne: false
-            referencedRelation: "campaign_media_groups"
-            referencedColumns: ["campaign_id", "id"]
+            foreignKeyName: "campaign_media_restrictions_source_group_fkey";
+            columns: ["campaign_id", "source_group_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_media_groups";
+            referencedColumns: ["campaign_id", "id"];
           },
           {
-            foreignKeyName: "campaign_media_restrictions_target_group_fkey"
-            columns: ["campaign_id", "target_group_id"]
-            isOneToOne: false
-            referencedRelation: "campaign_media_groups"
-            referencedColumns: ["campaign_id", "id"]
+            foreignKeyName: "campaign_media_restrictions_target_group_fkey";
+            columns: ["campaign_id", "target_group_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_media_groups";
+            referencedColumns: ["campaign_id", "id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_members: {
         Row: {
-          campaign_id: string
-          display_order: number
-          joined_at: string
-          user_id: string
-        }
+          campaign_id: string;
+          display_order: number;
+          joined_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          campaign_id: string
-          display_order: number
-          joined_at?: string
-          user_id: string
-        }
+          campaign_id: string;
+          display_order: number;
+          joined_at?: string;
+          user_id: string;
+        };
         Update: {
-          campaign_id?: string
-          display_order?: number
-          joined_at?: string
-          user_id?: string
-        }
+          campaign_id?: string;
+          display_order?: number;
+          joined_at?: string;
+          user_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_members_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_members_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_membership_signals: {
         Row: {
-          campaign_id: string
-          revision: number
-        }
+          campaign_id: string;
+          revision: number;
+        };
+        ComputedFields: never;
         Insert: {
-          campaign_id: string
-          revision?: number
-        }
+          campaign_id: string;
+          revision?: number;
+        };
         Update: {
-          campaign_id?: string
-          revision?: number
-        }
+          campaign_id?: string;
+          revision?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_membership_signals_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: true
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_membership_signals_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: true;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_note_entries: {
         Row: {
-          body: string
-          campaign_id: string
-          campaign_name_snapshot: string
-          created_at: string
-          created_timezone: string
-          edited_at: string | null
-          edited_timezone: string | null
-          game_session_id: string | null
-          id: string
-          owner_id: string
-        }
+          body: string;
+          campaign_id: string;
+          campaign_name_snapshot: string;
+          created_at: string;
+          created_timezone: string;
+          edited_at: string | null;
+          edited_timezone: string | null;
+          game_session_id: string | null;
+          id: string;
+          owner_id: string;
+        };
+        ComputedFields: never;
         Insert: {
-          body: string
-          campaign_id: string
-          campaign_name_snapshot: string
-          created_at: string
-          created_timezone: string
-          edited_at?: string | null
-          edited_timezone?: string | null
-          game_session_id?: string | null
-          id?: string
-          owner_id: string
-        }
+          body: string;
+          campaign_id: string;
+          campaign_name_snapshot: string;
+          created_at: string;
+          created_timezone: string;
+          edited_at?: string | null;
+          edited_timezone?: string | null;
+          game_session_id?: string | null;
+          id?: string;
+          owner_id: string;
+        };
         Update: {
-          body?: string
-          campaign_id?: string
-          campaign_name_snapshot?: string
-          created_at?: string
-          created_timezone?: string
-          edited_at?: string | null
-          edited_timezone?: string | null
-          game_session_id?: string | null
-          id?: string
-          owner_id?: string
-        }
+          body?: string;
+          campaign_id?: string;
+          campaign_name_snapshot?: string;
+          created_at?: string;
+          created_timezone?: string;
+          edited_at?: string | null;
+          edited_timezone?: string | null;
+          game_session_id?: string | null;
+          id?: string;
+          owner_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_note_entries_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_note_entries_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "campaign_note_session_campaign_fk"
-            columns: ["campaign_id", "game_session_id"]
-            isOneToOne: false
-            referencedRelation: "game_sessions"
-            referencedColumns: ["campaign_id", "id"]
+            foreignKeyName: "campaign_note_session_campaign_fk";
+            columns: ["campaign_id", "game_session_id"];
+            isOneToOne: false;
+            referencedRelation: "game_sessions";
+            referencedColumns: ["campaign_id", "id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_player_publication_permissions: {
         Row: {
-          audio_allowed: boolean
-          campaign_id: string
-          updated_at: string
-          updated_by: string
-          user_id: string
-          video_allowed: boolean
-        }
+          audio_allowed: boolean;
+          campaign_id: string;
+          updated_at: string;
+          updated_by: string;
+          user_id: string;
+          video_allowed: boolean;
+        };
+        ComputedFields: never;
         Insert: {
-          audio_allowed?: boolean
-          campaign_id: string
-          updated_at?: string
-          updated_by: string
-          user_id: string
-          video_allowed?: boolean
-        }
+          audio_allowed?: boolean;
+          campaign_id: string;
+          updated_at?: string;
+          updated_by: string;
+          user_id: string;
+          video_allowed?: boolean;
+        };
         Update: {
-          audio_allowed?: boolean
-          campaign_id?: string
-          updated_at?: string
-          updated_by?: string
-          user_id?: string
-          video_allowed?: boolean
-        }
+          audio_allowed?: boolean;
+          campaign_id?: string;
+          updated_at?: string;
+          updated_by?: string;
+          user_id?: string;
+          video_allowed?: boolean;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_player_publication_permissions_member_fkey"
-            columns: ["campaign_id", "user_id"]
-            isOneToOne: true
-            referencedRelation: "campaign_members"
-            referencedColumns: ["campaign_id", "user_id"]
+            foreignKeyName: "campaign_player_publication_permissions_member_fkey";
+            columns: ["campaign_id", "user_id"];
+            isOneToOne: true;
+            referencedRelation: "campaign_members";
+            referencedColumns: ["campaign_id", "user_id"];
           },
-        ]
-      }
+        ];
+      };
       campaign_video_audit_log: {
         Row: {
-          action: string
-          actor_id: string | null
-          campaign_id: string
-          created_at: string
-          id: number
-          media_kind: string | null
-          new_state: string | null
-          old_state: string | null
-          subject_id: string | null
-          subject_type: string
-        }
+          action: string;
+          actor_id: string | null;
+          campaign_id: string;
+          created_at: string;
+          id: number;
+          media_kind: string | null;
+          new_state: string | null;
+          old_state: string | null;
+          subject_id: string | null;
+          subject_type: string;
+        };
+        ComputedFields: never;
         Insert: {
-          action: string
-          actor_id?: string | null
-          campaign_id: string
-          created_at?: string
-          id?: never
-          media_kind?: string | null
-          new_state?: string | null
-          old_state?: string | null
-          subject_id?: string | null
-          subject_type: string
-        }
+          action: string;
+          actor_id?: string | null;
+          campaign_id: string;
+          created_at?: string;
+          id?: never;
+          media_kind?: string | null;
+          new_state?: string | null;
+          old_state?: string | null;
+          subject_id?: string | null;
+          subject_type: string;
+        };
         Update: {
-          action?: string
-          actor_id?: string | null
-          campaign_id?: string
-          created_at?: string
-          id?: never
-          media_kind?: string | null
-          new_state?: string | null
-          old_state?: string | null
-          subject_id?: string | null
-          subject_type?: string
-        }
+          action?: string;
+          actor_id?: string | null;
+          campaign_id?: string;
+          created_at?: string;
+          id?: never;
+          media_kind?: string | null;
+          new_state?: string | null;
+          old_state?: string | null;
+          subject_id?: string | null;
+          subject_type?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "campaign_video_audit_log_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "campaign_video_audit_log_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       campaigns: {
         Row: {
-          created_at: string
-          description: string | null
-          game_master_id: string
-          game_system: string
-          id: string
-          name: string
-          status: string
-          updated_at: string
-        }
+          created_at: string;
+          description: string | null;
+          game_master_id: string;
+          game_system: string;
+          id: string;
+          name: string;
+          status: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          description?: string | null
-          game_master_id: string
-          game_system: string
-          id?: string
-          name: string
-          status?: string
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          game_master_id: string;
+          game_system: string;
+          id?: string;
+          name: string;
+          status?: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          game_master_id?: string
-          game_system?: string
-          id?: string
-          name?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          description?: string | null;
+          game_master_id?: string;
+          game_system?: string;
+          id?: string;
+          name?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       characters: {
         Row: {
-          created_at: string
-          description: string | null
-          game_system: string
-          id: string
-          name: string
-          owner_id: string
-          portrait_url: string | null
-          sheet_data: NonNullable<Json>
-          updated_at: string
-        }
+          created_at: string;
+          description: string | null;
+          game_system: string;
+          id: string;
+          name: string;
+          owner_id: string;
+          portrait_url: string | null;
+          sheet_data: NonNullable<Json>;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          created_at?: string
-          description?: string | null
-          game_system: string
-          id?: string
-          name: string
-          owner_id: string
-          portrait_url?: string | null
-          sheet_data?: NonNullable<Json>
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          game_system: string;
+          id?: string;
+          name: string;
+          owner_id: string;
+          portrait_url?: string | null;
+          sheet_data?: NonNullable<Json>;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          game_system?: string
-          id?: string
-          name?: string
-          owner_id?: string
-          portrait_url?: string | null
-          sheet_data?: NonNullable<Json>
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          description?: string | null;
+          game_system?: string;
+          id?: string;
+          name?: string;
+          owner_id?: string;
+          portrait_url?: string | null;
+          sheet_data?: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       custom_dice_presets: {
         Row: {
-          coin_quantity: number
-          created_at: string
-          d10_quantity: number
-          d100_quantity: number
-          d12_quantity: number
-          d20_quantity: number
-          d4_quantity: number
-          d6_quantity: number
-          d8_quantity: number
-          id: string
-          name: string
-          owner_id: string
-          slot: number
-          updated_at: string
-        }
+          coin_quantity: number;
+          created_at: string;
+          d10_quantity: number;
+          d100_quantity: number;
+          d12_quantity: number;
+          d20_quantity: number;
+          d4_quantity: number;
+          d6_quantity: number;
+          d8_quantity: number;
+          id: string;
+          name: string;
+          owner_id: string;
+          slot: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
         Insert: {
-          coin_quantity?: number
-          created_at?: string
-          d10_quantity?: number
-          d100_quantity?: number
-          d12_quantity?: number
-          d20_quantity?: number
-          d4_quantity?: number
-          d6_quantity?: number
-          d8_quantity?: number
-          id?: string
-          name: string
-          owner_id: string
-          slot: number
-          updated_at?: string
-        }
+          coin_quantity?: number;
+          created_at?: string;
+          d10_quantity?: number;
+          d100_quantity?: number;
+          d12_quantity?: number;
+          d20_quantity?: number;
+          d4_quantity?: number;
+          d6_quantity?: number;
+          d8_quantity?: number;
+          id?: string;
+          name: string;
+          owner_id: string;
+          slot: number;
+          updated_at?: string;
+        };
         Update: {
-          coin_quantity?: number
-          created_at?: string
-          d10_quantity?: number
-          d100_quantity?: number
-          d12_quantity?: number
-          d20_quantity?: number
-          d4_quantity?: number
-          d6_quantity?: number
-          d8_quantity?: number
-          id?: string
-          name?: string
-          owner_id?: string
-          slot?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          coin_quantity?: number;
+          created_at?: string;
+          d10_quantity?: number;
+          d100_quantity?: number;
+          d12_quantity?: number;
+          d20_quantity?: number;
+          d4_quantity?: number;
+          d6_quantity?: number;
+          d8_quantity?: number;
+          id?: string;
+          name?: string;
+          owner_id?: string;
+          slot?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      game_room_diagnostic_chunks: {
+        Row: {
+          accepted_at: string | null;
+          cleanup_lease_until: string | null;
+          cleanup_token: string | null;
+          client_id: string;
+          compressed_bytes: number;
+          created_at: string;
+          expanded_bytes: number;
+          id: string;
+          last_record_sequence: number;
+          progress_at: string | null;
+          record_count: number;
+          run_id: string;
+          sequence: number;
+          sha256: string;
+          state: string;
+          storage_path: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_at?: string | null;
+          cleanup_lease_until?: string | null;
+          cleanup_token?: string | null;
+          client_id: string;
+          compressed_bytes: number;
+          created_at?: string;
+          expanded_bytes: number;
+          id?: string;
+          last_record_sequence: number;
+          progress_at?: string | null;
+          record_count: number;
+          run_id: string;
+          sequence: number;
+          sha256: string;
+          state?: string;
+          storage_path: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          cleanup_lease_until?: string | null;
+          cleanup_token?: string | null;
+          client_id?: string;
+          compressed_bytes?: number;
+          created_at?: string;
+          expanded_bytes?: number;
+          id?: string;
+          last_record_sequence?: number;
+          progress_at?: string | null;
+          record_count?: number;
+          run_id?: string;
+          sequence?: number;
+          sha256?: string;
+          state?: string;
+          storage_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_room_diagnostic_chunks_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "game_room_diagnostic_clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "game_room_diagnostic_chunks_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "game_room_diagnostic_runs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      game_room_diagnostic_clients: {
+        Row: {
+          alias: string;
+          checkpoint_at: string | null;
+          epoch: number;
+          error: string | null;
+          final_at: string | null;
+          heartbeat_at: string;
+          id: string;
+          instance_id: string;
+          joined_at: string;
+          last_sample_sequence: number;
+          lease_until: string;
+          next_sequence: number;
+          role: string;
+          run_id: string;
+          slot: number | null;
+          state: string;
+          user_id: string | null;
+          valid_progress_at: string | null;
+          visibility: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          alias?: string;
+          checkpoint_at?: string | null;
+          epoch: number;
+          error?: string | null;
+          final_at?: string | null;
+          heartbeat_at?: string;
+          id?: string;
+          instance_id: string;
+          joined_at?: string;
+          last_sample_sequence?: number;
+          lease_until?: string;
+          next_sequence?: number;
+          role: string;
+          run_id: string;
+          slot?: number | null;
+          state?: string;
+          user_id?: string | null;
+          valid_progress_at?: string | null;
+          visibility?: string;
+        };
+        Update: {
+          alias?: string;
+          checkpoint_at?: string | null;
+          epoch?: number;
+          error?: string | null;
+          final_at?: string | null;
+          heartbeat_at?: string;
+          id?: string;
+          instance_id?: string;
+          joined_at?: string;
+          last_sample_sequence?: number;
+          lease_until?: string;
+          next_sequence?: number;
+          role?: string;
+          run_id?: string;
+          slot?: number | null;
+          state?: string;
+          user_id?: string | null;
+          valid_progress_at?: string | null;
+          visibility?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_room_diagnostic_clients_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "game_room_diagnostic_runs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      game_room_diagnostic_runs: {
+        Row: {
+          campaign_id: string | null;
+          campaign_name: string;
+          cleanup_requested_at: string | null;
+          completed_at: string | null;
+          expires_at: string | null;
+          id: string;
+          owner_heartbeat_at: string;
+          owner_id: string | null;
+          owner_session_hash: string;
+          partial: boolean;
+          reserved_bytes: number;
+          revision: number;
+          server_build: NonNullable<Json>;
+          started_at: string;
+          state: string;
+          stop_deadline: string | null;
+          stop_reason: string | null;
+          stopped_at: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          campaign_id?: string | null;
+          campaign_name: string;
+          cleanup_requested_at?: string | null;
+          completed_at?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          owner_heartbeat_at?: string;
+          owner_id?: string | null;
+          owner_session_hash: string;
+          partial?: boolean;
+          reserved_bytes?: number;
+          revision?: number;
+          server_build?: NonNullable<Json>;
+          started_at?: string;
+          state?: string;
+          stop_deadline?: string | null;
+          stop_reason?: string | null;
+          stopped_at?: string | null;
+        };
+        Update: {
+          campaign_id?: string | null;
+          campaign_name?: string;
+          cleanup_requested_at?: string | null;
+          completed_at?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          owner_heartbeat_at?: string;
+          owner_id?: string | null;
+          owner_session_hash?: string;
+          partial?: boolean;
+          reserved_bytes?: number;
+          revision?: number;
+          server_build?: NonNullable<Json>;
+          started_at?: string;
+          state?: string;
+          stop_deadline?: string | null;
+          stop_reason?: string | null;
+          stopped_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_room_diagnostic_runs_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       game_session_journal_events: {
         Row: {
-          actor_id: string | null
-          created_at: string
-          event_data: NonNullable<Json>
-          event_kind: string
-          game_session_id: string
-          id: string
-          schema_version: number
-        }
+          actor_id: string | null;
+          created_at: string;
+          event_data: NonNullable<Json>;
+          event_kind: string;
+          game_session_id: string;
+          id: string;
+          schema_version: number;
+        };
+        ComputedFields: never;
         Insert: {
-          actor_id?: string | null
-          created_at?: string
-          event_data: NonNullable<Json>
-          event_kind: string
-          game_session_id: string
-          id?: string
-          schema_version?: number
-        }
+          actor_id?: string | null;
+          created_at?: string;
+          event_data: NonNullable<Json>;
+          event_kind: string;
+          game_session_id: string;
+          id?: string;
+          schema_version?: number;
+        };
         Update: {
-          actor_id?: string | null
-          created_at?: string
-          event_data?: NonNullable<Json>
-          event_kind?: string
-          game_session_id?: string
-          id?: string
-          schema_version?: number
-        }
+          actor_id?: string | null;
+          created_at?: string;
+          event_data?: NonNullable<Json>;
+          event_kind?: string;
+          game_session_id?: string;
+          id?: string;
+          schema_version?: number;
+        };
         Relationships: [
           {
-            foreignKeyName: "game_session_journal_events_game_session_id_fkey"
-            columns: ["game_session_id"]
-            isOneToOne: false
-            referencedRelation: "game_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "game_session_journal_events_game_session_id_fkey";
+            columns: ["game_session_id"];
+            isOneToOne: false;
+            referencedRelation: "game_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       game_sessions: {
         Row: {
-          campaign_id: string
-          end_reason: string | null
-          ended_at: string | null
-          id: string
-          presence_expires_at: string
-          session_number: number
-          started_at: string
-          started_by: string | null
-          title: string | null
-        }
+          campaign_id: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          id: string;
+          presence_expires_at: string;
+          session_number: number;
+          started_at: string;
+          started_by: string | null;
+          title: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          campaign_id: string
-          end_reason?: string | null
-          ended_at?: string | null
-          id?: string
-          presence_expires_at?: string
-          session_number: number
-          started_at?: string
-          started_by?: string | null
-          title?: string | null
-        }
+          campaign_id: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          presence_expires_at?: string;
+          session_number: number;
+          started_at?: string;
+          started_by?: string | null;
+          title?: string | null;
+        };
         Update: {
-          campaign_id?: string
-          end_reason?: string | null
-          ended_at?: string | null
-          id?: string
-          presence_expires_at?: string
-          session_number?: number
-          started_at?: string
-          started_by?: string | null
-          title?: string | null
-        }
+          campaign_id?: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          presence_expires_at?: string;
+          session_number?: number;
+          started_at?: string;
+          started_by?: string | null;
+          title?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "game_sessions_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "campaigns"
-            referencedColumns: ["id"]
+            foreignKeyName: "game_sessions_campaign_id_fkey";
+            columns: ["campaign_id"];
+            isOneToOne: false;
+            referencedRelation: "campaigns";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       personal_roll_history: {
         Row: {
-          client_roll_id: string
-          created_at: string
-          id: string
-          owner_id: string
-          request_data: NonNullable<Json>
-          result_data: NonNullable<Json>
-          roller_kind: string
-          schema_version: number
-          sequence_number: number
-        }
+          client_roll_id: string;
+          created_at: string;
+          id: string;
+          owner_id: string;
+          request_data: NonNullable<Json>;
+          result_data: NonNullable<Json>;
+          roller_kind: string;
+          schema_version: number;
+          sequence_number: number;
+        };
+        ComputedFields: never;
         Insert: {
-          client_roll_id: string
-          created_at?: string
-          id?: string
-          owner_id: string
-          request_data: NonNullable<Json>
-          result_data: NonNullable<Json>
-          roller_kind: string
-          schema_version: number
-          sequence_number?: never
-        }
+          client_roll_id: string;
+          created_at?: string;
+          id?: string;
+          owner_id: string;
+          request_data: NonNullable<Json>;
+          result_data: NonNullable<Json>;
+          roller_kind: string;
+          schema_version: number;
+          sequence_number?: never;
+        };
         Update: {
-          client_roll_id?: string
-          created_at?: string
-          id?: string
-          owner_id?: string
-          request_data?: NonNullable<Json>
-          result_data?: NonNullable<Json>
-          roller_kind?: string
-          schema_version?: number
-          sequence_number?: never
-        }
-        Relationships: []
-      }
+          client_roll_id?: string;
+          created_at?: string;
+          id?: string;
+          owner_id?: string;
+          request_data?: NonNullable<Json>;
+          result_data?: NonNullable<Json>;
+          roller_kind?: string;
+          schema_version?: number;
+          sequence_number?: never;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string
-          display_name: string | null
-          id: string
-          username: string | null
-        }
+          avatar_url: string | null;
+          bio: string | null;
+          created_at: string;
+          display_name: string | null;
+          id: string;
+          username: string | null;
+        };
+        ComputedFields: never;
         Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          display_name?: string | null
-          id: string
-          username?: string | null
-        }
+          avatar_url?: string | null;
+          bio?: string | null;
+          created_at?: string;
+          display_name?: string | null;
+          id: string;
+          username?: string | null;
+        };
         Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          display_name?: string | null
-          id?: string
-          username?: string | null
-        }
-        Relationships: []
-      }
-    }
+          avatar_url?: string | null;
+          bio?: string | null;
+          created_at?: string;
+          display_name?: string | null;
+          id?: string;
+          username?: string | null;
+        };
+        Relationships: [];
+      };
+      system_user_roles: {
+        Row: {
+          granted_at: string;
+          granted_by: string | null;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          role: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          granted_at?: string;
+          granted_by?: string | null;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          role: string;
+          user_id: string;
+        };
+        Update: {
+          granted_at?: string;
+          granted_by?: string | null;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+    };
     Views: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     Functions: {
-      accept_campaign_invitation: {
-        Args: { raw_token: string }
-        Returns: string
-      }
-      clear_personal_roll_history: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      clear_personal_roll_history_by_kinds: {
-        Args: { p_roller_kinds: string[] }
-        Returns: number
-      }
+      accept_campaign_invitation: { Args: { raw_token: string }; Returns: string };
+      clear_personal_roll_history: { Args: Record<PropertyKey, never>; Returns: number };
+      clear_personal_roll_history_by_kinds: { Args: { p_roller_kinds: string[] }; Returns: number };
       create_campaign_invitation: {
-        Args: { target_campaign_id: string }
+        Args: { target_campaign_id: string };
         Returns: {
-          expires_at: string
-          invitation_id: string
-          token: string
-        }[]
-      }
+          expires_at: string;
+          invitation_id: string;
+          token: string;
+        }[];
+      };
       create_custom_dice_preset: {
         Args: {
-          p_coin_quantity: number
-          p_d10_quantity: number
-          p_d100_quantity: number
-          p_d12_quantity: number
-          p_d20_quantity: number
-          p_d4_quantity: number
-          p_d6_quantity: number
-          p_d8_quantity: number
-          p_name: string
-        }
+          p_coin_quantity: number;
+          p_d10_quantity: number;
+          p_d100_quantity: number;
+          p_d12_quantity: number;
+          p_d20_quantity: number;
+          p_d4_quantity: number;
+          p_d6_quantity: number;
+          p_d8_quantity: number;
+          p_name: string;
+        };
         Returns: {
-          coin_quantity: number
-          created_at: string
-          d10_quantity: number
-          d100_quantity: number
-          d12_quantity: number
-          d20_quantity: number
-          d4_quantity: number
-          d6_quantity: number
-          d8_quantity: number
-          id: string
-          name: string
-          owner_id: string
-          slot: number
-          updated_at: string
-        }
+          coin_quantity: number;
+          created_at: string;
+          d10_quantity: number;
+          d100_quantity: number;
+          d12_quantity: number;
+          d20_quantity: number;
+          d4_quantity: number;
+          d6_quantity: number;
+          d8_quantity: number;
+          id: string;
+          name: string;
+          owner_id: string;
+          slot: number;
+          updated_at: string;
+        };
         SetofOptions: {
-          from: "*"
-          to: "custom_dice_presets"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+          from: "*";
+          to: "custom_dice_presets";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       current_user_can_access_active_campaign: {
-        Args: { target_campaign_id: string }
-        Returns: boolean
-      }
-      current_user_can_access_campaign: {
-        Args: { target_campaign_id: string }
-        Returns: boolean
-      }
+        Args: { target_campaign_id: string };
+        Returns: boolean;
+      };
+      current_user_can_access_campaign: { Args: { target_campaign_id: string }; Returns: boolean };
       current_user_can_delete_campaign_image_object: {
-        Args: { object_name: string }
-        Returns: boolean
-      }
+        Args: { object_name: string };
+        Returns: boolean;
+      };
       current_user_can_read_campaign_image_object: {
-        Args: { object_name: string }
-        Returns: boolean
-      }
+        Args: { object_name: string };
+        Returns: boolean;
+      };
       current_user_can_upload_campaign_image_object: {
-        Args: { object_name: string }
-        Returns: boolean
-      }
+        Args: { object_name: string };
+        Returns: boolean;
+      };
       current_user_can_view_campaign_character: {
-        Args: { target_character_id: string }
-        Returns: boolean
-      }
-      current_user_can_view_campaign_portrait: {
-        Args: { object_name: string }
-        Returns: boolean
-      }
+        Args: { target_character_id: string };
+        Returns: boolean;
+      };
+      current_user_can_view_campaign_portrait: { Args: { object_name: string }; Returns: boolean };
       current_user_is_active_campaign_game_master: {
-        Args: { target_campaign_id: string }
-        Returns: boolean
-      }
+        Args: { target_campaign_id: string };
+        Returns: boolean;
+      };
       current_user_is_active_campaign_player: {
-        Args: { target_campaign_id: string }
-        Returns: boolean
-      }
+        Args: { target_campaign_id: string };
+        Returns: boolean;
+      };
       current_user_is_campaign_game_master: {
-        Args: { target_campaign_id: string }
-        Returns: boolean
-      }
-      current_user_is_campaign_player: {
-        Args: { target_campaign_id: string }
-        Returns: boolean
-      }
-      delete_custom_dice_preset: {
-        Args: { p_preset_id: string }
-        Returns: boolean
-      }
-      delete_personal_roll: { Args: { p_roll_id: string }; Returns: boolean }
-      end_game_session: {
-        Args: { target_campaign_id: string }
+        Args: { target_campaign_id: string };
+        Returns: boolean;
+      };
+      current_user_is_campaign_player: { Args: { target_campaign_id: string }; Returns: boolean };
+      delete_custom_dice_preset: { Args: { p_preset_id: string }; Returns: boolean };
+      delete_personal_roll: { Args: { p_roll_id: string }; Returns: boolean };
+      diagnostic_cleanup_ack: { Args: { chunk_id: string; claim_token: string }; Returns: boolean };
+      diagnostic_cleanup_claim: {
+        Args: { only_run?: string };
         Returns: {
-          campaign_id: string
-          end_reason: string | null
-          ended_at: string | null
-          id: string
-          presence_expires_at: string
-          session_number: number
-          started_at: string
-          started_by: string | null
-          title: string | null
-        }[]
+          accepted_at: string | null;
+          cleanup_lease_until: string | null;
+          cleanup_token: string | null;
+          client_id: string;
+          compressed_bytes: number;
+          created_at: string;
+          expanded_bytes: number;
+          id: string;
+          last_record_sequence: number;
+          progress_at: string | null;
+          record_count: number;
+          run_id: string;
+          sequence: number;
+          sha256: string;
+          state: string;
+          storage_path: string;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "game_sessions"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
+          from: "*";
+          to: "game_room_diagnostic_chunks";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      diagnostic_cleanup_sweep: { Args: Record<PropertyKey, never>; Returns: number };
+      diagnostic_dispatch: {
+        Args: {
+          actor_id: string;
+          auth_session_id: string;
+          input?: Json;
+          operation: string;
+          target_campaign?: string;
+          target_run?: string;
+        };
+        Returns: Json;
+      };
+      diagnostic_dispatch_internal: {
+        Args: {
+          actor_id: string;
+          auth_session_id: string;
+          input?: Json;
+          operation: string;
+          target_campaign?: string;
+          target_run?: string;
+        };
+        Returns: Json;
+      };
+      end_game_session: {
+        Args: { target_campaign_id: string };
+        Returns: {
+          campaign_id: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          id: string;
+          presence_expires_at: string;
+          session_number: number;
+          started_at: string;
+          started_by: string | null;
+          title: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "game_sessions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       mutate_campaign_note: {
         Args: {
-          action: string
-          entry_body?: string
-          entry_timezone?: string
-          target_campaign_id: string
-          target_entry_id?: string
-        }
+          action: string;
+          entry_body?: string;
+          entry_timezone?: string;
+          target_campaign_id: string;
+          target_entry_id?: string;
+        };
         Returns: {
-          body: string
-          campaign_id: string
-          campaign_name_snapshot: string
-          created_at: string
-          created_timezone: string
-          edited_at: string | null
-          edited_timezone: string | null
-          game_session_id: string | null
-          id: string
-          owner_id: string
-        }[]
+          body: string;
+          campaign_id: string;
+          campaign_name_snapshot: string;
+          created_at: string;
+          created_timezone: string;
+          edited_at: string | null;
+          edited_timezone: string | null;
+          game_session_id: string | null;
+          id: string;
+          owner_id: string;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "campaign_note_entries"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
+          from: "*";
+          to: "campaign_note_entries";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       record_campaign_dice_roll: {
         Args: {
-          target_actor_id: string
-          target_campaign_id: string
-          target_game_session_id: string
-          target_request: Json
-          target_result: Json
-          target_roll_type: string
-        }
+          target_actor_id: string;
+          target_campaign_id: string;
+          target_game_session_id: string;
+          target_request: Json;
+          target_result: Json;
+          target_roll_type: string;
+        };
         Returns: {
-          actor_id: string | null
-          created_at: string
-          event_data: NonNullable<Json>
-          event_kind: string
-          game_session_id: string
-          id: string
-          schema_version: number
-        }[]
+          actor_id: string | null;
+          created_at: string;
+          event_data: NonNullable<Json>;
+          event_kind: string;
+          game_session_id: string;
+          id: string;
+          schema_version: number;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "game_session_journal_events"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
+          from: "*";
+          to: "game_session_journal_events";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       record_personal_roll: {
         Args: {
-          p_client_roll_id: string
-          p_request_data: Json
-          p_result_data: Json
-          p_roller_kind: string
-          p_schema_version: number
-        }
+          p_client_roll_id: string;
+          p_request_data: Json;
+          p_result_data: Json;
+          p_roller_kind: string;
+          p_schema_version: number;
+        };
         Returns: {
-          client_roll_id: string
-          created_at: string
-          id: string
-          owner_id: string
-          request_data: NonNullable<Json>
-          result_data: NonNullable<Json>
-          roller_kind: string
-          schema_version: number
-          sequence_number: number
-        }
+          client_roll_id: string;
+          created_at: string;
+          id: string;
+          owner_id: string;
+          request_data: NonNullable<Json>;
+          result_data: NonNullable<Json>;
+          roller_kind: string;
+          schema_version: number;
+          sequence_number: number;
+        };
         SetofOptions: {
-          from: "*"
-          to: "personal_roll_history"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+          from: "*";
+          to: "personal_roll_history";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       renew_game_session_presence: {
-        Args: { target_campaign_id: string }
+        Args: { target_campaign_id: string };
         Returns: {
-          campaign_id: string
-          end_reason: string | null
-          ended_at: string | null
-          id: string
-          presence_expires_at: string
-          session_number: number
-          started_at: string
-          started_by: string | null
-          title: string | null
-        }[]
+          campaign_id: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          id: string;
+          presence_expires_at: string;
+          session_number: number;
+          started_at: string;
+          started_by: string | null;
+          title: string | null;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "game_sessions"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
+          from: "*";
+          to: "game_sessions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       reorder_campaign_media_groups: {
-        Args: { ordered_group_ids: string[]; target_campaign_id: string }
-        Returns: number
-      }
+        Args: { ordered_group_ids: string[]; target_campaign_id: string };
+        Returns: number;
+      };
       reorder_campaign_players: {
-        Args: { ordered_player_ids: string[]; target_campaign_id: string }
-        Returns: number
-      }
-      revoke_campaign_invitation: {
-        Args: { target_invitation_id: string }
-        Returns: undefined
-      }
+        Args: { ordered_player_ids: string[]; target_campaign_id: string };
+        Returns: number;
+      };
+      revoke_campaign_invitation: { Args: { target_invitation_id: string }; Returns: undefined };
       set_campaign_image_visibility: {
         Args: {
-          target_image_id: string
-          target_recipient_ids?: string[]
-          target_visibility: string
-        }
-        Returns: undefined
-      }
+          target_image_id: string;
+          target_recipient_ids?: string[];
+          target_visibility: string;
+        };
+        Returns: undefined;
+      };
       start_game_session: {
-        Args: { target_campaign_id: string }
+        Args: { target_campaign_id: string };
         Returns: {
-          campaign_id: string
-          end_reason: string | null
-          ended_at: string | null
-          id: string
-          presence_expires_at: string
-          session_number: number
-          started_at: string
-          started_by: string | null
-          title: string | null
-        }[]
+          campaign_id: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          id: string;
+          presence_expires_at: string;
+          session_number: number;
+          started_at: string;
+          started_by: string | null;
+          title: string | null;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "game_sessions"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
+          from: "*";
+          to: "game_sessions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       start_named_game_session: {
-        Args: { session_title: string; target_campaign_id: string }
+        Args: { session_title: string; target_campaign_id: string };
         Returns: {
-          campaign_id: string
-          end_reason: string | null
-          ended_at: string | null
-          id: string
-          presence_expires_at: string
-          session_number: number
-          started_at: string
-          started_by: string | null
-          title: string | null
-        }[]
+          campaign_id: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          id: string;
+          presence_expires_at: string;
+          session_number: number;
+          started_at: string;
+          started_by: string | null;
+          title: string | null;
+        }[];
         SetofOptions: {
-          from: "*"
-          to: "game_sessions"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
+          from: "*";
+          to: "game_sessions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       update_custom_dice_preset: {
         Args: {
-          p_coin_quantity: number
-          p_d10_quantity: number
-          p_d100_quantity: number
-          p_d12_quantity: number
-          p_d20_quantity: number
-          p_d4_quantity: number
-          p_d6_quantity: number
-          p_d8_quantity: number
-          p_name: string
-          p_preset_id: string
-        }
+          p_coin_quantity: number;
+          p_d10_quantity: number;
+          p_d100_quantity: number;
+          p_d12_quantity: number;
+          p_d20_quantity: number;
+          p_d4_quantity: number;
+          p_d6_quantity: number;
+          p_d8_quantity: number;
+          p_name: string;
+          p_preset_id: string;
+        };
         Returns: {
-          coin_quantity: number
-          created_at: string
-          d10_quantity: number
-          d100_quantity: number
-          d12_quantity: number
-          d20_quantity: number
-          d4_quantity: number
-          d6_quantity: number
-          d8_quantity: number
-          id: string
-          name: string
-          owner_id: string
-          slot: number
-          updated_at: string
-        }
+          coin_quantity: number;
+          created_at: string;
+          d10_quantity: number;
+          d100_quantity: number;
+          d12_quantity: number;
+          d20_quantity: number;
+          d4_quantity: number;
+          d6_quantity: number;
+          d8_quantity: number;
+          id: string;
+          name: string;
+          owner_id: string;
+          slot: number;
+          updated_at: string;
+        };
         SetofOptions: {
-          from: "*"
-          to: "custom_dice_presets"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-    }
+          from: "*";
+          to: "custom_dice_presets";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+    };
     Enums: {
-      [_ in never]: never
-    }
+      [_ in never]: never;
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
-} as const
+} as const;

@@ -8,6 +8,8 @@ import type {
 } from "./contracts";
 import { classifyCampaignVideoMediaError } from "./errors";
 import { createComputerAudioSharing, supportsComputerAudioCapture } from "./computer-audio";
+import { diagnosticMediaEvent, registerDiagnosticMedia } from "../../diagnostics/media-registry";
+import type { StatsTrack } from "../../diagnostics/metrics";
 
 type AttachableTrack = {
   attach(element: HTMLMediaElement): unknown;
@@ -43,6 +45,7 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
     const attachments = new Map<string, CampaignVideoTrackAttachment>();
     let disposed = false;
     let requestedDisconnect = false;
+    let unregisterDiagnostics: (() => void) | null = null;
     const computerAudio = createComputerAudioSharing({
       supported: () => credentials.publication.computerAudio &&
         supportsComputerAudioCapture(navigator.userAgent, typeof navigator.mediaDevices?.getDisplayMedia === "function"),
@@ -52,6 +55,7 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       }),
       unpublish: (track) => room.localParticipant.unpublishTrack(track, true),
       onChange: (state) => { if (!disposed) callbacks.onComputerAudio(state); },
+      onDiagnostic: (code, value) => diagnosticMediaEvent({ kind: "event", code, value }),
     });
 
     function attachment(
@@ -109,11 +113,13 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       ]);
     }
 
-    const onReconnecting = () => callbacks.onReconnecting();
-    const onReconnected = () => callbacks.onReconnected();
+    const onReconnecting = () => { diagnosticMediaEvent({kind:"event",code:"room_reconnecting"}); callbacks.onReconnecting(); };
+    const onReconnected = () => { diagnosticMediaEvent({kind:"event",code:"room_reconnected"}); callbacks.onReconnected(); };
     const onDisconnected = () => {
       if (requestedDisconnect || disposed) return;
       disposed = true;
+      diagnosticMediaEvent({kind:"event",code:"room_disconnected"});
+      unregisterDiagnostics?.();
       void computerAudio.dispose();
       signal.removeEventListener("abort", abort);
       removeListeners();
@@ -127,10 +133,12 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
     const onParticipantConnected = (participant: { identity: string }) => {
       emitParticipants();
       callbacks.onParticipantConnected(participant.identity);
+      diagnosticMediaEvent({kind:"event",code:"participant_joined",participant:participant.identity});
     };
     const onParticipantDisconnected = (participant: { identity: string }) => {
       emitParticipants();
       callbacks.onParticipantDisconnected(participant.identity);
+      diagnosticMediaEvent({kind:"event",code:"participant_left",participant:participant.identity});
     };
     const onDataReceived = (
       payload: Uint8Array,
@@ -156,6 +164,18 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       RoomEvent.LocalTrackUnpublished,
     ] as const;
     for (const event of participantEvents) room.on(event, emitParticipants);
+    const onDiagnosticTrack = () => diagnosticMediaEvent({kind:"event",code:"track_changed"});
+    const onDiagnosticMuted = () => diagnosticMediaEvent({kind:"event",code:"track_muted"});
+    const onDiagnosticUnmuted = () => diagnosticMediaEvent({kind:"event",code:"track_unmuted"});
+    const onSignalReconnecting = () => diagnosticMediaEvent({kind:"event",code:"signal_reconnecting"});
+    const onStreamState = (publication: unknown, state: string) => diagnosticMediaEvent({kind:"event",code:"stream_state_changed",value:state==="active"?"active":state==="paused"?"paused":"unknown"});
+    const onQuality = (quality: string, participant: {identity:string}) => diagnosticMediaEvent({kind:"event",code:"connection_quality_changed",participant:participant.identity,value:["poor","good","excellent","lost"].includes(quality)?quality as "poor"|"good"|"excellent"|"lost":"unknown"});
+    for(const event of participantEvents) room.on(event,onDiagnosticTrack);
+    room.on(RoomEvent.TrackMuted,onDiagnosticMuted);
+    room.on(RoomEvent.TrackUnmuted,onDiagnosticUnmuted);
+    room.on(RoomEvent.SignalReconnecting,onSignalReconnecting);
+    room.on(RoomEvent.TrackStreamStateChanged,onStreamState);
+    room.on(RoomEvent.ConnectionQualityChanged,onQuality);
     room.on(RoomEvent.ParticipantConnected, onParticipantConnected);
     room.on(RoomEvent.ParticipantDisconnected, onParticipantDisconnected);
     room.on(RoomEvent.DataReceived, onDataReceived);
@@ -167,6 +187,12 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
 
     function removeListeners() {
       for (const event of participantEvents) room.off(event, emitParticipants);
+      for (const event of participantEvents) room.off(event, onDiagnosticTrack);
+      room.off(RoomEvent.TrackMuted,onDiagnosticMuted);
+      room.off(RoomEvent.TrackUnmuted,onDiagnosticUnmuted);
+      room.off(RoomEvent.SignalReconnecting,onSignalReconnecting);
+      room.off(RoomEvent.TrackStreamStateChanged,onStreamState);
+      room.off(RoomEvent.ConnectionQualityChanged,onQuality);
       room.off(RoomEvent.ParticipantConnected, onParticipantConnected);
       room.off(RoomEvent.ParticipantDisconnected, onParticipantDisconnected);
       room.off(RoomEvent.DataReceived, onDataReceived);
@@ -180,6 +206,8 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
     async function disconnect() {
       if (disposed) return;
       disposed = true;
+      diagnosticMediaEvent({kind:"event",code:"room_disconnected"});
+      unregisterDiagnostics?.();
       requestedDisconnect = true;
       signal.removeEventListener("abort", abort);
       removeListeners();
@@ -203,6 +231,23 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       }
       emitParticipants();
       callbacks.onAudioBlocked(!room.canPlaybackAudio);
+      unregisterDiagnostics = registerDiagnosticMedia({
+        state: () => disposed ? "disconnected" : room.state === "connected" ? "connected" : room.state === "reconnecting" || room.state === "signalReconnecting" ? "reconnecting" : "connecting",
+        tracks: () => {
+          const tracks: StatsTrack[] = [];
+          for(const participant of [room.localParticipant,...room.remoteParticipants.values()]) {
+            for(const publication of participant.trackPublications.values()) {
+              const track=publication.track;
+              if(!track || ![Track.Source.Camera,Track.Source.Microphone,Track.Source.ScreenShareAudio].includes(publication.source)) continue;
+              tracks.push({key:publication.trackSid,identity:participant.identity,direction:participant===room.localParticipant?"local_outbound":"remote_inbound",
+                source:publication.source===Track.Source.Camera?"camera":publication.source===Track.Source.Microphone?"microphone":"computer_audio",
+                report:()=>track.getRTCStatsReport()});
+            }
+          }
+          return tracks;
+        },
+      });
+      diagnosticMediaEvent({kind:"event",code:"room_connected"});
     } catch (error) {
       await disconnect();
       if (error instanceof DOMException && error.name === "AbortError") throw error;
@@ -217,6 +262,7 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
             frameRate: 30,
           });
           emitParticipants();
+          diagnosticMediaEvent({kind:"event",code:"camera_changed",value:enabled?"enabled":"disabled"});
         } catch (error) {
           throw new Error(classifyCampaignVideoMediaError(error));
         }
@@ -225,15 +271,17 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
         try {
           await room.localParticipant.setMicrophoneEnabled(enabled);
           emitParticipants();
+          diagnosticMediaEvent({kind:"event",code:"microphone_changed",value:enabled?"enabled":"disabled"});
         } catch (error) {
           throw new Error(classifyCampaignVideoMediaError(error));
         }
       },
       async startAudio() {
         await room.startAudio();
+        diagnosticMediaEvent({kind:"event",code:"sound_unlock"});
       },
       startComputerAudio: computerAudio.start,
-      stopComputerAudio: computerAudio.stop,
+      stopComputerAudio: () => computerAudio.stop(),
       disconnect,
     };
   };
