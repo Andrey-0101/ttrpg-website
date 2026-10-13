@@ -31,6 +31,7 @@ export function createComputerAudioSharing(options: {
   publish(track: MediaStreamTrack, settings: TrackPublishOptions): Promise<unknown>;
   unpublish(track: MediaStreamTrack): Promise<unknown>;
   onChange(state: ComputerAudioState): void;
+  onDiagnostic?(code: "computer_audio_started" | "computer_audio_stopped", value: "window" | "monitor" | "128" | "192" | "site_stop" | "track_ended" | "unknown"): void;
 }) {
   let state: ComputerAudioState = { phase: "idle", error: null };
   let generation = 0;
@@ -54,7 +55,7 @@ export function createComputerAudioSharing(options: {
     await options.unpublish(resource.audio).catch(() => undefined);
   }
 
-  function stop(): Promise<void> {
+  function stop(reason: "site_stop" | "track_ended" | "unknown" = "site_stop"): Promise<void> {
     if (stopOperation) return stopOperation;
     generation += 1;
     const resource = owned;
@@ -64,6 +65,7 @@ export function createComputerAudioSharing(options: {
       return Promise.resolve();
     }
     update("stopping");
+    options.onDiagnostic?.("computer_audio_stopped", reason);
     const operation = release(resource).finally(() => {
       if (stopOperation === operation) {
         stopOperation = null;
@@ -150,7 +152,7 @@ export function createComputerAudioSharing(options: {
     let endedBeforePublish = false;
     const ended = () => {
       if (state.phase === "starting") endedBeforePublish = true;
-      else void stop();
+      else void stop("track_ended");
     };
     const resource = { tracks, audio: track, ended, released: false };
     owned = resource;
@@ -185,6 +187,8 @@ export function createComputerAudioSharing(options: {
         return;
       }
       update("sharing");
+      options.onDiagnostic?.("computer_audio_started", displaySurface as "window" | "monitor");
+      options.onDiagnostic?.("computer_audio_started", String(quality) as "128" | "192");
     } catch {
       if (owned === resource) owned = null;
       await release(resource);
@@ -204,6 +208,6 @@ export function createComputerAudioSharing(options: {
 
   return {
     start, stop,
-    async dispose() { disposed = true; await stop(); },
+    async dispose() { disposed = true; await stop("unknown"); },
   };
 }

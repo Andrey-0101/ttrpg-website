@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/utils/supabase/server";
 import { Link } from "@/i18n/navigation";
 import SignOutButton from "./sign-out-button";
+import { developerCapability } from "@/lib/diagnostics/server";
+import { DeveloperButton } from "@/components/developer/diagnostics-provider";
 
 export default async function AccountArea() {
   const translations =
@@ -54,7 +56,9 @@ export default async function AccountArea() {
       translations("account");
   }
 
+  const developer = await developerCapability();
   return (
+    <div className="flex items-center gap-2">
     <details className="relative">
       <summary className="cursor-pointer list-none rounded border px-4 py-2">
         {accountName} ▾
@@ -82,5 +86,7 @@ export default async function AccountArea() {
         </div>
       </div>
     </details>
+    {developer ? <DeveloperButton /> : null}
+    </div>
   );
 }

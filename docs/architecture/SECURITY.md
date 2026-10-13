@@ -417,6 +417,8 @@ General Handouts, NPCs, Sessions, Chronicle records, clues, and maps are not act
 
 ## Secrets
 
+Feature-branch [Developer diagnostics](DEVELOPER_DIAGNOSTICS.md) use a protected role table and fresh server/Auth-session/campaign/epoch authorization, not a browser role flag. The private diagnostic bucket has no browser policies; strict schemas reject non-allowlisted content and metadata. Autonomous cleanup POST requires a dedicated high-entropy server-to-server credential in Vault and the matching Vercel server-only configuration, validated before work. No Production configuration has been changed. Approved fallback TTL is 12 hours after server completion; expiry denies export, while physical Storage-API deletion retries safely. pg_net queued headers are visible to trusted direct DB LOGIN roles: keep `net` outside Data API schemas and do not claim unsupported managed-grant revocation hides them.
+
 Never commit or document values for:
 
 ```text
@@ -428,7 +430,7 @@ session tokens
 personal access tokens
 ```
 
-Only public environment variable names may appear in repository documentation.
+Environment variable names may be documented; secret values never may. Server-only names must never be treated as public/client configuration.
 
 ## Verification principle
 

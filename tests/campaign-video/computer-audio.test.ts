@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { ReactNode } from "react";
 import type { TrackPublishOptions } from "livekit-client";
 import * as captureModule from "../../lib/campaign-video/browser/computer-audio";
+import * as diagnosticRegistry from "../../lib/diagnostics/media-registry";
 import { createCampaignVideoRoomController } from "../../lib/campaign-video/browser/controller";
 import * as controllerModule from "../../lib/campaign-video/browser/controller";
 import * as presentationModule from "../../lib/campaign-video/browser/presentation";
@@ -312,7 +313,7 @@ test("late publication after Stop is unpublished again and cannot resurrect shar
 
 type FakePublication = { trackSid: string; source: string; isMuted: boolean; track: { attach(element: unknown): void; detach(element: unknown): void } };
 function adapterHarness(capture: () => Promise<MediaStream>, localIdentity = "gm") {
-  const events = { TrackPublished: "published", TrackSubscribed: "subscribed", TrackUnpublished: "unpublished", TrackUnsubscribed: "unsubscribed", TrackMuted: "muted", TrackUnmuted: "unmuted", LocalTrackPublished: "localPublished", LocalTrackUnpublished: "localUnpublished", ParticipantConnected: "participantConnected", ParticipantDisconnected: "participantDisconnected", DataReceived: "data", Reconnecting: "reconnecting", Reconnected: "reconnected", Disconnected: "disconnected", AudioPlaybackStatusChanged: "audioPlayback", MediaDevicesError: "mediaError" };
+  const events = { TrackPublished: "published", TrackSubscribed: "subscribed", TrackUnpublished: "unpublished", TrackUnsubscribed: "unsubscribed", TrackMuted: "muted", TrackUnmuted: "unmuted", LocalTrackPublished: "localPublished", LocalTrackUnpublished: "localUnpublished", ParticipantConnected: "participantConnected", ParticipantDisconnected: "participantDisconnected", DataReceived: "data", Reconnecting: "reconnecting", Reconnected: "reconnected", Disconnected: "disconnected", AudioPlaybackStatusChanged: "audioPlayback", MediaDevicesError: "mediaError", SignalReconnecting:"signalReconnecting", TrackStreamStateChanged:"streamState", ConnectionQualityChanged:"quality" };
   let captures = 0;
   class FakeRoom {
     static latest: FakeRoom;
@@ -353,6 +354,7 @@ function adapterHarness(capture: () => Promise<MediaStream>, localIdentity = "gm
     require(name: string) {
       if (name === "livekit-client") return { Room: FakeRoom, RoomEvent: events, Track: { Source: { Camera: "camera", Microphone: "microphone", ScreenShareAudio: "screen_share_audio" } } };
       if (name === "./computer-audio") return captureModule;
+      if (name === "../../diagnostics/media-registry") return diagnosticRegistry;
       if (name === "./errors") return { classifyCampaignVideoMediaError: () => "media_unavailable" };
       assert.fail(`Unexpected adapter dependency: ${name}`);
     },

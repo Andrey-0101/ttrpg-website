@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "allowJs": false,
+    "noEmit": false,
+    "outDir": "node_modules/.cache/diagnostic-tests",
+    "rootDir": ".",
+    "incremental": false,
+    "isolatedModules": false,
+    "plugins": [],
+    "types": ["node"]
+  },
+  "include": ["tests/diagnostics/**/*.ts"],
+  "exclude": []
+}

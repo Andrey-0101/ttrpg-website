@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:diagnostics": "tsc --project tsconfig.diagnostics.test.json && node node_modules/.cache/diagnostic-tests/tests/diagnostics/contracts.test.js",
+    "test:diagnostics:db": "tsc --project tsconfig.diagnostics.test.json && node node_modules/.cache/diagnostic-tests/tests/diagnostics/database.test.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -18,6 +20,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
+    "fflate": "0.8.3",
     "livekit-client": "2.21.0",
     "livekit-server-sdk": "2.17.0",
     "next": "16.3.3",
@@ -32,6 +35,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "fake-indexeddb": "6.2.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

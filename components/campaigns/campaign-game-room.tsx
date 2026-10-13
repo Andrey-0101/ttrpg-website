@@ -15,6 +15,7 @@ import {
 } from "@/lib/game-sessions/contracts";
 import type { Database } from "@/types/database.types";
 import { createClient } from "@/utils/supabase/client";
+import { DiagnosticRoomBridge } from "@/components/developer/diagnostics-provider";
 
 const EMPTY_STATE: GameSessionState = { session: null, journal: [] };
 
@@ -229,6 +230,8 @@ export default function CampaignGameRoom({
   }, [appendJournalEvent, gameSession.session?.id, refresh, supabase]);
 
   return (
+    <>
+    <DiagnosticRoomBridge campaign={campaignId} session={gameSession.session?.id ?? null} />
     <CampaignVideoRoom
       campaignId={campaignId}
       campaignGameSystem={campaignGameSystem}
@@ -245,5 +248,6 @@ export default function CampaignGameRoom({
       onEndSession={() => mutate("end")}
       onJournalEvent={appendJournalEvent}
     />
+    </>
   );
 }
