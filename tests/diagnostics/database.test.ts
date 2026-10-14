@@ -139,6 +139,50 @@ async function fixtures(remove = false) {
     "local fixture setup",
   );
 }
+async function noRunChecks() {
+  assert.equal(await call(gm, gmSession, "owner"), null);
+  assert.equal(await call(gm, gmSession, "state"), null);
+  assert.equal(await call(player, playerSession, "state"), null);
+  assertions += 3;
+}
+async function dispatchNullRegression() {
+  // Reuse the local-only fixture/RPC helpers; no Storage or infrastructure tests.
+  await fixtures();
+  try {
+    await yes(
+      `insert into public.system_user_roles(user_id,role) values('${gm}','developer');`,
+      "local regression role grant",
+    );
+    await noRunChecks();
+    await no(rpc(player, playerSession, "owner"), "developer_required");
+    await no(rpc(outsider, outsiderSession, "state"), "campaign_unavailable");
+    await no(rpc(gm, outsiderSession, "owner"), "authentication_required");
+    await no(
+      `begin;set local role authenticated;${rpc(gm, gmSession, "owner")}rollback;`,
+      "permission denied",
+    );
+    assert.deepEqual(await call(gm, gmSession, "capability"), { developer: true });
+    assertions++;
+    const started = await call(gm, gmSession, "start");
+    for (const result of [
+      started,
+      await call(gm, gmSession, "owner"),
+      await call(gm, gmSession, "state", started.id),
+    ]) {
+      assert.equal(result.id, started.id);
+      assert.equal(Object.hasOwn(result, "owner_session_hash"), false);
+      assertions++;
+    }
+    await yes(
+      `delete from public.game_room_diagnostic_runs where id='${started.id}';`,
+      "remove local regression run",
+    );
+    await noRunChecks();
+    console.log(`PASS: dispatch null regression (${assertions} assertions/checks). Local DB only.`);
+  } finally {
+    await fixtures(true);
+  }
+}
 async function main() {
   const storage = await localStorageClients();
   const paths: string[] = [];
@@ -158,6 +202,7 @@ async function main() {
       `insert into public.system_user_roles(user_id,role) values('${gm}','developer');`,
       "local role grant",
     );
+    await noRunChecks();
     await no(rpc(player, playerSession, "start"), "developer_gm_required");
     await no(rpc(outsider, outsiderSession, "state"), "campaign_unavailable");
     await no(rpc(gm, outsiderSession, "capability"), "authentication_required");
@@ -479,7 +524,7 @@ async function main() {
     await fixtures(true);
   }
 }
-main().catch((error) => {
+(process.argv.includes("--dispatch-null-only") ? dispatchNullRegression() : main()).catch((error) => {
   console.error(error instanceof Error ? error.message : "diagnostic test failure");
   process.exitCode = 1;
 });
