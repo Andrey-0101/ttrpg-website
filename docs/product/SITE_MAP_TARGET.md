@@ -33,7 +33,8 @@ flowchart TD
     GAME_ROOM --> IMAGE_DISPLAY["4C2 Image Presentation"]
     GAME_ROOM --> SYSTEM_DICE["System-aware Dice — complete"]
     GAME_ROOM --> LINKED_CHARACTERS["4F2 Linked Characters"]
-    CAMPAIGN --> NOTES["4G Campaign Notes"]
+    CAMPAIGN --> NOTES["Owner-private Personal Campaign Notes — implemented"]
+    GAME_ROOM --> NOTES
     GAMES --> COC_HUB["8A CoC Hub"]
     GAMES --> DG_HUB["8B Delta Green Hub"]
     GAMES --> VAMPIRE_HUB["8C Vampire Hub"]
@@ -48,13 +49,13 @@ Conceptual approved additions:
 ```text
 /[locale]/campaigns/[id]/gallery         Current image-only Phase 4C1 route
 /[locale]/campaigns/[id]/handouts        Compatibility redirect to Gallery
-/[locale]/campaigns/[id]/game-room       Existing route expanded by 4C2, 4D2, 4F2, and refined by 5A
-/[locale]/campaigns/[id]/notes           Phase 4G, exact route subject to implementation review
+/[locale]/campaigns/[id]/game-room       Existing 4C2/4D2/4F2 route; 5A refinement PLANNED / NOT STARTED
+/[locale]/campaigns/[id]/notes           Implemented owner-private Phase 4G Notes
 /[locale]/games/call-of-cthulhu/tools/dice  Current Phase 4D1 personal roller
 /[locale]/dice-rollers/go-first              Current Phase 4E standalone turn-order roller
 ```
 
-Later CoC and Delta Green character, dice, and hub paths should follow the established game-system routing convention when those capabilities are implemented. Planned catalogue entries must not expose controls or routes before capability support exists.
+CoC characters and personal/Campaign Dice already use established shared/system routes. Future Delta Green and hub paths follow those conventions when their phases begin. Planned catalogue entries must not expose controls or routes before capability support exists.
 
 ## Game Room target
 
@@ -64,9 +65,10 @@ The approved Game Room target combines only:
 - GM-controlled presentation of an image selected from Campaign Gallery;
 - system-aware dice appropriate to the campaign system;
 - linked participant characters appropriate to the campaign system;
+- owner-private Personal Campaign Notes;
 - technical Campaign/Game Room UX refinement.
 
-Campaign notes may remain a Campaign area rather than a dense live-room tool unless Phase 4G usability evidence supports a narrow Game Room surface.
+Personal Campaign Notes is implemented in Campaign Overview and Game Room, with no shared Notes. Phase 4 is CLOSED / DEPLOYED / ACCEPTED. Audio Sharing and Developer Diagnostics are deployed add-ons, not speculative feature routes; their multi-user acceptance is deferred. Phase 5A/5B are PLANNED / NOT STARTED.
 
 ## Excluded target routes
 

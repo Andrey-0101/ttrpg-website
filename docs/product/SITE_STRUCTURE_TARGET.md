@@ -7,7 +7,7 @@
 | Status | Current approved target structure |
 | Current source | [`ROADMAP.md`](ROADMAP.md) |
 | Current route reference | [`SITE_STRUCTURE_CURRENT.md`](SITE_STRUCTURE_CURRENT.md) |
-| Next product phase | 4E Campaign & Game Room UX/UI Refinement |
+| Next product phase | Phase 5A Campaign & Game Room UX/UI Refinement — PLANNED / NOT STARTED |
 
 ## Purpose
 
@@ -22,12 +22,12 @@ Describe the intended structure without presenting speculative routes or uncommi
 5. Phase 4C2 Game Room Image Presentation — complete and Production accepted;
 6. Phase 4D1 CoC 7e Dice Roller — deployed with its UX follow-up;
 7. Phase 4D2 system-aware Game Room Dice Integration — complete and Production accepted;
-8. Phase 4E Fair Turn Order Dice — implemented and deployed, Production acceptance pending;
-9. Phase 4F1 CoC 7e Character Sheets;
-10. Phase 4F2 system-aware linked-character Game Room integration;
-11. Phase 4G Campaign Notes;
-12. Phase 5A Campaign & Game Room UX/UI Refinement;
-13. Phase 5B Site-wide UI Technical Refinement;
+8. Phase 4E Fair Turn Order Dice — closed/deployed/accepted;
+9. Phase 4F1 CoC 7e Character Sheets — closed/deployed/accepted;
+10. Phase 4F2 linked-character Game Room integration — closed/deployed/accepted;
+11. Phase 4G owner-private Personal Campaign Notes — closed/deployed/accepted;
+12. Phase 5A Campaign & Game Room UX/UI Refinement — PLANNED / NOT STARTED;
+13. Phase 5B Site-wide UI Technical Refinement — PLANNED / NOT STARTED;
 14. Phase 6 Visual Identity;
 15. Phase 7 Delta Green System Implementation;
 16. Phase 8 Game System Hubs: CoC, Delta Green, Vampire;
@@ -60,13 +60,13 @@ Campaign
 ├── Members, invitations, and linked characters
 ├── Game Room
 │   ├── Campaign video                         [CURRENT]
-│   ├── Image presentation                     [4C2]
+│   ├── Image presentation                     [CURRENT]
 │   ├── System-aware dice                      [CURRENT]
-│   └── Linked participant characters          [4F2]
+│   ├── Linked participant characters          [CURRENT]
+│   └── Owner-private Notes                    [CURRENT]
 ├── Campaign Gallery (four image-only sections) [CURRENT]
-└── Campaign Notes                             [4G]
-    ├── Shared notes for permitted participants
-    └── GM-private notes
+└── Owner-private Personal Campaign Notes      [CURRENT]
+    └── Overview route + shared Game Room UI; no shared Notes
 ```
 
 The existing Game Room may retain clearly disabled placeholders during transition, but placeholders do not approve product scope or routes. Phase 5A decides the clean technical presentation as capabilities arrive.
@@ -78,11 +78,13 @@ Global/document Handouts, NPCs, Sessions, Chronicle records, clues, maps, wikis,
 The shared catalogue tracks capability availability independently. A system route or control is exposed only when that capability is implemented.
 
 - VtM V5: current character, dice, campaign, and basic game-area capabilities;
-- CoC 7e: current generic campaign shell and deployed 4D1 personal dice with its UX follow-up; characters planned in 4F1;
+- CoC 7e: current campaigns, personal/Campaign Dice, two-page characters and linked Game Room integration;
 - Delta Green: catalogue only until Phase 7;
 - other catalogue systems: planned placeholders only.
 
 Phase 8 hubs organize existing information and tools. They do not introduce new mechanics or campaign capabilities. Long-form hub content should use reviewed Markdown/MDX or another suitable content model.
+
+GM Computer Audio Sharing and Developer Diagnostics are deployed pre-Phase-5 add-ons, not new roadmap phases. Their real-session multi-user acceptance is deferred and does not block Phase 5A planning. The protected Developer wrench is not a new product navigation area.
 
 ## UI and visual phases
 

@@ -15,23 +15,29 @@ Completed:
 - Phase 4C1 — image-only Campaign Gallery;
 - Phase 4C2 — Game Room Image Presentation;
 - Phase 4D1 — CoC 7e personal Dice Roller and focused UX follow-up;
-- Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice.
+- Phase 4D2 — Game Sessions, session-scoped Journal, and system-aware Campaign Dice;
+- Phase 4E — Fair Turn Order Dice;
+- Phase 4F1/4F2 — CoC 7e sheets and linked Game Room Characters;
+- Phase 4G — owner-private Personal Campaign Notes;
+- subsequent membership and character-access maintenance.
 
-Active:
+Current status:
 
-- Phase 4 — Core Play & Campaign Tools, with Phase 4D2 complete and accepted in Production;
-- next product stage — Phase 4E Campaign & Game Room UX/UI Refinement.
+- Phase 4 — CLOSED / DEPLOYED / ACCEPTED;
+- GM Computer Audio Sharing — IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING;
+- Developer Diagnostics — DEPLOYED / MANUAL MULTI-USER ACCEPTANCE PENDING; one real GM-only recording and ZIP export succeeded;
+- Phase 5A Campaign & Game Room UX/UI Refinement and Phase 5B Site-wide UI Technical Refinement — PLANNED / NOT STARTED. Deferred real-session audio/diagnostics acceptance does not block Phase 5A planning.
 
 The canonical production domain is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to it. Vercel URLs remain technical deployment addresses. The Vercel domain routes, redirect, and TLS, plus the hosted Supabase Auth Site URL and production/local redirect allowlist, were completed manually outside the repository and manually verified. Arbitrary Vercel Preview authentication is not currently enabled.
 
-Accepted Phase 4D2 Production application baseline:
+Production application release baseline after PR #74 (before this documentation-only synchronization):
 
 ```text
 main
-01d917688ddadb5366949a714bba462b7c5c44b2
+b5f20bfc2b8c025644375ae41e687d692d899c83
 ```
 
-The Production product includes Phase 4A through Phase 4D2. PR #52 delivered independent Game Sessions, session-scoped Journal, and server-authoritative VtM V5/CoC 7e Campaign Dice; PR #53 refined acceptance UX; PR #54 delivered the final stable one-row Journal/Gallery/Dice navigation. Multi-user Phase 4D2 acceptance and the final UI-polish re-test passed. LiveKit remains limited to video/audio and Gallery presentation. Standalone Video Rooms are retained only as an uncommitted backlog idea.
+All Phase 4 deliverables are deployed and accepted. Merged [PR #73](https://github.com/Andrey-0101/ttrpg-website/pull/73) rolled out Developer Diagnostics; merged [PR #74](https://github.com/Andrey-0101/ttrpg-website/pull/74) fixed null-run dispatch. Application-release deployment `dpl_2SU3Zx16EXc6ss9SCNWSuL1kBk6c` was verified READY on `ttrpg.fans`; later documentation-only deployments do not change that release evidence. LiveKit remains limited to audio/video and Gallery presentation, independent of Game Sessions and Journal. Standalone Video Rooms remain uncommitted.
 
 ## Architecture
 
@@ -41,9 +47,10 @@ The Production product includes Phase 4A through Phase 4D2. PR #52 delivered ind
 | [`architecture/DATABASE.md`](architecture/DATABASE.md) | Applied database schema, RLS, Storage, migrations, functions, and generated types |
 | [`architecture/CAMPAIGN_RLS_MATRIX.md`](architecture/CAMPAIGN_RLS_MATRIX.md) | Campaign authorization matrix used during schema and multi-user verification |
 | [`architecture/I18N.md`](architecture/I18N.md) | Locale routing, dictionaries, metadata, and sheet-language direction |
-| [`architecture/CHARACTER_SHEETS.md`](architecture/CHARACTER_SHEETS.md) | Character and VtM V5 sheet contracts |
+| [`architecture/CHARACTER_SHEETS.md`](architecture/CHARACTER_SHEETS.md) | Common character and VtM V5/CoC 7e sheet contracts |
 | [`architecture/DESIGN_SYSTEM.md`](architecture/DESIGN_SYSTEM.md) | Minimal design contract and future theming |
 | [`architecture/SECURITY.md`](architecture/SECURITY.md) | Implemented friend-alpha controls and Public Readiness requirements |
+| [`architecture/DEVELOPER_DIAGNOSTICS.md`](architecture/DEVELOPER_DIAGNOSTICS.md) | Deployed internal Developer role, diagnostics, cleanup, release and acceptance evidence |
 
 ## Product and planning
 
@@ -51,7 +58,7 @@ The Production product includes Phase 4A through Phase 4D2. PR #52 delivered ind
 |---|---|
 | [`product/ROADMAP.md`](product/ROADMAP.md) | Milestones, current status, scope boundaries, and exit criteria |
 | [`product/IDEAS_BACKLOG.md`](product/IDEAS_BACKLOG.md) | Unapproved product ideas captured for review and possible roadmap acceptance |
-| [`product/CAMPAIGNS.md`](product/CAMPAIGNS.md) | Implemented Campaign Foundation contract and current UI |
+| [`product/CAMPAIGNS.md`](product/CAMPAIGNS.md) | Implemented campaign, Game Room, character-access and Personal Notes contracts |
 | [`product/DICE_ROLLS.md`](product/DICE_ROLLS.md) | Implemented personal and Campaign Dice contracts and their separate trust boundaries |
 | [`product/VIDEO_ROOMS.md`](product/VIDEO_ROOMS.md) | Accepted campaign-only LiveKit scope and uncommitted standalone backlog boundary |
 | [`product/GAME_HUB.md`](product/GAME_HUB.md) | Proposed game-hub content and tools |
@@ -82,11 +89,11 @@ Current decision status relevant to dice delivery:
 
 ## Handoffs
 
-Current authoritative handoff:
+Latest chronological handoff (historical snapshot):
 
-[`handoffs/H011_CURRENT_HANDOFF.md`](handoffs/H011_CURRENT_HANDOFF.md)
+[`handoffs/H013_CURRENT_HANDOFF.md`](handoffs/H013_CURRENT_HANDOFF.md)
 
-H011 overrides older handoffs when historical statements conflict with current code, migrations, infrastructure evidence, or accepted Production state. H009 remains the authoritative record for its completed release stage.
+H001–H013 are historical continuity records, not current release status. H013 remains the latest handoff; later Git releases, accepted decisions and synchronized documentation supersede outdated snapshot claims. H014 creation is a separate Product Owner request at conversation closure, not part of documentation synchronization.
 
 Historical handoffs remain available and must not be rewritten as current state:
 
@@ -99,7 +106,10 @@ Historical handoffs remain available and must not be rewritten as current state:
 - `H007_CURRENT_HANDOFF.md`;
 - `H008_CURRENT_HANDOFF.md`;
 - `H009_CURRENT_HANDOFF.md`;
-- `H010_CURRENT_HANDOFF.md`.
+- `H010_CURRENT_HANDOFF.md`;
+- `H011_CURRENT_HANDOFF.md`;
+- `H012_CURRENT_HANDOFF.md`;
+- `H013_CURRENT_HANDOFF.md` (latest).
 
 ## Status vocabulary
 

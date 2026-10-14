@@ -28,17 +28,17 @@ Current product implementation stage:
 
 Phase 4 is complete. The next planned stage is Phase 5A — Campaign & Game Room UX/UI Refinement (PLANNED / NOT STARTED). No Phase 5 implementation is in progress.
 
-Pre-Phase-5 Add-on — GM Computer Audio Sharing: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. This separately approved audio-only addition does not reopen Phase 4 or start Phase 5A. Automated verification does not substitute for real Windows multi-machine capture and echo acceptance.
+Pre-Phase-5 Add-on — GM Computer Audio Sharing: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Real multi-user audio isolation/echo acceptance is deferred until an actual gaming session. This does not reopen Phase 4 or block Phase 5A planning; automated verification does not substitute for that acceptance.
 
-Separately approved Developer Game Room diagnostics add-on: feature-branch implementation / Production rollout and manual acceptance pending. This is not a Phase 5 milestone and does not change the closed Phase 4 or planned/not-started Phase 5A status. It adds technical connection statistics only, no media recording or active speedtest. The canonical fallback TTL is 12 hours after server-side completion; cleanup configuration awaits separate Production rollout approval. See [Developer diagnostics](../architecture/DEVELOPER_DIAGNOSTICS.md).
+Separately approved Developer Diagnostics add-on: DEPLOYED / MANUAL MULTI-USER ACCEPTANCE PENDING. PR #73 and PR #74 are merged and deployed; Production migrations, the verified Product Owner role grant, private Storage and five-minute pg_cron/pg_net/Vault/protected POST cleanup are complete. TTL is 12 hours after server completion. One real GM-only recording produced structured data and an inspected ZIP with successful Stop/export and no reported collection errors, not distributed acceptance. Further diagnostics/audio testing is postponed until a gaming session. This is not a Phase 5 milestone and does not block Phase 5A planning. See [Developer diagnostics and release evidence](../architecture/DEVELOPER_DIAGNOSTICS.md).
 
 Current Production facts:
 
 - campaign video is implemented only inside `/{locale}/campaigns/{campaignId}/game-room`;
 - LiveKit is accepted for that campaign implementation;
 - supported capacity is one GM plus up to six Players;
-- the last human Production group test passed with one GM and four Players;
-- quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred;
+- the earlier campaign-video group acceptance passed with one GM and four Players;
+- that historical test collected no quantitative network telemetry; later diagnostics does not retroactively supply it;
 - the generic Call of Cthulhu 7e campaign shell, personal Dice Roller, and two-page character sheet are deployed and accepted;
 - Delta Green is a catalogue entry only;
 - game-system hubs are not implemented;
@@ -82,6 +82,8 @@ The generic campaign shell supports V5 and CoC 7e. System-specific capabilities 
 ---
 
 ## Phase 4 — Core Play & Campaign Tools
+
+**Status: CLOSED / DEPLOYED / ACCEPTED**
 
 ### Phase 4A — VtM Personal Dice & Personal Persistence
 
@@ -151,12 +153,12 @@ Let the GM present an image from the Campaign Gallery in the shared Game Room Di
 
 #### Scope
 
-- one stable three-control Tools layout for the GM and Players;
-- a GM-only browser for the four existing Campaign Gallery sections, using the Gallery's established ordering and private signed image delivery;
+- the original Phase 4C2 tool composition for GM and Players, subsequently replaced by the accepted `Journal | Gallery | Dice | Characters | Notes` row;
+- browsing the four existing Campaign Gallery sections with established ordering and private signed delivery; presentation controls remain GM-only;
 - local GM image viewing before presentation, without Gallery management controls;
-- explicit GM Share / Stop Share behavior that temporarily places one selected image in every active participant's Display;
+- explicit GM Share / Stop Share behavior that temporarily presents one image to LiveKit-connected campaign participants;
 - synchronized Expand / Collapse presentation controls and safe ephemeral in-room state;
-- an empty Player Display when no image is being shared;
+- the original empty Player Display when no image was shared, superseded by default Journal in Phase 4D2;
 - EN/RU, responsive, reconnect, and safe failure behavior.
 
 No annotations, drawing tools, screen sharing, general Handouts system, presentation persistence/history, or campaign wallpaper are included.
@@ -275,7 +277,7 @@ Phase 4 is complete, deployed, and accepted. The private group can use system-aw
 - Capture requests `windowAudio: "window"`, `systemAudio: "include"` and `selfBrowserSurface: "exclude"`. The native picker remains authoritative; window/application isolation is intended, not guaranteed by the website. Do not select the Game Room browser window. System capture may include other apps/notifications.
 - Actual video-track `displaySurface` drives validation before video stops: usable Window audio does not require `restrictOwnAudio`; Monitor/system audio must confirm `getSettings().restrictOwnAudio === true` before and after video stop. Browser tabs, unknown/unreadable surfaces and invalid capture fail safely. Stop display video before publication; if audio ends with it, abort. No screen video or hidden continuing capture video.
 - Transient 128/192 kbps target profiles, default 192, stereo intent, DTX/RED disabled, computer-audio speech processing disabled. No new persistence, database changes, provider, mixing/resampling or external integration.
-- Manual Production acceptance remains required for native picker/audio-toggle behavior, selected-app isolation from another playing app, sound quality, own-voice echo safety and Entire screen fallback on real Chrome/Edge machines. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
+- Real native capture, selected-app isolation, multi-machine sound/echo safety and fallback acceptance are deferred until an actual gaming session. These results are not claimed complete and do not block Phase 5A planning.
 
 ---
 
@@ -289,12 +291,12 @@ Refine the existing Campaign and Game Room experience without adding new product
 
 - layout, navigation, information hierarchy, responsive behavior, accessibility, usability, and consistent states;
 - campaign overview and live-room transitions;
-- clearer participant, character, image, dice, and notes areas as those capabilities become available;
+- clearer presentation of the already implemented participant, character, image, dice and Notes areas;
 - placeholders for unavailable capabilities remain visibly disabled and must not expose fake behavior, controls, or routes.
 
 ### Phase 5B — Site-wide UI Technical Refinement
 
-**Status: Planned**
+**Status: PLANNED / NOT STARTED**
 
 Perform site-wide technical consistency work after the core play workflow is complete:
 

@@ -2,9 +2,11 @@
 
 ## Status and release boundary
 
-Feature-branch implementation based on `main` commit `a51ea6819e1352079e0d6815787f4f629ab5fc15`. Local automated verification is recorded below. Production rollout and human acceptance are NOT complete. Do not merge/deploy, apply Production migrations, enable Production extensions/Cron, configure Production Vault/Vercel secrets, or grant a Production Developer role without the separate rollout approval.
+**Status: DEPLOYED / MANUAL MULTI-USER ACCEPTANCE PENDING.** [PR #73](https://github.com/Andrey-0101/ttrpg-website/pull/73) merged and completed the approved Production rollout. [PR #74](https://github.com/Andrey-0101/ttrpg-website/pull/74) merged and deployed the null-run dispatch fix.
 
-Phase 4 remains CLOSED / DEPLOYED / ACCEPTED. GM Computer Audio Sharing remains IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 5A remains PLANNED / NOT STARTED.
+Application release baseline: `b5f20bfc2b8c025644375ae41e687d692d899c83`; release deployment `dpl_2SU3Zx16EXc6ss9SCNWSuL1kBk6c` was verified READY on `https://ttrpg.fans` before this documentation-only synchronization. Later documentation commits may trigger another deployment without changing application behavior. Production migrations, private bucket, pg_net, Vault/Vercel server-only credentials, five-minute cleanup and the verified Product Owner Developer grant are complete. Further configuration or role changes still require explicit authorization.
+
+Phase 4 remains CLOSED / DEPLOYED / ACCEPTED. GM Computer Audio Sharing remains IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 5A and 5B remain PLANNED / NOT STARTED. Deferred real-session audio/diagnostics acceptance does not block Phase 5A planning.
 
 The only canonical diagnostic artifact TTL is **12 hours after server-side run completion**. Earlier proposals are superseded, not an alternative configuration.
 
@@ -16,7 +18,7 @@ Every diagnostic API verifies Supabase `getUser()` plus matching verified claims
 
 The wrench near the account name is only a discoverability control. Hiding it is not authorization. Reusable server role checks fail closed if the schema is not installed. The English-only typed strings live in `lib/developer/english.ts`, outside next-intl and EN/RU message parity. There is no Developer navigation item, dashboard heading, environment badge or visible build SHA.
 
-### Administrator procedure (future approved environment only)
+### Administrator procedure (explicit approval only)
 
 First verify the target Supabase project and the exact real Auth user ID. Use trusted Supabase administration, never browser requests. Replace placeholders before execution; these examples grant nobody automatically.
 
@@ -36,7 +38,7 @@ update public.system_user_roles set revoked_at = clock_timestamp()
 where user_id = '<USER_UUID>'::uuid and role = 'developer' and revoked_at is null;
 ```
 
-No Production grant/revoke has been performed by this implementation task.
+The approved rollout granted Developer only to the unambiguously verified existing Product Owner Auth account. No account identifiers, email allowlist, secrets or automatic grants are embedded in application code. This documentation task does not change assignments.
 
 ## Control plane and lifecycle
 
@@ -46,7 +48,7 @@ One `recording`/`stopping` run per campaign AND Developer is enforced by partial
 
 Stop freezes a server-owned **30-second hard collection deadline**, unchanged by retries. Actual joined collectors flush bounded final chunks and acknowledge their cursor. Completion can happen early when no joined collector is still collecting; missing/fenced/error/no-progress collectors produce a partial artifact. At the deadline late chunks are refused. Server reconciliation runs each minute and on authorized operations; completion timestamp is the actual server transition, not a fabricated exact timer instant. Empty/no-accepted-data runs are partial. X and owner Game Room exit use the same Stop/export path; errors leave retry available. Logout/role loss cannot bypass fresh export authorization. A reload starts a separate epoch and fences older collectors; an older tab cannot silently reclaim a newer tab's segment. Our own expired lease can resume in a new epoch after an outage.
 
-The compact panel shows campaign name, Developer-local Now/Started timestamps (seconds), elapsed HH:MM:SS without a 24-hour wrap, registered Player count excluding GM, a separate GM line, stable `display_order` Player slots and profile display-name/username. It never uses character names or emails as diagnostic identity. Status is `○ / … / ✓ / !`: fresh validated progressing records/checkpoints, not an ACK, are required for `✓`; it is not a media-quality score. Foreground/background heartbeat thresholds are 45/120 seconds; starting grace is 30 seconds and checkpoint staleness is 120 seconds.
+The header entry wrench opens the panel; its panel header has the same decorative wrench on the left and X on the right, with no heading. X uses the existing Stop/export pipeline and closes after successful export/download initiation and cleanup attempt; failures keep the panel and retry. The compact panel shows campaign name, Developer-local Now/Started timestamps (`DD MMM YYYY, HH:MM:SS`, English months), elapsed HH:MM:SS without a 24-hour wrap, registered Player count excluding GM, separate role/name/right-hand status columns, GM first, stable `display_order` Player slots and profile display-name/username (exactly `—` for missing names). It never uses character names or emails as diagnostic identity. Status is `○ / … / ✓ / !`: fresh validated progressing records/checkpoints, not an ACK, are required for `✓`; it is not a media-quality score. Foreground/background heartbeat thresholds are 45/120 seconds; starting grace is 30 seconds and checkpoint staleness is 120 seconds.
 
 Players see only:
 
@@ -93,7 +95,7 @@ participants/<run-participant-alias>/<segment>/
 
 The manifest records schema version, safe campaign/run metadata, encountered Game Session IDs (initial context plus transitions), cadence, server/client build provenance, normalized client metadata, timing/units, segment epochs/roles/slots, missing participating clients, gap counts/completeness and compressed input size. Only clients that joined collection are awaited; registered nonparticipants do not block export. Recorded collection gaps make the exported artifact partial; their actual timeline remains in NDJSON rather than an invented duration. Combined records include alias+segment; they are not claimed to be globally ordered. File names use UTC start and generated run UUID, not user identity. Download initiation cannot prove the OS saved the file; the panel says so. ZIP failure preserves server data for retry within original TTL. Successful ZIP construction + initiated download triggers immediate cleanup attempt.
 
-## Autonomous cleanup: approved design, NOT rolled out
+## Autonomous cleanup: deployed
 
 Existing **pg_cron → pg_net → protected Next.js POST** `/api/internal/diagnostics/cleanup`, every **5 minutes** (up to 288 calls/day). No Edge Function, external scheduler or Vercel Cron. The Cron SQL calls a private function and contains no literal secret. At execution it reads Vault `diagnostic_cleanup_url` and `diagnostic_cleanup_secret`; missing configuration is a no-op. The matching Vercel server-only variable is `DIAGNOSTIC_CLEANUP_SECRET`: a dedicated random 32-byte base64url credential (43 characters), not a Supabase/Auth key, never `NEXT_PUBLIC_*`. Authorization uses constant-time comparison before any work. Ordinary authenticated users cannot call the autonomous handler/RPCs.
 
@@ -103,21 +105,21 @@ Cleanup claims at most 100 registered chunks with expiring claim tokens, skips c
 
 ### pg_net trust boundary
 
-Vault avoids embedding credentials in job SQL, but pg_net must temporarily queue plaintext HTTP headers. Supabase documents that trusted direct database LOGIN roles can read those queued headers and project `postgres` cannot override Supabase-owned PUBLIC grants. Do not promise REVOKE/RLS prevents this. Keep `net` out of exposed Data API schemas; maintain only trusted direct database LOGIN users and expose no generic SQL-execution RPC. Browser `anon`/`authenticated` roles have no direct database LOGIN. Preflight must confirm this boundary before future Production activation. See [Supabase queued-header guidance](https://supabase.com/docs/guides/troubleshooting/database-roles-can-read-request-headers-queued-by-pg_net-ad6357) and [managed pg_net grants](https://supabase.com/docs/guides/troubleshooting/revoking-access-to-pg_net-objects-has-no-effect-0bbc16).
+Vault avoids embedding credentials in job SQL, but pg_net must temporarily queue plaintext HTTP headers. Supabase documents that trusted direct database LOGIN roles can read those queued headers and project `postgres` cannot override Supabase-owned PUBLIC grants. Do not promise REVOKE/RLS prevents this. Keep `net` out of exposed Data API schemas; maintain only trusted direct database LOGIN users and expose no generic SQL-execution RPC. Browser `anon`/`authenticated` roles have no direct database LOGIN. The approved rollout preflight confirmed trusted database LOGIN roles and that the Data API exposes `public, graphql_public`, not `net`. Preserve this boundary in future operations. See [Supabase queued-header guidance](https://supabase.com/docs/guides/troubleshooting/database-roles-can-read-request-headers-queued-by-pg_net-ad6357) and [managed pg_net grants](https://supabase.com/docs/guides/troubleshooting/revoking-access-to-pg_net-objects-has-no-effect-0bbc16).
 
-### Future rollout requirements (separate approval mandatory)
+### Operational guardrails for future releases
 
 1. Reconfirm exact reviewed PR SHA, Vercel project/environment and Production Supabase `ttrpg-website` / `nryzkqwcnbbneazaksgh`. Retain `ttrpg-website-m4e-test` / `sijgmybepesinijyspjm`; do not modify/delete/pause it for this task.
 2. Verify `pg_cron`, available `pg_net`, Vault, trusted database LOGIN roles and non-exposure of `net`. Set the dedicated Vercel server-side credential through protected configuration without printing it. Do not store a value in files/Git/logs.
 3. Apply the reviewed forward migrations only after rollout approval; verify RLS/grants/indexes/private bucket/publication/cron definitions and regenerated types. Cron remains inert until Vault URL/credential are provisioned.
 4. Deploy the exact approved application SHA to Production, confirm READY and exact domain SHA. Then securely provision matching Vault credential and `https://ttrpg.fans/api/internal/diagnostics/cleanup` target. Check response status and registered cleanup convergence, not queued authorization headers. Grant Developer manually to an explicitly verified real user only with approval.
-5. Perform real multi-user acceptance and later 3–6 hour measurements. Never create destructive Production fixtures/fake users. No cleanup path can touch character portraits, Gallery, Notes or unrelated Storage.
+5. Human multi-user acceptance is deferred to a real gaming session. No new test task is scheduled here and no endurance test is required at this stage. Never create destructive Production fixtures/fake users. Cleanup cannot touch character portraits, Gallery, Notes or unrelated Storage.
 
-No step in this future rollout list was performed in Production here.
+The infrastructure rollout steps above were completed for PR #73. They remain operational guardrails, not pending rollout tasks. Subsequent changes require their own approval; no Edge Function, external scheduler or Vercel Cron was introduced.
 
 ## Database delta
 
-Local-only applied, immutable migrations:
+Applied in Production, immutable migrations:
 
 - `20261007130732_developer_game_room_diagnostics.sql`: role, run/client/chunk registry, private bucket, service-only lifecycle/collection/cleanup RPCs, Realtime and reconciliation Cron.
 - `20261007130739_diagnostic_autonomous_cleanup.sql`: pg_net, runtime Vault lookup and 5-minute protected POST schedule; absent Vault configuration no-op.
@@ -125,6 +127,7 @@ Local-only applied, immutable migrations:
 - `20261007133704_diagnostic_completion_guards.sql`: committed quota Stop and empty-run partial completeness.
 - `20261007135836_diagnostic_role_audit_indexes.sql`: foreign-key indexes for optional administrator audit IDs.
 - `20261007141821_diagnostic_control_visibility.sql`: column-level browser grants and publication limited to `id/campaign_id/state/revision`, excluding Auth-session provenance and internal registry fields.
+- `20261014102003_handle_diagnostic_dispatch_null.sql` (PR #74): preserves JSONB null/SQL NULL for owner/state without a run before object field deletion; `owner_session_hash` removal and existing authorization/grants are unchanged.
 
 Public objects: `system_user_roles`, `game_room_diagnostic_runs`, `game_room_diagnostic_clients`, `game_room_diagnostic_chunks`; `diagnostic_dispatch`, service-inaccessible internal dispatch, `diagnostic_cleanup_claim`, `diagnostic_cleanup_ack`, `diagnostic_cleanup_sweep`. Private helpers are not application-callable. Authenticated SELECT of own role and four contextual run invalidation fields does not grant internal run fields, registry/chunk/Storage access. Realtime publishes only those four control fields, not metric chunks or the owner Auth-session hash. Run campaign/owner FKs SET NULL preserve cleanup discoverability if source records disappear. See [column-level privileges](https://supabase.com/docs/guides/database/postgres/column-level-security) and [publication column lists](https://www.postgresql.org/docs/17/sql-alterpublication.html).
 
@@ -142,9 +145,15 @@ Implementation verification (local, 2026-10-07):
 - `npx tsc --noEmit`, `npm run lint`, `npm run build`: PASS; build compiles the same-origin Worker and 44 routes/pages. CSP unchanged.
 - `git diff --check`: PASS before publication.
 
-No real-browser multi-user/long-session acceptance, Production migrations/configuration, role grant or cleanup activation has been performed. Preview build readiness, if reported in the PR, is not functional acceptance against a migrated Preview database.
+Later release evidence: the four approved UI corrections passed 30 diagnostics tests before PR #73 rollout. The Production rollout verified schema/grants/private Storage/Realtime, the single Product Owner role grant, unauthorized request rejection and a successful scheduled pg_net cleanup POST (HTTP 200). PR #74 added a focused local RED→GREEN regression (28 checks), verified Production no-run owner/state reads without fixtures, and preserved ACLs, roles, bucket and cleanup. These completed checks are historical release evidence, not rerun by this documentation task.
 
-Manual acceptance after the separately approved rollout:
+### Reported real Production recording
+
+After PR #74, the Product Owner successfully opened the panel and completed one real diagnostic recording. Its ZIP was generated and inspected in ChatGPT: GM-side collection, structured diagnostic records and Stop/export succeeded, with no reported collection errors in the inspected recording. Only one GM participated. The GM camera was enabled, but no subscriber was present; the observed lack of active outgoing video traffic is consistent with LiveKit suspending transmission with no subscribers and is not, by itself, evidence of a defect. This observation is not multi-user media-quality or distributed-collection acceptance.
+
+Distributed/multi-user acceptance remains pending. Further diagnostics and GM computer-audio testing are explicitly postponed until a real gaming session; no new test task or test plan is created here.
+
+Historical implementation acceptance checklist (retained reference, not a newly scheduled task):
 
 - ordinary GM/Player/outsider: no Developer capability; forged role/direct endpoints fail; revoke/logout denies control/export;
 - Developer outside Game Room/other GM/inactive campaign: contextual empty/denied controls; active GM starts one run; duplicate clicks/tabs do not create parallel runs;
@@ -155,5 +164,7 @@ Manual acceptance after the separately approved rollout:
 - ZIP opens; metadata/NDJSON/units/build identities/aliases/missing data are usable; excluded media/IP/email/device/game content is absent;
 - immediate failed cleanup, expiry denial, later autonomous retry and complete DB/Storage convergence; no claim of exact boundary deletion;
 - real 3–6 hour run: raw/compressed bytes per hour, ZIP size, outbox/queue maximum, CPU/memory, gaps and camera/microphone/computer-audio call impact. **NOT YET PERFORMED.**
+
+The checklist above has not been claimed complete by the single-GM recording. No 3–6-hour endurance test is required at this rollout stage.
 
 Existing deferred items remain out of scope: CoC personal-history current + four previous (root cause unverified), disabled leaked-password protection, existing characters policy advisor warning and other historical advisor warnings. Dependency audit additionally reports advisories in existing Next.js/tooling dependencies; fflate adds no reported advisory. They are not fixed or silently accepted by this feature.

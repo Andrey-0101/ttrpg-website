@@ -4,7 +4,7 @@
 
 **Phase 8 planned. No complete game-system hub is implemented.**
 
-The current application has catalogue/game landing surfaces and an implemented public Dice Rollers hub at `/[locale]/dice-rollers`. The VtM V5 personal roller and Custom Dice Pool are available; this does not constitute a complete Vampire Game Hub.
+The current application has catalogue/game landing surfaces and an implemented public Dice Rollers hub at `/[locale]/dice-rollers`. VtM V5 and CoC 7e personal/Campaign Dice, both character systems, Custom Dice Pool and Fair Turn Order Dice are available; these do not constitute complete Game System Hubs.
 
 ## Approved order
 
@@ -12,7 +12,7 @@ The current application has catalogue/game landing surfaces and an implemented p
 2. Phase 8B — Delta Green;
 3. Phase 8C — Vampire: The Masquerade.
 
-Each phase begins only after that system's relevant product tools exist. The current generic CoC campaign shell does not imply CoC dice or character support, and Delta Green is currently a catalogue entry only.
+Each phase begins only after that system's relevant product tools exist. CoC campaign, dice and character capabilities are deployed and accepted; its complete hub remains planned for Phase 8A. Delta Green is currently a catalogue entry only.
 
 ## Purpose
 

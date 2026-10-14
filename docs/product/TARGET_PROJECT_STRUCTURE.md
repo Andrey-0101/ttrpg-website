@@ -37,21 +37,25 @@ CoC deterministic rules and random generation live in the CoC game-system domain
 
 Common Game Room selection and authorization remain system-neutral. Personal and campaign-authoritative persistence are implemented as separate trust boundaries.
 
-### Phase 4E — Fair Turn Order Dice
+### Phase 4E — Fair Turn Order Dice (closed/deployed/accepted)
 
 Keep the Fair Turn Order Dice implementation of the Go First Dice model under the existing boundaries: the fixed Paul Meyer face allocation and pure roller contract under `lib/dice/`, the interactive UI under `components/dice-rollers/`, and the localized public route under `app/[locale]/dice-rollers/go-first/`. Reuse the shared secure-random primitive and keep persistence, accounts, campaigns, and APIs outside this standalone boundary.
 
-### Phase 4F1 and 4F2 — Characters
+### Phase 4F1 and 4F2 — Characters (closed/deployed/accepted)
 
-Place CoC schema, normalizer, renderer, summaries, and tests in the CoC game-system domain. Game Room integration consumes only campaign-authorized linked characters and does not duplicate character ownership or editing logic.
+CoC schema, normalizer, renderer, summaries and tests live in the CoC game-system domain. Game Room integration consumes only campaign-authorized linked characters and does not duplicate character ownership or editing logic.
 
-### Phase 4G — Campaign Notes
+### Phase 4G — Personal Campaign Notes (closed/deployed/accepted)
 
-Introduce only narrowly scoped shared-note and GM-private-note persistence, authorization, UI, and tests. Do not create Sessions, Chronicle, NPC, Handout, clue, map, or wiki directories.
+Owner-private plain-text persistence lives in `campaign_note_entries`; Overview and Game Room reuse the existing Notes component and authenticated campaign Notes API. Search and canonical Game Session metadata are implemented. No shared Notes, rich text or Realtime was introduced; Global Notes remains deferred as IDEA-008. Do not create Sessions, Chronicle, NPC, Handout, clue, map, or wiki directories.
+
+### Deployed pre-Phase-5 add-ons
+
+GM Computer Audio Sharing extends the existing campaign media boundary. Developer Diagnostics uses `lib/developer/`, `lib/diagnostics/`, the root coordinator/panel and protected API handlers, private registered Storage and pg_cron/pg_net/Vault cleanup; no separate dashboard or service was added. PR #73/#74 are deployed. Real-group acceptance is deferred; a single-GM diagnostics ZIP succeeded. See [diagnostics](../architecture/DEVELOPER_DIAGNOSTICS.md).
 
 ### Phases 5A, 5B, and 6
 
-Phase 5A may refine demonstrated Campaign and Game Room layout, navigation, responsive, accessibility, or duplication problems without adding product modules. Phase 5B may consolidate proven shared UI primitives across the remaining site. Phase 6 may add approved visual assets, tokens, and theme layers after its decisions are recorded.
+Phase 5A and 5B are PLANNED / NOT STARTED; deferred real-session add-on acceptance does not block planning. Phase 5A may refine demonstrated Campaign and Game Room layout, navigation, responsive, accessibility, or duplication problems without adding product modules. Phase 5B may consolidate proven shared UI primitives across the remaining site. Phase 6 may add approved visual assets, tokens, and theme layers after its decisions are recorded.
 
 ### Phase 7 — Delta Green
 

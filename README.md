@@ -2,7 +2,7 @@
 
 TTRPG Hub is a bilingual web application for managing tabletop role-playing game characters and private campaigns.
 
-The current production scope is focused on **Vampire: The Masquerade Fifth Edition (VtM V5)**. It includes authenticated character management, a complete responsive character sheet, private portraits, a private campaign workspace, invitations, membership controls, campaign character sharing, and English/Russian interfaces.
+Production supports **Vampire: The Masquerade Fifth Edition (VtM V5)** and **Call of Cthulhu 7e** characters, personal and Campaign Dice, private campaigns, Game Sessions, Journal, Gallery, linked characters, Personal Campaign Notes, and English/Russian interfaces.
 
 > Project status: private friend-alpha development. The repository is not yet prepared for unrestricted public use.
 
@@ -17,29 +17,32 @@ Implemented:
 - explicit create, save, edit, clear, delete, and unsaved-change protection;
 - desktop A4-oriented and mobile-responsive character layouts;
 - private character portraits in Supabase Storage;
-- Private and Campaign character visibility;
+- owner-private characters with assignment-derived read-only access for the exact eligible campaign GM; no visibility selector and no other-Player sheet access;
 - My Campaigns and campaign creation;
 - exactly one immutable Game Master per campaign;
 - single-use, seven-day Player invitations with revocation;
 - campaign member listing, Player departure, and GM removal;
 - campaign character linking and shared read-only sheets;
 - campaign editing, completion, and deletion;
-- campaign creation for Vampire: The Masquerade V5 and a system-neutral Call of Cthulhu 7th Edition campaign shell;
-- public VtM V5 and system-neutral Custom Dice Pool rollers;
+- campaign creation and responsive character sheets for VtM V5 and CoC 7e;
+- public VtM V5, CoC 7e, Custom Dice Pool, and standalone Fair Turn Order Dice rollers;
 - up to five saved Custom Dice Pool presets for registered users;
 - private personal roll history for registered users;
 - a twelve-system planned catalogue across Games, Dice Rollers, character creation, and campaign creation;
 - campaign-authorized LiveKit video for one GM plus up to six Players;
 - a dedicated responsive Campaign Game Room at `/{locale}/campaigns/{campaignId}/game-room`;
+- independent GM-controlled Game Sessions, session-scoped Realtime Journal, and server-authoritative VtM/CoC Campaign Dice;
+- embedded owner-editable / exact-GM-read-only linked characters and owner-private Personal Campaign Notes with search and session metadata;
 - an image-only Campaign Gallery at `/{locale}/campaigns/{campaignId}/gallery`, with fixed Handouts, NPC, Maps & Plans, and Other sections, private signed delivery, and GM-controlled Player visibility;
 - GM-controlled Game Room presentation of Campaign Gallery images, with Share / Stop Share, synchronized Expand / Collapse, and responsive participant layouts;
+- GM Computer Audio Sharing (deployed; real multi-user capture/isolation/echo acceptance deferred to an actual gaming session);
+- protected global Developer role and technical connection-statistics diagnostics, private bounded artifacts, ZIP export, and autonomous cleanup (deployed; multi-user acceptance pending);
 - loading, empty, retry, unavailable, and mutation states;
 - Vercel production deployment at `https://ttrpg.fans`.
 
 Not yet implemented in Production:
 
-- Call of Cthulhu 7e character sheets and system-aware Game Room dice integration;
-- campaign notes within the approved shared/GM-private scope;
+- shared Notes, rich text, and Global Personal Notes (IDEA-008 deferred);
 - general Handouts, NPCs, Sessions, Chronicle records, or clues;
 - independent character-sheet language;
 - print/PDF export;
@@ -51,7 +54,7 @@ Not yet implemented in Production:
 
 Phase 4D1 Call of Cthulhu 7e personal dice is deployed in Production. It provides the public localized route `/{locale}/games/call-of-cthulhu/tools/dice`, catalogue integration, Percentile and Other Dice tools, and best-effort authenticated personal-history support. Guest rolls remain local and non-persistent.
 
-The deployed Phase 4D1 UX follow-up adds safe contextual Back destinations, moves scoped history from the generic catalogue to each roller page, displays up to five previous entries per kind without duplicating the current result, and adds live CoC Target success bands. Its applied forward migration `20260907114535_scope_personal_roll_history_by_kind.sql` changes prospective retention to six rows per owner and kind and adds scoped clearing. Campaign-authoritative and Game Room dice remain planned for Phase 4D2 and are not implemented by Phase 4D1.
+The deployed Phase 4D1 UX follow-up adds safe contextual Back destinations, roller-scoped history and clearing, optional Roll Labels, and live CoC Target bands. VtM and Custom retain six rows each; CoC retains six rows total across both modes. The known deferred CoC display issue is current + four previous instead of current + five previous; its root cause remains unverified. Separate Phase 4D2 Campaign Dice is deployed and accepted, with server-authoritative exact-session Journal persistence rather than personal history.
 
 ## Technology
 
@@ -60,7 +63,7 @@ The deployed Phase 4D1 UX follow-up adds safe contextual Back destinations, move
 - TypeScript;
 - Tailwind CSS 4;
 - `next-intl`;
-- Supabase PostgreSQL, Auth, Row Level Security, Realtime-ready database infrastructure, and Storage;
+- Supabase PostgreSQL, Auth, Row Level Security, Realtime, Storage, pg_cron, pg_net, and Vault;
 - Vercel;
 - GitHub.
 
@@ -76,8 +79,8 @@ Do not:
 - edit an already applied migration;
 - change persisted VtM data without passing it through the current normalizer;
 - treat UI checks as an authorization boundary;
-- assume `public` character visibility grants public access;
-- assume `campaign` visibility alone grants shared access without an active campaign assignment and campaign membership.
+- restore the removed character visibility model;
+- grant another Player access to an owner's sheet or portrait; only an eligible active assignment grants the exact campaign GM read-only access.
 
 ## Local development
 
@@ -96,9 +99,11 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 LIVEKIT_URL
 LIVEKIT_API_KEY
 LIVEKIT_API_SECRET
+SUPABASE_SECRET_KEY
+DIAGNOSTIC_CLEANUP_SECRET
 ```
 
-Copy `.env.example` to `.env.local` and add the local public Supabase values. Do not commit `.env.local`. Leave `NEXT_PUBLIC_SITE_URL` empty in local development and ordinary Preview environments so browser-generated links remain on the active browser origin. Production Vercel configures `NEXT_PUBLIC_SITE_URL` for the canonical public origin. Authentication callbacks from arbitrary Preview deployments are not currently enabled; they require a separately approved, account-scoped Supabase redirect wildcard.
+Copy `.env.example` to `.env.local` and configure the intended local environment; do not copy Production secrets or commit `.env.local`. `SUPABASE_SECRET_KEY` and `DIAGNOSTIC_CLEANUP_SECRET` are server-only. The latter matches the dedicated Vault cleanup credential in Production. Leave `NEXT_PUBLIC_SITE_URL` empty in local development and ordinary Preview environments so browser-generated links remain on the active browser origin. Production uses the canonical public origin. Arbitrary Preview authentication is not enabled. See [Developer diagnostics](docs/architecture/DEVELOPER_DIAGNOSTICS.md) for the deployed operational boundary.
 
 ## Production domain
 
@@ -134,24 +139,25 @@ Start with:
 - [`docs/architecture/DATABASE.md`](docs/architecture/DATABASE.md);
 - [`docs/architecture/SECURITY.md`](docs/architecture/SECURITY.md);
 - [`docs/architecture/CHARACTER_SHEETS.md`](docs/architecture/CHARACTER_SHEETS.md);
+- [`docs/architecture/DEVELOPER_DIAGNOSTICS.md`](docs/architecture/DEVELOPER_DIAGNOSTICS.md);
 - [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md);
 - [`docs/product/CAMPAIGNS.md`](docs/product/CAMPAIGNS.md);
 - [`docs/product/SITE_STRUCTURE_CURRENT.md`](docs/product/SITE_STRUCTURE_CURRENT.md);
 - [`docs/decisions/`](docs/decisions/);
-- [`docs/handoffs/H011_CURRENT_HANDOFF.md`](docs/handoffs/H011_CURRENT_HANDOFF.md), the current authoritative handoff. H001–H010 are historical records and cannot override current code, migrations, infrastructure evidence, or H011; H009 remains the detailed release record for the completed campaign-video and Game Room stage.
+- [`docs/handoffs/H013_CURRENT_HANDOFF.md`](docs/handoffs/H013_CURRENT_HANDOFF.md), the latest chronological handoff. H001–H013 are historical continuity records; newer releases and current documentation supersede their old baseline/status claims. A new handoff is created only when the Product Owner separately requests conversation closure.
 
 ## Current snapshot
 
-Accepted Phase 4D1 application Production baseline:
+Application release baseline after Developer Diagnostics PR #74 (documentation-only commits may follow):
 
 ```text
 main
-abeada9f83d2b119180bf4ad9bb3fa6550d5c1c6
+b5f20bfc2b8c025644375ae41e687d692d899c83
 ```
 
-PRs #43 and #44 delivered Phase 4C2 Game Room Image Presentation and corrected the desktop Expand participant layout. The feature and correction were manually accepted in Production. The current verified deployment is `READY`. Its canonical production origin is `https://ttrpg.fans`, with `https://www.ttrpg.fans` permanently redirecting to the apex domain.
+The verified application-release deployment is `dpl_2SU3Zx16EXc6ss9SCNWSuL1kBk6c` (READY on `https://ttrpg.fans`). This is the pre-documentation-sync release record, not a claim that later documentation commits cannot trigger automatic deployments. [PR #73](https://github.com/Andrey-0101/ttrpg-website/pull/73) delivered Developer Diagnostics; [PR #74](https://github.com/Andrey-0101/ttrpg-website/pull/74) fixed JSONB null/SQL NULL dispatch handling without exposing `owner_session_hash`. Both are merged and deployed.
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice and personal persistence, the game-system catalogue, the CoC campaign shell and Phase 4D1 personal dice with its focused UX follow-up, campaign-authorized LiveKit video, the responsive dedicated Game Room, Phase 4C1 Campaign Gallery, and Phase 4C2 Game Room Image Presentation are implemented in Production. The Gallery's four fixed sections contain images only; NPC and Maps & Plans are not structured gameplay systems. The last Game Room Production group test passed with one GM and four Players, and the Phase 4C2 presentation flow plus corrected desktop Expand layout were manually accepted in Production. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected and must not be inferred. Phase 4D1 follow-up guest/runtime acceptance passed; authenticated Production history acceptance remains pending. Phase 4D2 system-aware Game Room dice is next. Standalone Video Rooms are no longer an active roadmap commitment.
+Phase 4 is CLOSED / DEPLOYED / ACCEPTED, including Personal Campaign Notes and character-access maintenance. Game Room opens independently of LiveKit and Game Session with `Journal | Gallery | Dice | Characters | Notes`; Journal is the root Display. Developer Diagnostics is DEPLOYED / MANUAL MULTI-USER ACCEPTANCE PENDING. The verified Product Owner has the protected role and successfully opened the panel, recorded one GM-only run, and exported a ZIP inspected in ChatGPT; structured data and Stop/export succeeded with no reported collection errors. This is not distributed acceptance. GM Computer Audio Sharing remains IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Further real-group diagnostics/audio acceptance is deferred until a gaming session and does not block Phase 5A planning. Historical video tests collected no quantitative network telemetry; new diagnostics does not retroactively provide it.
 
 If the repository advances, inspect the newer code, migrations, generated types, and deployment before treating this snapshot as current.
 
@@ -160,14 +166,14 @@ If the repository advances, inspect the newer code, migrations, generated types,
 The agreed delivery strategy is:
 
 1. completed Milestones 1–3: architecture, character friend-alpha, and Campaign Foundation;
-2. continue Phase 4 Core Play & Campaign Tools with 4D2 system-aware Game Room dice after the deployed Phase 4D1 UX follow-up;
-3. complete Phase 5 site-wide UI Technical Refinement;
+2. completed Phase 4 Core Play & Campaign Tools and separately deployed pre-Phase-5 add-ons;
+3. Phase 5A Campaign & Game Room UX/UI Refinement, then Phase 5B Site-wide UI Technical Refinement — both PLANNED / NOT STARTED, with no new product capabilities;
 4. define and apply Phase 6 Visual Identity after the technical UI baseline is stable;
 5. add Delta Green system parity in Phase 7;
 6. build CoC, Delta Green, and Vampire system hubs in that Phase 8 order;
 7. complete Phase 9 Public Readiness.
 
-LiveKit is accepted only for the current campaign Game Room. Standalone Video Rooms are an uncommitted backlog idea requiring a separate future product, authorization, and provider review. Personal history remains private and non-authoritative; any later campaign dice persistence must keep it separate from server-authoritative campaign results.
+LiveKit is accepted only for the current campaign Game Room. Standalone Video Rooms remain uncommitted. Personal history is private and non-authoritative, separate from the deployed server-authoritative Campaign Dice Journal.
 
 The current implementation targets Vampire: The Masquerade V5. White Wolf announced V6 in July 2026 while it remains in alpha, with materially different mechanics and no announced release date. A possible migration or replacement before public release remains undecided; see the roadmap for the approved planning note.
 

@@ -4,11 +4,11 @@
 
 **Implemented and verified.**
 
-Campaign Foundation through Phase 4F2 are complete in the accepted Production code baseline:
+Phase 4, including owner-private Personal Campaign Notes and character-access maintenance, is CLOSED / DEPLOYED / ACCEPTED. Application release baseline after diagnostics PR #74 (documentation-only commits may follow):
 
 ```text
 main
-371df4e74354306f673f4224008712608d943ce6
+b5f20bfc2b8c025644375ae41e687d692d899c83
 ```
 
 It includes the database schema, RLS, invitation lifecycle, membership controls, campaign character sharing, campaign management UI, EN/RU localization, mobile layouts, and multi-user security testing.
@@ -27,7 +27,8 @@ The current implementation connects:
 - a private image-only Campaign Gallery with fixed Handouts, NPC, Maps & Plans, and Other sections, GM access controls, and Player-filtered viewing;
 - GM-controlled Game Room image presentation from that Gallery, including Share / Stop Share and synchronized Expand / Collapse.
 - a persistent GM-controlled Game Session lifecycle and session-scoped Journal, independent of LiveKit;
-- system-aware, server-authoritative Campaign Dice for VtM V5 and CoC 7e, with active-session rolls published in the Journal through Supabase Realtime.
+- system-aware, server-authoritative Campaign Dice for VtM V5 and CoC 7e, with active-session rolls published in the Journal through Supabase Realtime;
+- owner-private Personal Campaign Notes from Overview and Game Room, with search, session metadata and completed/read-only lifecycle.
 
 Campaign creation currently supports Vampire: The Masquerade V5 and a minimal Call of Cthulhu 7th Edition shell. Both systems reuse the same generic membership, invitation, lifecycle, authorization, and campaign-video functionality.
 
@@ -326,11 +327,13 @@ Browsing Gallery does not require LiveKit. Image Share/Presentation still uses L
 
 Pre-Phase-5 Add-on — GM Computer Audio Sharing is IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. A connected GM can explicitly share computer audio into this same LiveKit room independently of mic, camera, Game Session and image presentation. The compact header control exposes transient 128/192 kbps targets (default 192); changing quality requires stopping first. Remote GM computer audio uses a second audio attachment and the existing Enable sound path, with no local playback. Late Players subscribe through normal LiveKit track subscription and the authoritative membership mapping, without restarting the capture.
 
-Initial capture support is Windows 11 with current stable Chrome/Edge. Prefer a desktop application's Window and explicitly enable audio in the native picker (Share with system audio or the equivalent toggle); Entire screen + system audio remains fallback and may include other apps/notifications. The request uses `windowAudio: "window"`, `systemAudio: "include"` and `selfBrowserSurface: "exclude"`; the picker is authoritative and the website neither selects Spotify nor guarantees application isolation. Do not select the Game Room browser window. Actual video-track `displaySurface` is read before stopping video: usable Window audio does not require `restrictOwnAudio`, while Monitor/system audio must confirm it as true before and after video stop or all tracks stop without publication. Browser tabs and unknown/invalid surfaces are rejected. Display video is stopped before publishing audio and is never sent; engines that end audio with video are rejected. Site/native Stop, Leave, terminal disconnect and unmount release capture; ordinary reconnect retains it without another picker. No other OS/browser capture support is promised. Players need only ordinary LiveKit audio playback support. Real selected-application isolation/capture/echo acceptance is still pending; this does not reopen Phase 4 or start Phase 5A.
+Initial capture support is Windows 11 with current stable Chrome/Edge. Prefer a desktop application's Window and explicitly enable audio in the native picker (Share with system audio or the equivalent toggle); Entire screen + system audio remains fallback and may include other apps/notifications. The request uses `windowAudio: "window"`, `systemAudio: "include"` and `selfBrowserSurface: "exclude"`; the picker is authoritative and the website neither selects Spotify nor guarantees application isolation. Do not select the Game Room browser window. Actual video-track `displaySurface` is read before stopping video: usable Window audio does not require `restrictOwnAudio`, while Monitor/system audio must confirm it as true before and after video stop or all tracks stop without publication. Browser tabs and unknown/invalid surfaces are rejected. Display video is stopped before publishing audio and is never sent; engines that end audio with video are rejected. Site/native Stop, Leave, terminal disconnect and unmount release capture; ordinary reconnect retains it without another picker. No other OS/browser capture support is promised. Players need only ordinary LiveKit audio playback support. Real multi-user selected-application isolation/capture/echo acceptance is deferred until a gaming session; it does not reopen Phase 4 or block Phase 5A planning.
 
 GM Game Room presence renews on entry and approximately every 30 minutes while the page remains mounted. The database deadline is approximately 60 minutes after the last renewal, and an autonomous scheduled database function closes abandoned sessions without waiting for another visitor. No unload event is part of the correctness contract.
 
 The accepted layout uses a compact header, approximately `1.5fr / 1fr / 1fr` desktop columns, and stable slots for one GM plus Player positions 1–6. Video cards remain responsive `16:9`, use normal brightness and `object-fit: cover`, keep a compact upper-right label, and expose lower-left media controls only for the local participant. Leave remains in the header. The last human Production group test passed with one GM and four Players; quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected, and no additional acceptance retest is currently required.
+
+Developer Diagnostics is DEPLOYED / MANUAL MULTI-USER ACCEPTANCE PENDING via merged PR #73/#74. The global protected role exposes a wrench near the account name; Start also requires GM ownership of the current active campaign. Technical LiveKit statistics collection is independent of Game Session and records no media. The Product Owner successfully recorded/exported one real GM-only ZIP; distributed acceptance is postponed until real play. See [diagnostics](../architecture/DEVELOPER_DIAGNOSTICS.md); this role does not change campaign authorization or Notes privacy.
 
 ## Lifecycle
 
