@@ -2,9 +2,9 @@
 
 ## Status
 
-Campaign Foundation, the campaign-video data foundation, the Phase 4C1 image-only Campaign Gallery, and Phase 4D2 Game Sessions/Journal are implemented and current in Production. The accepted Phase 4D2 application baseline is `main` at `01d917688ddadb5366949a714bba462b7c5c44b2`.
+Phase 4 and subsequent membership/character-access maintenance are CLOSED / DEPLOYED / ACCEPTED. Application release baseline after diagnostics PR #74 is `b5f20bfc2b8c025644375ae41e687d692d899c83`; documentation-only commits may follow.
 
-All seventeen repository migrations are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables and both Phase 4D2 tables, five required campaign-video foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
+All thirty repository migrations through `20261014102003_handle_diagnostic_dispatch_null.sql` are applied to Production, generated types are current for the synchronized snapshot, and the matrix remains the authorization reference. Production verification confirmed RLS on all seven campaign-video tables and both Phase 4D2 tables, five required campaign-video foreign-key indexes, hardened grants, `handle_new_user()` execution restrictions, and the private `campaign-images` bucket.
 
 This matrix describes the current minimum access boundary for:
 
@@ -26,6 +26,8 @@ game_sessions
 game_session_journal_events
 campaign-images
 ```
+
+Owner-private Personal Campaign Notes and global Developer diagnostics use separate documented boundaries: [database](DATABASE.md), [security](SECURITY.md), and [diagnostics](DEVELOPER_DIAGNOSTICS.md). Developer does not grant campaign membership, another owner's Notes, or arbitrary GM authority. Start requires Developer plus ownership of the current active campaign.
 
 ## Actors
 
@@ -274,7 +276,7 @@ Verify:
 
 ## Verification record
 
-The current Production campaign-video verification confirmed:
+The historical campaign-video/Gallery release verification confirmed (not the current full migration count):
 
 - all ten migrations present;
 - RLS enabled on all seven campaign-video tables;
@@ -301,4 +303,4 @@ Two issues discovered by the test were corrected through forward migrations:
 20260709170000_fix_campaign_character_trigger_security.sql
 ```
 
-The matrix remains the authorization reference for future campaign dice, video, handout, session, and note policies.
+The matrix remains the reference for these implemented campaign boundaries; future changes require delta verification. Personal Notes and diagnostics must retain their separate owner/capability rules.

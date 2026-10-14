@@ -10,18 +10,18 @@ Phase 4D2 is deployed, manually accepted, and closed. It adds server-authoritati
 
 Phase 4F1 adds the versioned CoC 7e character schema, responsive two-page sheet, system-specific normalization and formulas, EN/RU presentation, and existing Character Library/campaign-sharing integration without a database migration. Production manual acceptance is complete.
 
-Verified production baseline:
+Application release baseline after PR #74 (documentation-only commits may follow):
 
 ```text
 main
-01d917688ddadb5366949a714bba462b7c5c44b2
+b5f20bfc2b8c025644375ae41e687d692d899c83
 ```
 
 PR #52 delivered Phase 4D2, PR #53 refined its acceptance UX, and PR #54 delivered the final navigation polish. All are merged and deployed. Phase 4D2 multi-user acceptance and the final UI-polish re-test passed. The earlier campaign-video human Production acceptance involved one GM and four Players; no quantitative packet-loss, latency, jitter, or connection-quality telemetry was collected.
 
-## Feature-branch add-on: Developer diagnostics
+## Deployed add-on: Developer diagnostics
 
-Developer role and distributed Game Room connection-statistics diagnostics are implemented on a separate feature branch, NOT deployed/accepted in Production. The new role does not change campaign GM/Player authority, Game Sessions, Notes privacy or LiveKit permissions/lifecycle. The root-layout coordinator, public read-only LiveKit stats adapter, private bounded chunk registry/Storage and browser ZIP Worker follow the [diagnostics contract](DEVELOPER_DIAGNOSTICS.md). Canonical fallback TTL is 12 hours after server completion; approved future cleanup is existing pg_cron → pg_net → protected Next.js POST every five minutes. Production configuration remains unchanged. Phase 5A is not started.
+Developer Diagnostics is DEPLOYED / MANUAL MULTI-USER ACCEPTANCE PENDING. PR #73 and null-handling fix PR #74 are merged/deployed; the verified Product Owner has the protected global role. The new role does not change campaign GM/Player authority, Game Sessions, Notes privacy or LiveKit permissions/lifecycle. The root-layout coordinator, public read-only LiveKit stats adapter, private bounded chunk registry/Storage and browser ZIP Worker follow the [diagnostics contract](DEVELOPER_DIAGNOSTICS.md). Canonical fallback TTL is 12 hours after server completion; deployed autonomous cleanup is pg_cron → pg_net → Vault credential lookup → protected Next.js POST every five minutes. Production schema, private bucket and server-only configuration are complete. One real GM-only run successfully exported an inspected ZIP, not distributed acceptance. Further diagnostics/audio acceptance is deferred to real play and does not block Phase 5A planning. Phase 5A and 5B are PLANNED / NOT STARTED.
 
 ## Architectural goals
 
@@ -56,9 +56,10 @@ Supabase
   +-- PostgreSQL
   +-- Auth
   +-- Row Level Security
-  +-- pg_cron for autonomous Game Session expiry
+  +-- pg_cron for Game Session expiry and diagnostics reconciliation/cleanup
+  +-- pg_net and Vault for protected cleanup POST
   +-- Storage
-  +-- Realtime for current Game Session state and session-scoped Journal events
+  +-- Realtime for Game Session/Journal, membership invalidation and bounded diagnostic control
 ```
 
 The canonical production origin is `https://ttrpg.fans`. `https://www.ttrpg.fans` permanently redirects to the apex domain. Vercel `*.vercel.app` URLs remain technical deployment addresses. Vercel Function compute previously used the default Virginia region (`iad1`); after it moved to Tokyo (`hnd1`), a small Production comparison measured approximately 30% lower overall median TTFB. The region change aligns application compute with Supabase Production in Tokyo and does not change application behavior.
@@ -365,7 +366,7 @@ LiveKit owns video/audio and Gallery image-presentation transport only. It does 
 
 #### Pre-Phase-5 Add-on — GM Computer Audio Sharing
 
-Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
+Status: IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Real multi-user audio isolation/echo acceptance is postponed until a gaming session and does not block Phase 5A planning. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED; Phase 5A remains PLANNED / NOT STARTED.
 
 Native `getDisplayMedia` capture is invoked synchronously from the GM Start action. Windows 11/current Chrome or Edge is the initial supported workflow: prefer desktop Window/application audio; Entire screen/system audio remains fallback. The request retains `video: true` and music-oriented audio constraints, adding `windowAudio: "window"` and `selfBrowserSurface: "exclude"` alongside `systemAudio: "include"`. Native source/audio consent is authoritative; these hints do not guarantee application isolation. No site mode selector or programmatic Spotify selection is introduced.
 
@@ -559,11 +560,12 @@ Approved sequence:
 12. Phase 4F1 CoC 7e Character Sheets — closed, deployed, accepted;
 13. Phase 4F2 system-aware linked-character Game Room integration — closed, deployed, accepted;
 14. Phase 4G Personal Campaign Notes — closed, deployed, accepted; manual Production acceptance passed;
-15. Phase 5 site-wide UI Technical Refinement;
-16. Phase 6 Visual Identity;
-17. Phase 7 Delta Green system parity;
-18. Phase 8 Game System Hubs in CoC, Delta Green, then Vampire order;
-19. Phase 9 Public Readiness.
+15. Phase 5A Campaign & Game Room UX/UI Refinement — PLANNED / NOT STARTED;
+16. Phase 5B Site-wide UI Technical Refinement — PLANNED / NOT STARTED;
+17. Phase 6 Visual Identity, separate and after Phase 5;
+18. Phase 7 Delta Green system parity;
+19. Phase 8 Game System Hubs in CoC, Delta Green, then Vampire order;
+20. Phase 9 Public Readiness.
 
 ## Explicit non-goals for the current phase
 

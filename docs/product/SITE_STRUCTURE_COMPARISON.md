@@ -2,7 +2,7 @@
 
 ## Summary
 
-The current Production application is a bilingual private TTRPG hub with implemented VtM V5 characters and personal dice, a generic CoC campaign shell and Phase 4D1 CoC 7e personal roller with contextual navigation, scoped history, and live Target bands, secure Campaign Foundation, a Production-accepted campaign LiveKit Game Room, and an image-only Campaign Gallery. The approved target adds narrowly scoped remaining core play tools, technical refinement, Delta Green parity, ordered game-system hubs, and Public Readiness.
+The current Production application is a bilingual private TTRPG hub with implemented VtM V5 characters and personal dice, CoC 7e characters, personal/Campaign Dice and linked Game Room tools with contextual navigation, scoped history, and live Target bands, secure Campaign Foundation, a Production-accepted campaign LiveKit Game Room, and an image-only Campaign Gallery. Phase 4 and owner-private Personal Campaign Notes are closed/deployed/accepted. The approved next work is Phase 5A/5B technical refinement (both planned/not started), followed separately by Phase 6 Visual Identity, Delta Green parity, ordered hubs and Public Readiness.
 
 ## Structural comparison
 
@@ -13,9 +13,10 @@ The current Production application is a bilingual private TTRPG hub with impleme
 | Campaign Gallery | Four fixed image-only sections and 4C2 Game Room presentation implemented | Retain |
 | VtM dice | Personal and Game Room Campaign Dice implemented | Retain |
 | CoC dice | Personal roller, UX follow-up, and Game Room Campaign Dice implemented | Retain |
-| VtM characters | Implemented | 4F2 linked-character Game Room integration |
-| CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
-| Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |
+| VtM characters | Sheets and linked Game Room integration accepted | Retain |
+| CoC characters | Sheets and linked Game Room integration accepted | Retain |
+| Campaign notes | Owner-private plain-text Notes, search/session metadata, Overview + Game Room access | Retain; IDEA-008 Global Notes deferred |
+| Computer Audio / Diagnostics | Deployed; multi-user acceptance postponed to real play; one GM-only diagnostics ZIP succeeded | Not a blocker for Phase 5A planning |
 | Site UI | Functional current baseline | Phase 5A campaign/Game Room refinement, then Phase 5B site-wide technical consistency; no new features |
 | Visual identity | Not finalized | Phase 6, decisions intentionally deferred |
 | Delta Green | Catalogue entry only | Phase 7 system parity |

@@ -7,24 +7,29 @@
 | Project | Web_Site_TTRPG / ttrpg-website |
 | Repository | `Andrey-0101/ttrpg-website` |
 | Document status | Current synchronized project context |
-| Last reviewed | 2026-09-11 |
-| Accepted Phase 4D2 application baseline | `main` at `01d917688ddadb5366949a714bba462b7c5c44b2` |
-| Verified release | Phase 4D2 shipped in PR #52, acceptance UX in PR #53, and final navigation polish in PR #54; multi-user and final UI-polish Production acceptance passed |
+| Last reviewed | 2026-10-14 |
+| Application release baseline | `main` at `b5f20bfc2b8c025644375ae41e687d692d899c83` (PR #74; documentation-only commits may follow) |
+| Application-release deployment | `dpl_2SU3Zx16EXc6ss9SCNWSuL1kBk6c`, READY before this documentation synchronization |
+| Release state | Phase 4 CLOSED / DEPLOYED / ACCEPTED; Developer Diagnostics PR #73 and null-handling fix PR #74 merged/deployed |
 | Canonical production domain | `https://ttrpg.fans` |
 | Domain redirect | `https://www.ttrpg.fans` permanently redirects to `https://ttrpg.fans` |
 | Technical deployment address | `https://ttrpg-website-xi.vercel.app` |
-| Current delivery stage | Phase 4D2 is deployed, accepted, and closed; Phase 4E planning/review is next |
+| Next stage | Phase 5A Campaign & Game Room UX/UI Refinement; Phase 5A and 5B PLANNED / NOT STARTED |
 | Current audience | Small invited group of friends |
 
 ## Release-state boundaries
 
 ### Verified production baseline
 
-The accepted Phase 4D2 application baseline is `01d917688ddadb5366949a714bba462b7c5c44b2`. PR #52 delivered Game Sessions, the session-scoped Journal, and VtM V5/CoC 7e Campaign Dice; PR #53 refined acceptance UX; PR #54 delivered the accepted one-row tool navigation. The current continuation state is recorded in `docs/handoffs/H013_CURRENT_HANDOFF.md`.
+The application release baseline is `b5f20bfc2b8c025644375ae41e687d692d899c83`. [PR #73](https://github.com/Andrey-0101/ttrpg-website/pull/73) deployed Developer Diagnostics and [PR #74](https://github.com/Andrey-0101/ttrpg-website/pull/74) fixed JSONB null/SQL NULL dispatch while preserving object `owner_session_hash` removal and authorization. Both are merged. The recorded READY deployment identifies this application release; later documentation-only commits/deployments are distinct. H013 is the latest historical handoff, not the baseline for these later releases. H001–H013 remain unchanged; a new handoff requires a separate conversation-closure request.
 
-The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A through Phase 4D2 are deployed. Phase 4D2 keeps Game Room, Game Session, Journal, and Campaign Dice independent from LiveKit; only video/audio and Gallery presentation use LiveKit. Its multi-user Production acceptance and focused final navigation re-test passed. The Gallery has four fixed image-only sections and opens directly in Handouts. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected for the earlier video group test and must not be inferred. Standalone Video Rooms remain an uncommitted backlog idea.
+The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A–4G, membership synchronization and character-access maintenance are CLOSED / DEPLOYED / ACCEPTED. Phase 4D2 keeps Game Room, Game Session, Journal, and Campaign Dice independent from LiveKit; only video/audio and Gallery presentation use LiveKit. Its multi-user Production acceptance and focused final navigation re-test passed. The Gallery has four fixed image-only sections and opens directly in Handouts. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected for the earlier video group test and must not be inferred. Standalone Video Rooms remain an uncommitted backlog idea.
 
-### Phase 4D1 UX follow-up release
+GM Computer Audio Sharing is IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. Real multi-user audio isolation/echo acceptance is deferred until an actual gaming session and does not block Phase 5A planning.
+
+Developer Diagnostics is DEPLOYED / MANUAL MULTI-USER ACCEPTANCE PENDING. The verified Product Owner received the protected global role and successfully opened the wrench panel, recorded one real GM-only run and exported a ZIP inspected in ChatGPT. GM-side collection, structured records and Stop/export succeeded with no reported collection errors; no other participant was present. This does not prove distributed collection. Production migrations, private Storage and five-minute pg_cron → pg_net → Vault/protected POST cleanup are configured; TTL is 12 hours after server completion. Further real-group diagnostics/audio acceptance is postponed. See [DEVELOPER_DIAGNOSTICS.md](docs/architecture/DEVELOPER_DIAGNOSTICS.md).
+
+### Historical Phase 4D1 UX follow-up release
 
 PR #47 deployed validated, reload-safe contextual Back destinations for personal roller routes; moved personal history from the generic catalogue to its VtM, Custom, or combined CoC roller page; exposed up to five previous results per roller kind without duplicating the current result; scoped Clear History to the current roller; and added a live deterministic CoC Target success-range guide. Production guest/runtime and later authenticated persistence acceptance passed. The accepted known exception is the deferred CoC display issue: current plus four previous instead of current plus five previous.
 
@@ -38,7 +43,9 @@ History remains scoped to the roller page. VtM and Custom retain six rows each. 
 
 Phase 4D1 follow-up evidence records 260/260 dice tests, 13/13 site-URL tests, 40/40 Campaign/Gallery/catalogue tests, 53/53 Campaign Video/Game Room tests, 273 local database assertions, the required concurrency checks, ESLint, TypeScript, EN/RU key parity, and a 38/38-page production build as passing. Preview and Production guest EN/RU browser acceptance passed, including contextual navigation, target bands, and mobile containment. Authenticated Production history acceptance later passed with the known deferred CoC display-count issue. Production runtime logs showed no current 500-level or error-level entries attributable to the release. Both production-only and full npm audits reported zero vulnerabilities.
 
-Release history relevant to the current baseline:
+These test counts, runtime-log observations and npm audit results are historical Phase 4D1 evidence, not a current audit or repeated verification.
+
+Historical release history (later releases are recorded above and in current product/architecture documents):
 
 | PR | Accepted outcome |
 |---|---|
@@ -60,8 +67,8 @@ The project is a bilingual TTRPG hub. Its first complete game-system implementat
 The intended progression is:
 
 1. completed architecture, character, and campaign foundations;
-2. Phase 4 Core Play & Campaign Tools, with Phase 4D2 deployed and accepted and Phase 4E next;
-3. Phase 5 site-wide UI Technical Refinement;
+2. completed Phase 4 Core Play & Campaign Tools and separately deployed pre-Phase-5 add-ons;
+3. Phase 5A Campaign & Game Room UX/UI Refinement, then Phase 5B Site-wide UI Technical Refinement — both PLANNED / NOT STARTED, with no new product capabilities;
 4. Phase 6 Visual Identity;
 5. Phase 7 Delta Green system parity;
 6. Phase 8 system hubs in CoC, Delta Green, then Vampire order;
@@ -78,10 +85,10 @@ When information conflicts, use this priority:
 3. generated database types;
 4. verified Supabase and Vercel behavior;
 5. accepted ADRs;
-6. the current authoritative handoff, `docs/handoffs/H013_CURRENT_HANDOFF.md`;
-7. permanent project documentation;
-8. current chat decisions;
-9. historical handoffs H001–H009 and old snippets.
+6. latest approved Product Owner scope and acceptance decisions;
+7. synchronized permanent project documentation;
+8. historical handoffs H001–H013 for continuity, latest `docs/handoffs/H013_CURRENT_HANDOFF.md` (later releases supersede its snapshot);
+9. superseded plans and old snippets.
 
 A discussed or planned object is not implemented unless it exists in code, migrations, generated types, or verified infrastructure.
 
@@ -104,7 +111,7 @@ Vercel `*.vercel.app` URLs remain technical deployment addresses. Application-ge
 
 ### Production configuration
 
-The production domains, environment variables, LiveKit settings, and hosted Supabase Auth settings were completed outside the repository and verified for the current PR #34 Production release. The Vercel Function region is now persisted in repository configuration.
+Domains, Auth and LiveKit configuration were established in earlier releases; their historical verification is not a new audit. PR #73 completed diagnostics Production migrations, private Storage, pg_net, Vault/server-only credentials, scheduled cleanup and the verified Product Owner role grant. PR #74 changed only null dispatch handling. The Vercel Function region remains in repository configuration.
 
 Required Production variable names, without values:
 
@@ -115,6 +122,8 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 LIVEKIT_URL
 LIVEKIT_API_KEY
 LIVEKIT_API_SECRET
+SUPABASE_SECRET_KEY
+DIAGNOSTIC_CLEANUP_SECRET
 ```
 
 Vercel state:
@@ -136,7 +145,7 @@ Hosted Supabase Auth state:
 - the canonical production callback is allowed;
 - arbitrary Vercel Preview authentication is not currently enabled.
 
-The hosted settings other than the Function region remain external to the repository. The region configuration contains no secret values.
+The hosted settings other than the Function region remain external to the repository. The region configuration contains no secret values. Production Supabase is `ttrpg-website` / `nryzkqwcnbbneazaksgh`; separate `ttrpg-website-m4e-test` / `sijgmybepesinijyspjm` is intentionally retained. Do not delete, pause or modify the test project without a separate future decision.
 
 ### Locales
 
@@ -172,10 +181,10 @@ Implemented:
 - clear form;
 - delete;
 - private portraits;
-- VtM V5 summary cards;
+- VtM V5 and CoC 7e summary cards and two-page character workflows;
 - responsive layouts.
 
-Character owners remain the only users who can edit or delete their characters. Active campaign participants can additionally receive read-only access to eligible characters with `campaign` visibility and an active campaign assignment. No anonymous or public read policy exists for `public` visibility.
+Character owners alone can edit or delete, subject to active-assignment deletion locks. No character visibility field exists. An eligible active Player assignment grants only the exact active campaign GM read-only sheet/portrait access; other Players, outsiders and anonymous users are denied. One-character-per-Player and Game Session unlink locks remain enforced.
 
 ### VtM V5 character sheet
 
@@ -240,6 +249,23 @@ supabase/migrations/20260903000242_campaign_gallery_categories.sql
 supabase/migrations/20260905171520_make_personal_roll_history_extensible.sql
 supabase/migrations/20260907114535_scope_personal_roll_history_by_kind.sql
 supabase/migrations/20260908094324_scope_coc_personal_roll_history.sql
+supabase/migrations/20260910122247_game_sessions_and_journal.sql
+supabase/migrations/20260911120000_campaign_dice_journal.sql
+supabase/migrations/20260911120001_bind_campaign_dice_to_expected_session.sql
+supabase/migrations/20260911121613_publish_game_session_state_realtime.sql
+supabase/migrations/20261002160849_game_room_character_invariants.sql
+supabase/migrations/20261004112908_personal_campaign_notes.sql
+supabase/migrations/20261004121513_index_personal_notes_campaign.sql
+supabase/migrations/20261004151918_campaign_membership_realtime_signal.sql
+supabase/migrations/20261004161535_character_assignment_gm_read_access.sql
+supabase/migrations/20261004161539_remove_character_visibility.sql
+supabase/migrations/20261007130732_developer_game_room_diagnostics.sql
+supabase/migrations/20261007130739_diagnostic_autonomous_cleanup.sql
+supabase/migrations/20261007132201_diagnostic_registry_hardening.sql
+supabase/migrations/20261007133704_diagnostic_completion_guards.sql
+supabase/migrations/20261007135836_diagnostic_role_audit_indexes.sql
+supabase/migrations/20261007141821_diagnostic_control_visibility.sql
+supabase/migrations/20261014102003_handle_diagnostic_dispatch_null.sql
 ```
 
 Current public tables:
@@ -260,11 +286,19 @@ public.campaign_media_restrictions
 public.campaign_images
 public.campaign_image_recipients
 public.campaign_video_audit_log
+public.game_sessions
+public.game_session_journal_events
+public.campaign_membership_signals
+public.campaign_note_entries
+public.system_user_roles
+public.game_room_diagnostic_runs
+public.game_room_diagnostic_clients
+public.game_room_diagnostic_chunks
 ```
 
-All thirteen repository migrations are current in Production. The eleventh migration, `20260905171520_make_personal_roll_history_extensible.sql`, replaced the two-value `personal_roll_history.roller_kind` constraint with the syntax check `^[a-z][a-z0-9_]{0,63}$` and changed the schema-version constraint to require a positive value; it does not make arbitrary payloads application-supported. The twelfth migration adds owner-and-kind indexing and scoped clearing. The thirteenth changes prospective CoC retention to six rows total across its two kinds while VtM and Custom remain six rows each. The application registry supports schema version 1 for `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`, and safely skips malformed or unsupported history rows.
+All thirty repository migrations are applied in Production at the PR #74 application release baseline. The eleventh migration, `20260905171520_make_personal_roll_history_extensible.sql`, replaced the two-value `personal_roll_history.roller_kind` constraint with the syntax check `^[a-z][a-z0-9_]{0,63}$` and changed the schema-version constraint to require a positive value; it does not make arbitrary payloads application-supported. The twelfth migration adds owner-and-kind indexing and scoped clearing. The thirteenth changes prospective CoC retention to six rows total across its two kinds while VtM and Custom remain six rows each. The application registry supports schema version 1 for `vtm_v5`, `custom_dice_pool`, `coc_7e_percentile`, and `coc_7e_other_dice`, and safely skips malformed or unsupported history rows.
 
-The seven campaign-video tables use RLS; the five required foreign-key indexes, database grants, and `handle_new_user()` hardening are current. The private `campaign-images` Storage bucket is current. Phase 4C1 uses the existing `campaign_images` and `campaign_image_recipients` tables rather than adding broad Handout, NPC, or Maps tables. `campaign_images.category` is fixed to `handout`, `npc`, `maps_plans`, or `other`; it is immutable organizational metadata and grants no access. No campaign-authoritative dice-roll, provider-room-mapping, document-handout, structured NPC, session, or campaign-notes table is implemented. Personal dice history is private per owner, non-authoritative, and not campaign evidence.
+The seven campaign-video tables use RLS; the five required foreign-key indexes, database grants, and `handle_new_user()` hardening are current. The private `campaign-images` Storage bucket is current. Phase 4C1 uses the existing `campaign_images` and `campaign_image_recipients` tables rather than adding broad Handout, NPC, or Maps tables. `campaign_images.category` is fixed to `handout`, `npc`, `maps_plans`, or `other`; it is immutable organizational metadata and grants no access. Game Sessions/Journal, authoritative Campaign Dice, owner-private Notes, membership invalidation and diagnostics registry are implemented; no standalone provider-room-mapping, document-handout or structured NPC product exists. Personal dice history is private per owner, non-authoritative, and not campaign evidence.
 
 Generated types:
 
@@ -316,7 +350,7 @@ Implemented system-specific character, dice, and game-area support:
 vtm-v5
 ```
 
-The shared typed catalogue enables campaign creation and the deployed personal dice roller for this system, while its character creation and game area remain planned:
+The shared typed catalogue enables deployed CoC campaigns, characters, personal dice and system-aware Game Room tools; its complete Game System Hub remains planned:
 
 ```text
 call-of-cthulhu-7e
@@ -353,7 +387,7 @@ Owns:
 - campaign lifecycle;
 - RLS-backed access checks and read-only character sharing.
 
-Campaign creation supports `vtm-v5` and the system-neutral `call-of-cthulhu-7e` shell. Character assignments remain game-system exact; VtM characters cannot be linked to CoC campaigns. CoC personal dice and its Phase 4D1 UX follow-up are deployed. CoC character sheets remain planned for Phase 4F1, with the CoC Game System Hub planned for Phase 8A. Keeper-specific tools are not an active roadmap commitment.
+Campaign creation supports `vtm-v5` and the system-neutral `call-of-cthulhu-7e` shell. Character assignments remain game-system exact; VtM characters cannot be linked to CoC campaigns. CoC personal dice and its Phase 4D1 UX follow-up are deployed. CoC character sheets and linked Game Room presentation are deployed/accepted; the CoC Game System Hub remains planned for Phase 8A. Keeper-specific tools are not an active roadmap commitment.
 
 ### Core play and campaign tools
 
@@ -361,18 +395,18 @@ Phase 4A personal dice is implemented in Production, including the deterministic
 
 The reusable video core owns the implemented campaign provider integration and media-room behavior behind a campaign-derived authorization adapter. Any future standalone product would require a separate product and authorization review and must not depend on campaigns.
 
-Phase 4C2 Game Room image presentation, the Phase 4D1 UX follow-up, and Phase 4D2 Game Sessions/Campaign Dice are implemented and accepted. Approved later Phase 4 work is limited to campaign/Game Room technical UX refinement, CoC character sheets and linked-character presentation, and narrowly scoped shared plus GM-private notes. Every campaign capability depends on verified campaign access. Personal dice history remains separate and non-authoritative.
+Phase 4C2 Game Room image presentation, the Phase 4D1 UX follow-up, and Phase 4D2 Game Sessions/Campaign Dice are implemented and accepted. Phase 4E, 4F1/4F2 and 4G are also complete and accepted: Fair Turn Order Dice, CoC sheets, embedded linked characters and owner-private Personal Campaign Notes. Neither shared Notes nor a special GM-private area is implemented. Every campaign capability depends on verified campaign access. Personal dice history remains separate and non-authoritative.
 
 ### Campaign content
 
 Implemented:
 
 - Phase 4C1 private image-only Campaign Gallery at `/{locale}/campaigns/{campaignId}/gallery`, with four fixed sections, GM upload/access management, and RLS-filtered Player viewing. The former `/handouts` route redirects to `/gallery`.
-- Phase 4C2 GM-only Gallery browsing inside the Game Room, local image viewing, Share / Stop Share, synchronized Expand / Collapse, responsive participant layouts, late join/rejoin synchronization, and ephemeral clearing when the GM leaves. It reuses private Campaign Gallery signed delivery and adds no presentation persistence or database migration.
+- Phase 4C2 participant-authorized Gallery browsing inside the Game Room, local image viewing, Share / Stop Share, synchronized Expand / Collapse, responsive participant layouts, late join/rejoin synchronization, and ephemeral clearing when the GM leaves. It reuses private Campaign Gallery signed delivery and adds no presentation persistence or database migration.
 
-Planned, not implemented:
+Implemented and accepted:
 
-- Phase 4G shared notes for permitted participants and GM-private notes.
+- Phase 4G owner-private plain-text Personal Campaign Notes, accessed from Campaign Overview and Game Room, with search, canonical session metadata and completed/read-only lifecycle. No shared Notes, rich text or Notes Realtime. Global Personal Notes remains deferred as IDEA-008.
 
 General Handouts, NPCs, Sessions, Chronicle records, clues, maps, and other broad campaign-content modules are not active roadmap commitments.
 
@@ -385,7 +419,7 @@ Public or generally accessible game-system information must remain separate from
 - Read `AGENTS.md` before Next.js changes.
 - Inspect current files before replacing them.
 - Use small, verified changes.
-- Run `npm run build` and `git diff --check` after substantial changes.
+- Use Minimal Delta Verification; documentation-only changes need Markdown/link/diff checks, not application test/build reruns.
 - Use migrations for database changes.
 - Regenerate database types after schema changes.
 - Never expose secrets.
@@ -396,8 +430,8 @@ Public or generally accessible game-system information must remain separate from
 
 ## Current phase and next task
 
-Character Friend Alpha, Campaign Foundation, Phase 4A personal dice, personal dice persistence, the game-system catalogue, Phase 4D1 CoC 7e personal dice, and its UX follow-up are deployed.
+Phase 4 is CLOSED / DEPLOYED / ACCEPTED, including Phase 4G Personal Campaign Notes and character-access maintenance. VtM V5 and CoC 7e characters, personal/Campaign Dice and linked Game Room tools are deployed.
 
 Campaign-authorized LiveKit video and the responsive Game Room at `/{locale}/campaigns/{campaignId}/game-room` are complete and accepted for one GM plus up to six Players. LiveKit is the accepted provider for this current campaign implementation. The final card design uses responsive 16:9 media, stable participant slots, a compact upper-right label, local-only lower-left media controls, and a header-level Leave action.
 
-The Phase 4C1 image-only Campaign Gallery, Phase 4C2 Game Room Image Presentation, Phase 4D1 CoC 7e personal Dice Roller, and Phase 4D2 Game Sessions/Campaign Dice are complete and accepted in Production. Phase 4D2 multi-user acceptance and the final Journal/Gallery/CoC/VtM navigation re-test passed. The next roadmap point is Phase 4E Campaign & Game Room UX/UI Refinement, followed by 4F1 CoC 7e Character Sheets, 4F2 system-aware linked-character Game Room integration, and 4G narrowly scoped campaign notes. Phase 5 is site-wide UI Technical Refinement, Phase 6 is deliberately undecided Visual Identity, Phase 7 adds Delta Green system parity, Phase 8 adds CoC/Delta Green/Vampire hubs in that order, and Phase 9 is Public Readiness. Standalone Video Rooms and broad document/NPC/Sessions/Chronicle capabilities are not active roadmap commitments.
+The Phase 4C1 image-only Campaign Gallery, Phase 4C2 Game Room Image Presentation, Phase 4D1 CoC 7e personal Dice Roller, and Phase 4D2 Game Sessions/Campaign Dice are complete and accepted in Production. Phase 4D2 multi-user acceptance and the final Journal/Gallery/CoC/VtM navigation re-test passed. The next action is planning/review of Phase 5A Campaign & Game Room UX/UI Refinement, followed by Phase 5B Site-wide UI Technical Refinement. Both are PLANNED / NOT STARTED and add no product capabilities. Phase 6 follows Phase 5 and defines the deliberately undecided Visual Identity, Phase 7 adds Delta Green system parity, Phase 8 adds CoC/Delta Green/Vampire hubs in that order, and Phase 9 is Public Readiness. Standalone Video Rooms and broad document/NPC/Sessions/Chronicle capabilities are not active roadmap commitments.

@@ -2,7 +2,7 @@
 
 ## Status
 
-**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are deployed. Phase 4D2 system-aware Game Room dice is deployed, manually accepted, and closed. Phase 4E Fair Turn Order Dice is implemented and deployed with final manual Production acceptance pending.**
+**Phase 4A personal VtM roller, Custom Dice Pool, saved presets, and private personal history are implemented in Production. Phase 4D1 CoC personal dice and its contextual-navigation, scoped-history, and live Target-band UX follow-up are deployed. Phase 4D2 system-aware Game Room dice is deployed, manually accepted, and closed. Phase 4E Fair Turn Order Dice is closed, deployed and accepted in Production.**
 
 The pure deterministic VtM V5 evaluator is implemented at `lib/game-systems/vtm-v5/dice-engine.ts`. The separate client-side generator is implemented at `lib/game-systems/vtm-v5/dice-roller.ts`. The generic custom-pool generator is implemented at `lib/dice/custom-dice-pool.ts`. Shared strict validation primitives live at `lib/dice/validation.ts`, and shared unbiased secure integer generation lives at `lib/dice/secure-random.ts`. Phase 4D1 adds the CoC evaluators and generators under `lib/game-systems/call-of-cthulhu-7e/`.
 

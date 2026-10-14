@@ -28,28 +28,28 @@ flowchart TD
     GAME_ROOM --> DISPLAY["GM-controlled Gallery image presentation"]
     GAME_ROOM --> SESSION["Game Session and Journal"]
     GAME_ROOM --> SYSTEM_DICE["System-aware Campaign Dice"]
+    GAME_ROOM --> LINKED_CHARACTERS["Embedded VtM/CoC linked Characters"]
+    CAMPAIGN --> NOTES["Owner-private Personal Campaign Notes"]
+    GAME_ROOM --> NOTES
+    LOCALE --> DEVELOPER["Header wrench/panel — Developer only; no separate route"]
 ```
 
 The catalogue includes a generic CoC 7e campaign shell and the deployed Phase 4D1 CoC personal dice route with contextual navigation, scoped history, and live Target bands. VtM/CoC characters use owner-private Character Library routes; only the exact eligible active campaign GM additionally receives read-only linked sheet/portrait access. Delta Green is a catalogue entry only. No complete game-system hub exists.
 
-## Approved Phase 4 additions
+## Completed Phase 4
 
-```mermaid
-flowchart TD
-    CAMPAIGN --> GAME_ROOM["Game Room"]
-    GAME_ROOM --> LINKED_CHARACTERS["4F2 Linked Participant Characters"]
-    COC_CHARACTERS["4F1 CoC Character Sheets"] --> LINKED_CHARACTERS
-    CAMPAIGN --> NOTES["4G Shared and GM-private Notes"]
-```
+Phase 4E Fair Turn Order Dice, 4F1 CoC sheets, 4F2 linked Game Room Characters and 4G owner-private Personal Campaign Notes are CLOSED / DEPLOYED / ACCEPTED. Notes is available from Overview and Game Room with search/session metadata; it has no sharing, rich text or Realtime.
 
-Phase 4E adds the standalone, system-neutral Fair Turn Order Dice route under the existing Dice Rollers hub. It implements the published Go First Dice mathematical model and does not add Campaign Dice, Game Room, persistence, or account behavior. Unavailable campaign placeholders must remain visibly disabled and must not expose fake routes or behavior.
+Phase 4E delivered the standalone, system-neutral Fair Turn Order Dice route under the existing Dice Rollers hub. It implements the published Go First Dice mathematical model and does not add Campaign Dice, Game Room, persistence, or account behavior. Unavailable campaign placeholders must remain visibly disabled and must not expose fake routes or behavior.
 
 Campaign Gallery contains four fixed image-only sections: Handouts, NPC, Maps & Plans, and Other. NPC and Maps & Plans are image categories, not structured systems. Phase 4C2 added presentation, not a general document Handouts feature. Notes do not imply Sessions, Chronicle, NPC records, clues, structured maps, or wiki modules.
 
+GM Computer Audio Sharing and Developer Diagnostics are deployed; manual multi-user acceptance is postponed to a gaming session. The successful single-GM diagnostics ZIP is not distributed acceptance. These add-ons do not block Phase 5A planning.
+
 ## Later approved areas
 
-- Phase 5A Campaign and Game Room UX/UI Refinement adds no product routes;
-- Phase 5B site-wide UI Technical Refinement adds no product routes;
+- Phase 5A Campaign and Game Room UX/UI Refinement — PLANNED / NOT STARTED, no new capabilities/routes;
+- Phase 5B site-wide UI Technical Refinement — PLANNED / NOT STARTED, no new capabilities/routes;
 - Phase 6 Visual Identity adds no product routes by itself;
 - Phase 7 implements Delta Green parity using established shared routes and system-specific routes justified at implementation time;
 - Phase 8 adds system hubs in CoC, Delta Green, then Vampire order;
@@ -67,9 +67,9 @@ Standalone Video Rooms are not active roadmap scope. `/[locale]/video-rooms` and
 | Campaign Gallery | Four-section private image library and Game Room presentation implemented | Retain; Campaign Wallpaper remains uncommitted `IDEA-007` only |
 | VtM dice | Personal and Campaign Dice implemented | Retain; direct Game Room roller with no submenu |
 | CoC dice | Personal and Campaign Dice implemented | Retain; Game Room defaults to Percentile with its internal submenu |
-| Fair Turn Order Dice | Standalone local tool implemented and deployed; Production acceptance pending | Retain as a system-neutral, non-persistent implementation of the Go First Dice model |
-| VtM characters | Implemented | 4F2 linked-character Game Room integration |
-| CoC characters | Not implemented | 4F1 sheets, then 4F2 integration |
-| Campaign notes | Not implemented | 4G shared permitted notes and GM-private notes only |
+| Fair Turn Order Dice | Standalone local tool closed/deployed/accepted | Retain as a system-neutral, non-persistent implementation of the Go First Dice model |
+| VtM characters | Sheets and linked Game Room integration accepted | Retain |
+| CoC characters | Sheets and linked Game Room integration accepted | Retain |
+| Campaign notes | Owner-private Notes implemented/accepted | Retain; Global Notes IDEA-008 deferred |
 | Game-system hubs | Not implemented | 8A CoC, 8B Delta Green, 8C Vampire |
 | Standalone Video Rooms | Not implemented | Uncommitted backlog idea only |

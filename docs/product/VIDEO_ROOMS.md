@@ -35,7 +35,7 @@ The client provides:
 - reconnect, cleanup, and localized failure states;
 - responsive desktop, tablet, and mobile presentation.
 
-Supported capacity is one GM plus up to six Players. The last accepted human Production group test involved one GM and four Players and passed. Quantitative packet-loss, latency, jitter, reconnect timeline, and connection-quality telemetry was not collected and must not be inferred.
+Supported capacity is one GM plus up to six Players. The last accepted human Production group test involved one GM and four Players and passed. That historical group test collected no quantitative packet-loss, latency, jitter, reconnect timeline or connection-quality telemetry; the later diagnostics add-on does not retroactively supply it.
 
 ## Security boundary
 
@@ -67,7 +67,11 @@ Quality is a transient 128/192 kbps target, default 192; it is locked while star
 
 The header control has localized idle/starting/sharing/stopping feedback and nonfatal cancellation, unsupported capture/surface, unsafe system audio, source-neutral no-audio, video-stop-ended-audio and publication errors. It adds no separate mode selector; the native picker decides the source. Remote GM audio uses a second audio element and existing Enable sound behavior; the local GM hears no duplicate local playback. Stop/native audio end/Leave/disposal/terminal disconnect clean owned capture, including late completions. Ordinary reconnect retains capture through SDK republishing without prompting or duplicate publication. Directory-authorized mapping preserves the accepted dynamic-membership behavior; a late Player subscribes to the current audio without GM restart. Mic, camera and Gallery image presentation remain independent.
 
-Automated mocked-capture/adapter/controller/token/UI tests do not prove native Windows capture, application isolation or echo safety. Manual Production acceptance must cover Chrome and Edge, GM + real Player, Window + audio toggle, selected desktop sound audible while another application's sound is not, Entire screen fallback, independent microphone, no delayed own-voice echo, no screen video, both qualities, site/native Stop, late join and reconnect without a picker.
+Full real-world multi-user audio acceptance is deferred until an actual gaming session and does not block Phase 5A planning. Echo safety, application isolation and multi-machine acceptance are not claimed complete. Automated mocked-capture/adapter/controller/token/UI tests do not prove native Windows capture, application isolation or echo safety. Manual Production acceptance must cover Chrome and Edge, GM + real Player, Window + audio toggle, selected desktop sound audible while another application's sound is not, Entire screen fallback, independent microphone, no delayed own-voice echo, no screen video, both qualities, site/native Stop, late join and reconnect without a picker.
+
+## Deployed technical diagnostics boundary
+
+Developer Diagnostics (merged/deployed PR #73/#74) observes public read-only LiveKit connection statistics without media recording, new media grants or another room. Game Session does not control collection. One real GM-only recording and ZIP export succeeded; multi-user acceptance remains pending and is postponed until real play. The single-GM camera had no subscribers, so lack of outgoing video traffic alone is not evidence of a defect. See [diagnostics release/acceptance evidence](../architecture/DEVELOPER_DIAGNOSTICS.md).
 
 ## Standalone Video Rooms backlog boundary
 

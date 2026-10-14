@@ -6,11 +6,11 @@ This document records implemented friend-alpha controls and the remaining Public
 
 It is not a claim that the application has completed a public security audit.
 
-Current accepted Production baseline:
+Application Production release baseline after PR #74 (not a claim of completed add-on multi-user acceptance):
 
 ```text
 main
-01d917688ddadb5366949a714bba462b7c5c44b2
+b5f20bfc2b8c025644375ae41e687d692d899c83
 ```
 
 ## Strategy
@@ -417,7 +417,7 @@ General Handouts, NPCs, Sessions, Chronicle records, clues, and maps are not act
 
 ## Secrets
 
-Feature-branch [Developer diagnostics](DEVELOPER_DIAGNOSTICS.md) use a protected role table and fresh server/Auth-session/campaign/epoch authorization, not a browser role flag. The private diagnostic bucket has no browser policies; strict schemas reject non-allowlisted content and metadata. Autonomous cleanup POST requires a dedicated high-entropy server-to-server credential in Vault and the matching Vercel server-only configuration, validated before work. No Production configuration has been changed. Approved fallback TTL is 12 hours after server completion; expiry denies export, while physical Storage-API deletion retries safely. pg_net queued headers are visible to trusted direct DB LOGIN roles: keep `net` outside Data API schemas and do not claim unsupported managed-grant revocation hides them.
+Deployed [Developer diagnostics](DEVELOPER_DIAGNOSTICS.md) use a protected role table and fresh server/Auth-session/campaign/epoch authorization, not a browser role flag. The private diagnostic bucket has no browser policies; strict schemas reject non-allowlisted content and metadata. Autonomous cleanup POST requires a dedicated high-entropy server-to-server credential in Vault and the matching Vercel server-only configuration, validated before work. The approved PR #73 rollout completed Production schema, private Storage, the verified Product Owner role grant and Vault/Vercel configuration. PR #74 subsequently fixed no-run JSONB null/SQL NULL handling while preserving object `owner_session_hash` removal and existing authorization/grants. Both PRs are merged/deployed. A successful single-GM recording is not distributed/multi-user acceptance; further real-group diagnostics/audio acceptance is postponed and does not block Phase 5A planning. Approved fallback TTL is 12 hours after server completion; expiry denies export, while physical Storage-API deletion retries safely. pg_net queued headers are visible to trusted direct DB LOGIN roles: keep `net` outside Data API schemas and do not claim unsupported managed-grant revocation hides them.
 
 Never commit or document values for:
 
@@ -425,6 +425,8 @@ Never commit or document values for:
 Supabase publishable or service-role secrets
 Vercel tokens
 video-provider secrets
+SUPABASE_SECRET_KEY
+DIAGNOSTIC_CLEANUP_SECRET
 raw invitation tokens
 session tokens
 personal access tokens

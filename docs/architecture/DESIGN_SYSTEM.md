@@ -2,7 +2,7 @@
 
 ## Status
 
-Current technical design contract. Site-wide UI Technical Refinement is Phase 5; final Visual Identity is Phase 6 and remains deliberately undecided until Phase 5 is complete.
+Current technical design contract. Phase 5A Campaign & Game Room UX/UI Refinement and Phase 5B Site-wide UI Technical Refinement are PLANNED / NOT STARTED and add no new product capabilities. Final Visual Identity is a separate Phase 6 after Phase 5 and remains deliberately undecided.
 
 ## Goals
 
@@ -155,7 +155,7 @@ Phase 5 performs site-wide technical accessibility refinement; Phase 9 retains t
 
 ## Phase 5 and Phase 6 boundary
 
-Phase 5 may refine shared primitives, technical consistency, layout, responsive behavior, states, navigation, and accessibility without adding product features.
+Phase 5A focuses on the existing Campaign/Game Room experience; Phase 5B focuses on remaining site-wide primitives, technical consistency, responsive behavior, states, navigation and accessibility. Neither adds product features. Deferred real-session Computer Audio/Diagnostics acceptance does not block Phase 5A planning.
 
 Phase 6 may define and apply:
 

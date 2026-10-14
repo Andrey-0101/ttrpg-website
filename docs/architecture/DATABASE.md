@@ -2,11 +2,11 @@
 
 ## Status
 
-Phase 4G release baseline before its forward-only migration:
+Production application release baseline after PR #74 (documentation-only commits may follow):
 
 ```text
 main
-371df4e74354306f673f4224008712608d943ce6
+b5f20bfc2b8c025644375ae41e687d692d899c83
 ```
 
 Applied migrations:
@@ -35,15 +35,22 @@ supabase/migrations/20261004121513_index_personal_notes_campaign.sql
 supabase/migrations/20261004151918_campaign_membership_realtime_signal.sql
 supabase/migrations/20261004161535_character_assignment_gm_read_access.sql
 supabase/migrations/20261004161539_remove_character_visibility.sql
+supabase/migrations/20261007130732_developer_game_room_diagnostics.sql
+supabase/migrations/20261007130739_diagnostic_autonomous_cleanup.sql
+supabase/migrations/20261007132201_diagnostic_registry_hardening.sql
+supabase/migrations/20261007133704_diagnostic_completion_guards.sql
+supabase/migrations/20261007135836_diagnostic_role_audit_indexes.sql
+supabase/migrations/20261007141821_diagnostic_control_visibility.sql
+supabase/migrations/20261014102003_handle_diagnostic_dispatch_null.sql
 ```
 
-The listed migrations define the current release schema after Phase 4G and the focused Game Room membership and character-access maintenance corrections. The first Phase 4D2 migration creates `game_sessions`, `game_session_journal_events`, lifecycle RPCs, participant-readable RLS, Journal-write guards, and the autonomous `pg_cron` expiry job. The next migration adds the service-role-only authoritative Campaign Dice writer and publishes Journal events through Supabase Realtime. The binding migration replaces that RPC signature with an exact expected Game Session ID so an in-flight roll cannot attach to a newly started session. `20260911121613_publish_game_session_state_realtime.sql` idempotently adds `game_sessions` to the `supabase_realtime` publication so Start/End state propagates in realtime.
+The thirty listed migrations define the Production release schema after Phase 4G, membership/character-access maintenance, Developer Diagnostics rollout and the PR #74 null-handling fix. The first Phase 4D2 migration creates `game_sessions`, `game_session_journal_events`, lifecycle RPCs, participant-readable RLS, Journal-write guards, and the autonomous `pg_cron` expiry job. The next migration adds the service-role-only authoritative Campaign Dice writer and publishes Journal events through Supabase Realtime. The binding migration replaces that RPC signature with an exact expected Game Session ID so an in-flight roll cannot attach to a newly started session. `20260911121613_publish_game_session_state_realtime.sql` idempotently adds `game_sessions` to the `supabase_realtime` publication so Start/End state propagates in realtime.
 
 The earlier Phase 4D1 combined-CoC migration preserves the generic personal-history table and RPC signature, changes prospective CoC pruning to the newest six rows total across both CoC kinds, and leaves VtM and Custom at six rows per kind. No existing rows were bulk-rewritten. The application registry remains authoritative for supported personal kinds and versions.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
 
-Character-access maintenance has a required split Production release: apply `20261004161535_character_assignment_gm_read_access.sql` first (authorization/linking/trigger transition, legacy column retained), activate and verify the exact visibility-free app as READY on `ttrpg.fans`, then apply `20261004161539_remove_character_visibility.sql` (constraint and column removal, no CASCADE). Do not batch these two steps against the old application. A CLI workdir containing the unchanged applied migration history plus only the expand migration can safely stage the first step; verify its file hashes and pending migration list before applying. Neither migration rewrites characters, timestamps or assignments. Generated types are regenerated from the resulting schema, never manually edited. Historical migrations still contain the old model intentionally.
+Historical completed character-access release used the required split sequence: apply `20261004161535_character_assignment_gm_read_access.sql` first (authorization/linking/trigger transition, legacy column retained), activate and verify the exact visibility-free app as READY on `ttrpg.fans`, then apply `20261004161539_remove_character_visibility.sql` (constraint and column removal, no CASCADE). Do not batch these two steps against the old application. A CLI workdir containing the unchanged applied migration history plus only the expand migration can safely stage the first step; verify its file hashes and pending migration list before applying. Neither migration rewrites characters, timestamps or assignments. Generated types are regenerated from the resulting schema, never manually edited. Historical migrations still contain the old model intentionally.
 
 The focused Game Room membership maintenance migration adds `campaign_membership_signals` (`campaign_id` primary key/cascade campaign FK, `revision` bigint). A private, non-client-callable trigger function increments/upserts the signal after member INSERT/UPDATE/DELETE; it does not change campaign metadata, invitation rules or existing lifecycle RPCs. The signal table has participant-readable RLS through `current_user_can_access_campaign`, authenticated SELECT only, and no anonymous/direct authenticated mutation access. It is added to `supabase_realtime` alongside the existing Session/Journal tables. Clients consume INSERT/UPDATE only as invalidation and fetch the canonical directory through an authenticated, campaign-RLS-protected no-store endpoint. Raw `campaign_members` is not published, avoiding DELETE payload exposure of internal member IDs. No existing rows are backfilled or rewritten. Generated types were regenerated by the CLI, not edited manually.
 
@@ -468,9 +475,9 @@ Known limitation:
 - an orphan object may remain;
 - no scheduled orphan cleanup exists.
 
-## Verification evidence
+## Historical verification evidence
 
-Current database verification recorded:
+Historical Phase 4D2 database verification recorded:
 
 - seventeen synchronized repository/Production migration versions through Phase 4D2;
 - RLS on all seventeen public tables, including all seven campaign-video tables and both Phase 4D2 tables;
@@ -518,9 +525,9 @@ Historical session/Journal rows and IDs are preserved. Production release verifi
 
 `20261004121513_index_personal_notes_campaign.sql` adds the full campaign FK index, including session-unlinked entries. It is a separate forward-only migration because the preceding migration was already applied locally; neither applied migration is rewritten.
 
-## Feature-branch Developer diagnostics delta
+## Deployed Developer diagnostics
 
-Six new diagnostic migrations are applied and verified locally only; Production has NOT received them. They add `system_user_roles`, `game_room_diagnostic_runs`, `game_room_diagnostic_clients`, `game_room_diagnostic_chunks`, a private `game-room-diagnostics` bucket, service-only transactional dispatch/cleanup RPCs, four-field run-control Realtime, minute reconciliation and five-minute pg_cron → pg_net POST cleanup. [Exact migration names, grants, expiry and deployment requirements](DEVELOPER_DIAGNOSTICS.md#database-delta) are documented separately. TTL is 12 hours after server completion, not after Start/export; physical deletion is Storage-API-first with retryable registry claims. Existing campaign/character/Notes schemas and authorization are unchanged. Applied migrations remain immutable and types are generated by CLI, never manually edited.
+The six PR #73 diagnostics migrations and PR #74 forward fix `20261014102003_handle_diagnostic_dispatch_null.sql` are applied in Production. They add `system_user_roles`, `game_room_diagnostic_runs`, `game_room_diagnostic_clients`, `game_room_diagnostic_chunks`, a private `game-room-diagnostics` bucket, service-only transactional dispatch/cleanup RPCs, four-field run-control Realtime, minute reconciliation and five-minute pg_cron → pg_net POST cleanup. [Exact migrations, grants, expiry and completed release evidence](DEVELOPER_DIAGNOSTICS.md#database-delta) are documented separately. TTL is 12 hours after server completion, not after Start/export; physical deletion is Storage-API-first with retryable registry claims. The verified Product Owner has the protected Developer role; bounded autonomous cleanup is configured. PR #74 preserves JSONB null/SQL NULL for no-run owner/state without exposing `owner_session_hash`; signatures/grants, roles, bucket and cleanup remain unchanged by that fix. One real GM-only ZIP recording succeeded; multi-user acceptance remains pending. Existing campaign/character/Notes authorization is unchanged. Applied migrations are immutable and types are generated by CLI, never manually edited.
 
 ## Future schema areas
 
