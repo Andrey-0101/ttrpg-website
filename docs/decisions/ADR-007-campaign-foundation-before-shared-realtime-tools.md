@@ -73,6 +73,12 @@ Shared campaign dice and campaign-integrated video still require Campaign Founda
 
 Standalone and campaign video may share a reusable video core and managed-provider boundary. They must retain separate authorization adapters: standalone application authorization first, then campaign-derived authorization later. This separation does not weaken campaign membership, removal/revocation, or lifecycle requirements for campaign video.
 
+## Subsequent scope clarification — 2026-10-14
+
+The 2026-08-02 clarification above is preserved as historical planning context. Standalone Video Rooms were subsequently removed from the active roadmap and retained only as deferred, uncommitted [IDEA-006](../product/IDEAS_BACKLOG.md#idea-006--standalone-video-rooms). The current [Roadmap](../product/ROADMAP.md) and [Video Rooms contract](../product/VIDEO_ROOMS.md#standalone-video-rooms-backlog-boundary) approve campaign video only; no standalone phase, route, schema, authorization model, or provider selection is approved.
+
+This records the later product-scope clarification without changing the Accepted Campaign Foundation decision: shared campaign tools still require campaign-derived authorization. A future standalone proposal would need a separate product and authorization review; the reusable video core does not authorize its implementation.
+
 ## Alternatives considered
 
 ### Multiple Game Masters

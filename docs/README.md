@@ -91,9 +91,9 @@ Current decision status relevant to dice delivery:
 
 Latest chronological handoff (historical snapshot):
 
-[`handoffs/H013_CURRENT_HANDOFF.md`](handoffs/H013_CURRENT_HANDOFF.md)
+[`handoffs/H014_CURRENT_HANDOFF.md`](handoffs/H014_CURRENT_HANDOFF.md)
 
-H001–H013 are historical continuity records, not current release status. H013 remains the latest handoff; later Git releases, accepted decisions and synchronized documentation supersede outdated snapshot claims. H014 creation is a separate Product Owner request at conversation closure, not part of documentation synchronization.
+H014 is the latest chronological handoff and is published unchanged from its supplied content. Its snapshot and not-yet-committed statements are historical facts at authoring time, not current publication status. Current code and later verified releases override historical snapshot claims. H001–H013 remain historical continuity records and are not current release status. ChatGPT authors a new handoff only on the Product Owner's explicit request at conversation closure; this publication creates no new handoff.
 
 Historical handoffs remain available and must not be rewritten as current state:
 
@@ -109,7 +109,7 @@ Historical handoffs remain available and must not be rewritten as current state:
 - `H010_CURRENT_HANDOFF.md`;
 - `H011_CURRENT_HANDOFF.md`;
 - `H012_CURRENT_HANDOFF.md`;
-- `H013_CURRENT_HANDOFF.md` (latest).
+- `H013_CURRENT_HANDOFF.md`.
 
 ## Status vocabulary
 

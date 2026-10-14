@@ -144,7 +144,7 @@ Start with:
 - [`docs/product/CAMPAIGNS.md`](docs/product/CAMPAIGNS.md);
 - [`docs/product/SITE_STRUCTURE_CURRENT.md`](docs/product/SITE_STRUCTURE_CURRENT.md);
 - [`docs/decisions/`](docs/decisions/);
-- [`docs/handoffs/H013_CURRENT_HANDOFF.md`](docs/handoffs/H013_CURRENT_HANDOFF.md), the latest chronological handoff. H001–H013 are historical continuity records; newer releases and current documentation supersede their old baseline/status claims. A new handoff is created only when the Product Owner separately requests conversation closure.
+- [`docs/handoffs/H014_CURRENT_HANDOFF.md`](docs/handoffs/H014_CURRENT_HANDOFF.md), the latest chronological handoff, published unchanged from its supplied content. Its snapshot and publication-status statements describe authoring time; current code and later verified releases override historical snapshot claims. H001–H013 remain historical continuity records. ChatGPT authors a new handoff only on the Product Owner's explicit request at conversation closure.
 
 ## Current snapshot
 

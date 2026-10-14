@@ -21,7 +21,7 @@
 
 ### Verified production baseline
 
-The application release baseline is `b5f20bfc2b8c025644375ae41e687d692d899c83`. [PR #73](https://github.com/Andrey-0101/ttrpg-website/pull/73) deployed Developer Diagnostics and [PR #74](https://github.com/Andrey-0101/ttrpg-website/pull/74) fixed JSONB null/SQL NULL dispatch while preserving object `owner_session_hash` removal and authorization. Both are merged. The recorded READY deployment identifies this application release; later documentation-only commits/deployments are distinct. H013 is the latest historical handoff, not the baseline for these later releases. H001–H013 remain unchanged; a new handoff requires a separate conversation-closure request.
+The application release baseline is `b5f20bfc2b8c025644375ae41e687d692d899c83`. [PR #73](https://github.com/Andrey-0101/ttrpg-website/pull/73) deployed Developer Diagnostics and [PR #74](https://github.com/Andrey-0101/ttrpg-website/pull/74) fixed JSONB null/SQL NULL dispatch while preserving object `owner_session_hash` removal and authorization. Both are merged. The recorded READY deployment identifies this application release; later documentation-only commits/deployments are distinct. [H014](docs/handoffs/H014_CURRENT_HANDOFF.md) is the latest chronological handoff, published unchanged from the supplied file; its snapshot and not-yet-committed statements describe authoring time. Current code and later verified releases override historical snapshot claims. H001–H013 remain unchanged historical records. ChatGPT authors a new handoff only on the Product Owner's explicit request at conversation closure.
 
 The canonical production origin is `https://ttrpg.fans`; `https://www.ttrpg.fans` permanently redirects to the apex domain. Phase 4A–4G, membership synchronization and character-access maintenance are CLOSED / DEPLOYED / ACCEPTED. Phase 4D2 keeps Game Room, Game Session, Journal, and Campaign Dice independent from LiveKit; only video/audio and Gallery presentation use LiveKit. Its multi-user Production acceptance and focused final navigation re-test passed. The Gallery has four fixed image-only sections and opens directly in Handouts. Quantitative packet-loss, latency, jitter, and connection-quality telemetry was not collected for the earlier video group test and must not be inferred. Standalone Video Rooms remain an uncommitted backlog idea.
 
@@ -87,7 +87,7 @@ When information conflicts, use this priority:
 5. accepted ADRs;
 6. latest approved Product Owner scope and acceptance decisions;
 7. synchronized permanent project documentation;
-8. historical handoffs H001–H013 for continuity, latest `docs/handoffs/H013_CURRENT_HANDOFF.md` (later releases supersede its snapshot);
+8. chronological handoffs for continuity, latest `docs/handoffs/H014_CURRENT_HANDOFF.md`; H001–H013 remain historical, and current code and later verified releases override snapshot claims;
 9. superseded plans and old snippets.
 
 A discussed or planned object is not implemented unless it exists in code, migrations, generated types, or verified infrastructure.
