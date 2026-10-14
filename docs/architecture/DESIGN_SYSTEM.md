@@ -136,7 +136,17 @@ Video-card rules:
 - disabled media uses only the crossed-out icon, without a color or size change;
 - Leave is a room-level action in the compact header, never a video overlay.
 
-Phase 4C2 activates the Display for GM-controlled Campaign Gallery image presentation and keeps a stable three-control Tools layout. Share / Stop Share and Expand / Collapse are implemented; unavailable Dice and Character controls remain visibly disabled until their approved phases. General Handouts, structured NPCs, Sessions/Chronicle, and other placeholder labels are not active roadmap commitments.
+The current root tool order is `Journal | Gallery | Dice | Characters | Notes`. Journal is the default Display view and has no back arrow. Dice, linked Characters, and owner-private Notes are implemented. Opening Game Room does not automatically join LiveKit or start a Game Session.
+
+Contextual controls replace the root row where applicable:
+
+- GM-only in-room Gallery opens directly in Handouts, with Back and the four fixed image-category controls;
+- a selected Gallery image uses Back, Share / Stop Share, and Expand / Collapse; sharing requires the GM's LiveKit connection;
+- CoC Dice opens in Percentile with `Back | Percentile | Other Dice`; VtM Dice opens directly without a Dice submenu;
+- an opened linked character sheet uses Back to the character list and the character name;
+- the character list, VtM Dice, and Notes retain the root tools with an additional Back action to Journal.
+
+These controls occupy one stable tool row. Players browse authorized images on the separate Campaign Gallery page; the in-room Gallery browsing control is disabled for Players. GM image presentation reaches LiveKit-connected participants under the existing presentation rules. General Handouts, structured NPCs, Sessions/Chronicle, and other placeholder labels are not active roadmap commitments.
 
 ## Accessibility baseline
 

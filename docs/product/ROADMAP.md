@@ -190,7 +190,7 @@ The first bounded delivery establishes the non-dice lifecycle boundary:
 - the GM alone starts, ends, and renews one persistent active Game Session per campaign;
 - a 30-minute Game Room presence renewal and approximately 60-minute database deadline are independent of camera, microphone, video Join/Leave, and refresh;
 - autonomous database scheduling closes abandoned sessions, while campaign completion closes the active session immediately;
-- `Journal | Gallery | Dice | Character` is the stable tool order, and Journal reads only the exact active session's persisted event scope;
+- Phase 4D2 used the four-position tool order `Journal | Gallery | Dice | Character`; later Phase 4F2/4G delivered the current `Journal | Gallery | Dice | Characters | Notes` navigation. Journal reads only the exact active session's persisted event scope;
 - the Journal event table exposes no client write grant; Campaign Dice uses a server-authoritative writer bound to the exact active session rather than personal history.
 
 The system-aware Campaign Dice surface is implemented in the Game Room:
@@ -205,7 +205,7 @@ The system-aware Campaign Dice surface is implemented in the Game Room:
 Personal roll history remains separate and non-authoritative.
 Archive UI, hidden rolls, richer session records, and other visibility modes remain deferred.
 
-The accepted Game Room opens without joining LiveKit or starting a Game Session. `Journal | Gallery | Dice | Character` remains one stable tool row, with Journal as the default Display view and no Journal back arrow. Gallery opens directly in Handouts and keeps its internal back arrow. CoC Dice opens directly in Percentile with the internal `← | Percentile | Other Dice` submenu; VtM Dice opens directly without a submenu. These navigation changes do not alter dice mechanics, Journal persistence, Realtime, Gallery sharing, or LiveKit transport.
+The accepted Phase 4D2 navigation used one stable four-position tool row, with Journal as the default Display view and no Journal back arrow. The current Game Room, after Phase 4F2/4G, uses `Journal | Gallery | Dice | Characters | Notes` and still opens without joining LiveKit or starting a Game Session. GM-only in-room Gallery opens directly in Handouts and keeps its internal back arrow; Players browse authorized images on the separate Campaign Gallery page. CoC Dice opens directly in Percentile with the internal `← | Percentile | Other Dice` submenu; VtM Dice opens directly without a submenu. These navigation changes do not alter dice mechanics, Journal persistence, Realtime, Gallery sharing, or LiveKit transport.
 
 Journal and Game Session state propagate through Supabase Realtime, with lightweight polling retained only for fallback reconciliation. Journal entries append at the bottom, older entries remain above, the list auto-scrolls to the newest entry, and the GM Start/End control remains fixed while the event list scrolls.
 

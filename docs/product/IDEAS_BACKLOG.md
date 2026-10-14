@@ -197,7 +197,15 @@ For a player without a linked character, display:
 No character selected
 ```
 
-The Game Master should also appear in the same list with a clear GM role indicator. When the Game Master has linked their own character, it should be displayed alongside their account.
+The proposal may include the Game Master in the same list with a clear GM role indicator, but the GM cannot have an active campaign character assignment. The examples above are proposals, not approved layouts or permissions; an Open character action can appear only for the owner or the exact eligible campaign GM.
+
+#### Implemented constraints preserved by this proposal
+
+- Each Player has at most one active character assignment within a campaign; one character cannot have active assignments to multiple campaigns.
+- Only the owner can edit their character. The exact eligible active campaign GM has read-only sheet and portrait access; other Players cannot open another owner's sheet or portrait.
+- Linking still requires current Player ownership, matching game systems, and an active campaign; GM assignment remains prohibited.
+- Active Game Session assignment locks and linked-character deletion protection remain unchanged.
+- A combined list must use only data authorized for the current viewer. Its empty, unavailable, and action states remain subject to UX review.
 
 #### Why it may be useful
 
@@ -209,10 +217,10 @@ The Game Master should also appear in the same list with a clear GM role indicat
 
 #### Risks or questions
 
-- Can one Player link multiple characters to the same campaign?
-- Should one character be marked as the primary or active character?
-- How should multiple characters belonging to one player be displayed?
+- Resolved by current implementation: one Player has at most one active campaign character; simultaneous-character display and primary-character selection are not part of this proposal.
+- How should GM, owner, other-Player, empty, and unavailable rows differ while preserving current sheet and portrait access?
 - Where should the **Remove player** and **Unlink character** actions be placed?
+- How should existing active-session assignment locks and unavailable actions be explained?
 - Should former members who have left the campaign remain visible?
 - How should the combined row or card appear on mobile screens?
 - How should unassigned campaign characters be displayed?
