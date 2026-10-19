@@ -356,6 +356,8 @@ The accepted participant model is one GM plus up to six Players. The responsive 
 
 The protected global Developer role exposes an English-only wrench/panel in the header. Start additionally requires the current active campaign's GM. Collection observes technical LiveKit statistics without recording media and is independent of Game Session. PR #73/#74 are merged/deployed. One real GM-only recording and inspected ZIP export succeeded; multi-user acceptance is pending and deferred to a gaming session. See [diagnostics](../architecture/DEVELOPER_DIAGNOSTICS.md).
 
+The diagnostic panel can be moved by its header or minimised to a compact restore/status control, with keyboard-accessible minimise/restore and position reset. These local presentation changes do not stop collection/export or change X's Stop/export behaviour. During active diagnostics, GM and Players receive the existing English informational notice in reserved Game Room header layout space, with responsive wrapping rather than a bottom-left overlay; Players receive no diagnostic controls.
+
 ## Current authorization shape
 
 | Area | Current access |

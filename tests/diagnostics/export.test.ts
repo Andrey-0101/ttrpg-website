@@ -6,6 +6,7 @@ import { transpileModule, ModuleKind, ScriptTarget } from "typescript";
 import { createHash, webcrypto } from "node:crypto";
 import * as fflate from "fflate";
 import { DIAGNOSTICS } from "../../lib/diagnostics/contracts";
+import "./export-liveness.test";
 
 test("real streaming worker ZIP has alias paths, manifest, NDJSON and privacy exclusions", async () => {
   const run = "aaaaaaaa-0000-4000-8000-000000000001",

@@ -9,12 +9,33 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { durationLabel } from "../../lib/diagnostics/contracts";
 import { developerEnglish } from "../../lib/developer/english";
 import { formatDeveloperDateTime } from "../../lib/developer/date-time";
+import * as panelPosition from "../../lib/developer/panel-position";
+import "./panel-position.test";
+import "./panel-frame.test";
+
+function panelFrame() {
+  const exports: { default?: React.ComponentType } = {};
+  runInNewContext(transpileModule(
+    readFileSync("components/developer/diagnostics-panel-frame.tsx", "utf8"),
+    { compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2022, jsx: JsxEmit.ReactJSX } },
+  ).outputText, {
+    exports,
+    require: (name: string) => {
+      if (name === "react") return React;
+      if (name === "react/jsx-runtime") return jsx;
+      if (name.endsWith("/english")) return { developerEnglish };
+      if (name.endsWith("/panel-position")) return panelPosition;
+      throw new Error(name);
+    },
+  });
+  return exports;
+}
 
 const now = Date.parse("2026-10-07T10:11:02Z");
 function markup(
   player = false,
   outside = false,
-  options: { idle?: boolean; blankNames?: boolean } = {},
+  options: { idle?: boolean; blankNames?: boolean; runState?: "recording" | "stopping" | "ready" } = {},
 ) {
   const campaign = "aaaaaaaa-0000-4000-8000-000000000001";
   const started = now - 27 * 3600_000;
@@ -35,7 +56,7 @@ function markup(
         outside || options.idle
           ? null
           : {
-              state: "recording",
+              state: options.runState ?? "recording",
               id: campaign,
               started_at: new Date(started).toISOString(),
               completed_at: null,
@@ -75,7 +96,7 @@ function markup(
   const exports: {
     default?: React.ComponentType<{ children: React.ReactNode }>;
     DeveloperButton?: React.ComponentType;
-    DiagnosticRoomBridge?: React.ComponentType<{ campaign: string; session: null }>;
+    DiagnosticRoomNotice?: React.ComponentType<{ campaign: string }>;
   } = {};
   const source = transpileModule(
     readFileSync("components/developer/diagnostics-provider.tsx", "utf8"),
@@ -102,11 +123,12 @@ function markup(
       if (name.endsWith("/contracts")) return { durationLabel };
       if (name.endsWith("/english")) return { developerEnglish };
       if (name.endsWith("/date-time")) return { formatDeveloperDateTime };
+      if (name === "./diagnostics-panel-frame") return panelFrame();
       throw new Error(name);
     },
   });
   const child = player
-    ? React.createElement(exports.DiagnosticRoomBridge!, { campaign, session: null })
+    ? React.createElement(exports.DiagnosticRoomNotice!, { campaign })
     : React.createElement(exports.DeveloperButton!);
   return renderToStaticMarkup(React.createElement(exports.default!, null, child));
 }
@@ -123,18 +145,19 @@ test("Developer panel is English-only, minimal, uses profile names/stable slots 
     /<h[1-6]|preview|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa|character|@example/i,
   );
 });
-test("panel header has the same decorative wrench on the left and accessible X on the right, with no heading", () => {
+test("panel header keeps the decorative wrench and separate accessible minimise/reset/X controls", () => {
   const html = markup();
   const panel = html.slice(html.indexOf("<aside"));
-  assert.match(
-    panel,
-    /<div class="flex items-center justify-between"><span aria-hidden="true">🔧<\/span><button type="button" aria-label="Close"[^>]*>×<\/button><\/div>/,
-  );
+  assert.match(panel, /data-diagnostics-panel-header/);
+  assert.ok(panel.indexOf("🔧") < panel.indexOf('aria-label="Minimise diagnostics panel"'));
+  assert.ok(panel.indexOf('aria-label="Minimise diagnostics panel"') < panel.indexOf('aria-label="Reset panel position"'));
+  assert.ok(panel.indexOf('aria-label="Reset panel position"') < panel.indexOf('aria-label="Close"'));
+  assert.match(panel, /aria-expanded="true" aria-controls=/);
   assert.equal((html.match(/🔧/g) ?? []).length, 2);
   assert.doesNotMatch(panel, /<h[1-6]/);
   assert.match(
     readFileSync("components/developer/diagnostics-provider.tsx", "utf8"),
-    /onClick=\{\(\) => coordinator\.close\(\)\}/,
+    /onClose=\{\(\) => coordinator\.close\(\)\}/,
   );
 });
 test("Now and server Started use one full local date/time formatter, idle Started and duration stay unchanged", () => {
@@ -210,8 +233,16 @@ test("Player indication has only approved English copy; Developer outside room h
   const player = markup(true);
   assert.match(player, /Technical diagnostics active/);
   assert.match(player, /Connection statistics only\. No audio\/video recording\./);
+  assert.match(player, /data-diagnostics-notice/);
+  assert.doesNotMatch(player, /class="[^"]*fixed|<button|<aside/);
   assert.doesNotMatch(player, /Start diagnostics|Stop|Developer tools|Campaign name|Duration/);
   const outside = markup(false, true);
   assert.match(outside, /No tools available here\./);
   assert.doesNotMatch(outside, /Start diagnostics|Stop &amp; export/);
+});
+
+test("room notice retains recording/stopping visibility and disappears for ready, idle or outside-room state", () => {
+  assert.match(markup(true, false, { runState: "stopping" }), /Technical diagnostics active/);
+  for (const html of [markup(true, false, { runState: "ready" }), markup(true, false, { idle: true }), markup(true, true)])
+    assert.doesNotMatch(html, /Technical diagnostics active/);
 });

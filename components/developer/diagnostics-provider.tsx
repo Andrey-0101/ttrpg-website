@@ -4,6 +4,7 @@ import { DiagnosticsCoordinator } from "@/lib/diagnostics/coordinator";
 import { durationLabel, type BuildStamp } from "@/lib/diagnostics/contracts";
 import { developerEnglish as text } from "@/lib/developer/english";
 import { formatDeveloperDateTime } from "@/lib/developer/date-time";
+import DiagnosticsPanelFrame from "./diagnostics-panel-frame";
 const WRENCH = "🔧";
 const Context = createContext<DiagnosticsCoordinator | null>(null);
 function useCoordinator() {
@@ -54,11 +55,6 @@ export function DiagnosticRoomBridge({
   session: string | null;
 }) {
   const coordinator = useCoordinator();
-  const view = useSyncExternalStore(
-    coordinator.subscribe,
-    coordinator.snapshot,
-    coordinator.serverSnapshot,
-  );
   useEffect(() => {
     coordinator.setRoom(campaign);
     return () => coordinator.setRoom(null);
@@ -66,6 +62,15 @@ export function DiagnosticRoomBridge({
   useEffect(() => {
     coordinator.sessionChanged(session);
   }, [coordinator, session]);
+  return null;
+}
+export function DiagnosticRoomNotice({ campaign }: { campaign: string }) {
+  const coordinator = useCoordinator();
+  const view = useSyncExternalStore(
+    coordinator.subscribe,
+    coordinator.snapshot,
+    coordinator.serverSnapshot,
+  );
   const active =
     view.state?.run &&
     ["recording", "stopping"].includes(view.state.run.state) &&
@@ -73,7 +78,8 @@ export function DiagnosticRoomBridge({
   return active ? (
     <div
       role="status"
-      className="fixed bottom-2 left-2 z-30 rounded border bg-black/80 px-3 py-2 text-xs text-white"
+      data-diagnostics-notice
+      className="order-last w-full min-w-0 rounded border border-white/25 bg-white/5 px-2 py-1 text-xs text-white lg:order-none lg:w-60 lg:shrink-0 xl:w-80"
     >
       <div>{text.playerTitle}</div>
       <div>{text.playerNotice}</div>
@@ -87,7 +93,6 @@ function DeveloperPanel() {
     coordinator.snapshot,
     coordinator.serverSnapshot,
   );
-  if (!view.panel) return null;
   const state = view.state;
   const run = state?.run;
   const context = !!view.room && state?.canStart;
@@ -95,22 +100,12 @@ function DeveloperPanel() {
   const players = roster.filter((p) => p.role === "player");
   const gm = roster.find((p) => p.role === "game_master");
   return (
-    <aside
-      aria-label={text.wrench}
-      className="fixed right-3 top-20 z-50 w-80 max-w-[calc(100vw-1.5rem)] rounded-lg border bg-white p-4 text-sm text-black shadow-xl"
+    <DiagnosticsPanelFrame
+      open={view.panel}
+      status={view.error ? text.attention : view.busy ? text.working : run ? text.runStatus[run.state] : text.idle}
+      closeDisabled={view.busy}
+      onClose={() => coordinator.close()}
     >
-      <div className="flex items-center justify-between">
-        <span aria-hidden="true">{WRENCH}</span>
-        <button
-          type="button"
-          aria-label={text.close}
-          onClick={() => coordinator.close()}
-          disabled={view.busy}
-          className="px-2 py-1 disabled:opacity-50"
-        >
-          ×
-        </button>
-      </div>
       {!view.developer ? (
         <p>{text.denied}</p>
       ) : !context && !run ? (
@@ -188,6 +183,6 @@ function DeveloperPanel() {
           {view.message}
         </p>
       ) : null}
-    </aside>
+    </DiagnosticsPanelFrame>
   );
 }
