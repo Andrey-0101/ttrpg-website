@@ -24,6 +24,7 @@ async function request(run: string, action: string, extra: Record<string, unknow
 scope.onmessage = async ({ data }) => {
   try {
     const manifest = (await (await request(data.run, "manifest")).json()) as ExportManifest;
+    scope.postMessage({ progress: true });
     const segments = new Map<string, ExportSegment>();
     let cursor: string | null = null;
     do {
@@ -34,6 +35,7 @@ scope.onmessage = async ({ data }) => {
       for (const segment of page.items) segments.set(segment.id, segment);
       cursor = page.next;
       if (segments.size > 10_000) throw new Error("export_limit");
+      scope.postMessage({ progress: true });
     } while (cursor);
     const parts: Uint8Array<ArrayBuffer>[] = [];
     let zipBytes = 0;
@@ -132,6 +134,8 @@ scope.onmessage = async ({ data }) => {
               output.errors.push(line, false);
           }
         }
+        // A page can take minutes. Only completed, validated chunks renew the watchdog.
+        scope.postMessage({ progress: true });
       }
       cursor = page.next;
       scope.postMessage({ progress: true });
