@@ -5,7 +5,8 @@ import type {
 
 export type CampaignVideoParticipantDirectoryEntry = {
   providerIdentity: string;
-  displayName: string;
+  profileName: string | null;
+  characterName: string | null;
   role: CampaignVideoRole;
   playerPosition: number | null;
   isCurrentUser: boolean;

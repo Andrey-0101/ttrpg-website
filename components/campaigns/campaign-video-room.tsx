@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { useLocale, useTranslations } from "next-intl";
+import { resolveCampaignVideoParticipantLabel } from "@/lib/campaign-video/participant-label";
 
 import CampaignGameRoomWorkspace, {
   type CampaignGameRoomGalleryItem,
@@ -277,10 +278,18 @@ function ParticipantCard({
     slot.role === "game_master"
       ? translations("roles.gameMaster")
       : translations("roles.player", { number: slot.playerPosition });
-  const displayName =
-    slot.role === "game_master"
-      ? translations("roles.gameMaster")
-      : slot.directoryEntry?.displayName ?? role;
+  const displayName = slot.directoryEntry
+    ? resolveCampaignVideoParticipantLabel({
+        role: slot.role,
+        profileName: slot.directoryEntry.profileName,
+        characterName: slot.directoryEntry.characterName,
+        labels: {
+          profileFallback: translations("labels.profileFallback"),
+          characterFallback: translations("labels.characterFallback"),
+          gameMasterRole: translations("roles.gameMaster"),
+        },
+      })
+    : role;
   const connected = snapshot.phase === "connected";
   const participantConnected = connected && participant !== null;
   const busy =

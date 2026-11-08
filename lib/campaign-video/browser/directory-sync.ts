@@ -17,7 +17,8 @@ function isDirectory(
       (entry) =>
         entry &&
         typeof entry.providerIdentity === "string" &&
-        typeof entry.displayName === "string" &&
+        (entry.profileName === null || typeof entry.profileName === "string") &&
+        (entry.characterName === null || typeof entry.characterName === "string") &&
         typeof entry.isCurrentUser === "boolean" &&
         (entry.role === "game_master"
           ? entry.playerPosition === null
@@ -40,10 +41,12 @@ export function createCampaignParticipantDirectorySync(
   let request: AbortController | null = null;
   let retryTimer: ReturnType<typeof setTimeout> | null = null;
   let failures = 0;
+  let invalidation = 0;
 
   async function drain() {
     do {
       pending = false;
+      const requestedInvalidation = invalidation;
       request = new AbortController();
       try {
         const response = await (options.fetcher ?? fetch)(
@@ -62,12 +65,12 @@ export function createCampaignParticipantDirectorySync(
         ) {
           throw new Error("directory_unavailable");
         }
-        if (!disposed) {
+        if (!disposed && requestedInvalidation === invalidation) {
           failures = 0;
           options.onDirectory(result.participantDirectory);
         }
       } catch {
-        if (!disposed) {
+        if (!disposed && requestedInvalidation === invalidation) {
           if (options.onError) options.onError();
           else
             console.error(
@@ -89,6 +92,7 @@ export function createCampaignParticipantDirectorySync(
 
   function refresh(): Promise<void> {
     if (disposed) return Promise.resolve();
+    invalidation += 1;
     if (retryTimer !== null) {
       clearTimeout(retryTimer);
       retryTimer = null;

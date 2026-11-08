@@ -12,6 +12,67 @@ function source(...segments: string[]) {
   return readFileSync(path.join(process.cwd(), ...segments), "utf8");
 }
 
+test("the canonical directory returns the same raw names to every viewer through the narrow RPC", async () => {
+  const exports: { loadCampaignParticipantDirectory?: (options: unknown) => Promise<{
+    ready: boolean; participantDirectory: Record<string, unknown>[];
+  }> } = {};
+  runInNewContext(transpileModule(source("lib", "campaign-video", "participant-directory.server.ts"), {
+    compilerOptions: { module: ModuleKind.CommonJS },
+  }).outputText, {
+    exports,
+    require(name: string) {
+      if (name === "server-only") return {};
+      if (name === "./mapping") return { deriveCampaignVideoParticipantIdentity: (_campaign: string, user: string) => `identity-${user}` };
+      assert.fail(`Unexpected directory dependency: ${name}`);
+    },
+  });
+  let rpcError: unknown = null;
+  const supabase = {
+    from(table: string) {
+      assert.ok(table === "campaign_members" || table === "profiles", "never read full characters for labels");
+      const query = {
+        select(columns: string) {
+          assert.equal(columns, table === "profiles" ? "id, display_name, username" : "user_id, joined_at, display_order");
+          return query;
+        },
+        eq(column: string, value: string) { assert.equal(column, "campaign_id"); assert.equal(value, "campaign"); return query; },
+        order() { return query; },
+        in(column: string, ids: string[]) { assert.equal(column, "id"); assert.equal(ids.join(","), "gm,alice,bob"); return query; },
+        then(resolve: (value: unknown) => void) { resolve({ error: null, data: table === "profiles" ? [
+          { id: "gm", display_name: "Andrey", username: "ignore-gm" },
+          { id: "alice", display_name: null, username: "not-a-label-fallback" },
+          { id: "bob", display_name: "Bob", username: "ignore-bob" },
+        ] : [
+          { user_id: "alice", joined_at: "1", display_order: 1 },
+          { user_id: "bob", joined_at: "2", display_order: 2 },
+        ] }); },
+      };
+      return query;
+    },
+    async rpc(name: string, args: { target_campaign_id: string }) {
+      assert.equal(name, "get_campaign_video_character_names"); assert.equal(args.target_campaign_id, "campaign");
+      return { data: rpcError ? null : [{ participant_id: "alice", character_name: "Иван Петров" }], error: rpcError };
+    },
+  };
+  const load = (currentUserId: string) => exports.loadCampaignParticipantDirectory!({
+    supabase, currentUserId, campaignId: "campaign", gameMasterId: "gm", campaignGameSystem: "vtm-v5",
+    labels: { you: "You", gameMasterRole: "GM", gameMasterFallback: "GM", playerFallback: "Player" },
+  });
+  const gm = await load("gm");
+  const player = await load("alice");
+  assert.equal(gm.ready, true);
+  assert.equal(player.ready, true);
+  const names = (directory: Record<string, unknown>[]) => JSON.stringify(directory.map((entry) =>
+    [entry.providerIdentity, entry.profileName, entry.characterName, entry.role, entry.playerPosition]));
+  assert.equal(names(gm.participantDirectory), names(player.participantDirectory));
+  assert.equal(player.participantDirectory[1].profileName, null, "username is never a substitute");
+  assert.equal(player.participantDirectory[1].characterName, "Иван Петров");
+  assert.equal(player.participantDirectory[2].characterName, null);
+  assert.deepEqual(Object.keys(player.participantDirectory[1]).sort(), ["characterName", "isCurrentUser", "playerPosition", "profileName", "providerIdentity", "role"]);
+  rpcError = { message: "unavailable" };
+  assert.equal((await load("alice")).ready, false, "a failed lookup is not mistaken for an absent name");
+});
+
 test("directory changes update video in place with RLS-scoped Realtime invalidation", () => {
   const room = source("components", "campaigns", "campaign-video-room.tsx");
   const key = room.slice(room.indexOf("const instanceKey"));
@@ -32,13 +93,13 @@ test("directory changes update video in place with RLS-scoped Realtime invalidat
   assert.doesNotMatch(endpoint, /service_role|SECRET_KEY|members:|profiles:/u);
 });
 
-test("directory GET authorizes before the canonical loader and returns only localized safe entries", async () => {
+test("directory GET authorizes before the canonical loader and returns only safe raw entries", async () => {
   const route = source("app", "api", "campaigns", "[campaignId]", "participant-directory", "route.ts");
   const code = transpileModule(route, { compilerOptions: { module: ModuleKind.CommonJS } }).outputText;
   const campaignId = "a1000000-0000-4000-8000-000000000001";
   for (const scenario of ["anonymous", "outsider", "removed", "member", "gm", "load-failure"]) {
     let loads = 0;
-    const safeEntry = { providerIdentity: "scoped-identity", displayName: "Игрок кампании", role: "player", playerPosition: 2, isCurrentUser: true };
+    const safeEntry = { providerIdentity: "scoped-identity", profileName: "Игрок кампании", characterName: null, role: "player", playerPosition: 2, isCurrentUser: true };
     const exports: { GET?: (request: Request, context: unknown) => Promise<Response> } = {};
     runInNewContext(code, {
       exports, Request, Response, URL, console: { error: () => undefined },
@@ -159,56 +220,38 @@ test("Game Room requires explicit Join and keeps interactive controls local-only
   assert.doesNotMatch(room, /getUserMedia|setScreenShareEnabled|recording|transcription/u);
 });
 
-test("participant labels prefer role, compatible character, nickname, then safe fallback", () => {
-  const options = {
-    campaignGameSystem: "call-of-cthulhu-7e",
-    gameMasterLabel: "Game Master",
-    playerFallback: "Campaign player",
-  };
+for (const locale of ["en", "ru"]) {
+  test(`participant labels use raw names and viewer-local fallbacks (${locale})`, () => {
+    const messages = JSON.parse(source("messages", locale + ".json")).CampaignVideoRoom;
+    const labels = { ...messages.labels, gameMasterRole: messages.roles.gameMaster };
+    const missing = [null, "", "   ", "\t\n"];
+    const profileFallback = locale === "ru" ? "Инкогнито" : "Incognito";
+    const characterFallback = locale === "ru" ? "Странный незнакомец" : "Strange stranger";
+    const gameMasterRole = locale === "ru" ? "Мастер игры" : "Game Master";
+    for (const profileName of [...missing, "Andrey"]) {
+      for (const characterName of [...missing, "Иван John"]) {
+        const profile = profileName?.trim() || profileFallback;
+        assert.equal(resolveCampaignVideoParticipantLabel({ role: "player", profileName, characterName, labels }),
+          profile + " aka " + (characterName?.trim() || characterFallback));
+        assert.equal(resolveCampaignVideoParticipantLabel({ role: "game_master", profileName, characterName, labels }),
+          profile + " aka " + gameMasterRole);
+      }
+    }
+  });
+}
 
-  assert.equal(
-    resolveCampaignVideoParticipantLabel({
-      ...options,
-      role: "game_master",
-      linkedCharacters: [
-        { name: "Ignored Keeper", gameSystem: "call-of-cthulhu-7e" },
-      ],
-      siteNickname: "Ignored nickname",
-    }),
-    "Game Master",
-  );
-  assert.equal(
-    resolveCampaignVideoParticipantLabel({
-      ...options,
-      role: "player",
-      linkedCharacters: [
-        { name: "Vampire", gameSystem: "vampire-the-masquerade-5e" },
-        { name: "Dr. Armitage", gameSystem: "call-of-cthulhu-7e" },
-      ],
-      siteNickname: "Investigator",
-    }),
-    "Dr. Armitage",
-  );
-  assert.equal(
-    resolveCampaignVideoParticipantLabel({
-      ...options,
-      role: "player",
-      linkedCharacters: [
-        { name: "Vampire", gameSystem: "vampire-the-masquerade-5e" },
-      ],
-      siteNickname: "Investigator",
-    }),
-    "Investigator",
-  );
-  assert.equal(
-    resolveCampaignVideoParticipantLabel({
-      ...options,
-      role: "player",
-      linkedCharacters: [],
-      siteNickname: null,
-    }),
-    "Campaign player",
-  );
+test("locale changes preserve names while replacing missing values and GM role", () => {
+  const en = JSON.parse(source("messages", "en.json")).CampaignVideoRoom;
+  const ru = JSON.parse(source("messages", "ru.json")).CampaignVideoRoom;
+  const raw = { role: "player" as const, profileName: "Andrey", characterName: null };
+  assert.equal(resolveCampaignVideoParticipantLabel({ ...raw, labels: { ...en.labels, gameMasterRole: en.roles.gameMaster } }), "Andrey aka Strange stranger");
+  assert.equal(resolveCampaignVideoParticipantLabel({ ...raw, labels: { ...ru.labels, gameMasterRole: ru.roles.gameMaster } }), "Andrey aka Странный незнакомец");
+  assert.equal(raw.characterName, null);
+  const room = source("components", "campaigns", "campaign-video-room.tsx");
+  assert.match(room, /profileName: slot.directoryEntry.profileName/u);
+  assert.match(room, /characterName: slot.directoryEntry.characterName/u);
+  assert.match(room, /translations\("labels.profileFallback"\)/u);
+  assert.doesNotMatch(room.slice(room.indexOf("const displayName"), room.indexOf("const connected", room.indexOf("const displayName"))), /username|email/u);
 });
 
 test("Game Room uses the approved viewport-driven asymmetric composition", () => {

@@ -1,7 +1,6 @@
 import "server-only";
 
 import { deriveCampaignVideoParticipantIdentity } from "./mapping";
-import { resolveCampaignVideoParticipantLabel } from "./participant-label";
 import type { CampaignVideoParticipantDirectoryEntry } from "./browser/contracts";
 import { createClient } from "../../utils/supabase/server";
 
@@ -48,7 +47,6 @@ export type CampaignParticipantDirectoryResult = {
 export async function loadCampaignParticipantDirectory({
   supabase,
   campaignId,
-  campaignGameSystem,
   gameMasterId,
   currentUserId,
   labels,
@@ -70,44 +68,14 @@ export async function loadCampaignParticipantDirectory({
           .select("id, display_name, username")
           .in("id", profileIds)
       : Promise.resolve({ data: [], error: null }),
-    supabase
-      .from("campaign_characters")
-      .select("character_id, linked_by, linked_at")
-      .eq("campaign_id", campaignId)
-      .is("unlinked_at", null)
-      .order("linked_at", { ascending: true }),
+    supabase.rpc("get_campaign_video_character_names", {
+      target_campaign_id: campaignId,
+    }),
   ]);
   const profiles = profilesResult.data ?? [];
-  const assignmentRows = assignmentsResult.data ?? [];
-  const characterIds = assignmentRows.map(
-    (assignment) => assignment.character_id,
+  const characterNamesByUserId = new Map(
+    (assignmentsResult.data ?? []).map((entry) => [entry.participant_id, entry.character_name]),
   );
-  const charactersResult =
-    characterIds.length > 0
-      ? await supabase
-          .from("characters")
-          .select("id, name, game_system")
-          .in("id", characterIds)
-      : { data: [], error: null };
-  const charactersById = new Map(
-    (charactersResult.data ?? []).map((character) => [character.id, character]),
-  );
-  const linkedCharactersByUserId = new Map<
-    string,
-    Array<{ name: string; gameSystem: string }>
-  >();
-
-  for (const assignment of assignmentRows) {
-    const character = charactersById.get(assignment.character_id);
-    if (!character) continue;
-    const linkedCharacters =
-      linkedCharactersByUserId.get(assignment.linked_by) ?? [];
-    linkedCharacters.push({
-      name: character.name,
-      gameSystem: character.game_system,
-    });
-    linkedCharactersByUserId.set(assignment.linked_by, linkedCharacters);
-  }
 
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const gameMasterProfile = profileById.get(gameMasterId);
@@ -133,14 +101,8 @@ export async function loadCampaignParticipantDirectory({
         campaignId,
         gameMasterId,
       ),
-      displayName: resolveCampaignVideoParticipantLabel({
-        role: "game_master",
-        campaignGameSystem,
-        linkedCharacters: [],
-        siteNickname: null,
-        gameMasterLabel: labels.gameMasterRole,
-        playerFallback: labels.playerFallback,
-      }),
+      profileName: gameMasterProfile?.display_name ?? null,
+      characterName: null,
       role: "game_master",
       playerPosition: null,
       isCurrentUser: gameMasterId === currentUserId,
@@ -150,15 +112,8 @@ export async function loadCampaignParticipantDirectory({
         campaignId,
         member.userId,
       ),
-      displayName: resolveCampaignVideoParticipantLabel({
-        role: "player",
-        campaignGameSystem,
-        linkedCharacters:
-          linkedCharactersByUserId.get(member.userId) ?? [],
-        siteNickname: member.displayName || member.username,
-        gameMasterLabel: labels.gameMasterRole,
-        playerFallback: labels.playerFallback,
-      }),
+      profileName: member.displayName,
+      characterName: characterNamesByUserId.get(member.userId) ?? null,
       role: "player" as const,
       playerPosition: member.displayOrder,
       isCurrentUser: member.userId === currentUserId,
@@ -169,8 +124,7 @@ export async function loadCampaignParticipantDirectory({
     ready:
       !membersResult.error &&
       !profilesResult.error &&
-      !assignmentsResult.error &&
-      !charactersResult.error,
+      !assignmentsResult.error,
     members,
     profiles,
     gameMasterName,

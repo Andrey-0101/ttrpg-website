@@ -146,6 +146,12 @@ Invitation rules:
 
 ## Campaign character assignments
 
+The additive participant-label migration `20261108152609_campaign_video_participant_names.sql`
+adds a name-only RPC for the campaign's GM/current Players. Anonymous, outsider and removed
+callers are denied. Results are limited to participant ID/current eligible character name;
+full-sheet, portrait and mutation permissions remain unchanged. The dedicated non-exposed
+implementation schema grants only the required function access, not table access.
+
 | Operation | Game Master | Character-owning Player | Other campaign Player | Outsider | Anonymous |
 |---|---:|---:|---:|---:|---:|
 | Select campaign assignment list | Allow | Allow | Allow | Deny | Deny |
