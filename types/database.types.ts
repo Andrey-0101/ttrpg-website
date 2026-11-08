@@ -1196,6 +1196,10 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      get_campaign_video_character_names: {
+        Args: { target_campaign_id: string };
+        Returns: { character_name: string; participant_id: string }[];
+      };
       mutate_campaign_note: {
         Args: {
           action: string;

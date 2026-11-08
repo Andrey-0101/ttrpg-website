@@ -33,21 +33,21 @@ const PRESENTATION_URL =
 const DIRECTORY = [
   {
     providerIdentity: "gm-safe",
-    displayName: "GM",
+    profileName: "GM", characterName: null,
     role: "game_master" as const,
     playerPosition: null,
     isCurrentUser: false,
   },
   {
     providerIdentity: "player-1-safe",
-    displayName: "Player 1",
+    profileName: "Player 1", characterName: null,
     role: "player" as const,
     playerPosition: 1,
     isCurrentUser: true,
   },
   {
     providerIdentity: "player-2-safe",
-    displayName: "Player 2",
+    profileName: "Player 2", characterName: null,
     role: "player" as const,
     playerPosition: 2,
     isCurrentUser: false,
@@ -138,7 +138,7 @@ function createSessionHarness() {
 
 const NEW_PLAYER = {
   providerIdentity: `participant-${"c".repeat(48)}`,
-  displayName: "Dr. Armitage",
+  profileName: null, characterName: "Dr. Armitage",
   role: "player" as const,
   playerPosition: 6,
   isCurrentUser: false,
@@ -198,18 +198,24 @@ for (const providerFirst of [true, false]) {
     assert.equal(session.disconnects(), 0);
     assert.equal(session.creations(), 1);
     assert.equal(credentials, 1);
-    assert.equal(invalidations, 1);
+    assert.equal(invalidations, 2);
     assert.equal(session.cameraCalls(), 1);
     assert.equal(session.microphoneCalls(), 1);
     assert.deepEqual(snapshot.participants.map((entry) => entry.providerIdentity),
       [gm.identity, local.identity, existing.identity, newcomer.identity]);
     const newSlot = getCampaignVideoParticipantSlots(UPDATED_DIRECTORY, snapshot.participants)[6];
-    assert.equal(newSlot?.directoryEntry?.displayName, "Dr. Armitage");
+    assert.equal(newSlot?.directoryEntry?.characterName, "Dr. Armitage");
     assert.equal(newSlot?.participant?.camera, newcomer.camera);
     assert.equal(newSlot?.participant?.microphone, newcomer.microphone);
     assert.equal(snapshot.participants[2]?.camera, existing.camera);
     assert.equal(snapshot.participants[2]?.microphone, existing.microphone);
-    controller.updateParticipantDirectory(UPDATED_DIRECTORY.map((entry) => ({ ...entry, displayName: `${entry.displayName}!` })));
+    controller.updateParticipantDirectory(UPDATED_DIRECTORY.map((entry) => ({ ...entry, profileName: "New profile", characterName: "Renamed" })));
+    assert.equal(controller.getSnapshot().participants[2]?.profileName, "New profile");
+    assert.equal(controller.getSnapshot().participants[2]?.characterName, "Renamed");
+    controller.updateParticipantDirectory(UPDATED_DIRECTORY.map((entry) => ({ ...entry, characterName: null })));
+    assert.equal(controller.getSnapshot().participants[2]?.characterName, null);
+    assert.equal(controller.getSnapshot().participants[2]?.providerIdentity, existing.identity);
+    assert.equal(controller.getSnapshot().participants[2]?.camera, existing.camera);
     assert.deepEqual(existing.attachments, ["attach-camera", "attach-microphone"]);
     const cleanNewCamera = attachCampaignVideoTrack(newSlot!.participant!.camera, element);
     const cleanNewAudio = attachCampaignVideoTrack(newSlot!.participant!.microphone, element);
@@ -319,6 +325,52 @@ test("directory refresh cleanup aborts reads and suppresses late updates", async
   assert.equal(updates, 0);
 });
 
+test("a superseded directory response cannot restore names or removed participants", async () => {
+  let release!: (value: Response) => void;
+  let requests = 0;
+  const updates: CampaignVideoParticipantDirectoryEntry[][] = [];
+  const latest = DIRECTORY.slice(0, 2).map((entry) => ({ ...entry, profileName: "Latest", characterName: null }));
+  const sync = createCampaignParticipantDirectorySync({
+    campaignId: CAMPAIGN_ID, locale: "en",
+    fetcher: async () => {
+      requests += 1;
+      if (requests === 1) return new Promise<Response>((resolve) => { release = resolve; });
+      assert.equal(updates.length, 0, "the invalidated response must never be applied");
+      return Response.json({ ok: true, participantDirectory: latest });
+    }, onDirectory: (directory) => { updates.push(directory); },
+  });
+  const request = sync.refresh();
+  const pending = sync.refresh();
+  release(Response.json({ ok: true, participantDirectory: UPDATED_DIRECTORY }));
+  await Promise.all([request, pending]);
+  assert.equal(requests, 2);
+  assert.deepEqual(updates, [latest]);
+  sync.dispose();
+});
+
+test("late join and reconnect request fresh names without rebuilding the media session", async () => {
+  const session = createSessionHarness();
+  let refreshes = 0;
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID, campaignActive: true, directoryReady: true,
+    participantDirectory: DIRECTORY, createSession: session.factory,
+    fetcher: async () => joinResponse(), onChange() {},
+    onDirectoryRefreshNeeded() { refreshes += 1; },
+  });
+  await controller.join();
+  await controller.setCameraEnabled(true);
+  session.callbacks().onParticipantConnected("player-2-safe");
+  session.callbacks().onReconnecting();
+  session.callbacks().onReconnected();
+  assert.equal(refreshes, 2);
+  assert.equal(session.creations(), 1);
+  assert.equal(session.disconnects(), 0);
+  assert.equal(controller.getSnapshot().cameraEnabled, true);
+  await controller.dispose();
+  session.callbacks().onReconnected();
+  assert.equal(refreshes, 2);
+});
+
 test("presentation packets reject unsupported fields", () => {
   const packet = new TextEncoder().encode(
     JSON.stringify({
@@ -410,15 +462,15 @@ test("participant presentation is directory-owned, deduplicated, and role ordere
     DIRECTORY,
   );
   assert.deepEqual(
-    ordered.map(({ providerIdentity, displayName, playerPosition }) => ({
+    ordered.map(({ providerIdentity, profileName, playerPosition }) => ({
       providerIdentity,
-      displayName,
+      profileName,
       playerPosition,
     })),
     [
-      { providerIdentity: "gm-safe", displayName: "GM", playerPosition: null },
-      { providerIdentity: "player-1-safe", displayName: "Player 1", playerPosition: 1 },
-      { providerIdentity: "player-2-safe", displayName: "Player 2", playerPosition: 2 },
+      { providerIdentity: "gm-safe", profileName: "GM", playerPosition: null },
+      { providerIdentity: "player-1-safe", profileName: "Player 1", playerPosition: 1 },
+      { providerIdentity: "player-2-safe", profileName: "Player 2", playerPosition: 2 },
     ],
   );
 });

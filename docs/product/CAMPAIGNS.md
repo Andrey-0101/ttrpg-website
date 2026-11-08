@@ -207,6 +207,13 @@ The GM is never a media-group member. Removing a prohibition does not activate a
 
 ## Character access
 
+Game Room video labels share the currently assigned eligible character name through a
+name-only RPC, without granting peer sheet/portrait access. The exact profile `display_name`
+and character name are joined with `aka`; the GM uses their profile name and localized GM
+role. Missing names follow the viewer's EN/RU locale. Profile/assignment/name changes refresh
+labels in place without rejoining or changing Player positions. No separate campaign-specific
+character-name field is stored.
+
 | Actor | Active linked campaign character |
 |---|---|
 | Character owner | Read and update through owner policies; delete only when not actively linked |

@@ -641,6 +641,10 @@
     }
   },
   "CampaignVideoRoom": {
+    "labels": {
+      "profileFallback": "Инкогнито",
+      "characterFallback": "Странный незнакомец"
+    },
     "computerAudio": {
       "title": "Звук компьютера",
       "active": "Звук компьютера передаётся",

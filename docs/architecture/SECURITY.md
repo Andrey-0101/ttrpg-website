@@ -128,6 +128,15 @@ This foundation is current in Production. All seven campaign-video tables use RL
 - owner or GM unlink is blocked by an active Game Session; actively linked characters cannot be deleted;
 - automatic unlink after Player removal, departure, completion, or an incompatible game-system change, preserving the existing session locks.
 
+Video labels expose only assigned character names through the authenticated,
+campaign-scoped `get_campaign_video_character_names` RPC. Its closed implementation
+verifies current membership/GM, active assignment, ownership and game-system match;
+it returns no sheet data, portrait, character ID or unrelated character names. The public
+wrapper is invoker-only; the narrowly granted definer implementation has an empty
+search_path in a dedicated non-exposed schema. Existing character/portrait RLS and the
+closed internal `private` schema remain intact. Profile display names already have
+authenticated read access; the directory selects profiles only for campaign participants.
+
 The character-access simplification ([PR #69](https://github.com/Andrey-0101/ttrpg-website/pull/69), Production release `93c5792d838a1fbdcea6b13c660bd5f11b51e391`) is CLOSED / DEPLOYED / ACCEPTED. Manual Production acceptance passed successfully: owner creation/view/edit/save/portrait management, linking without a sharing setting, exact active-campaign GM read-only access, other-Player/outsider/anonymous sheet and portrait denial, and VtM/CoC owner flows in Game Room were verified. Existing assignment restrictions, system compatibility, one-active-character rules, GM assignment prohibition and active Game Session locks remain intact; unrelated Campaign Gallery image visibility is unchanged.
 
 Local DB tests cover owner CRUD, GM read-only access, other-Player/outsider/anonymous denial, portrait policies, unlink/removal/completion, and existing assignment invariants. Expand compatibility is tested separately before contract cleanup. Production release applies the compatible authorization migration first, activates/verifies the exact new application SHA, then removes the obsolete column; no Production fixtures are created. Phase 4 remains CLOSED / DEPLOYED / ACCEPTED and Phase 5A remains PLANNED / NOT STARTED.

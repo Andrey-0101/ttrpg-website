@@ -39,6 +39,21 @@ Supported capacity is one GM plus up to six Players. The last accepted human Pro
 
 ## Security boundary
 
+Participant labels use `profiles.display_name aka assigned character name` for Players and
+`profiles.display_name aka Game Master role` for the GM. Only `display_name` is used:
+username, email and identifiers are never name fallbacks. Null, empty and whitespace-only
+names use viewer-local `Incognito` / `Strange stranger` (EN) or `Инкогнито` /
+`Странный незнакомец` (RU). The GM role is `Game Master` / `Мастер игры`; `aka` stays
+unchanged. Actual names are never translated. The directory contains raw nullable names,
+and the client formats them with next-intl so locale changes update fallback/role text.
+
+The initial page and protected directory GET share one loader. Its name-only RPC checks
+campaign access, active assignment, membership, ownership and game-system compatibility.
+Profile changes, assignments/unlinks and assigned-character renames invalidate only affected
+campaign directories. Late join and reconnect refresh the directory in place; superseded
+responses cannot restore stale names or removed entries. Identities, slots and attached media
+remain unchanged. Automated coverage does not constitute real multi-user/browser acceptance.
+
 Campaign membership is the application authorization boundary. A provider room name, URL, or token is never durable application authorization. Completed campaigns and unauthorized or removed users cannot obtain new campaign join credentials.
 
 Current tokens permit the reviewed camera/microphone publication and subscription behavior, plus GM-only `SCREEN_SHARE_AUDIO` for the separately approved computer-audio add-on. Players retain their camera/microphone restrictions. Neither role gets `SCREEN_SHARE` video, room administration, data publication, recording, ingress, agent, or related elevated capabilities.

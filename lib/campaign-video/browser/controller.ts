@@ -369,7 +369,10 @@ export function createCampaignVideoRoomController(
             }
           },
           onParticipantConnected(identity) {
-            if (isCurrent(currentGeneration)) sendCurrentPresentation(identity);
+            if (isCurrent(currentGeneration)) {
+              options.onDirectoryRefreshNeeded?.();
+              sendCurrentPresentation(identity);
+            }
           },
           onParticipantDisconnected(identity) {
             if (
@@ -420,6 +423,7 @@ export function createCampaignVideoRoomController(
           onReconnected() {
             if (isCurrent(currentGeneration)) {
               publish({ phase: "connected", restored: true, error: null });
+              options.onDirectoryRefreshNeeded?.();
             }
           },
           onTerminalDisconnect() {

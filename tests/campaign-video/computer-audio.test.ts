@@ -12,7 +12,8 @@ import * as diagnosticRegistry from "../../lib/diagnostics/media-registry";
 import { createCampaignVideoRoomController } from "../../lib/campaign-video/browser/controller";
 import * as controllerModule from "../../lib/campaign-video/browser/controller";
 import * as presentationModule from "../../lib/campaign-video/browser/presentation";
-import type { CampaignVideoRoomSessionFactory, ComputerAudioState } from "../../lib/campaign-video/browser/contracts";
+import * as labelModule from "../../lib/campaign-video/participant-label";
+import type { CampaignVideoParticipantDirectoryEntry, CampaignVideoRoomSessionFactory, ComputerAudioState } from "../../lib/campaign-video/browser/contracts";
 import { attachCampaignVideoTrack } from "../../lib/campaign-video/browser/media";
 
 const { createComputerAudioSharing, computerAudioPublishOptions, supportsComputerAudioCapture } = captureModule;
@@ -363,8 +364,8 @@ function adapterHarness(capture: () => Promise<MediaStream>, localIdentity = "gm
 }
 
 const directory = [
-  { providerIdentity: "gm", displayName: "GM", role: "game_master" as const, playerPosition: null, isCurrentUser: true },
-  { providerIdentity: "player", displayName: "Player", role: "player" as const, playerPosition: 1, isCurrentUser: false },
+  { providerIdentity: "gm", profileName: "GM", characterName: null, role: "game_master" as const, playerPosition: null, isCurrentUser: true },
+  { providerIdentity: "player", profileName: "Player", characterName: null, role: "player" as const, playerPosition: 1, isCurrentUser: false },
 ];
 
 function controllerHarness(capture: () => Promise<MediaStream>, gm = true) {
@@ -533,7 +534,7 @@ for (const providerFirst of [true, false]) {
     });
     const gm = { identity: "gm", isLocal: false, trackPublications: new Map(["camera", "microphone", "screen_share_audio"].map((kind) => [kind, publication(kind)])) };
     const player = { identity: "late", isLocal: false, trackPublications: new Map([["screen_share_audio", publication("screen_share_audio")]]) };
-    const newDirectory = [...directory, { providerIdentity: "late", displayName: "Late player", role: "player" as const, playerPosition: 2, isCurrentUser: false }];
+    const newDirectory = [...directory, { providerIdentity: "late", profileName: "Late player", characterName: null, role: "player" as const, playerPosition: 2, isCurrentUser: false }];
     if (!providerFirst) h.controller.updateParticipantDirectory(newDirectory);
     h.room().localParticipant.trackPublications = gm.trackPublications;
     h.room().remoteParticipants.set("late", player);
@@ -582,6 +583,7 @@ test("component wiring: separate remote-GM audio, GM-only controls, existing aud
 });
 
 test("rendered Game Room authorizes the GM control and has two remote audio elements, never local loopback", () => {
+  let locale = "en";
   const exports: { CampaignVideoRoomLayout?: (props: Record<string, unknown>) => ReactNode } = {};
   const code = transpileModule(source("components/campaigns/campaign-video-room.tsx"), {
     compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2020, jsx: JsxEmit.ReactJSX },
@@ -597,7 +599,12 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
         useState: (initial: unknown) => [initial === null ? {} : initial, () => undefined],
       };
       if (name === "react-dom") return { createPortal: (child: ReactNode) => child };
-      if (name === "next-intl") return { useLocale: () => "en", useTranslations: (namespace: string) => (key: string) => `${namespace}.${key}` };
+      if (name === "next-intl") return { useLocale: () => locale, useTranslations: (namespace: string) => (key: string, args: Record<string, unknown> = {}) => {
+        const messages = JSON.parse(source(`messages/${locale}.json`));
+        const value = `${namespace}.${key}`.split(".").reduce((entry, part) => entry?.[part], messages);
+        return String(value ?? key).replace(/\{([^}]+)\}/g, (_match, part: string) => String(args[part] ?? part));
+      } };
+      if (name === "@/lib/campaign-video/participant-label") return labelModule;
       if (name === "@/components/campaigns/campaign-game-room-workspace") return { default: () => null };
       if (name === "@/lib/campaign-video/browser/controller") return controllerModule;
       if (name === "@/lib/campaign-video/browser/presentation") return presentationModule;
@@ -607,8 +614,8 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
     },
   });
   const track = (kind: "camera" | "microphone" | "computerAudio") => ({ id: kind, kind, attach: () => undefined, detach: () => undefined });
-  function render(gm: boolean, allowed = gm, connected = true, computerAudio = true) {
-    const entries = directory.map((entry) => ({ ...entry, isCurrentUser: entry.role === (gm ? "game_master" : "player") }));
+  function render(gm: boolean, allowed = gm, connected = true, computerAudio = true, names: CampaignVideoParticipantDirectoryEntry[] = directory) {
+    const entries = names.map((entry) => ({ ...entry, isCurrentUser: entry.role === (gm ? "game_master" : "player") }));
     return renderToStaticMarkup(exports.CampaignVideoRoomLayout!({
       campaignId: "a1000000-0000-4000-8000-000000000001", campaignGameSystem: "coc_7e", campaignStatus: "active",
       directoryReady: true, isGameMaster: gm, galleryItems: [], participantDirectory: entries,
@@ -635,4 +642,15 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
   assert.match(player, /data-computer-audio-playback/);
   assert.equal((player.match(/<audio/g) ?? []).length, 2);
   assert.equal((render(false, false, true, false).match(/<audio/g) ?? []).length, 1);
+  const rawNames = directory.map((entry) => ({ ...entry, profileName: "Andrey", characterName: entry.role === "player" ? "Иван Петров" : null }));
+  for (const nextLocale of ["en", "ru"]) {
+    locale = nextLocale;
+    for (const gmViewer of [true, false]) {
+      const html = render(gmViewer, true, true, true, rawNames);
+      assert.match(html, /Andrey aka Иван Петров/u);
+      assert.ok(html.includes(`Andrey aka ${locale === "ru" ? "Мастер игры" : "Game Master"}`));
+      const missing = render(gmViewer, true, true, true, rawNames.map((entry) => ({ ...entry, profileName: " \t", characterName: " " })));
+      assert.ok(missing.includes(locale === "ru" ? "Инкогнито aka Странный незнакомец" : "Incognito aka Strange stranger"));
+    }
+  }
 });
