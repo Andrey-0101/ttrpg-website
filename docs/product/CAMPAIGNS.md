@@ -42,6 +42,14 @@ The application does not support public campaign discovery.
 
 A campaign has exactly one Game Master.
 
+Campaign-context UI derives the displayed title from the campaign's game system and
+the viewing locale: `Хранитель` / `Keeper` for `call-of-cthulhu-7e`,
+`Рассказчик` / `Storyteller` for `vtm-v5`, with `Мастер игры` / `Game Master` as
+the unknown/unmapped fallback. Campaign cards, Overview, member/management/character
+panels, Gallery text and Game Room video labels share one resolver and grammatical
+translations. This is presentation only: `game_master`, ownership and all permissions
+remain unchanged; there is no stored title or title setting.
+
 Rules:
 
 - the creator becomes the Game Master;

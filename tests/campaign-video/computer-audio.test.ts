@@ -13,6 +13,7 @@ import { createCampaignVideoRoomController } from "../../lib/campaign-video/brow
 import * as controllerModule from "../../lib/campaign-video/browser/controller";
 import * as presentationModule from "../../lib/campaign-video/browser/presentation";
 import * as labelModule from "../../lib/campaign-video/participant-label";
+import { resolveCampaignGameMasterRole } from "../../lib/game-systems/campaign-role";
 import type { CampaignVideoParticipantDirectoryEntry, CampaignVideoRoomSessionFactory, ComputerAudioState } from "../../lib/campaign-video/browser/contracts";
 import { attachCampaignVideoTrack } from "../../lib/campaign-video/browser/media";
 
@@ -605,6 +606,8 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
         return String(value ?? key).replace(/\{([^}]+)\}/g, (_match, part: string) => String(args[part] ?? part));
       } };
       if (name === "@/lib/campaign-video/participant-label") return labelModule;
+      if (name === "@/lib/game-systems/use-campaign-role") return { useCampaignGameMasterRole: (system: string) =>
+        resolveCampaignGameMasterRole(system, (key) => key.split(".").reduce((entry, part) => entry[part], JSON.parse(source(`messages/${locale}.json`)).CampaignRoles)) };
       if (name === "@/components/campaigns/campaign-game-room-workspace") return { default: () => null };
       if (name === "@/lib/campaign-video/browser/controller") return controllerModule;
       if (name === "@/lib/campaign-video/browser/presentation") return presentationModule;
@@ -614,10 +617,10 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
     },
   });
   const track = (kind: "camera" | "microphone" | "computerAudio") => ({ id: kind, kind, attach: () => undefined, detach: () => undefined });
-  function render(gm: boolean, allowed = gm, connected = true, computerAudio = true, names: CampaignVideoParticipantDirectoryEntry[] = directory) {
+  function render(gm: boolean, allowed = gm, connected = true, computerAudio = true, names: CampaignVideoParticipantDirectoryEntry[] = directory, gameSystem = "coc_7e") {
     const entries = names.map((entry) => ({ ...entry, isCurrentUser: entry.role === (gm ? "game_master" : "player") }));
     return renderToStaticMarkup(exports.CampaignVideoRoomLayout!({
-      campaignId: "a1000000-0000-4000-8000-000000000001", campaignGameSystem: "coc_7e", campaignStatus: "active",
+      campaignId: "a1000000-0000-4000-8000-000000000001", campaignGameSystem: gameSystem, campaignStatus: "active",
       directoryReady: true, isGameMaster: gm, galleryItems: [], participantDirectory: entries,
       snapshot: { ...controllerModule.createInitialCampaignVideoRoomSnapshot(), phase: connected ? "connected" : "idle",
         publication: { audio: true, video: true, computerAudio: allowed },
@@ -651,6 +654,14 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
       assert.ok(html.includes(`Andrey aka ${locale === "ru" ? "Мастер игры" : "Game Master"}`));
       const missing = render(gmViewer, true, true, true, rawNames.map((entry) => ({ ...entry, profileName: " \t", characterName: " " })));
       assert.ok(missing.includes(locale === "ru" ? "Инкогнито aka Странный незнакомец" : "Incognito aka Strange stranger"));
+      for (const [system, expected] of [["call-of-cthulhu-7e", locale === "ru" ? "Хранитель" : "Keeper"], ["vtm-v5", locale === "ru" ? "Рассказчик" : "Storyteller"]]) {
+        const named = render(gmViewer, true, true, true, rawNames, system);
+        assert.ok(named.includes(`title="Andrey aka ${expected}"`));
+        assert.ok(named.includes(`aria-label="Andrey aka ${expected}"`));
+        assert.ok(named.includes("Andrey aka Иван Петров"));
+        const missingGm = render(gmViewer, true, true, true, rawNames.map((entry) => ({ ...entry, profileName: "  " })), system);
+        assert.ok(missingGm.includes(`${locale === "ru" ? "Инкогнито" : "Incognito"} aka ${expected}`));
+      }
     }
   }
 });

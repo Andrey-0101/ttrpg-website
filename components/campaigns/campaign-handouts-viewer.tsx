@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
 
 import type { CampaignGalleryCategory } from "@/lib/campaign-handouts/contracts";
 
@@ -11,11 +12,14 @@ import CampaignHandoutGallery, {
 } from "./campaign-handout-gallery";
 
 export default function CampaignHandoutsViewer({
+  gameSystem,
   items,
 }: {
+  gameSystem: string;
   items: CampaignHandoutGalleryItem[];
 }) {
   const translations = useTranslations("CampaignHandouts");
+  const role = useCampaignGameMasterRole(gameSystem);
   const [activeCategory, setActiveCategory] =
     useState<CampaignGalleryCategory>("handout");
   const visibleItems = items.filter(
@@ -41,11 +45,11 @@ export default function CampaignHandoutsViewer({
               {translations("emptyTitle")}
             </h2>
             <p className="mx-auto mt-2 max-w-xl text-white/75">
-              {translations("emptyPlayerDescription")}
+              {translations("emptyPlayerDescription", role)}
             </p>
           </section>
         ) : (
-          <CampaignHandoutGallery items={visibleItems} />
+          <CampaignHandoutGallery gameSystem={gameSystem} items={visibleItems} />
         )}
       </div>
     </div>

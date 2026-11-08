@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 
 import { useLocale, useTranslations } from "next-intl";
 import { resolveCampaignVideoParticipantLabel } from "@/lib/campaign-video/participant-label";
+import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
 
 import CampaignGameRoomWorkspace, {
   type CampaignGameRoomGalleryItem,
@@ -237,6 +238,7 @@ function MediaIndicator({
 }
 
 function ParticipantCard({
+  campaignGameSystem,
   slot,
   snapshot,
   hasBeenSeen,
@@ -246,6 +248,7 @@ function ParticipantCard({
   onMicrophoneChange,
   onEnableSound,
 }: {
+  campaignGameSystem: string;
   slot: CampaignVideoParticipantSlot;
   snapshot: CampaignVideoRoomSnapshot;
   hasBeenSeen: boolean;
@@ -256,6 +259,7 @@ function ParticipantCard({
   onEnableSound(): void;
 }) {
   const translations = useTranslations("CampaignVideoRoom");
+  const { role: gameMasterRole } = useCampaignGameMasterRole(campaignGameSystem);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const computerAudioRef = useRef<HTMLAudioElement>(null);
@@ -276,7 +280,7 @@ function ParticipantCard({
 
   const role =
     slot.role === "game_master"
-      ? translations("roles.gameMaster")
+      ? gameMasterRole
       : translations("roles.player", { number: slot.playerPosition });
   const displayName = slot.directoryEntry
     ? resolveCampaignVideoParticipantLabel({
@@ -286,7 +290,7 @@ function ParticipantCard({
         labels: {
           profileFallback: translations("labels.profileFallback"),
           characterFallback: translations("labels.characterFallback"),
-          gameMasterRole: translations("roles.gameMaster"),
+          gameMasterRole,
         },
       })
     : role;
@@ -538,6 +542,7 @@ export function CampaignVideoRoomLayout({
             className={`game-room-slot game-room-slot-${slot.key}`}
           >
             <ParticipantCard
+              campaignGameSystem={campaignGameSystem}
               slot={slot}
               snapshot={snapshot}
               hasBeenSeen={

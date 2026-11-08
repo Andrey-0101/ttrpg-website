@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 
 import { useTranslations } from "next-intl";
+import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
 
 import { useRouter } from "@/i18n/navigation";
 import { createCampaignHandoutStorageDependencies } from "@/lib/campaign-handouts/storage";
@@ -11,6 +12,7 @@ import { useUnsavedChangesGuard } from "@/lib/navigation/unsaved-changes";
 import { createClient } from "@/utils/supabase/client";
 
 type CampaignManagementPanelProps = {
+  gameSystem: string;
   campaignId: string;
   initialName: string;
   initialDescription: string | null;
@@ -28,12 +30,14 @@ const CAMPAIGN_NAME_MAX_LENGTH = 120;
 const CAMPAIGN_DESCRIPTION_MAX_LENGTH = 4000;
 
 export default function CampaignManagementPanel({
+  gameSystem,
   campaignId,
   initialName,
   initialDescription,
   initialStatus,
 }: CampaignManagementPanelProps) {
   const translations = useTranslations("CampaignManagement");
+  const role = useCampaignGameMasterRole(gameSystem);
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const router = useRouter();
   const initialDescriptionValue = initialDescription ?? "";
@@ -255,7 +259,7 @@ export default function CampaignManagementPanel({
       <div>
         <h2 className="text-2xl font-bold">{translations("title")}</h2>
         <p className="mt-2 max-w-3xl text-sm text-neutral-700">
-          {translations("description")}
+          {translations("description", role)}
         </p>
       </div>
 

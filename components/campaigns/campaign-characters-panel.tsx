@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
 
 import { Link, useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -27,6 +28,7 @@ type AvailableCharacter = {
 };
 
 type CampaignCharactersPanelProps = {
+  gameSystem: string;
   campaignId: string;
   campaignStatus: string;
   currentUserId: string;
@@ -73,6 +75,7 @@ function CharacterPortrait({
 }
 
 export default function CampaignCharactersPanel({
+  gameSystem,
   campaignId,
   campaignStatus,
   currentUserId,
@@ -86,6 +89,7 @@ export default function CampaignCharactersPanel({
   activeGameSession,
 }: CampaignCharactersPanelProps) {
   const translations = useTranslations("CampaignCharacters");
+  const role = useCampaignGameMasterRole(gameSystem);
   const router = useRouter();
   const mutationLockRef = useRef(false);
   const [mutatingCharacterId, setMutatingCharacterId] = useState<string | null>(
@@ -226,7 +230,7 @@ export default function CampaignCharactersPanel({
           <h2 className="text-2xl font-bold">{translations("title")}</h2>
           <p className="mt-2 max-w-3xl text-white/80">
             {isActiveCampaign
-              ? translations("description")
+              ? translations("description", role)
               : translations("completedDescription")}
           </p>
         </div>
@@ -242,7 +246,7 @@ export default function CampaignCharactersPanel({
       </div>
 
       {isActiveCampaign && (isGameMaster || hasOwnLinkedCharacter) ? (
-        <p className="mt-3 text-sm text-amber-100">{translations(isGameMaster ? "gameMasterForbidden" : "oneCharacter")}</p>
+        <p className="mt-3 text-sm text-amber-100">{translations(isGameMaster ? "gameMasterForbidden" : "oneCharacter", role)}</p>
       ) : null}
 
       {loadError ? (
