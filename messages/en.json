@@ -583,7 +583,7 @@
       "unavailable": "Unavailable"
     },
     "overview": {
-      "description": "Open the campaign's dedicated virtual tabletop for video, participant media, and the Game Master's local Gallery workspace.",
+      "description": "Open the campaign's dedicated virtual tabletop for video, participant media, and the {roleGenitive} local Gallery workspace.",
       "open": "Open Game Room",
       "completedHelp": "Completed campaigns keep their history, but the Game Room cannot be opened for an active video session."
     },
@@ -638,6 +638,23 @@
       "sessionPublic": "Game Session active. Valid rolls are public in the current Journal.",
       "error": "The campaign roll could not be completed safely. Try again.",
       "unavailable": "Dice are not available for this campaign system."
+    }
+  },
+  "CampaignRoles": {
+    "gameMaster": {
+      "name": "Game Master",
+      "genitive": "Game Master's",
+      "dative": "Game Master"
+    },
+    "keeper": {
+      "name": "Keeper",
+      "genitive": "Keeper's",
+      "dative": "Keeper"
+    },
+    "storyteller": {
+      "name": "Storyteller",
+      "genitive": "Storyteller's",
+      "dative": "Storyteller"
     }
   },
   "CampaignVideoRoom": {
@@ -726,7 +743,7 @@
   },
   "CampaignManagement": {
     "title": "Campaign management",
-    "description": "Update campaign details or change its lifecycle. Only the permanent Game Master can use these controls.",
+    "description": "Update campaign details or change its lifecycle. Only the permanent {role} can use these controls.",
     "name": "Campaign name",
     "namePlaceholder": "Enter a campaign name",
     "campaignDescription": "Description",
@@ -763,7 +780,7 @@
     "back": "Back to Campaign Overview",
     "loading": "Loading Campaign Gallery...",
     "gameMasterDescription": "Organize campaign images and control which active Players may view each one.",
-    "playerDescription": "Browse campaign images the Game Master has shared with you.",
+    "playerDescription": "Browse campaign images the {role} has shared with you.",
     "categoryTabsLabel": "Gallery sections",
     "categories": {
       "handout": "Handouts",
@@ -772,25 +789,25 @@
       "other": "Other"
     },
     "completedTitle": "Completed campaign",
-    "completedGameMasterDescription": "The Campaign Gallery is read-only because the campaign is completed. Existing images remain available to the Game Master.",
+    "completedGameMasterDescription": "The Campaign Gallery is read-only because the campaign is completed. Existing images remain available to the {role}.",
     "completedPlayerDescription": "Campaign Gallery images are unavailable to Players after a campaign is completed.",
     "loadErrorTitle": "Campaign Gallery unavailable",
     "loadError": "The Campaign Gallery could not be loaded. Please try again.",
     "emptyTitle": "No images in this section yet",
     "emptyGameMasterDescription": "Upload the first image to this Gallery section.",
-    "emptyPlayerDescription": "The Game Master has not shared any images in this section with you.",
+    "emptyPlayerDescription": "The {role} has not shared any images in this section with you.",
     "openImage": "Open {name}",
-    "imageUnavailable": "Image unavailable. The Game Master can delete this incomplete entry and upload it again.",
+    "imageUnavailable": "Image unavailable. The {role} can delete this incomplete entry and upload it again.",
     "close": "Close",
     "uploadTitle": "Upload images",
-    "uploadDescription": "Upload to {category}. Select one or more JPEG, PNG, or WebP images, up to 5 MiB each. Files upload one at a time and are visible only to the Game Master until access is changed.",
+    "uploadDescription": "Upload to {category}. Select one or more JPEG, PNG, or WebP images, up to 5 MiB each. Files upload one at a time and are visible only to the {role} until access is changed.",
     "chooseImages": "Image files",
     "selectedFiles": "{count, plural, one {# file selected} other {# files selected}}",
     "invalidSelectionTitle": "These files cannot be uploaded:",
     "upload": "Upload images",
     "uploading": "Uploading...",
     "uploadProgress": "Uploading {current} of {total}...",
-    "uploadBatchSuccess": "{count, plural, one {# image was uploaded} other {# images were uploaded}} for the Game Master only.",
+    "uploadBatchSuccess": "{count, plural, one {# image was uploaded} other {# images were uploaded}} for the {role} only.",
     "uploadBatchPartial": "Uploaded {successCount}. {failedCount} could not be uploaded.",
     "uploadBatchFailed": "{failedCount, plural, one {# file could not be uploaded} other {# files could not be uploaded}}.",
     "uploadBatchUnexpected": "The upload could not be completed. Review the refreshed library before retrying.",
@@ -810,7 +827,7 @@
     },
     "visibilityLabel": "Visibility",
     "visibility": {
-      "gmOnly": "Game Master only",
+      "gmOnly": "{role} only",
       "allPlayers": "All Players",
       "selectedPlayers": "Selected Players"
     },
@@ -874,7 +891,7 @@
   },
   "CampaignMembers": {
     "title": "Members",
-    "description": "The Game Master is permanent. Players can leave an active campaign, and the Game Master can remove Players.",
+    "description": "The {role} is permanent. Players can leave an active campaign, and the {role} can remove Players.",
     "gameMasterRole": "Game Master",
     "playerRole": "Player",
     "permanentGameMaster": "Permanent campaign creator",
@@ -910,9 +927,9 @@
   "CampaignCharacters": {
     "activeSession": "Characters cannot be unlinked during an active Game Session.",
     "oneCharacter": "Each player can link only one character to this campaign. Unlink the current character first.",
-    "gameMasterForbidden": "The Game Master cannot link a campaign character.",
+    "gameMasterForbidden": "The {role} cannot link a campaign character.",
     "title": "Campaign characters",
-    "description": "Link one of your compatible characters to grant this campaign's Game Master read-only access. Other Players cannot view your sheet.",
+    "description": "Link one of your compatible characters to grant this campaign's {role} read-only access. Other Players cannot view your sheet.",
     "completedDescription": "This campaign is completed. Active character links have been closed, and new linking is disabled.",
     "createCharacter": "Create character",
     "plannedTitle": "Compatible character sheets are planned",

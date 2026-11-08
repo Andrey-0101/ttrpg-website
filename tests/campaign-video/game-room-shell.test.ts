@@ -7,6 +7,7 @@ import { ModuleKind, transpileModule } from "typescript";
 
 import { CAMPAIGN_VIDEO_PARTICIPANT_SLOTS } from "../../lib/campaign-video/browser/presentation";
 import { resolveCampaignVideoParticipantLabel } from "../../lib/campaign-video/participant-label";
+import "./campaign-role.test";
 
 function source(...segments: string[]) {
   return readFileSync(path.join(process.cwd(), ...segments), "utf8");

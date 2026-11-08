@@ -136,6 +136,12 @@ Video-card rules:
 - disabled media uses only the crossed-out icon, without a color or size change;
 - Leave is a room-level action in the compact header, never a video overlay.
 
+GM video labels retain `profile display name aka role`, using the localized
+system-specific title (`Хранитель` / `Keeper`, `Рассказчик` / `Storyteller`, or
+the generic fallback). Player/character naming is unchanged. Long labels remain
+single-line and truncated, with the complete accessible name and tooltip. Campaign
+prose uses grammatical role forms; member names wrap within their one-column grid.
+
 The current root tool order is `Journal | Gallery | Dice | Characters | Notes`. Journal is the default Display view and has no back arrow. Dice, linked Characters, and owner-private Notes are implemented. Opening Game Room does not automatically join LiveKit or start a Game Session.
 
 Contextual controls replace the root row where applicable:

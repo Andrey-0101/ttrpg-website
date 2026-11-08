@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 
 import { useTranslations } from "next-intl";
+import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
 
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -15,6 +16,7 @@ type CampaignMember = {
 };
 
 type CampaignMembersPanelProps = {
+  gameSystem: string;
   campaignId: string;
   campaignStatus: string;
   currentUserId: string;
@@ -26,6 +28,7 @@ type CampaignMembersPanelProps = {
 };
 
 export default function CampaignMembersPanel({
+  gameSystem,
   campaignId,
   campaignStatus,
   currentUserId,
@@ -36,6 +39,7 @@ export default function CampaignMembersPanel({
   loadError,
 }: CampaignMembersPanelProps) {
   const translations = useTranslations("CampaignMembers");
+  const role = useCampaignGameMasterRole(gameSystem);
   const router = useRouter();
   const [members, setMembers] = useState(initialMembers);
   const [mutatingUserId, setMutatingUserId] = useState<string | null>(null);
@@ -122,7 +126,7 @@ export default function CampaignMembersPanel({
     <section className="rounded-lg border border-white/25 bg-black/20 p-5 sm:p-6">
       <h2 className="text-2xl font-bold">{translations("title")}</h2>
       <p className="mt-2 max-w-3xl text-sm text-white/80 sm:text-base">
-        {translations("description")}
+        {translations("description", role)}
       </p>
 
       {loadError && (
@@ -141,12 +145,12 @@ export default function CampaignMembersPanel({
         </div>
       )}
 
-      <ul className="mt-5 grid gap-3">
+      <ul className="mt-5 grid grid-cols-1 gap-3">
         <li className="rounded-lg border border-white/20 bg-black/20 p-4">
           <div className="flex flex-col gap-1">
             <p className="break-words font-semibold">{gameMasterName}</p>
             <p className="text-sm text-white/70">
-              {translations("gameMasterRole")}
+              {role.role}
             </p>
             <p className="text-xs text-white/55">
               {translations("permanentGameMaster")}

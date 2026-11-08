@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import { getGameSystemTranslationKey } from "@/lib/characters/game-systems";
+import { resolveCampaignGameMasterRole } from "@/lib/game-systems/campaign-role";
 
 type CampaignSummaryCardProps = {
   id: string;
@@ -22,6 +23,10 @@ export default async function CampaignSummaryCard({
 }: CampaignSummaryCardProps) {
   const translations = await getTranslations("Campaigns");
   const catalogueTranslations = await getTranslations("GameSystemCatalogue");
+  const { role } = resolveCampaignGameMasterRole(
+    gameSystem,
+    await getTranslations("CampaignRoles"),
+  );
   const gameSystemTranslationKey = getGameSystemTranslationKey(gameSystem);
   const gameSystemName = gameSystemTranslationKey
     ? catalogueTranslations(`systems.${gameSystemTranslationKey}.name`)
@@ -30,9 +35,7 @@ export default async function CampaignSummaryCard({
     status === "completed"
       ? translations("status.completed")
       : translations("status.active");
-  const roleLabel = isGameMaster
-    ? translations("role.gameMaster")
-    : translations("role.player");
+  const roleLabel = isGameMaster ? role : translations("role.player");
 
   return (
     <article className="flex min-w-0 flex-col overflow-hidden rounded-lg border border-neutral-400 bg-white text-neutral-950 shadow-sm">

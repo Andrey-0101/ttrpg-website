@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { useTranslations } from "next-intl";
+import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
 
 import type { CampaignGalleryCategory } from "@/lib/campaign-handouts/contracts";
 
@@ -22,13 +23,16 @@ export type CampaignHandoutGalleryItem = {
 export default function CampaignHandoutGallery<
   TItem extends CampaignHandoutGalleryItem,
 >({
+  gameSystem,
   items,
   renderCardFooter,
 }: {
+  gameSystem: string;
   items: TItem[];
   renderCardFooter?: (item: TItem) => ReactNode;
 }) {
   const translations = useTranslations("CampaignHandouts");
+  const role = useCampaignGameMasterRole(gameSystem);
   const [selectedItem, setSelectedItem] =
     useState<CampaignHandoutGalleryItem | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -104,7 +108,7 @@ export default function CampaignHandoutGallery<
               </button>
             ) : (
               <div className="flex aspect-square items-center justify-center bg-neutral-200 p-3 text-center text-sm text-neutral-600">
-                {translations("imageUnavailable")}
+                {translations("imageUnavailable", role)}
               </div>
             )}
 

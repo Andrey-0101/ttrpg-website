@@ -19,6 +19,7 @@ import {
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
 import { loadCampaignParticipantDirectory } from "@/lib/campaign-video/participant-directory.server";
 import { getGameSystemCatalogueEntry } from "@/lib/game-systems/catalogue";
+import { resolveCampaignGameMasterRole } from "@/lib/game-systems/campaign-role";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignPageProps = {
@@ -115,6 +116,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   }
 
   const isGameMaster = campaign.game_master_id === userId;
+  const campaignRole = resolveCampaignGameMasterRole(
+    campaign.game_system,
+    await getTranslations({ locale, namespace: "CampaignRoles" }),
+  );
   const [
     participantDirectoryResult,
     assignmentsResult,
@@ -362,7 +367,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       ? translations("status.completed")
       : translations("status.active");
   const roleLabel = isGameMaster
-    ? translations("role.gameMaster")
+    ? campaignRole.role
     : translations("role.player");
   const createdDate = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
@@ -416,7 +421,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
           <div className="min-w-0 bg-neutral-50 p-4">
             <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              {translations("gameMaster")}
+              {campaignRole.role}
             </dt>
             <dd className="mt-1 break-words font-medium">{gameMasterName}</dd>
           </div>
@@ -475,7 +480,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           campaignId={campaign.id}
           campaignActive={campaign.status === "active"}
           title={gameRoomTranslations("title")}
-          description={gameRoomTranslations("overview.description")}
+          description={gameRoomTranslations("overview.description", campaignRole)}
           availableLabel={gameRoomTranslations("availability.available")}
           unavailableLabel={gameRoomTranslations("availability.unavailable")}
           openLabel={gameRoomTranslations("overview.open")}
@@ -484,6 +489,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
 
         {isGameMaster && (
           <CampaignManagementPanel
+            gameSystem={campaign.game_system}
             campaignId={campaign.id}
             initialName={campaign.name}
             initialDescription={campaign.description}
@@ -503,6 +509,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         )}
 
         <CampaignMembersPanel
+          gameSystem={campaign.game_system}
           campaignId={campaign.id}
           campaignStatus={campaign.status}
           currentUserId={userId}
@@ -514,6 +521,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
         />
 
         <CampaignCharactersPanel
+          gameSystem={campaign.game_system}
           campaignId={campaign.id}
           campaignStatus={campaign.status}
           currentUserId={userId}

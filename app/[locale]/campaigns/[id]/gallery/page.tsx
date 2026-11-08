@@ -15,6 +15,7 @@ import {
   isCampaignHandoutVisibility,
 } from "@/lib/campaign-handouts/contracts";
 import { loadCampaignGalleryImages } from "@/lib/campaign-handouts/gallery.server";
+import { resolveCampaignGameMasterRole } from "@/lib/game-systems/campaign-role";
 import { createClient } from "@/utils/supabase/server";
 
 type CampaignGalleryPageProps = {
@@ -58,7 +59,7 @@ export default async function CampaignGalleryPage({
 
   const { data: campaign, error: campaignError } = await supabase
     .from("campaigns")
-    .select("id, name, status, game_master_id")
+    .select("id, name, status, game_master_id, game_system")
     .eq("id", id)
     .maybeSingle();
 
@@ -70,6 +71,10 @@ export default async function CampaignGalleryPage({
   }
 
   const isGameMaster = campaign.game_master_id === userId;
+  const campaignRole = resolveCampaignGameMasterRole(
+    campaign.game_system,
+    await getTranslations({ locale, namespace: "CampaignRoles" }),
+  );
   const campaignActive = campaign.status === "active";
 
   if (!isGameMaster && !campaignActive) {
@@ -202,6 +207,7 @@ export default async function CampaignGalleryPage({
         <p className="mt-3 max-w-3xl text-white/80">
           {translations(
             isGameMaster ? "gameMasterDescription" : "playerDescription",
+            campaignRole,
           )}
         </p>
       </header>
@@ -219,6 +225,7 @@ export default async function CampaignGalleryPage({
           </section>
         ) : isGameMaster ? (
           <CampaignHandoutsManager
+            gameSystem={campaign.game_system}
             campaignId={campaign.id}
             currentUserId={userId}
             campaignActive={campaignActive}
@@ -226,7 +233,10 @@ export default async function CampaignGalleryPage({
             players={playerOptions}
           />
         ) : (
-          <CampaignHandoutsViewer items={playerItems} />
+          <CampaignHandoutsViewer
+            gameSystem={campaign.game_system}
+            items={playerItems}
+          />
         )}
       </div>
     </main>

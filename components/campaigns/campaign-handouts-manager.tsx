@@ -8,6 +8,7 @@ import {
   type FormEvent,
 } from "react";
 import { useTranslations } from "next-intl";
+import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
 
 import {
   CAMPAIGN_HANDOUT_ACCEPT,
@@ -60,15 +61,18 @@ type UploadFailureItem = {
 };
 
 function CampaignHandoutCardControls({
+  gameSystem,
   campaignId,
   handout,
   players,
 }: {
+  gameSystem: string;
   campaignId: string;
   handout: CampaignHandoutManagerItem;
   players: CampaignHandoutPlayerOption[];
 }) {
   const translations = useTranslations("CampaignHandouts");
+  const role = useCampaignGameMasterRole(gameSystem);
   const router = useRouter();
   const [visibility, setVisibility] =
     useState<CampaignHandoutVisibility>(handout.visibility);
@@ -206,7 +210,7 @@ function CampaignHandoutCardControls({
           disabled={mutation !== null}
           className="mt-1 w-full min-w-0 rounded border border-neutral-400 bg-white px-2.5 py-2"
         >
-          <option value="gm_only">{translations("visibility.gmOnly")}</option>
+          <option value="gm_only">{translations("visibility.gmOnly", role)}</option>
           <option value="all_active_players">
             {translations("visibility.allPlayers")}
           </option>
@@ -298,12 +302,14 @@ function CampaignHandoutCardControls({
 }
 
 export default function CampaignHandoutsManager({
+  gameSystem,
   campaignId,
   currentUserId,
   campaignActive,
   initialHandouts,
   players,
 }: {
+  gameSystem: string;
   campaignId: string;
   currentUserId: string;
   campaignActive: boolean;
@@ -311,6 +317,7 @@ export default function CampaignHandoutsManager({
   players: CampaignHandoutPlayerOption[];
 }) {
   const translations = useTranslations("CampaignHandouts");
+  const role = useCampaignGameMasterRole(gameSystem);
   const unsavedTranslations = useTranslations("UnsavedChanges");
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
@@ -426,6 +433,7 @@ export default function CampaignHandoutsManager({
         setMessage({
           kind: "status",
           text: translations("uploadBatchSuccess", {
+            ...role,
             count: result.successes.length,
           }),
         });
@@ -480,11 +488,13 @@ export default function CampaignHandoutsManager({
       </section>
     ) : (
       <CampaignHandoutGallery
+        gameSystem={gameSystem}
         items={galleryItems}
         renderCardFooter={
           campaignActive
             ? (handout) => (
                 <CampaignHandoutCardControls
+                  gameSystem={gameSystem}
                   campaignId={campaignId}
                   handout={handout}
                   players={players}
@@ -518,7 +528,7 @@ export default function CampaignHandoutsManager({
             {translations("completedTitle")}
           </h2>
           <p className="mt-2 text-neutral-700">
-            {translations("completedGameMasterDescription")}
+            {translations("completedGameMasterDescription", role)}
           </p>
         </section>
       ) : (
@@ -528,6 +538,7 @@ export default function CampaignHandoutsManager({
           </h2>
           <p className="mt-2 text-sm text-neutral-700">
             {translations("uploadDescription", {
+              ...role,
               category: translations(
                 activeCategory === "maps_plans"
                   ? "categories.mapsPlans"
