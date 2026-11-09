@@ -98,14 +98,15 @@ export default async function CampaignGameRoomPage({
     console.error("Failed to load Campaign Gallery images for the Game Room.");
   }
 
-  const galleryItems = galleryResult.images.flatMap((image, index) =>
+  const galleryItems = galleryResult.images.flatMap((image) =>
     isCampaignGalleryCategory(image.category)
       ? [
           {
-            key: `gallery-image-${index}`,
+            key: image.id,
             imageId: image.id,
             displayName: image.display_name,
             localSignedUrl: image.signedUrl,
+            storagePath: image.storage_object_name,
             category: image.category,
           },
         ]

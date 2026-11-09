@@ -368,7 +368,7 @@ test("Game Room workspace preserves the role-specific tool shell", () => {
   );
   assert.doesNotMatch(
     workspace,
-    /upload|delete|rename|visibility|recipient|createLiveKit|data message/iu,
+    /upload|rename|visibility|recipient|createLiveKit|data message|\.delete\(|createClient/u,
   );
 });
 
@@ -381,8 +381,8 @@ test("Game Room Gallery list and local image follow the approved interactions", 
 
   assert.match(workspace, /data-game-room-gallery-list/u);
   assert.match(workspace, /overflow-y-auto/u);
-  assert.match(workspace, /grid grid-cols-3 gap-2/u);
-  assert.match(workspace, /line-clamp-3/u);
+  assert.match(workspace, /grid grid-cols-1 gap-2 sm:grid-cols-3/u);
+  assert.match(workspace, /src=\{item\.localSignedUrl\}/u);
   assert.match(workspace, /onDoubleClick=\{\(\) => openImage\(item\)\}/u);
   assert.match(workspace, /event\.pointerType === "touch"/u);
   assert.match(workspace, /event\.key !== "Enter" && event\.key !== " "/u);
@@ -429,7 +429,7 @@ test("expanded presentation uses one synchronized state and the approved respons
   assert.match(workspace, /className="object-contain"/u);
   assert.match(
     workspace,
-    /async function closeSelectedImage\(\)[\s\S]*?await onStopShare\(\)[\s\S]*?setSelectedImage\(null\)/u,
+    /async function closeSelectedImage\(\)[\s\S]*?await onStopShare\(\)[\s\S]*?setSelectedImageId\(null\)/u,
   );
   assert.match(controller, /setPresentationExpanded/u);
   assert.match(controller, /message\.revision <= lastReceivedPresentationRevision/u);

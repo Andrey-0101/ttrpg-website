@@ -182,7 +182,7 @@ export default async function CampaignGalleryPage({
         image.signedUrl && isCampaignGalleryCategory(image.category)
           ? [
               {
-                key: image.signedUrl,
+                key: image.id,
                 displayName: image.display_name,
                 signedUrl: image.signedUrl,
                 category: image.category,

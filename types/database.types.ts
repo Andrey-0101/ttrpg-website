@@ -3,6 +3,23 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      campaign_gallery_folders: {
+        Row: { id: string; campaign_id: string; category: string; name: string };
+        Insert: { id?: string; campaign_id: string; category: string; name: string };
+        Update: { id?: string; campaign_id?: string; category?: string; name?: string };
+        ComputedFields: never;
+        Relationships: [{ foreignKeyName: "campaign_gallery_folders_campaign_id_fkey"; columns: ["campaign_id"]; isOneToOne: false; referencedRelation: "campaigns"; referencedColumns: ["id"] }];
+      };
+      campaign_gallery_locations: {
+        Row: { image_id: string; campaign_id: string; category: string; folder_id: string };
+        Insert: { image_id: string; campaign_id: string; category: string; folder_id: string };
+        Update: { image_id?: string; campaign_id?: string; category?: string; folder_id?: string };
+        ComputedFields: never;
+        Relationships: [
+          { foreignKeyName: "campaign_gallery_locations_image_fkey"; columns: ["image_id", "campaign_id", "category"]; isOneToOne: true; referencedRelation: "campaign_images"; referencedColumns: ["id", "campaign_id", "category"] },
+          { foreignKeyName: "campaign_gallery_locations_folder_fkey"; columns: ["folder_id", "campaign_id", "category"]; isOneToOne: false; referencedRelation: "campaign_gallery_folders"; referencedColumns: ["id", "campaign_id", "category"] }
+        ];
+      };
       campaign_characters: {
         Row: {
           campaign_id: string;
@@ -1042,6 +1059,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      normalize_campaign_gallery_name: { Args: { input_name: string }; Returns: string };
+      save_campaign_gallery_folder: {
+        Args: { target_campaign_id: string; target_category: string; target_name: string; target_folder_id?: string };
+        Returns: string;
+      };
+      rename_campaign_gallery_image: { Args: { target_image_id: string; target_name: string }; Returns: string };
+      move_campaign_gallery_image: { Args: { target_image_id: string; target_folder_id?: string }; Returns: undefined };
       accept_campaign_invitation: { Args: { raw_token: string }; Returns: string };
       clear_personal_roll_history: { Args: Record<PropertyKey, never>; Returns: number };
       clear_personal_roll_history_by_kinds: { Args: { p_roller_kinds: string[] }; Returns: number };

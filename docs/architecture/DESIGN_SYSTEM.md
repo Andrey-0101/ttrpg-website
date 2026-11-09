@@ -154,6 +154,18 @@ Contextual controls replace the root row where applicable:
 
 These controls occupy one stable tool row. Players browse authorized images on the separate Campaign Gallery page; the in-room Gallery browsing control is disabled for Players. GM image presentation reaches LiveKit-connected participants under the existing presentation rules. General Handouts, structured NPCs, Sessions/Chronicle, and other placeholder labels are not active roadmap commitments.
 
+Gallery organization reuses a root/folder breadcrumb and shared
+folder/name/Move forms in both GM surfaces. Folder management stays in Display;
+the established Back / Share / Expand tool row is retained. Image actions remain
+available for a selected/presented image, in a name-and-actions row below the
+image. The right-aligned three-dot menu uses the browser top layer to stay clear
+of clipped cards and scrollable Display panels. Long captions truncate visually
+and keep the full name in the tooltip and action button's accessible label.
+All new controls use native labeled
+inputs/selects, keyboard-operable buttons, visible focus, bounded text and wrapping
+layouts. The image list reflows from one column to three in the Game Room; folder
+navigation never appears in the Player Gallery.
+
 ## Accessibility baseline
 
 Friend-alpha still requires:

@@ -43,6 +43,7 @@ supabase/migrations/20261007135836_diagnostic_role_audit_indexes.sql
 supabase/migrations/20261007141821_diagnostic_control_visibility.sql
 supabase/migrations/20261014102003_handle_diagnostic_dispatch_null.sql
 supabase/migrations/20261108152609_campaign_video_participant_names.sql
+supabase/migrations/20261108163016_campaign_gallery_organization.sql
 ```
 
 The thirty listed migrations define the Production release schema after Phase 4G, membership/character-access maintenance, Developer Diagnostics rollout and the PR #74 null-handling fix. The first Phase 4D2 migration creates `game_sessions`, `game_session_journal_events`, lifecycle RPCs, participant-readable RLS, Journal-write guards, and the autonomous `pg_cron` expiry job. The next migration adds the service-role-only authoritative Campaign Dice writer and publishes Journal events through Supabase Realtime. The binding migration replaces that RPC signature with an exact expected Game Session ID so an in-flight roll cannot attach to a newly started session. `20260911121613_publish_game_session_state_realtime.sql` idempotently adds `game_sessions` to the `supabase_realtime` publication so Start/End state propagates in realtime.
@@ -50,6 +51,11 @@ The thirty listed migrations define the Production release schema after Phase 4G
 The earlier Phase 4D1 combined-CoC migration preserves the generic personal-history table and RPC signature, changes prospective CoC pruning to the newest six rows total across both CoC kinds, and leaves VtM and Custom at six rows per kind. No existing rows were bulk-rewritten. The application registry remains authoritative for supported personal kinds and versions.
 
 Applied migrations must never be edited. Any later schema, policy, function, trigger, or Storage change requires a new migration.
+
+`20261108163016_campaign_gallery_organization.sql` is an additive migration verified
+on isolated synthetic PostgreSQL data. Apply it before activating the new client:
+the existing client remains compatible, while the new GM organizer
+requires the new tables/RPCs and shows a retryable load error if they are unavailable.
 
 Historical completed character-access release used the required split sequence: apply `20261004161535_character_assignment_gm_read_access.sql` first (authorization/linking/trigger transition, legacy column retained), activate and verify the exact visibility-free app as READY on `ttrpg.fans`, then apply `20261004161539_remove_character_visibility.sql` (constraint and column removal, no CASCADE). Do not batch these two steps against the old application. A CLI workdir containing the unchanged applied migration history plus only the expand migration can safely stage the first step; verify its file hashes and pending migration list before applying. Neither migration rewrites characters, timestamps or assignments. Generated types are regenerated from the resulting schema, never manually edited. Historical migrations still contain the old model intentionally.
 
@@ -250,6 +256,35 @@ Application persistence revalidates and canonicalizes supported payloads. Malfor
 | `campaign_video_audit_log` | immutable, constrained administrative audit records |
 
 The foundation is provider-neutral. It does not persist LiveKit rooms, tokens, connections, session-only overrides, or media state.
+
+### Gallery organization model
+
+`campaign_gallery_folders` contains an ID, campaign, fixed category and display name;
+there is no parent-folder field. `campaign_gallery_locations` has `image_id` as its
+primary key, plus campaign, category and folder. Absence of a location row means the
+category root. Existing images are not rewritten. Composite foreign keys require
+both the image and its folder to belong to the same campaign and category; support
+indexes cover the referencing keys. The existing category-immutability trigger remains.
+
+Both tables have GM-only SELECT RLS, including read access to completed campaigns.
+Only the active campaign GM can mutate them. Explicit column grants allow folder
+creation/name updates and image-location insertion/folder updates/deletion; there
+is no folder DELETE grant. Existing image grants and visibility/recipient policies
+are unchanged. No folder or location metadata is added to Player image responses.
+
+The authenticated, `SECURITY INVOKER`, empty-search-path RPCs are
+`save_campaign_gallery_folder`, `rename_campaign_gallery_image` and
+`move_campaign_gallery_image`. They retain RLS, derive the actor from `auth.uid()`,
+lock/recheck the active campaign and never access Storage. Names trim the explicit
+ECMAScript whitespace set, reject empty/control-character values and allow at most
+255 Unicode characters, matching client validation. Image renaming updates only
+`display_name`; moving changes only the location relation. Active-only triggers also
+protect direct table writes and preserve cascade cleanup.
+
+`npm run test:gallery` runs focused UI/hook regressions and real PostgreSQL WASM
+checks against the relevant actual historical migrations plus this migration.
+Only Auth/Storage platform primitives are synthetic. These tests require no URL,
+credentials, Docker service, or hosted project, and do not replace hosted acceptance.
 
 ### Game Session and Journal tables
 

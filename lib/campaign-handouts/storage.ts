@@ -6,7 +6,10 @@ import {
   CAMPAIGN_HANDOUT_BUCKET,
   splitCampaignHandoutPath,
 } from "./contracts";
-import type { CampaignHandoutStorageDependencies } from "./workflows";
+import {
+  deleteCampaignHandoutStorageFirst,
+  type CampaignHandoutStorageDependencies,
+} from "./workflows";
 
 export function createCampaignHandoutStorageDependencies(
   supabase: SupabaseClient<Database>,
@@ -37,4 +40,21 @@ export function createCampaignHandoutStorageDependencies(
       return (data ?? []).some((object) => object.name === parts.fileName);
     },
   };
+}
+
+/** Both GM Gallery surfaces use the same session-authorized, Storage-first deletion. */
+export function deleteCampaignGalleryImage(
+  supabase: SupabaseClient<Database>,
+  { campaignId, imageId, storagePath }: { campaignId: string; imageId: string; storagePath: string },
+) {
+  return deleteCampaignHandoutStorageFirst({
+    imageId,
+    storagePath,
+    storage: createCampaignHandoutStorageDependencies(supabase),
+    deleteMetadata: async (id) => {
+      const { error } = await supabase.from("campaign_images").delete()
+        .eq("campaign_id", campaignId).eq("id", id);
+      return !error;
+    },
+  });
 }

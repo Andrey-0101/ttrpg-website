@@ -25,21 +25,24 @@ export default function CampaignHandoutGallery<
 >({
   gameSystem,
   items,
+  renderCardCaption,
   renderCardFooter,
 }: {
   gameSystem: string;
   items: TItem[];
+  renderCardCaption?: (item: TItem) => ReactNode;
   renderCardFooter?: (item: TItem) => ReactNode;
 }) {
   const translations = useTranslations("CampaignHandouts");
   const role = useCampaignGameMasterRole(gameSystem);
-  const [selectedItem, setSelectedItem] =
-    useState<CampaignHandoutGalleryItem | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const selectedItem = items.find((item) => item.key === selectedItemId) ?? null;
+  const openedItemKey = selectedItem?.key ?? null;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (!selectedItem) {
+    if (!openedItemKey) {
       return;
     }
 
@@ -49,7 +52,7 @@ export default function CampaignHandoutGallery<
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setSelectedItem(null);
+        setSelectedItemId(null);
       } else if (event.key === "Tab") {
         event.preventDefault();
         closeButtonRef.current?.focus();
@@ -63,14 +66,14 @@ export default function CampaignHandoutGallery<
       window.removeEventListener("keydown", handleKeyDown);
       openerRef.current?.focus();
     };
-  }, [selectedItem]);
+  }, [openedItemKey]);
 
   function openItem(
     item: CampaignHandoutGalleryItem,
     event: MouseEvent<HTMLButtonElement>,
   ) {
     openerRef.current = event.currentTarget;
-    setSelectedItem(item);
+    setSelectedItemId(item.key);
   }
 
   return (
@@ -83,8 +86,9 @@ export default function CampaignHandoutGallery<
         {items.map((item, index) => (
           <article
             key={item.key}
-            className="min-w-0 overflow-hidden rounded-lg border border-neutral-300 bg-white text-neutral-950 shadow-sm"
+            className="min-w-0"
           >
+            <div className="min-w-0 overflow-hidden rounded-lg border border-neutral-300 bg-white text-neutral-950 shadow-sm">
             {item.signedUrl ? (
               <button
                 type="button"
@@ -112,9 +116,10 @@ export default function CampaignHandoutGallery<
               </div>
             )}
 
-            <h2 className="break-words border-t border-neutral-300 px-3 py-2.5 text-sm font-semibold sm:text-base">
+            {renderCardCaption?.(item) ?? <h2 className="break-words border-t border-neutral-300 px-3 py-2.5 text-sm font-semibold sm:text-base">
               {item.displayName}
-            </h2>
+            </h2>}
+            </div>
             {renderCardFooter?.(item)}
           </article>
         ))}
@@ -128,7 +133,7 @@ export default function CampaignHandoutGallery<
           aria-labelledby="campaign-handout-lightbox-title"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
-              setSelectedItem(null);
+              setSelectedItemId(null);
             }
           }}
         >
@@ -143,7 +148,7 @@ export default function CampaignHandoutGallery<
               <button
                 ref={closeButtonRef}
                 type="button"
-                onClick={() => setSelectedItem(null)}
+                onClick={() => setSelectedItemId(null)}
                 className="shrink-0 rounded border border-white/70 px-4 py-2 font-semibold hover:bg-white/10"
               >
                 {translations("close")}
