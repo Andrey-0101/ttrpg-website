@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:roster": "node --test tests/campaigns/campaign-roster-names.test.mjs && node --test tests/database/campaign-roster-names.test.mjs",
     "test:gallery": "node --test tests/campaigns/gallery-organization.test.mjs && node --test tests/database/campaign-gallery-organization.test.mjs",
     "test:diagnostics": "tsc --project tsconfig.diagnostics.test.json && node node_modules/.cache/diagnostic-tests/tests/diagnostics/contracts.test.js",
     "test:diagnostics:db": "tsc --project tsconfig.diagnostics.test.json && node node_modules/.cache/diagnostic-tests/tests/diagnostics/database.test.js",

@@ -340,6 +340,31 @@ Video remains an optional child capability with explicit Join/Leave, participant
 
 GM browsing of Gallery inside Game Room does not require LiveKit. Players browse their authorized images on the separate `/{locale}/campaigns/{id}/gallery` Campaign Gallery page, also without LiveKit; they cannot browse Gallery inside Game Room. In-room image Share/Presentation still uses LiveKit: the GM must be connected, and only LiveKit-connected participants receive the presented image under the existing presentation rules. Opening Game Room does not automatically join LiveKit or start a Game Session. LiveKit controls only video/audio and Gallery presentation; it does not control Game Room access, Game Session lifecycle, Journal, or Campaign Dice.
 
+### Campaign Overview Player names
+
+The Members panel identifies every Player, including the viewer, with trimmed
+`profiles.display_name`, otherwise the account email supplied by the campaign-scoped
+roster RPC. Username, character name and identifiers are not substitutes; there is
+no `aka`. The registration form uses Supabase email/password accounts. The app has
+no email-change form; the authoritative fallback is the current `auth.users.email`,
+which can differ from the original registration address after an Auth email change.
+No historical address tracking or profile email copy is introduced.
+
+The reported `Campaign Player` is the previous UI fallback for missing profile
+names; registration creates a profile ID without a generated display-name value.
+A real user-chosen display name with the same text is retained. The new read-only
+RPC returns only this campaign's Player labels, membership IDs and join dates to
+the campaign GM/current members. Anonymous, outsider and removed-member calls are
+denied. Existing player order, dates, roles, Leave/Remove permissions and GM card
+behavior remain unchanged; Remove buttons identify their target accessibly.
+
+Each roster load reads current profile/account values. The panel renders fresh
+server props rather than retaining its first loaded names. Unavailable identity
+data produces the existing retryable loading error. Video-room labels keep their
+separate profile/Incognito `aka` character rules and receive no account email.
+
+The forward-only roster migration is required before activating the roster client.
+
 ### Gallery folders and naming
 
 The Gallery supports one GM-only folder level inside each existing category

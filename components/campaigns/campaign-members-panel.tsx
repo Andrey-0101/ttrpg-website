@@ -7,13 +7,7 @@ import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role"
 
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/utils/supabase/client";
-
-type CampaignMember = {
-  userId: string;
-  displayName: string | null;
-  username: string | null;
-  joinedAt: string;
-};
+import type { CampaignRosterMember } from "@/lib/campaigns/roster.server";
 
 type CampaignMembersPanelProps = {
   gameSystem: string;
@@ -23,7 +17,7 @@ type CampaignMembersPanelProps = {
   gameMasterName: string;
   isGameMaster: boolean;
   locale: string;
-  initialMembers: CampaignMember[];
+  initialMembers: CampaignRosterMember[];
   loadError: boolean;
 };
 
@@ -41,7 +35,9 @@ export default function CampaignMembersPanel({
   const translations = useTranslations("CampaignMembers");
   const role = useCampaignGameMasterRole(gameSystem);
   const router = useRouter();
-  const [members, setMembers] = useState(initialMembers);
+  const [removedMemberships, setRemovedMemberships] = useState<string[]>([]);
+  const membershipKey = (member: CampaignRosterMember) => `${campaignId}:${member.userId}:${member.joinedAt}`;
+  const members = initialMembers.filter((member) => !removedMemberships.includes(membershipKey(member)));
   const [mutatingUserId, setMutatingUserId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const mutationLockRef = useRef(false);
@@ -54,30 +50,17 @@ export default function CampaignMembersPanel({
     [locale],
   );
 
-  function getMemberName(member: CampaignMember) {
-    if (member.userId === currentUserId) {
-      return translations("you");
-    }
-
-    return (
-      member.displayName ||
-      member.username ||
-      translations("playerFallback")
-    );
-  }
-
-  async function handleRemoveMember(member: CampaignMember) {
+  async function handleRemoveMember(member: CampaignRosterMember) {
     if (mutationLockRef.current || !isActiveCampaign) {
       return;
     }
 
     const isLeaving = member.userId === currentUserId;
-    const memberName = getMemberName(member);
     const confirmed = window.confirm(
       isLeaving
         ? translations("leaveConfirm")
         : translations("removeConfirm", {
-            name: memberName,
+            name: member.label,
           }),
     );
 
@@ -107,9 +90,7 @@ export default function CampaignMembersPanel({
         return;
       }
 
-      setMembers((current) =>
-        current.filter((item) => item.userId !== member.userId),
-      );
+      setRemovedMemberships((current) => [...current, membershipKey(member)]);
       router.refresh();
     } catch (error) {
       console.error("Failed to remove campaign Player:", error);
@@ -171,8 +152,8 @@ export default function CampaignMembersPanel({
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="break-words font-semibold">
-                    {getMemberName(member)}
+                  <p className="break-all font-semibold">
+                    {member.label}
                   </p>
                   <p className="mt-1 text-sm text-white/70">
                     {translations("playerRole")}
@@ -189,6 +170,7 @@ export default function CampaignMembersPanel({
                     type="button"
                     onClick={() => handleRemoveMember(member)}
                     disabled={mutatingUserId !== null}
+                    aria-label={isCurrentPlayer ? translations("leave") : translations("removeNamed", { name: member.label })}
                     className={`w-full shrink-0 rounded border px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${
                       isCurrentPlayer
                         ? "border-amber-300 text-amber-100 hover:bg-amber-950/30"

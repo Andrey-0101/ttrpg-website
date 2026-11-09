@@ -44,6 +44,7 @@ supabase/migrations/20261007141821_diagnostic_control_visibility.sql
 supabase/migrations/20261014102003_handle_diagnostic_dispatch_null.sql
 supabase/migrations/20261108152609_campaign_video_participant_names.sql
 supabase/migrations/20261108163016_campaign_gallery_organization.sql
+supabase/migrations/20261108235143_campaign_overview_roster_names.sql
 ```
 
 The thirty listed migrations define the Production release schema after Phase 4G, membership/character-access maintenance, Developer Diagnostics rollout and the PR #74 null-handling fix. The first Phase 4D2 migration creates `game_sessions`, `game_session_journal_events`, lifecycle RPCs, participant-readable RLS, Journal-write guards, and the autonomous `pg_cron` expiry job. The next migration adds the service-role-only authoritative Campaign Dice writer and publishes Journal events through Supabase Realtime. The binding migration replaces that RPC signature with an exact expected Game Session ID so an in-flight roll cannot attach to a newly started session. `20260911121613_publish_game_session_state_realtime.sql` idempotently adds `game_sessions` to the `supabase_realtime` publication so Start/End state propagates in realtime.
@@ -256,6 +257,33 @@ Application persistence revalidates and canonicalizes supported payloads. Malfor
 | `campaign_video_audit_log` | immutable, constrained administrative audit records |
 
 The foundation is provider-neutral. It does not persist LiveKit rooms, tokens, connections, session-only overrides, or media state.
+
+### Campaign Overview roster projection
+
+`20261108235143_campaign_overview_roster_names.sql` adds a read-only projection,
+independent of Gallery organization. The non-exposed `campaign_roster_labels` schema
+contains an empty-search-path, stable definer function; its authenticated public
+invoker wrapper is `get_campaign_roster_players(target_campaign_id)`.
+
+Every call derives the viewer from `auth.uid()` and checks the existing campaign
+roster access rule: exact GM or current member, including completed campaigns.
+Anonymous users, outsiders and removed members are denied. Only that campaign's
+Player memberships are joined to profiles and Auth. The ordered result contains
+`participant_id`, `display_label`, `joined_at`: trimmed `profiles.display_name`
+first, otherwise current `auth.users.email`. Whitespace trimming matches interface
+`trim()`. A genuinely chosen `Campaign Player` value is preserved, not rewritten.
+
+There are no Auth table grants, exposed Auth records, email copies in profiles,
+new persisted fields, or changes to existing RLS/membership/character policies.
+The server loader forwards only the three required UI fields and treats unavailable
+labels as a retryable load error. The GM card and video directory do not use this
+email fallback. No email history is added; a confirmed account-email change affects
+the next roster load. Apply the additive migration before activating the roster
+client.
+
+`npm run test:roster` covers the real component/loader and an isolated PostgreSQL
+WASM database with synthetic Auth/Storage primitives and actual application
+migrations. No remote accounts or retained test project are required.
 
 ### Gallery organization model
 

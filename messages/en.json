@@ -929,6 +929,7 @@
     "remove": "Remove",
     "removing": "Removing...",
     "removeConfirm": "Remove {name} from this campaign? Their active character links will also be closed.",
+    "removeNamed": "Remove {name} from campaign",
     "removeError": "Unable to remove the Player.",
     "leave": "Leave campaign",
     "leaving": "Leaving...",

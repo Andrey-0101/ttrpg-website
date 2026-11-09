@@ -18,6 +18,7 @@ import {
 } from "@/lib/characters/game-systems";
 import { getCharacterPortraitSignedUrl } from "@/lib/characters/portrait";
 import { loadCampaignParticipantDirectory } from "@/lib/campaign-video/participant-directory.server";
+import { loadCampaignOverviewRoster } from "@/lib/campaigns/roster.server";
 import { getGameSystemCatalogueEntry } from "@/lib/game-systems/catalogue";
 import { resolveCampaignGameMasterRole } from "@/lib/game-systems/campaign-role";
 import { createClient } from "@/utils/supabase/server";
@@ -121,12 +122,14 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     await getTranslations({ locale, namespace: "CampaignRoles" }),
   );
   const [
+    rosterResult,
     participantDirectoryResult,
     assignmentsResult,
     ownCharactersResult,
     handoutCountResult,
     gameSessionResult,
   ] = await Promise.all([
+      loadCampaignOverviewRoster({ supabase, campaignId: campaign.id }),
       loadCampaignParticipantDirectory({
         supabase,
         campaignId: campaign.id,
@@ -516,8 +519,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           gameMasterName={gameMasterName}
           isGameMaster={isGameMaster}
           locale={locale}
-          initialMembers={members}
-          loadError={!participantDirectoryResult.ready}
+          initialMembers={rosterResult.members}
+          loadError={!rosterResult.ready}
         />
 
         <CampaignCharactersPanel

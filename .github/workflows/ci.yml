@@ -68,6 +68,9 @@ jobs:
       - name: Test Gallery organization
         run: npm run test:gallery
 
+      - name: Test Campaign Overview roster
+        run: npm run test:roster
+
       - name: Test Game Room
         run: npm run test:game-room
 
