@@ -1059,6 +1059,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_campaign_roster_players: {
+        Args: { target_campaign_id: string };
+        Returns: { participant_id: string; display_label: string | null; joined_at: string }[];
+      };
       normalize_campaign_gallery_name: { Args: { input_name: string }; Returns: string };
       save_campaign_gallery_folder: {
         Args: { target_campaign_id: string; target_category: string; target_name: string; target_folder_id?: string };
