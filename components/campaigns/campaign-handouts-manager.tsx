@@ -25,7 +25,6 @@ import {
   type CampaignHandoutUploadFailure,
 } from "@/lib/campaign-handouts/upload";
 import {
-  deleteCampaignHandoutStorageFirst,
   rollbackFailedCampaignHandoutUpload,
 } from "@/lib/campaign-handouts/workflows";
 import { useUnsavedChangesGuard } from "@/lib/navigation/unsaved-changes";
@@ -34,6 +33,9 @@ import { useRouter } from "@/i18n/navigation";
 
 import CampaignHandoutGallery from "./campaign-handout-gallery";
 import CampaignGalleryTabs from "./campaign-gallery-tabs";
+import { CampaignGalleryFolders, CampaignGalleryImageActions } from "./campaign-gallery-organization";
+import { galleryImageIsInFolder } from "@/lib/campaign-handouts/organization";
+import { useCampaignGalleryOrganization } from "@/lib/campaign-handouts/use-organization";
 
 export type CampaignHandoutManagerItem = {
   id: string;
@@ -62,12 +64,10 @@ type UploadFailureItem = {
 
 function CampaignHandoutCardControls({
   gameSystem,
-  campaignId,
   handout,
   players,
 }: {
   gameSystem: string;
-  campaignId: string;
   handout: CampaignHandoutManagerItem;
   players: CampaignHandoutPlayerOption[];
 }) {
@@ -79,7 +79,7 @@ function CampaignHandoutCardControls({
   const [selectedIds, setSelectedIds] = useState<string[]>(
     handout.recipientIds,
   );
-  const [mutation, setMutation] = useState<"visibility" | "delete" | null>(
+  const [mutation, setMutation] = useState<"visibility" | null>(
     null,
   );
   const [message, setMessage] = useState<ManagerMessage>(null);
@@ -155,53 +155,8 @@ function CampaignHandoutCardControls({
     }
   }
 
-  async function handleDelete() {
-    if (
-      mutationLockRef.current ||
-      !window.confirm(
-        translations("deleteConfirm", { name: handout.displayName }),
-      )
-    ) {
-      return;
-    }
-
-    mutationLockRef.current = true;
-    setMutation("delete");
-    setMessage({ kind: "status", text: translations("deletingStatus") });
-
-    try {
-      const supabase = createClient();
-      const result = await deleteCampaignHandoutStorageFirst({
-        imageId: handout.id,
-        storagePath: handout.storagePath,
-        storage: createCampaignHandoutStorageDependencies(supabase),
-        deleteMetadata: async (imageId) => {
-          const { error } = await supabase
-            .from("campaign_images")
-            .delete()
-            .eq("campaign_id", campaignId)
-            .eq("id", imageId);
-          return !error;
-        },
-      });
-
-      if (!result.ok) {
-        setMessage({ kind: "error", text: translations("deleteError") });
-        return;
-      }
-
-      setMessage({ kind: "status", text: translations("deletedStatus") });
-      router.refresh();
-    } catch {
-      setMessage({ kind: "error", text: translations("deleteError") });
-    } finally {
-      mutationLockRef.current = false;
-      setMutation(null);
-    }
-  }
-
   return (
-    <div className="min-w-0 border-t border-neutral-300 bg-neutral-50 px-3 py-3 text-sm">
+    <div className="mt-2 min-w-0 rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-3 text-sm text-neutral-950">
       <label className="block font-medium">
         {translations("visibilityLabel")}
         <select
@@ -278,16 +233,6 @@ function CampaignHandoutCardControls({
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-between">
         <button
           type="button"
-          onClick={handleDelete}
-          disabled={mutation !== null}
-          className="rounded border border-red-700 px-3 py-2 font-semibold text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {mutation === "delete"
-            ? translations("deleting")
-            : translations("delete")}
-        </button>
-        <button
-          type="button"
           onClick={handleSaveVisibility}
           disabled={mutation !== null || !hasVisibilityChanges}
           className="rounded bg-neutral-950 px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
@@ -319,6 +264,9 @@ export default function CampaignHandoutsManager({
   const translations = useTranslations("CampaignHandouts");
   const role = useCampaignGameMasterRole(gameSystem);
   const unsavedTranslations = useTranslations("UnsavedChanges");
+  const organizationTranslations = useTranslations("CampaignGalleryOrganization");
+  const organization = useCampaignGalleryOrganization(campaignId);
+  const [folderId, setFolderId] = useState<string | null>(null);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [activeCategory, setActiveCategory] =
@@ -470,32 +418,46 @@ export default function CampaignHandoutsManager({
   }
 
   const galleryItems = initialHandouts
-    .filter((handout) => handout.category === activeCategory)
+    .filter((handout) => handout.category === activeCategory && galleryImageIsInFolder(handout.id, organization.locations, folderId))
     .map((handout) => ({
       ...handout,
-      key: `${handout.id}:${handout.visibility}:${handout.recipientIds.join(",")}`,
+      displayName: organization.names[handout.id] ?? handout.displayName,
+      key: handout.id,
     }));
 
   const gallery =
     galleryItems.length === 0 ? (
       <section className="rounded-lg border border-dashed border-white/40 bg-black/20 p-6 text-center sm:p-8">
         <h2 className="text-2xl font-semibold">
-          {translations("emptyTitle")}
+          {folderId ? organizationTranslations("emptyFolderTitle") : translations("emptyTitle")}
         </h2>
         <p className="mx-auto mt-2 max-w-xl text-white/75">
-          {translations("emptyGameMasterDescription")}
+          {folderId
+            ? campaignActive ? organizationTranslations("emptyFolderHelp") : null
+            : translations("emptyGameMasterDescription")}
         </p>
       </section>
     ) : (
       <CampaignHandoutGallery
         gameSystem={gameSystem}
         items={galleryItems}
+        renderCardCaption={campaignActive ? (handout) => (
+          <CampaignGalleryImageActions
+            organization={organization}
+            campaignId={campaignId}
+            imageId={handout.id}
+            category={handout.category}
+            displayName={handout.displayName}
+            storagePath={handout.storagePath}
+            onDeleted={() => router.refresh()}
+          />
+        ) : undefined}
         renderCardFooter={
           campaignActive
             ? (handout) => (
                 <CampaignHandoutCardControls
+                  key={`${handout.visibility}:${handout.recipientIds.join(",")}`}
                   gameSystem={gameSystem}
-                  campaignId={campaignId}
                   handout={handout}
                   players={players}
                 />
@@ -509,9 +471,12 @@ export default function CampaignHandoutsManager({
     <div className="grid min-w-0 gap-6">
       <CampaignGalleryTabs
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={(category) => { setActiveCategory(category); setFolderId(null); }}
         panelId="campaign-gallery-panel"
       />
+
+      <CampaignGalleryFolders key={activeCategory} organization={organization} category={activeCategory}
+        folderId={folderId} onFolderChange={setFolderId} editable={campaignActive} />
 
       <div
         id="campaign-gallery-panel"
@@ -519,7 +484,7 @@ export default function CampaignHandoutsManager({
         aria-labelledby={`campaign-gallery-tab-${activeCategory}`}
         className="min-w-0"
       >
-        {gallery}
+        {!organization.loading && !organization.loadError ? gallery : null}
       </div>
 
       {!campaignActive ? (
@@ -547,6 +512,7 @@ export default function CampaignHandoutsManager({
             })}
           </p>
           <form onSubmit={handleUpload} className="mt-5 min-w-0">
+            {folderId ? <p className="mb-3 text-sm text-neutral-700">{translations("uploadsStartAtRoot")}</p> : null}
             <label className="block min-w-0 font-medium">
               {translations("chooseImages")}
               <input

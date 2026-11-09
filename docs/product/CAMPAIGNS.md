@@ -340,6 +340,39 @@ Video remains an optional child capability with explicit Join/Leave, participant
 
 GM browsing of Gallery inside Game Room does not require LiveKit. Players browse their authorized images on the separate `/{locale}/campaigns/{id}/gallery` Campaign Gallery page, also without LiveKit; they cannot browse Gallery inside Game Room. In-room image Share/Presentation still uses LiveKit: the GM must be connected, and only LiveKit-connected participants receive the presented image under the existing presentation rules. Opening Game Room does not automatically join LiveKit or start a Game Session. LiveKit controls only video/audio and Gallery presentation; it does not control Game Room access, Game Session lifecycle, Journal, or Campaign Dice.
 
+### Gallery folders and naming
+
+The Gallery supports one GM-only folder level inside each existing category
+in both the standalone Gallery and Game Room. The active campaign GM can create or
+rename folders, rename an image, and use **Move** with a same-category destination
+selector, including the category root. Folder deletion, nested folders, copying,
+drag-and-drop and bulk operations are excluded. Existing images and new uploads
+start at their category root. The existing prohibition on changing an image's
+category remains; cross-category/campaign folder references are rejected by database
+foreign keys.
+
+Category/folder navigation has a root breadcrumb, empty-folder state and wrapping
+names. Save/Cancel forms expose pending/errors, retain failed input and reject
+blank/control-character names or names over 255 Unicode characters. Display names
+are rendered as text. Completed campaigns offer no mutation controls.
+
+Both active GM galleries put the image name and a three-dot button in a compact
+caption below the image. The menu contains Rename, Move and Delete in that order.
+The image opener and menu are separate controls. Delete confirms first, then
+reuses the authorized Storage-first workflow. Deleting the currently presented
+image stops its presentation after confirmation; cancelling does not stop it.
+
+Folders and their associations are separate GM-only metadata. Players retain their
+flat category-based view of only authorized images. Renaming updates display-name
+metadata; moving updates one logical association. Neither action touches Storage,
+visibility, recipients or image identity. Game Room selection uses the stable image
+ID across rename/move and does not issue Share/Stop Share or replace a presentation.
+The common client hook loads organization when the standalone Gallery or Game Room
+page mounts. An already-open page needs reopening or a full refresh to pick up
+organization changes made in another surface; no Realtime channel is introduced.
+
+The forward-only Gallery migration is required before activating the new client.
+
 Pre-Phase-5 Add-on — GM Computer Audio Sharing is IMPLEMENTED / DEPLOYED / MANUAL PRODUCTION ACCEPTANCE PENDING. A connected GM can explicitly share computer audio into this same LiveKit room independently of mic, camera, Game Session and image presentation. The compact header control exposes transient 128/192 kbps targets (default 192); changing quality requires stopping first. Remote GM computer audio uses a second audio attachment and the existing Enable sound path, with no local playback. Late Players subscribe through normal LiveKit track subscription and the authoritative membership mapping, without restarting the capture.
 
 Initial capture support is Windows 11 with current stable Chrome/Edge. Prefer a desktop application's Window and explicitly enable audio in the native picker (Share with system audio or the equivalent toggle); Entire screen + system audio remains fallback and may include other apps/notifications. The request uses `windowAudio: "window"`, `systemAudio: "include"` and `selfBrowserSurface: "exclude"`; the picker is authoritative and the website neither selects Spotify nor guarantees application isolation. Do not select the Game Room browser window. Actual video-track `displaySurface` is read before stopping video: usable Window audio does not require `restrictOwnAudio`, while Monitor/system audio must confirm it as true before and after video stop or all tracks stop without publication. Browser tabs and unknown/invalid surfaces are rejected. Display video is stopped before publishing audio and is never sent; engines that end audio with video are rejected. Site/native Stop, Leave, terminal disconnect and unmount release capture; ordinary reconnect retains it without another picker. No other OS/browser capture support is promised. Players need only ordinary LiveKit audio playback support. Real multi-user selected-application isolation/capture/echo acceptance is deferred until a gaming session; it does not reopen Phase 4 or block Phase 5A planning.

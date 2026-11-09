@@ -22,6 +22,9 @@ import {
   type CampaignGalleryCategory,
 } from "@/lib/campaign-handouts/contracts";
 import type { GameSessionState } from "@/lib/game-sessions/contracts";
+import { useCampaignGalleryOrganization } from "@/lib/campaign-handouts/use-organization";
+import { galleryImageIsInFolder } from "@/lib/campaign-handouts/organization";
+import { CampaignGalleryFolders, CampaignGalleryImageActions } from "./campaign-gallery-organization";
 
 const CATEGORY_TRANSLATION_KEYS: Record<CampaignGalleryCategory, string> = {
   handout: "categories.handout",
@@ -47,6 +50,7 @@ export type CampaignGameRoomGalleryItem = {
   imageId: string;
   displayName: string;
   localSignedUrl: string | null;
+  storagePath: string;
   category: CampaignGalleryCategory;
 };
 
@@ -95,6 +99,7 @@ export default function CampaignGameRoomWorkspace({
 }) {
   const translations = useTranslations("CampaignGameRoom");
   const galleryTranslations = useTranslations("CampaignHandouts");
+  const organizationTranslations = useTranslations("CampaignGalleryOrganization");
   const cocTranslations = useTranslations("Coc7eDiceRoller");
   const [activeTool, setActiveTool] = useState<
     "journal" | "gallery" | "dice" | "characters" | "notes"
@@ -104,8 +109,16 @@ export default function CampaignGameRoomWorkspace({
   const [cocDiceMode, setCocDiceMode] = useState<"percentile" | "other">(
     "percentile",
   );
-  const [selectedImage, setSelectedImage] =
-    useState<CampaignGameRoomGalleryItem | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
+  const [selectedImageDeleting, setSelectedImageDeleting] = useState(false);
+  const [folderId, setFolderId] = useState<string | null>(null);
+  const organization = useCampaignGalleryOrganization(campaignId, isGameMaster);
+  const currentGalleryItems = galleryItems.filter((item) => !deletedImageIds.includes(item.imageId)).map((item) => ({ ...item,
+    displayName: organization.names[item.imageId] ?? item.displayName }));
+  const selectedImage = currentGalleryItems.find((item) => item.imageId === selectedImageId) ?? null;
+  const selectedLocation = organization.locations.find((location) => location.image_id === selectedImageId);
+  const selectedFolder = organization.folders.find((folder) => folder.id === selectedLocation?.folder_id);
   const journalEndRef = useRef<HTMLDivElement | null>(null);
   const [openedCharacter, setOpenedCharacter] = useState<OpenGameRoomCharacter | null>(null);
   const [startPrompt, setStartPrompt] = useState(false);
@@ -118,7 +131,7 @@ export default function CampaignGameRoomWorkspace({
   }, [activeTool, gameSession.journal.length]);
 
   const visibleItems = activeCategory
-    ? galleryItems.filter((item) => item.category === activeCategory)
+    ? currentGalleryItems.filter((item) => item.category === activeCategory && galleryImageIsInFolder(item.imageId, organization.locations, folderId))
     : [];
   const expandedImageUrl = isGameMaster
     ? selectedImage?.localSignedUrl ?? null
@@ -127,12 +140,14 @@ export default function CampaignGameRoomWorkspace({
   function closeGallery() {
     setActiveTool("journal");
     setActiveCategory(null);
-    setSelectedImage(null);
+    setSelectedImageId(null);
+    setFolderId(null);
   }
 
   function openGallery() {
     setActiveCategory("handout");
-    setSelectedImage(null);
+    setSelectedImageId(null);
+    setFolderId(null);
     setActiveTool("gallery");
   }
 
@@ -143,13 +158,18 @@ export default function CampaignGameRoomWorkspace({
 
   function openImage(item: CampaignGameRoomGalleryItem) {
     if (item.localSignedUrl) {
-      setSelectedImage(item);
+      setSelectedImageId(item.imageId);
     }
+  }
+
+  function imageDeleted(imageId: string) {
+    setDeletedImageIds((current) => [...current, imageId]);
+    setSelectedImageId((current) => current === imageId ? null : current);
   }
 
   async function closeSelectedImage() {
     if (isPresenting && !(await onStopShare())) return;
-    setSelectedImage(null);
+    setSelectedImageId(null);
   }
 
   function handleImageKeyDown(
@@ -299,7 +319,13 @@ export default function CampaignGameRoomWorkspace({
             </div>
           ) : <GameRoomCharactersList campaignId={campaignId} onOpen={setOpenedCharacter} />
         ) : isGameMaster && selectedImage?.localSignedUrl ? (
-          <div className="relative min-h-0 w-full" data-game-room-local-image>
+          <div className="flex min-h-0 w-full flex-col" data-game-room-local-image>
+            <div className="shrink-0 px-2 py-1">
+              <p className="truncate text-xs text-white/70" title={selectedFolder?.name}>
+                {galleryTranslations(CATEGORY_TRANSLATION_KEYS[selectedImage.category])} / {selectedFolder?.name ?? organizationTranslations("root")}
+              </p>
+            </div>
+            <div className="relative min-h-0 flex-1">
             <Image
               src={selectedImage.localSignedUrl}
               alt={translations("gallery.presentedImageAlt")}
@@ -309,6 +335,16 @@ export default function CampaignGameRoomWorkspace({
               className="object-contain"
               loading="eager"
             />
+            </div>
+            <div className="max-h-[55%] shrink-0 overflow-y-auto">
+              <CampaignGalleryImageActions key={selectedImage.imageId} organization={organization}
+                campaignId={campaignId} imageId={selectedImage.imageId} category={selectedImage.category}
+                displayName={selectedImage.displayName} storagePath={selectedImage.storagePath}
+                disabled={presentationBusy}
+                beforeDelete={async () => !isPresenting || onStopShare()}
+                onDeletePendingChange={setSelectedImageDeleting}
+                onDeleted={() => imageDeleted(selectedImage.imageId)} />
+            </div>
           </div>
         ) : !isGameMaster && sharedPresentationUrl ? (
           <div className="relative min-h-0 w-full" data-game-room-shared-image>
@@ -327,15 +363,17 @@ export default function CampaignGameRoomWorkspace({
             className="min-h-0 w-full overflow-y-auto p-3"
             data-game-room-gallery-list
           >
-            {visibleItems.length === 0 ? (
+            <CampaignGalleryFolders key={activeCategory} organization={organization} category={activeCategory}
+              folderId={folderId} onFolderChange={setFolderId} editable={isGameMaster} />
+            {!organization.loading && !organization.loadError && visibleItems.length === 0 ? (
               <p className="flex min-h-full items-center justify-center p-4 text-center text-sm text-white/65">
-                {translations("gallery.emptyCategory")}
+                {folderId ? organizationTranslations("emptyFolderTitle") : translations("gallery.emptyCategory")}
               </p>
-            ) : (
-              <div className="grid grid-cols-3 gap-2">
+            ) : !organization.loading && !organization.loadError ? (
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {visibleItems.map((item) => (
+                  <article key={item.imageId} className="min-w-0 overflow-hidden rounded-lg border border-white/25 bg-white/5">
                   <button
-                    key={item.key}
                     type="button"
                     disabled={!item.localSignedUrl}
                     onDoubleClick={() => openImage(item)}
@@ -344,16 +382,20 @@ export default function CampaignGameRoomWorkspace({
                     aria-label={translations("gallery.openImage", {
                       name: item.displayName,
                     })}
-                    className="flex min-h-16 min-w-0 items-center justify-center rounded-lg border border-white/25 bg-white/5 px-2 py-2 text-center text-xs font-semibold text-white/90 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-45 sm:text-sm"
+                    className="relative block aspect-video w-full overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-45"
                     data-game-room-gallery-item
                   >
-                    <span className="line-clamp-3 min-w-0 break-words">
-                      {item.displayName}
-                    </span>
+                    {item.localSignedUrl
+                      ? <Image src={item.localSignedUrl} alt="" fill unoptimized sizes="(min-width: 40rem) 20vw, 100vw" className="object-contain" />
+                      : <span className="text-sm text-white/80">{organizationTranslations("previewUnavailable")}</span>}
                   </button>
+                  {isGameMaster ? <CampaignGalleryImageActions organization={organization} campaignId={campaignId} imageId={item.imageId}
+                    category={item.category} displayName={item.displayName} storagePath={item.storagePath}
+                    onDeleted={() => imageDeleted(item.imageId)} /> : null}
+                  </article>
                 ))}
               </div>
-            )}
+            ) : null}
           </div>
         ) : null}
       </section>
@@ -404,7 +446,7 @@ export default function CampaignGameRoomWorkspace({
             <button
               type="button"
               onClick={() => void closeSelectedImage()}
-              disabled={presentationBusy}
+              disabled={presentationBusy || selectedImageDeleting}
               aria-label={translations("tools.back")}
               className={TOOL_BUTTON_CLASS}
             >
@@ -412,7 +454,7 @@ export default function CampaignGameRoomWorkspace({
             </button>
             <button
               type="button"
-              disabled={!connected || presentationBusy}
+              disabled={!connected || presentationBusy || selectedImageDeleting}
               onClick={() =>
                 void (isPresenting
                   ? onStopShare()
@@ -426,7 +468,7 @@ export default function CampaignGameRoomWorkspace({
             </button>
             <button
               type="button"
-              disabled={!connected || !isPresenting || presentationBusy}
+              disabled={!connected || !isPresenting || presentationBusy || selectedImageDeleting}
               onClick={() =>
                 void onSetPresentationExpanded(!presentationExpanded)
               }
@@ -459,7 +501,7 @@ export default function CampaignGameRoomWorkspace({
                   key={category}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => setActiveCategory(category)}
+                  onClick={() => { setActiveCategory(category); setFolderId(null); }}
                   className={`min-h-11 min-w-0 rounded-lg border px-1 py-2 text-xs font-semibold sm:px-2 sm:text-sm ${
                     active
                       ? "border-amber-200 bg-amber-100 text-amber-950 shadow-sm"

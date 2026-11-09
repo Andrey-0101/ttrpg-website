@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:gallery": "node --test tests/campaigns/gallery-organization.test.mjs && node --test tests/database/campaign-gallery-organization.test.mjs",
     "test:diagnostics": "tsc --project tsconfig.diagnostics.test.json && node node_modules/.cache/diagnostic-tests/tests/diagnostics/contracts.test.js",
     "test:diagnostics:db": "tsc --project tsconfig.diagnostics.test.json && node node_modules/.cache/diagnostic-tests/tests/diagnostics/database.test.js",
     "dev": "next dev",
@@ -29,6 +30,7 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.15",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
