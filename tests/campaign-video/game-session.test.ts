@@ -98,7 +98,14 @@ test("Journal is the arrow-free root and Gallery opens at Handouts", () => {
     /function openGallery\(\)[\s\S]*?setActiveCategory\("handout"\)[\s\S]*?setActiveTool\("gallery"\)/u,
   );
   assert.match(workspace, /onClick=\{closeGallery\}[\s\S]*?tools\.back/u);
-  assert.match(workspace, /disabled=\{!connected \|\| presentationBusy\}/u);
+  const shareButton = workspace.match(
+    /<button\b(?:(?!<\/button>)[\s\S])*?onShareImage\(selectedImage\.imageId\)(?:(?!<\/button>)[\s\S])*?<\/button>/u,
+  );
+  assert.ok(shareButton, "the selected image has a presentation button");
+  assert.match(
+    shareButton[0],
+    /disabled=\{!connected \|\| presentationBusy \|\| selectedImageDeleting\}/u,
+  );
   assert.doesNotMatch(workspace, /fake|mockJournal|sampleEvent/ui);
 });
 
