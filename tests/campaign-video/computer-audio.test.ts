@@ -313,7 +313,11 @@ test("late publication after Stop is unpublished again and cannot resurrect shar
   assert.equal(h.audio[0]?.listeners, 0);
 });
 
-type FakePublication = { trackSid: string; source: string; isMuted: boolean; track: { attach(element: unknown): void; detach(element: unknown): void } };
+type FakePublication = { trackSid: string; source: string; isMuted: boolean; track: {
+  attach(element: unknown): void;
+  detach(element: unknown): void;
+  setVolume?(value: number): void;
+} };
 function adapterHarness(capture: () => Promise<MediaStream>, localIdentity = "gm") {
   const events = { TrackPublished: "published", TrackSubscribed: "subscribed", TrackUnpublished: "unpublished", TrackUnsubscribed: "unsubscribed", TrackMuted: "muted", TrackUnmuted: "unmuted", LocalTrackPublished: "localPublished", LocalTrackUnpublished: "localUnpublished", ParticipantConnected: "participantConnected", ParticipantDisconnected: "participantDisconnected", DataReceived: "data", Reconnecting: "reconnecting", Reconnected: "reconnected", Disconnected: "disconnected", AudioPlaybackStatusChanged: "audioPlayback", MediaDevicesError: "mediaError", SignalReconnecting:"signalReconnecting", TrackStreamStateChanged:"streamState", ConnectionQualityChanged:"quality" };
   let captures = 0;
@@ -505,6 +509,43 @@ test("a Player receives GM computer audio independently of microphone/camera and
   await h.controller.dispose();
 });
 
+test("music volume reaches the current GM audio track even when LiveKit replaces it under the same SID", async () => {
+  const h = controllerHarness(async () => captured().stream, false);
+  await h.controller.join();
+  const microphoneVolumes: number[] = [];
+  const initialMusicVolumes: number[] = [];
+  const newMusicVolumes: number[] = [];
+  const track = (volumes: number[]) => ({
+    attach: () => undefined,
+    detach: () => undefined,
+    setVolume: (value: number) => volumes.push(value),
+  });
+  const publications = new Map<string, FakePublication>([
+    ["mic", { source: "microphone", trackSid: "mic", isMuted: false, track: track(microphoneVolumes) }],
+    ["music", { source: "screen_share_audio", trackSid: "music", isMuted: false, track: track(initialMusicVolumes) }],
+  ]);
+  h.room().remoteParticipants.set("gm", { identity: "gm", isLocal: false, trackPublications: publications });
+  h.room().emit(h.events.TrackSubscribed);
+  const gm = () => h.controller.getSnapshot().participants.find((entry) => entry.role === "game_master")!;
+  const initialMusic = gm().computerAudio!;
+  assert.equal(gm().microphone?.setVolume, undefined);
+  for (const value of [1, 0.5, 0]) initialMusic.setVolume!(value);
+  assert.deepEqual(initialMusicVolumes, [1, 0.5, 0]);
+
+  h.room().emit(h.events.Reconnecting);
+  publications.get("music")!.track = track(newMusicVolumes);
+  h.room().emit(h.events.Reconnected);
+  assert.equal(h.controller.getSnapshot().phase, "connected");
+  const newMusic = gm().computerAudio!;
+  assert.equal(newMusic.id, initialMusic.id);
+  assert.notEqual(newMusic, initialMusic);
+  newMusic.setVolume!(0);
+  assert.deepEqual(newMusicVolumes, [0]);
+  assert.deepEqual(microphoneVolumes, []);
+  assert.deepEqual(h.room().publishes, []);
+  await h.controller.dispose();
+});
+
 for (const action of ["leave", "dispose", "terminal"] as const) {
   test(`adapter/controller late picker after ${action} is discarded without camera/mic disruption`, async () => {
     const value = captured();
@@ -594,6 +635,7 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
     require(name: string) {
       if (name === "react/jsx-runtime") return jsxRuntime;
       if (name === "react") return {
+        Fragment: jsxRuntime.Fragment,
         useEffect: () => undefined,
         useRef: () => ({ current: null }),
         // A present portal host lets this isolated render exercise header controls.
@@ -616,7 +658,10 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
       assert.fail(`Unexpected component dependency: ${name}`);
     },
   });
-  const track = (kind: "camera" | "microphone" | "computerAudio") => ({ id: kind, kind, attach: () => undefined, detach: () => undefined });
+  const track = (kind: "camera" | "microphone" | "computerAudio") => ({
+    id: kind, kind, attach: () => undefined, detach: () => undefined,
+    ...(kind === "computerAudio" ? { setVolume: () => undefined } : {}),
+  });
   function render(gm: boolean, allowed = gm, connected = true, computerAudio = true, names: CampaignVideoParticipantDirectoryEntry[] = directory, gameSystem = "coc_7e") {
     const entries = names.map((entry) => ({ ...entry, isCurrentUser: entry.role === (gm ? "game_master" : "player") }));
     return renderToStaticMarkup(exports.CampaignVideoRoomLayout!({
@@ -637,19 +682,25 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
   }
   const gm = render(true);
   assert.match(gm, /data-computer-audio-controls/);
+  assert.doesNotMatch(gm, /class="game-room-music-volume/);
   assert.equal((gm.match(/<audio/g) ?? []).length, 0);
   assert.doesNotMatch(render(true, false), /data-computer-audio-controls/);
   assert.doesNotMatch(render(true, true, false), /data-computer-audio-controls/);
   const player = render(false);
   assert.doesNotMatch(player, /data-computer-audio-controls/);
   assert.match(player, /data-computer-audio-playback/);
+  assert.match(player, /<\/article><\/div><label class="game-room-music-volume[^"]*"><span>Music volume<\/span>/u);
+  assert.match(player, /<input type="range" min="0" max="100" step="1" aria-valuetext="100%"/u);
   assert.equal((player.match(/<audio/g) ?? []).length, 2);
-  assert.equal((render(false, false, true, false).match(/<audio/g) ?? []).length, 1);
+  const noMusic = render(false, false, true, false);
+  assert.equal((noMusic.match(/<audio/g) ?? []).length, 1);
+  assert.doesNotMatch(noMusic, /class="game-room-music-volume/);
   const rawNames = directory.map((entry) => ({ ...entry, profileName: "Andrey", characterName: entry.role === "player" ? "Иван Петров" : null }));
   for (const nextLocale of ["en", "ru"]) {
     locale = nextLocale;
     for (const gmViewer of [true, false]) {
       const html = render(gmViewer, true, true, true, rawNames);
+      if (!gmViewer) assert.ok(html.includes(locale === "ru" ? "Громкость музыки" : "Music volume"));
       assert.match(html, /Andrey aka Иван Петров/u);
       assert.ok(html.includes(`Andrey aka ${locale === "ru" ? "Мастер игры" : "Game Master"}`));
       const missing = render(gmViewer, true, true, true, rawNames.map((entry) => ({ ...entry, profileName: " \t", characterName: " " })));

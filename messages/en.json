@@ -663,6 +663,7 @@
       "characterFallback": "Strange stranger"
     },
     "computerAudio": {
+      "musicVolume": "Music volume",
       "title": "Computer audio",
       "active": "Computer audio is shared",
       "help": "Windows 11, current Chrome or Edge: for one application's audio, select its Window and enable the browser's audio toggle (Share with system audio or equivalent). Choose Entire screen only for system audio; other apps and notifications may be heard. Do not select the Game Room browser window.",

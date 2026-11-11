@@ -16,6 +16,7 @@ function source(...segments: string[]) {
 test("the canonical directory returns the same raw names to every viewer through the narrow RPC", async () => {
   const exports: { loadCampaignParticipantDirectory?: (options: unknown) => Promise<{
     ready: boolean; participantDirectory: Record<string, unknown>[];
+    characterNamesByUserId: ReadonlyMap<string, string>;
   }> } = {};
   runInNewContext(transpileModule(source("lib", "campaign-video", "participant-directory.server.ts"), {
     compilerOptions: { module: ModuleKind.CommonJS },
@@ -28,6 +29,8 @@ test("the canonical directory returns the same raw names to every viewer through
     },
   });
   let rpcError: unknown = null;
+  let rpcCalls = 0;
+  let assignments = [{ participant_id: "alice", character_name: "Иван Петров" }];
   const supabase = {
     from(table: string) {
       assert.ok(table === "campaign_members" || table === "profiles", "never read full characters for labels");
@@ -51,8 +54,9 @@ test("the canonical directory returns the same raw names to every viewer through
       return query;
     },
     async rpc(name: string, args: { target_campaign_id: string }) {
+      rpcCalls += 1;
       assert.equal(name, "get_campaign_video_character_names"); assert.equal(args.target_campaign_id, "campaign");
-      return { data: rpcError ? null : [{ participant_id: "alice", character_name: "Иван Петров" }], error: rpcError };
+      return { data: rpcError ? null : assignments, error: rpcError };
     },
   };
   const load = (currentUserId: string) => exports.loadCampaignParticipantDirectory!({
@@ -69,7 +73,15 @@ test("the canonical directory returns the same raw names to every viewer through
   assert.equal(player.participantDirectory[1].profileName, null, "username is never a substitute");
   assert.equal(player.participantDirectory[1].characterName, "Иван Петров");
   assert.equal(player.participantDirectory[2].characterName, null);
+  assert.equal(player.characterNamesByUserId.get("alice"), "Иван Петров");
+  assert.equal(player.characterNamesByUserId.has("bob"), false);
   assert.deepEqual(Object.keys(player.participantDirectory[1]).sort(), ["characterName", "isCurrentUser", "playerPosition", "profileName", "providerIdentity", "role"]);
+  assignments = [{ participant_id: "bob", character_name: "Mary Shelley" }];
+  const refreshed = await load("alice");
+  assert.equal(refreshed.characterNamesByUserId.has("alice"), false);
+  assert.equal(refreshed.characterNamesByUserId.get("bob"), "Mary Shelley");
+  assert.equal(refreshed.participantDirectory[2].characterName, "Mary Shelley");
+  assert.equal(rpcCalls, 3, "one authorized names lookup per load");
   rpcError = { message: "unavailable" };
   assert.equal((await load("alice")).ready, false, "a failed lookup is not mistaken for an absent name");
 });

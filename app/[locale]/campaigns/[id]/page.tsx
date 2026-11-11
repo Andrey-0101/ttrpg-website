@@ -520,6 +520,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           isGameMaster={isGameMaster}
           locale={locale}
           initialMembers={rosterResult.members}
+          characterNamesByUserId={participantDirectoryResult.characterNamesByUserId}
           loadError={!rosterResult.ready}
         />
 

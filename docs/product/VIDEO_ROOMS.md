@@ -95,6 +95,12 @@ The header control has localized idle/starting/sharing/stopping feedback and non
 
 Full real-world multi-user audio acceptance is deferred until an actual gaming session and does not block Phase 5A planning. Echo safety, application isolation and multi-machine acceptance are not claimed complete. Automated mocked-capture/adapter/controller/token/UI tests do not prove native Windows capture, application isolation or echo safety. Manual Production acceptance must cover Chrome and Edge, GM + real Player, Window + audio toggle, selected desktop sound audible while another application's sound is not, Entire screen fallback, independent microphone, no delayed own-voice echo, no screen video, both qualities, site/native Stop, late join and reconnect without a picker.
 
+While the GM's computer audio is available, each Player can adjust Music volume
+from 0% to 100% beside the GM tile. The default is 100%. The open Game Room keeps
+the chosen value and reapplies it to that listener's incoming `ScreenShareAudio`
+track after sharing restarts or the connection resumes. Microphone playback uses
+its own audio track.
+
 ## Deployed technical diagnostics boundary
 
 Developer Diagnostics (merged/deployed PR #73/#74) observes public read-only LiveKit connection statistics without media recording, new media grants or another room. Game Session does not control collection. One real GM-only recording and ZIP export succeeded; multi-user acceptance remains pending and is postponed until real play. The single-GM camera had no subscribers, so lack of outgoing video traffic alone is not evidence of a defect. See [diagnostics release/acceptance evidence](../architecture/DEVELOPER_DIAGNOSTICS.md).

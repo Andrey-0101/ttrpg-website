@@ -33,6 +33,7 @@ export type CampaignVideoTrackAttachment = {
   kind: CampaignVideoTrackKind;
   attach(element: HTMLMediaElement): void;
   detach(element: HTMLMediaElement): void;
+  setVolume?(volume: number): void;
 };
 
 export type CampaignVideoProviderParticipant = {

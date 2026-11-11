@@ -41,6 +41,7 @@ export type CampaignParticipantDirectoryResult = {
   members: CampaignParticipant[];
   profiles: ParticipantProfile[];
   gameMasterName: string;
+  characterNamesByUserId: ReadonlyMap<string, string>;
   participantDirectory: CampaignVideoParticipantDirectoryEntry[];
 };
 
@@ -128,6 +129,7 @@ export async function loadCampaignParticipantDirectory({
     members,
     profiles,
     gameMasterName,
+    characterNamesByUserId,
     participantDirectory,
   };
 }
