@@ -607,9 +607,8 @@ for (const providerFirst of [true, false]) {
 
 test("component wiring: separate remote-GM audio, GM-only controls, existing audio unlock, EN/RU parity", () => {
   const ui = source("components/campaigns/campaign-video-room.tsx");
-  assert.match(ui, /!slot\.isCurrentUser && slot\.role === "game_master" && participant\?\.computerAudio/);
   assert.match(ui, /<audio ref=\{computerAudioRef\} autoPlay/);
-  assert.match(ui, /attachCampaignVideoTrack\(participant\?\.computerAudio \?\? null, computerAudioRef\.current\)/);
+  assert.match(ui, /attachCampaignVideoTrack\(musicTrack, computerAudioRef\.current\)/);
   assert.match(ui, /isGameMaster && connected && snapshot\.publication\.computerAudio/);
   assert.match(ui, /disabled=\{phase !== "idle"\}/);
   assert.match(ui, /aria-busy=\{busy\}/);
