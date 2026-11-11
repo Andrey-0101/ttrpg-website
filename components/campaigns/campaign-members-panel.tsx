@@ -18,6 +18,7 @@ type CampaignMembersPanelProps = {
   isGameMaster: boolean;
   locale: string;
   initialMembers: CampaignRosterMember[];
+  characterNamesByUserId: ReadonlyMap<string, string>;
   loadError: boolean;
 };
 
@@ -30,6 +31,7 @@ export default function CampaignMembersPanel({
   isGameMaster,
   locale,
   initialMembers,
+  characterNamesByUserId,
   loadError,
 }: CampaignMembersPanelProps) {
   const translations = useTranslations("CampaignMembers");
@@ -155,8 +157,8 @@ export default function CampaignMembersPanel({
                   <p className="break-all font-semibold">
                     {member.label}
                   </p>
-                  <p className="mt-1 text-sm text-white/70">
-                    {translations("playerRole")}
+                  <p className="mt-1 wrap-anywhere text-sm text-white/70">
+                    {characterNamesByUserId.get(member.userId) || translations("playerRole")}
                   </p>
                   <p className="mt-1 text-xs text-white/55">
                     {translations("joined", {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -17,6 +17,7 @@ import {
 import type {
   CampaignVideoParticipantDirectoryEntry,
   CampaignVideoRoomSnapshot,
+  CampaignVideoTrackAttachment,
   ComputerAudioQuality,
 } from "@/lib/campaign-video/browser/contracts";
 import { createLiveKitCampaignVideoSession } from "@/lib/campaign-video/browser/livekit";
@@ -242,6 +243,8 @@ function ParticipantCard({
   slot,
   snapshot,
   hasBeenSeen,
+  musicTrack,
+  musicVolume,
   canJoin,
   onJoin,
   onCameraChange,
@@ -252,6 +255,8 @@ function ParticipantCard({
   slot: CampaignVideoParticipantSlot;
   snapshot: CampaignVideoRoomSnapshot;
   hasBeenSeen: boolean;
+  musicTrack: CampaignVideoTrackAttachment | null;
+  musicVolume: number;
   canJoin: boolean;
   onJoin(): void;
   onCameraChange(enabled: boolean): void;
@@ -274,9 +279,13 @@ function ParticipantCard({
     [participant?.microphone],
   );
   useEffect(
-    () => attachCampaignVideoTrack(participant?.computerAudio ?? null, computerAudioRef.current),
-    [participant?.computerAudio],
+    () => attachCampaignVideoTrack(musicTrack, computerAudioRef.current),
+    [musicTrack],
   );
+  useEffect(() => {
+    // Apply after attachment: LiveKit 2.21 does not restore a cached zero on attach.
+    musicTrack?.setVolume?.(musicVolume / 100);
+  }, [musicTrack, musicVolume, snapshot.phase]);
 
   const role =
     slot.role === "game_master"
@@ -341,7 +350,7 @@ function ParticipantCard({
       {!slot.isCurrentUser && participant?.microphone && (
         <audio ref={audioRef} autoPlay />
       )}
-      {!slot.isCurrentUser && slot.role === "game_master" && participant?.computerAudio && (
+      {musicTrack && (
         <audio ref={computerAudioRef} autoPlay data-computer-audio-playback />
       )}
 
@@ -492,6 +501,7 @@ export function CampaignVideoRoomLayout({
   onJournalEvent,
 }: CampaignVideoRoomLayoutProps) {
   const translations = useTranslations("CampaignVideoRoom");
+  const [musicVolume, setMusicVolume] = useState(100);
   const statusMessage =
     campaignStatus !== "active"
       ? translations("completedHelp")
@@ -509,6 +519,12 @@ export function CampaignVideoRoomLayout({
     participantDirectory,
     snapshot.participants,
   );
+  const gmSlot = slots.find((slot) => slot.role === "game_master");
+  const musicTrack =
+    !isGameMaster && gmSlot && !gmSlot.isCurrentUser
+      ? gmSlot.participant?.computerAudio ?? null
+      : null;
+  const showMusicVolume = Boolean(musicTrack?.setVolume);
 
   return (
     <>
@@ -528,6 +544,7 @@ export function CampaignVideoRoomLayout({
         data-presentation-expanded={
           snapshot.presentationExpanded ? "true" : "false"
         }
+        data-music-volume={showMusicVolume ? "true" : undefined}
       >
         <p
           className="sr-only"
@@ -537,28 +554,45 @@ export function CampaignVideoRoomLayout({
           {statusMessage}
         </p>
         {slots.map((slot) => (
-          <div
-            key={slot.key}
-            className={`game-room-slot game-room-slot-${slot.key}`}
-          >
-            <ParticipantCard
-              campaignGameSystem={campaignGameSystem}
-              slot={slot}
-              snapshot={snapshot}
-              hasBeenSeen={
-                slot.directoryEntry
-                  ? seenParticipantIdentities.has(
-                      slot.directoryEntry.providerIdentity,
-                    )
-                  : false
-              }
-              canJoin={canJoin}
-              onJoin={onJoin}
-              onCameraChange={onCameraChange}
-              onMicrophoneChange={onMicrophoneChange}
-              onEnableSound={onEnableSound}
-            />
-          </div>
+          <Fragment key={slot.key}>
+            <div className={`game-room-slot game-room-slot-${slot.key}`}>
+              <ParticipantCard
+                campaignGameSystem={campaignGameSystem}
+                slot={slot}
+                snapshot={snapshot}
+                hasBeenSeen={
+                  slot.directoryEntry
+                    ? seenParticipantIdentities.has(
+                        slot.directoryEntry.providerIdentity,
+                      )
+                    : false
+                }
+                musicTrack={slot === gmSlot ? musicTrack : null}
+                musicVolume={musicVolume}
+                canJoin={canJoin}
+                onJoin={onJoin}
+                onCameraChange={onCameraChange}
+                onMicrophoneChange={onMicrophoneChange}
+                onEnableSound={onEnableSound}
+              />
+            </div>
+            {slot === gmSlot && showMusicVolume && (
+              <label className="game-room-music-volume grid w-full max-w-md min-w-0 grid-cols-[1fr_auto] items-center gap-x-2 rounded-lg border border-white/20 bg-neutral-950 px-2 text-xs text-white">
+                <span>{translations("computerAudio.musicVolume")}</span>
+                <span aria-hidden="true" className="tabular-nums">{musicVolume}%</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={musicVolume}
+                  aria-valuetext={`${musicVolume}%`}
+                  onChange={(event) => setMusicVolume(event.currentTarget.valueAsNumber)}
+                  className="col-span-2 h-6 w-full cursor-pointer accent-emerald-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-emerald-200"
+                />
+              </label>
+            )}
+          </Fragment>
         ))}
         <CampaignGameRoomWorkspace
           isGameMaster={isGameMaster}

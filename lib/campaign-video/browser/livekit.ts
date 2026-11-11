@@ -14,6 +14,7 @@ import type { StatsTrack } from "../../diagnostics/metrics";
 type AttachableTrack = {
   attach(element: HTMLMediaElement): unknown;
   detach(element: HTMLMediaElement): unknown;
+  setVolume?(volume: number): void;
 };
 
 type TrackPublication = {
@@ -42,7 +43,7 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
         frameRate: 30,
       },
     });
-    const attachments = new Map<string, CampaignVideoTrackAttachment>();
+    const attachments = new WeakMap<AttachableTrack, CampaignVideoTrackAttachment>();
     let disposed = false;
     let requestedDisconnect = false;
     let unregisterDiagnostics: (() => void) | null = null;
@@ -62,11 +63,10 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       publication: TrackPublication,
       kind: CampaignVideoTrackKind,
     ): CampaignVideoTrackAttachment | null {
-      if (!publication.track || publication.isMuted) return null;
-      const key = `${kind}:${publication.trackSid}`;
-      const existing = attachments.get(key);
-      if (existing) return existing;
       const providerTrack = publication.track;
+      if (!providerTrack || publication.isMuted) return null;
+      const existing = attachments.get(providerTrack);
+      if (existing) return existing;
       const created: CampaignVideoTrackAttachment = {
         id: publication.trackSid,
         kind,
@@ -77,7 +77,10 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
           providerTrack.detach(element);
         },
       };
-      attachments.set(key, created);
+      if (kind === "computerAudio" && providerTrack.setVolume) {
+        created.setVolume = (volume) => providerTrack.setVolume?.(volume);
+      }
+      attachments.set(providerTrack, created);
       return created;
     }
 
@@ -114,7 +117,11 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
     }
 
     const onReconnecting = () => { diagnosticMediaEvent({kind:"event",code:"room_reconnecting"}); callbacks.onReconnecting(); };
-    const onReconnected = () => { diagnosticMediaEvent({kind:"event",code:"room_reconnected"}); callbacks.onReconnected(); };
+    const onReconnected = () => {
+      diagnosticMediaEvent({kind:"event",code:"room_reconnected"});
+      emitParticipants();
+      callbacks.onReconnected();
+    };
     const onDisconnected = () => {
       if (requestedDisconnect || disposed) return;
       disposed = true;
@@ -123,7 +130,6 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       void computerAudio.dispose();
       signal.removeEventListener("abort", abort);
       removeListeners();
-      attachments.clear();
       callbacks.onTerminalDisconnect();
     };
     const onAudioPlaybackChanged = () =>
@@ -211,7 +217,6 @@ export const createLiveKitCampaignVideoSession: CampaignVideoRoomSessionFactory 
       requestedDisconnect = true;
       signal.removeEventListener("abort", abort);
       removeListeners();
-      attachments.clear();
       await computerAudio.dispose();
       await room.disconnect(true);
     }

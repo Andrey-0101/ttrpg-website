@@ -33,6 +33,7 @@ function panel(locale='en'){
     window:{confirm(message){confirms.push(message);return true;}},
   }).default;
   const props={gameSystem:'call-of-cthulhu-7e',campaignId:'campaign',campaignStatus:'active',currentUserId:'gm',gameMasterName:locale==='ru'?'Вы':'You',isGameMaster:true,locale,loadError:false,
+    characterNamesByUserId:new Map([['alice','Иван Петров']]),
     initialMembers:[{userId:'alice',label:'Alice Иван',joinedAt:'2026-11-01T12:00:00Z'},
       {userId:'bob',label:'bob.account@example.test',joinedAt:'2026-11-02T12:00:00Z'}]};
   return{props,operations,confirms,render(overrides={}){index=0;return Component({...props,...overrides});},
@@ -43,6 +44,11 @@ for(const locale of ['en','ru'])test(`Overview labels identify all Players and p
   const p=panel(locale),tree=p.render(),html=renderToStaticMarkup(tree);
   assert.ok(html.includes('Alice Иван'));assert.ok(html.includes('bob.account@example.test'));
   assert.ok(html.indexOf('Alice Иван')<html.indexOf('bob.account@example.test'));
+  const lines=nodes(tree).filter(node=>node.type==='p').map(node=>node.props.children);
+  const firstPlayer=lines.indexOf('Alice Иван');
+  const secondPlayer=lines.indexOf('bob.account@example.test');
+  assert.equal(lines[firstPlayer+1],'Иван Петров');
+  assert.equal(lines[secondPlayer+1],locale==='ru'?'Игрок':'Player');
   assert.ok(html.includes(locale==='ru'?'Хранитель':'Keeper'));assert.ok(html.includes(p.props.gameMasterName));
   const date=new Intl.DateTimeFormat(locale,{dateStyle:'medium'}).format(new Date(p.props.initialMembers[0].joinedAt));
   assert.ok(html.includes(date));assert.doesNotMatch(html,/aka|Campaign Player|Игрок кампании/);
@@ -54,6 +60,16 @@ for(const locale of ['en','ru'])test(`Overview labels identify all Players and p
   p.button(own,locale==='ru'?'Покинуть кампанию':'Leave campaign');
   const completed=p.render({campaignStatus:'completed'});
   assert.equal(nodes(completed).filter(n=>n.type==='button').length,0);
+});
+
+test('refreshed assignments replace the second line by participant ID without changing player labels',()=>{
+  const p=panel();
+  assert.match(renderToStaticMarkup(p.render()),/Иван Петров/u);
+  const tree=p.render({characterNamesByUserId:new Map([['bob','Mary Shelley']])});
+  const lines=nodes(tree).filter(node=>node.type==='p').map(node=>node.props.children);
+  assert.equal(lines[lines.indexOf('Alice Иван')+1],'Player');
+  assert.equal(lines[lines.indexOf('bob.account@example.test')+1],'Mary Shelley');
+  assert.ok(!lines.includes('Иван Петров'));
 });
 
 test('fresh roster props update labels without retaining initial names or modifying genuine chosen text',()=>{

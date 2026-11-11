@@ -58,6 +58,11 @@ select option {
   height: clamp(12rem, 45dvh, 32rem);
 }
 
+.game-room-music-volume {
+  align-self: center;
+  justify-self: center;
+}
+
 .game-room-grid[data-presentation-expanded="true"] {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(16rem, 1fr) auto;
@@ -110,6 +115,21 @@ select option {
   grid-area: player-6;
 }
 
+@media (max-width: 47.999rem) {
+  .game-room-grid[data-presentation-expanded="true"][data-music-volume="true"] {
+    grid-template-rows: minmax(16rem, 1fr) auto auto;
+  }
+
+  .game-room-grid[data-presentation-expanded="true"] .game-room-music-volume {
+    grid-row: 2;
+  }
+
+  .game-room-grid[data-presentation-expanded="true"][data-music-volume="true"]
+    [data-game-tools-panel] {
+    grid-row: 3;
+  }
+}
+
 @media (min-width: 48rem) and (max-width: 74.999rem) {
   .game-room-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -122,6 +142,12 @@ select option {
 
   .game-room-slot-gm {
     justify-self: center;
+    width: calc(50% - 0.375rem);
+  }
+
+  .game-room-grid[data-presentation-expanded="false"] .game-room-music-volume {
+    grid-column: 1 / -1;
+    grid-row: auto;
     width: calc(50% - 0.375rem);
   }
 
@@ -229,6 +255,15 @@ select option {
     grid-area: gm;
   }
 
+  .game-room-grid[data-presentation-expanded="false"][data-music-volume="true"] {
+    grid-template-areas:
+      "gm player-1 player-2"
+      "music . ."
+      "workspace player-3 player-4"
+      "workspace player-5 player-6";
+    grid-template-rows: minmax(0, 1fr) auto repeat(2, minmax(0, 1fr));
+  }
+
   .game-room-slot-player-1 {
     grid-area: player-1;
   }
@@ -311,5 +346,24 @@ select option {
   .game-room-grid[data-presentation-expanded="true"]
     [data-game-room-image-tools] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 48rem) {
+  .game-room-music-volume {
+    grid-area: music;
+  }
+
+  .game-room-grid[data-presentation-expanded="true"][data-music-volume="true"] {
+    grid-template-areas:
+      "gm expanded player-1"
+      "music expanded ."
+      "display expanded player-2"
+      "display expanded player-3"
+      "display expanded player-4"
+      "tools expanded player-5"
+      "tools expanded player-6";
+    grid-template-rows:
+      var(--game-room-expanded-row-height) auto repeat(5, var(--game-room-expanded-row-height));
   }
 }

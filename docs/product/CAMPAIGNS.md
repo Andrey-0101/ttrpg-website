@@ -342,10 +342,11 @@ GM browsing of Gallery inside Game Room does not require LiveKit. Players browse
 
 ### Campaign Overview Player names
 
-The Members panel identifies every Player, including the viewer, with trimmed
-`profiles.display_name`, otherwise the account email supplied by the campaign-scoped
-roster RPC. Username, character name and identifiers are not substitutes; there is
-no `aka`. The registration form uses Supabase email/password accounts. The app has
+The Members panel shows each Player's trimmed `profiles.display_name` or current
+account email on the first line. The second line shows the Player's active character
+in this campaign, or the localized Player role when there is no assignment. The
+GM's second line shows their system-specific role. The registration form uses
+Supabase email/password accounts. The app has
 no email-change form; the authoritative fallback is the current `auth.users.email`,
 which can differ from the original registration address after an Auth email change.
 No historical address tracking or profile email copy is introduced.
@@ -358,10 +359,10 @@ the campaign GM/current members. Anonymous, outsider and removed-member calls ar
 denied. Existing player order, dates, roles, Leave/Remove permissions and GM card
 behavior remain unchanged; Remove buttons identify their target accessibly.
 
-Each roster load reads current profile/account values. The panel renders fresh
-server props rather than retaining its first loaded names. Unavailable identity
-data produces the existing retryable loading error. Video-room labels keep their
-separate profile/Incognito `aka` character rules and receive no account email.
+Each roster load reads current profile/account values and reuses the authorized
+participant-to-character-name lookup from the video directory. The refresh after
+assigning or unlinking a character updates the second line by participant ID.
+Unavailable identity data produces the existing retryable loading error.
 
 The forward-only roster migration is required before activating the roster client.
 
