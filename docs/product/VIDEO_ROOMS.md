@@ -29,7 +29,8 @@ The server:
 The client provides:
 
 - explicit Join and Leave;
-- local camera and microphone controls;
+- local camera and microphone controls, including an optional mirror for the viewer's own camera preview.
+  The browser remembers the preference, which defaults to off.
 - participant media tiles in stable GM and Player positions;
 - browser sound unlock when required;
 - reconnect, cleanup, and localized failure states;
