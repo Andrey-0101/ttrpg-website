@@ -625,6 +625,7 @@ test("component wiring: separate remote-GM audio, GM-only controls, existing aud
 
 test("rendered Game Room authorizes the GM control and has two remote audio elements, never local loopback", () => {
   let locale = "en";
+  let mirrorPreview = false;
   const exports: { CampaignVideoRoomLayout?: (props: Record<string, unknown>) => ReactNode } = {};
   const code = transpileModule(source("components/campaigns/campaign-video-room.tsx"), {
     compilerOptions: { module: ModuleKind.CommonJS, target: ScriptTarget.ES2020, jsx: JsxEmit.ReactJSX },
@@ -637,6 +638,7 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
         useEffect: () => undefined,
         useId: () => "music-volume",
         useRef: () => ({ current: null }),
+        useSyncExternalStore: () => mirrorPreview,
         // A present portal host lets this isolated render exercise header controls.
         useState: (initial: unknown) => [initial === null ? {} : initial, () => undefined],
       };
@@ -653,6 +655,7 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
       if (name === "@/lib/campaign-video/browser/controller") return controllerModule;
       if (name === "@/lib/campaign-video/browser/presentation") return presentationModule;
       if (name === "@/lib/campaign-video/browser/media") return { attachCampaignVideoTrack };
+      if (name === "@/lib/campaign-video/browser/mirror-preview") return {};
       if (["@/lib/campaign-video/browser/livekit", "@/lib/campaign-video/browser/directory-sync", "@/utils/supabase/client"].includes(name)) return {};
       assert.fail(`Unexpected component dependency: ${name}`);
     },
@@ -669,7 +672,7 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
       snapshot: { ...controllerModule.createInitialCampaignVideoRoomSnapshot(), phase: connected ? "connected" : "idle",
         publication: { audio: true, video: true, computerAudio: allowed },
         participants: entries.map((entry) => ({ ...entry, isLocal: entry.isCurrentUser,
-          camera: entry.role === "game_master" ? track("camera") : null,
+          camera: track("camera"),
           microphone: entry.role === "game_master" ? track("microphone") : null,
           computerAudio: entry.role === "game_master" && computerAudio ? track("computerAudio") : null })),
       },
@@ -695,11 +698,21 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
   const noMusic = render(false, false, true, false);
   assert.equal((noMusic.match(/<audio/g) ?? []).length, 1);
   assert.doesNotMatch(noMusic, /popovertarget|type="range"/u);
+  assert.match(player, /aria-label="Mirror my video" aria-pressed="false"/u);
+  assert.doesNotMatch(player, /scaleX\(-1\)/u);
   const rawNames = directory.map((entry) => ({ ...entry, profileName: "Andrey", characterName: entry.role === "player" ? "Иван Петров" : null }));
+  mirrorPreview = true;
   for (const nextLocale of ["en", "ru"]) {
     locale = nextLocale;
     for (const gmViewer of [true, false]) {
       const html = render(gmViewer, true, true, true, rawNames);
+      const localCard = html.match(/<article[^>]*data-local-participant="true"[^>]*>(.*?)<\/article>/u)?.[1];
+      assert.ok(localCard);
+      const mirrorLabel = locale === "ru" ? "Отразить моё видео" : "Mirror my video";
+      assert.ok(localCard.includes(`aria-label="${mirrorLabel}" aria-pressed="true"`));
+      assert.equal(html.split(`aria-label="${mirrorLabel}"`).length, 2);
+      assert.match(localCard, /<video[^>]*style="transform:scaleX\(-1\)"/u);
+      assert.equal(html.split("scaleX(-1)").length, 2);
       if (!gmViewer) assert.ok(html.includes(locale === "ru" ? "Громкость музыки" : "Music volume"));
       assert.match(html, /Andrey aka Иван Петров/u);
       assert.ok(html.includes(`Andrey aka ${locale === "ru" ? "Мастер игры" : "Game Master"}`));

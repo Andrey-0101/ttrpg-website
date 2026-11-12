@@ -709,7 +709,8 @@
     "directoryUnavailable": "Campaign participant information could not be loaded, so the room is unavailable.",
     "camera": {
       "enable": "Turn camera on",
-      "disable": "Turn camera off"
+      "disable": "Turn camera off",
+      "mirror": "Mirror my video"
     },
     "microphone": {
       "enable": "Turn microphone on",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -22,6 +22,12 @@ import type {
 } from "@/lib/campaign-video/browser/contracts";
 import { createLiveKitCampaignVideoSession } from "@/lib/campaign-video/browser/livekit";
 import { attachCampaignVideoTrack } from "@/lib/campaign-video/browser/media";
+import {
+  getMirrorPreview,
+  getServerMirrorPreview,
+  setMirrorPreview,
+  subscribeMirrorPreview,
+} from "@/lib/campaign-video/browser/mirror-preview";
 import { createCampaignParticipantDirectorySync } from "@/lib/campaign-video/browser/directory-sync";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -84,6 +90,20 @@ function CameraIcon({ enabled }: { enabled: boolean }) {
       {!enabled && (
         <path d="m3 3 18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       )}
+    </svg>
+  );
+}
+
+function MirrorVideoIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+      <path
+        d="M12 3v18M4 17h5V7L4 17Zm16 0h-5V7l5 10Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -357,6 +377,7 @@ function ParticipantCard({
   hasBeenSeen,
   musicTrack,
   musicVolume,
+  mirrorPreview,
   canJoin,
   onJoin,
   onCameraChange,
@@ -369,6 +390,7 @@ function ParticipantCard({
   hasBeenSeen: boolean;
   musicTrack: CampaignVideoTrackAttachment | null;
   musicVolume: number;
+  mirrorPreview: boolean;
   canJoin: boolean;
   onJoin(): void;
   onCameraChange(enabled: boolean): void;
@@ -455,6 +477,7 @@ function ParticipantCard({
           playsInline
           muted={slot.isCurrentUser}
           className="h-full w-full object-cover"
+          style={slot.isCurrentUser && mirrorPreview ? { transform: "scaleX(-1)" } : undefined}
         />
       ) : (
         <div className="h-full w-full bg-[radial-gradient(circle_at_center,_#262626,_#090909_70%)]" />
@@ -514,7 +537,7 @@ function ParticipantCard({
       </div>
 
       <div
-        className="absolute bottom-2 left-2 flex items-center gap-1"
+        className="absolute bottom-2 left-2 flex max-w-[calc(100%-1rem)] items-center gap-1"
         aria-label={slot.isCurrentUser ? translations("mediaControls") : translations("mediaIndicators")}
         data-media-toolbar
       >
@@ -531,6 +554,25 @@ function ParticipantCard({
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/35 bg-black/70 hover:bg-white/15" data-control-circle>
                 <CameraIcon enabled={snapshot.cameraEnabled} />
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMirrorPreview(!mirrorPreview)}
+              aria-label={translations("camera.mirror")}
+              aria-pressed={mirrorPreview}
+              title={translations("camera.mirror")}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-transparent text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <span
+                className={`flex h-9 w-9 items-center justify-center rounded-full border ${
+                  mirrorPreview
+                    ? "border-cyan-200/75 bg-cyan-950/85 text-cyan-100"
+                    : "border-white/35 bg-black/70 hover:bg-white/15"
+                }`}
+                data-control-circle
+              >
+                <MirrorVideoIcon />
               </span>
             </button>
             <button
@@ -614,6 +656,11 @@ export function CampaignVideoRoomLayout({
 }: CampaignVideoRoomLayoutProps) {
   const translations = useTranslations("CampaignVideoRoom");
   const [musicVolume, setMusicVolume] = useState(100);
+  const mirrorPreview = useSyncExternalStore(
+    subscribeMirrorPreview,
+    getMirrorPreview,
+    getServerMirrorPreview,
+  );
   const statusMessage =
     campaignStatus !== "active"
       ? translations("completedHelp")
@@ -692,6 +739,7 @@ export function CampaignVideoRoomLayout({
               }
               musicTrack={slot === gmSlot ? musicTrack : null}
               musicVolume={musicVolume}
+              mirrorPreview={mirrorPreview}
               canJoin={canJoin}
               onJoin={onJoin}
               onCameraChange={onCameraChange}
