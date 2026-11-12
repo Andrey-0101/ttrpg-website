@@ -96,7 +96,9 @@ The header control has localized idle/starting/sharing/stopping feedback and non
 Full real-world multi-user audio acceptance is deferred until an actual gaming session and does not block Phase 5A planning. Echo safety, application isolation and multi-machine acceptance are not claimed complete. Automated mocked-capture/adapter/controller/token/UI tests do not prove native Windows capture, application isolation or echo safety. Manual Production acceptance must cover Chrome and Edge, GM + real Player, Window + audio toggle, selected desktop sound audible while another application's sound is not, Entire screen fallback, independent microphone, no delayed own-voice echo, no screen video, both qualities, site/native Stop, late join and reconnect without a picker.
 
 While the GM's computer audio is available, each Player can adjust Music volume
-from 0% to 100% beside the GM tile. The default is 100%. The open Game Room keeps
+with a vertical slider to the right of the GM tile. When the gap is too narrow,
+the current percentage in the room header opens the same slider. The tiles stay
+in place as the GM starts and stops sharing. The default is 100%. The open Game Room keeps
 the chosen value and reapplies it to that listener's incoming `ScreenShareAudio`
 track after sharing restarts or the connection resumes. Microphone playback uses
 its own audio track.
