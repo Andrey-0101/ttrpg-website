@@ -299,7 +299,9 @@ test("Game Room uses the approved viewport-driven asymmetric composition", () =>
   assert.match(styles, /\.game-room-slot-gm \{\s*grid-area: gm;\s*\}/u);
   assert.doesNotMatch(styles, /\.campaign-game-room \{[\s\S]{0,120}overflow: hidden/u);
   assert.doesNotMatch(styles, /transform:\s*scale\(/u);
-  assert.doesNotMatch(room, /ResizeObserver|addEventListener\(["']resize/u);
+  // The music control may measure spare space. Participant and grid sizing stay in CSS.
+  assert.doesNotMatch(room.slice(room.indexOf("function ParticipantCard")), /ResizeObserver|addEventListener\(["']resize/u);
+  assert.doesNotMatch(styles, /grid-area:\s*music\b|data-music-volume/u);
   assert.match(styles, /@media \(min-width: 48rem\) and \(max-width: 74\.999rem\)/u);
   assert.match(styles, /@media \(min-width: 75rem\) and \(min-height: 43\.75rem\)/u);
   assert.match(room, /min-h-11/u);

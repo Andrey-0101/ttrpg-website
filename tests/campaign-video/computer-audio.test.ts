@@ -634,8 +634,8 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
     require(name: string) {
       if (name === "react/jsx-runtime") return jsxRuntime;
       if (name === "react") return {
-        Fragment: jsxRuntime.Fragment,
         useEffect: () => undefined,
+        useId: () => "music-volume",
         useRef: () => ({ current: null }),
         // A present portal host lets this isolated render exercise header controls.
         useState: (initial: unknown) => [initial === null ? {} : initial, () => undefined],
@@ -681,19 +681,20 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
   }
   const gm = render(true);
   assert.match(gm, /data-computer-audio-controls/);
-  assert.doesNotMatch(gm, /class="game-room-music-volume/);
+  assert.doesNotMatch(gm, /popoverTarget|popovertarget|game-room-music-volume/u);
   assert.equal((gm.match(/<audio/g) ?? []).length, 0);
   assert.doesNotMatch(render(true, false), /data-computer-audio-controls/);
   assert.doesNotMatch(render(true, true, false), /data-computer-audio-controls/);
   const player = render(false);
   assert.doesNotMatch(player, /data-computer-audio-controls/);
   assert.match(player, /data-computer-audio-playback/);
-  assert.match(player, /<\/article><\/div><label class="game-room-music-volume[^"]*"><span>Music volume<\/span>/u);
-  assert.match(player, /<input type="range" min="0" max="100" step="1" aria-valuetext="100%"/u);
+  assert.match(player, /<button[^>]+popoverTarget="music-volume"[^>]+aria-label="Music volume: 100%"/iu);
+  assert.match(player, /<div[^>]+id="music-volume"[^>]+popover="auto"/u);
+  assert.match(player, /<input type="range" min="0" max="100" step="1" aria-orientation="vertical" aria-valuetext="100%"/u);
   assert.equal((player.match(/<audio/g) ?? []).length, 2);
   const noMusic = render(false, false, true, false);
   assert.equal((noMusic.match(/<audio/g) ?? []).length, 1);
-  assert.doesNotMatch(noMusic, /class="game-room-music-volume/);
+  assert.doesNotMatch(noMusic, /popovertarget|type="range"/u);
   const rawNames = directory.map((entry) => ({ ...entry, profileName: "Andrey", characterName: entry.role === "player" ? "Иван Петров" : null }));
   for (const nextLocale of ["en", "ru"]) {
     locale = nextLocale;

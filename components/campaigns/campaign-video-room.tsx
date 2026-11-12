@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { useLocale, useTranslations } from "next-intl";
@@ -120,12 +120,14 @@ function CampaignGameRoomHeaderAction({
   compactLabel,
   onLeave,
   computerAudioControls,
+  musicVolumeControl,
 }: {
   visible: boolean;
   label: string;
   compactLabel: string;
   onLeave(): void;
   computerAudioControls?: ReactNode;
+  musicVolumeControl?: ReactNode;
 }) {
   const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
 
@@ -143,6 +145,7 @@ function CampaignGameRoomHeaderAction({
   return createPortal(
     <div className="flex items-center gap-2">
       {computerAudioControls}
+      {musicVolumeControl}
       <button
         type="button"
         onClick={onLeave}
@@ -213,6 +216,115 @@ function ComputerAudioControls({ snapshot, onQuality, onStart, onStop }: {
       </div>
     </details>
   );
+}
+
+type MusicVolumeSliderProps = {
+  label: string;
+  volume: number;
+  onVolumeChange(volume: number): void;
+};
+
+function MusicVolumeSlider({ label, volume, onVolumeChange }: MusicVolumeSliderProps) {
+  return (
+    <label className="game-room-music-volume">
+      <span className="game-room-music-volume-scale">
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={volume}
+          aria-orientation="vertical"
+          aria-valuetext={`${volume}%`}
+          onChange={(event) => onVolumeChange(event.currentTarget.valueAsNumber)}
+          className="game-room-music-volume-range"
+        />
+        <span aria-hidden="true" className="flex flex-col justify-between text-white/75">
+          <span>100%</span>
+          <span>0%</span>
+        </span>
+      </span>
+      <span aria-hidden="true" className="font-semibold tabular-nums">{volume}%</span>
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function CompactMusicVolume({ available, ...slider }: MusicVolumeSliderProps & { available: boolean }) {
+  const id = useId();
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Reserve the same header space when the GM stops sharing.
+  if (!available) return <span aria-hidden="true" className="game-room-music-volume-button" />;
+
+  return (
+    <>
+      <button
+        type="button"
+        popoverTarget={id}
+        aria-label={`${slider.label}: ${slider.volume}%`}
+        title={slider.label}
+        className="game-room-music-volume-button cursor-pointer rounded border border-white/45 text-xs font-medium text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
+        onClick={(event) => {
+          const trigger = event.currentTarget;
+          const header = trigger.closest("[data-game-room-header]");
+          const button = trigger.getBoundingClientRect();
+          const panel = popoverRef.current;
+          if (!panel) return;
+          panel.style.setProperty("--music-menu-top", `${Math.max(0, header?.getBoundingClientRect().bottom ?? button.bottom) + 8}px`);
+          panel.style.setProperty("--music-trigger-center", `${button.left + button.width / 2}px`);
+        }}
+      >
+        {slider.volume}%
+      </button>
+      <div
+        id={id}
+        ref={popoverRef}
+        popover="auto"
+        className="game-room-music-volume-popover"
+        onToggle={(event) => {
+          if (event.newState === "open") event.currentTarget.querySelector("input")?.focus();
+        }}
+      >
+        <MusicVolumeSlider {...slider} />
+      </div>
+    </>
+  );
+}
+
+function useMusicVolumePlacement(isGameMaster: boolean, expanded: boolean) {
+  const slotRef = useRef<HTMLDivElement>(null);
+  const [left, setLeft] = useState<number>();
+
+  useEffect(() => {
+    const slot = slotRef.current;
+    const card = slot?.querySelector(".game-room-participant");
+    const grid = slot?.parentElement;
+    if (isGameMaster || !slot || !card || !grid) return;
+
+    const measure = () => {
+      const cardBox = card.getBoundingClientRect();
+      const slotBox = slot.getBoundingClientRect();
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const useGridGap = getComputedStyle(slot).getPropertyValue("--music-volume-use-grid-gap").trim() === "1";
+      const rightEdge = useGridGap
+        ? grid.getBoundingClientRect().right - Number.parseFloat(getComputedStyle(grid).paddingRight)
+        : slotBox.right;
+      const panelLeft = cardBox.right + 0.5 * rem;
+      // The panel is 5.25rem wide and can have a two-line label.
+      const fits = cardBox.height >= 10.5 * rem && rightEdge - panelLeft >= 5.25 * rem;
+      setLeft(fits ? panelLeft - slotBox.left : undefined);
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(grid);
+    observer.observe(slot);
+    observer.observe(card);
+    measure();
+    return () => observer.disconnect();
+  }, [isGameMaster, expanded]);
+
+  return { slotRef, left };
 }
 
 function MediaIndicator({
@@ -525,6 +637,12 @@ export function CampaignVideoRoomLayout({
       ? gmSlot.participant?.computerAudio ?? null
       : null;
   const showMusicVolume = Boolean(musicTrack?.setVolume);
+  const { slotRef, left: musicVolumeLeft } = useMusicVolumePlacement(isGameMaster, snapshot.presentationExpanded);
+  const musicVolumeSlider = {
+    label: translations("computerAudio.musicVolume"),
+    volume: musicVolume,
+    onVolumeChange: setMusicVolume,
+  };
 
   return (
     <>
@@ -537,6 +655,9 @@ export function CampaignVideoRoomLayout({
           <ComputerAudioControls snapshot={snapshot} onQuality={onComputerAudioQuality}
             onStart={onStartComputerAudio} onStop={onStopComputerAudio} />
         ) : null}
+        musicVolumeControl={!isGameMaster && musicVolumeLeft === undefined ? (
+          <CompactMusicVolume {...musicVolumeSlider} available={showMusicVolume} />
+        ) : null}
       />
       <section
         className="game-room-grid"
@@ -544,7 +665,6 @@ export function CampaignVideoRoomLayout({
         data-presentation-expanded={
           snapshot.presentationExpanded ? "true" : "false"
         }
-        data-music-volume={showMusicVolume ? "true" : undefined}
       >
         <p
           className="sr-only"
@@ -554,45 +674,36 @@ export function CampaignVideoRoomLayout({
           {statusMessage}
         </p>
         {slots.map((slot) => (
-          <Fragment key={slot.key}>
-            <div className={`game-room-slot game-room-slot-${slot.key}`}>
-              <ParticipantCard
-                campaignGameSystem={campaignGameSystem}
-                slot={slot}
-                snapshot={snapshot}
-                hasBeenSeen={
-                  slot.directoryEntry
-                    ? seenParticipantIdentities.has(
-                        slot.directoryEntry.providerIdentity,
-                      )
-                    : false
-                }
-                musicTrack={slot === gmSlot ? musicTrack : null}
-                musicVolume={musicVolume}
-                canJoin={canJoin}
-                onJoin={onJoin}
-                onCameraChange={onCameraChange}
-                onMicrophoneChange={onMicrophoneChange}
-                onEnableSound={onEnableSound}
-              />
-            </div>
-            {slot === gmSlot && showMusicVolume && (
-              <label className="game-room-music-volume grid w-full max-w-md min-w-0 grid-cols-[1fr_auto] items-center gap-x-2 rounded-lg border border-white/20 bg-neutral-950 px-2 text-xs text-white">
-                <span>{translations("computerAudio.musicVolume")}</span>
-                <span aria-hidden="true" className="tabular-nums">{musicVolume}%</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={musicVolume}
-                  aria-valuetext={`${musicVolume}%`}
-                  onChange={(event) => setMusicVolume(event.currentTarget.valueAsNumber)}
-                  className="col-span-2 h-6 w-full cursor-pointer accent-emerald-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-emerald-200"
-                />
-              </label>
+          <div
+            key={slot.key}
+            ref={slot === gmSlot ? slotRef : undefined}
+            className={`game-room-slot game-room-slot-${slot.key}`}
+          >
+            <ParticipantCard
+              campaignGameSystem={campaignGameSystem}
+              slot={slot}
+              snapshot={snapshot}
+              hasBeenSeen={
+                slot.directoryEntry
+                  ? seenParticipantIdentities.has(
+                      slot.directoryEntry.providerIdentity,
+                    )
+                  : false
+              }
+              musicTrack={slot === gmSlot ? musicTrack : null}
+              musicVolume={musicVolume}
+              canJoin={canJoin}
+              onJoin={onJoin}
+              onCameraChange={onCameraChange}
+              onMicrophoneChange={onMicrophoneChange}
+              onEnableSound={onEnableSound}
+            />
+            {slot === gmSlot && showMusicVolume && musicVolumeLeft !== undefined && (
+              <div className="game-room-music-volume-inline" style={{ left: musicVolumeLeft }}>
+                <MusicVolumeSlider {...musicVolumeSlider} />
+              </div>
             )}
-          </Fragment>
+          </div>
         ))}
         <CampaignGameRoomWorkspace
           isGameMaster={isGameMaster}
