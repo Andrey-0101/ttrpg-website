@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import {
   useEffect,
   useRef,
@@ -9,36 +8,35 @@ import {
   type ReactNode,
 } from "react";
 import { useTranslations } from "next-intl";
-import { useCampaignGameMasterRole } from "@/lib/game-systems/use-campaign-role";
+import { CampaignGalleryImage } from "./campaign-gallery-image";
 
 import type { CampaignGalleryCategory } from "@/lib/campaign-handouts/contracts";
 
 export type CampaignHandoutGalleryItem = {
   key: string;
   displayName: string;
-  signedUrl: string | null;
   category: CampaignGalleryCategory;
 };
 
 export default function CampaignHandoutGallery<
   TItem extends CampaignHandoutGalleryItem,
 >({
-  gameSystem,
+  campaignId,
   items,
   renderCardCaption,
   renderCardFooter,
 }: {
-  gameSystem: string;
+  campaignId: string;
   items: TItem[];
   renderCardCaption?: (item: TItem) => ReactNode;
   renderCardFooter?: (item: TItem) => ReactNode;
 }) {
   const translations = useTranslations("CampaignHandouts");
-  const role = useCampaignGameMasterRole(gameSystem);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const selectedItem = items.find((item) => item.key === selectedItemId) ?? null;
   const openedItemKey = selectedItem?.key ?? null;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const lightboxRef = useRef<HTMLDivElement>(null);
   const openerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -54,8 +52,14 @@ export default function CampaignHandoutGallery<
       if (event.key === "Escape") {
         setSelectedItemId(null);
       } else if (event.key === "Tab") {
-        event.preventDefault();
-        closeButtonRef.current?.focus();
+        const buttons = lightboxRef.current?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)");
+        if (!buttons?.length) return;
+        const target = event.shiftKey ? buttons.item(buttons.length - 1) : buttons.item(0);
+        const boundary = event.shiftKey ? buttons.item(0) : buttons.item(buttons.length - 1);
+        if (document.activeElement === boundary || !lightboxRef.current?.contains(document.activeElement)) {
+          event.preventDefault();
+          target.focus();
+        }
       }
     }
 
@@ -89,32 +93,24 @@ export default function CampaignHandoutGallery<
             className="min-w-0"
           >
             <div className="min-w-0 overflow-hidden rounded-lg border border-neutral-300 bg-white text-neutral-950 shadow-sm">
-            {item.signedUrl ? (
+            <div className="relative aspect-square overflow-hidden bg-neutral-200">
               <button
                 type="button"
                 onClick={(event) => openItem(item, event)}
-                className="group block w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="absolute inset-0 z-[1] block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white"
                 aria-label={translations("openImage", {
                   name: item.displayName,
                 })}
-              >
-                <span className="relative block aspect-square overflow-hidden bg-neutral-200">
-                  <Image
-                    src={item.signedUrl}
+              />
+                  <CampaignGalleryImage
+                    campaignId={campaignId}
+                    imageId={item.key}
                     alt={item.displayName}
-                    fill
-                    unoptimized
                     loading={index === 0 ? "eager" : undefined}
                     sizes="(min-width: 1024px) 22vw, (min-width: 768px) 30vw, (min-width: 640px) 45vw, 48vw"
-                    className="object-contain transition-opacity group-hover:opacity-95"
+                    className="object-contain"
                   />
-                </span>
-              </button>
-            ) : (
-              <div className="flex aspect-square items-center justify-center bg-neutral-200 p-3 text-center text-sm text-neutral-600">
-                {translations("imageUnavailable", role)}
-              </div>
-            )}
+            </div>
 
             {renderCardCaption?.(item) ?? <h2 className="break-words border-t border-neutral-300 px-3 py-2.5 text-sm font-semibold sm:text-base">
               {item.displayName}
@@ -125,8 +121,9 @@ export default function CampaignHandoutGallery<
         ))}
       </div>
 
-      {selectedItem?.signedUrl && (
+      {selectedItem && (
         <div
+          ref={lightboxRef}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-8"
           role="dialog"
           aria-modal="true"
@@ -155,11 +152,11 @@ export default function CampaignHandoutGallery<
               </button>
             </div>
             <div className="relative min-h-0 flex-1">
-              <Image
-                src={selectedItem.signedUrl}
+              <CampaignGalleryImage
+                key={selectedItem.key}
+                campaignId={campaignId}
+                imageId={selectedItem.key}
                 alt={selectedItem.displayName}
-                fill
-                unoptimized
                 sizes="100vw"
                 className="object-contain"
                 loading="eager"

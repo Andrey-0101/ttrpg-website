@@ -51,17 +51,5 @@ export async function loadCampaignGalleryImages({
     return { images: [], loadError: true } as const;
   }
 
-  const images = await Promise.all(
-    (imageRows ?? []).map(async (image) => {
-      return {
-        ...image,
-        signedUrl: await createCampaignGallerySignedUrl({
-          supabase,
-          storageObjectName: image.storage_object_name,
-        }),
-      };
-    }),
-  );
-
-  return { images, loadError: false } as const;
+  return { images: imageRows ?? [], loadError: false } as const;
 }

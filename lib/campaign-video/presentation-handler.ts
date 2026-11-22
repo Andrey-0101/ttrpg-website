@@ -7,9 +7,10 @@ import type {
   LiveKitServerConfigurationResult,
 } from "./config";
 import { parseCampaignId } from "./contracts";
-import { deriveCampaignVideoRoomName } from "./mapping";
+import { deriveCampaignVideoParticipantIdentity, deriveCampaignVideoRoomName } from "./mapping";
 import {
   CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC,
   createCampaignVideoPresentationPacket,
   parseCampaignVideoPresentationPacket,
   parseCampaignVideoPresentationCommand,
@@ -137,7 +138,9 @@ export function createCampaignVideoPresentationHandler(
             return failure("campaign_unavailable", 403);
         }
       }
-      if (authorization.participant.role !== "game_master") {
+      const isRefreshRequest = command.action === "request_refresh";
+      if (isRefreshRequest ? authorization.participant.role !== "player" :
+        authorization.participant.role !== "game_master") {
         return failure("campaign_unavailable", 403);
       }
 
@@ -148,8 +151,24 @@ export function createCampaignVideoPresentationHandler(
       const publisher = dependencies.createPublisher(configuration.configuration);
       const publishBase = {
         roomName: deriveCampaignVideoRoomName(campaignId),
-        topic: CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+        topic: isRefreshRequest || command.action === "renew"
+          ? CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC : CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
       };
+
+      if (command.action === "request_refresh") {
+        const campaign = await dataSource.findCampaign(campaignId);
+        if (!campaign || campaign.status !== "active") return failure("campaign_unavailable", 403);
+        await publisher.publish({
+          ...publishBase,
+          destinationIdentity: deriveCampaignVideoParticipantIdentity(campaignId, campaign.gameMasterId),
+          payload: createCampaignVideoPresentationPacket({
+            version: 1,
+            action: "request_refresh",
+            revision: command.revision,
+          }),
+        });
+        return response({ ok: true, action: command.action, revision: command.revision });
+      }
 
       if (command.action === "clear") {
         await publisher.publish({
@@ -167,6 +186,7 @@ export function createCampaignVideoPresentationHandler(
         });
       }
 
+      if (!("imageId" in command)) return failure("malformed_request", 400);
       const storagePath = await dataSource.findCampaignImageStoragePath(
         campaignId,
         command.imageId,
@@ -198,7 +218,7 @@ export function createCampaignVideoPresentationHandler(
 
       return response({
         ok: true,
-        action: "show",
+        action: command.action,
         expanded: command.expanded,
         revision: command.revision,
       });

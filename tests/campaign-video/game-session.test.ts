@@ -83,7 +83,7 @@ test("Journal is the arrow-free root and Gallery opens at Handouts", () => {
     /activeTool !== "journal" \? \([\s\S]*?tools\.back/u,
   );
   assert.doesNotMatch(toolNavigation, /disabled=\{activeTool === "journal"\}/u);
-  assert.match(toolNavigation, /aria-pressed=\{activeTool === "journal"\}/u);
+  assert.match(toolNavigation, /aria-pressed=\{activeTool === "journal" && !showSharedImage\}/u);
   assert.match(workspace, /border-amber-200 bg-amber-100 text-amber-950 shadow-sm/u);
   assert.doesNotMatch(workspace, /mt-2 w-full/u);
   assert.match(workspace, /data-game-room-journal/u);

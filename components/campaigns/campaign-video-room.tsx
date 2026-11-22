@@ -35,6 +35,7 @@ import {
   type CampaignVideoParticipantSlot,
 } from "@/lib/campaign-video/browser/presentation";
 import type { GameSessionState } from "@/lib/game-sessions/contracts";
+import { CAMPAIGN_HANDOUT_SIGNED_URL_TTL } from "@/lib/campaign-handouts/contracts";
 
 type CampaignVideoRoomController = ReturnType<
   typeof createCampaignVideoRoomController
@@ -71,6 +72,7 @@ type CampaignVideoRoomLayoutProps = CampaignVideoRoomProps & {
   onShareImage(imageId: string): Promise<boolean>;
   onSetPresentationExpanded(expanded: boolean): Promise<boolean>;
   onStopShare(): Promise<boolean>;
+  onRenewPresentation(revision: number): Promise<boolean>;
 };
 
 function CameraIcon({ enabled }: { enabled: boolean }) {
@@ -646,6 +648,7 @@ export function CampaignVideoRoomLayout({
   onShareImage,
   onSetPresentationExpanded,
   onStopShare,
+  onRenewPresentation,
   gameSession,
   sessionLoading,
   sessionBusy,
@@ -762,6 +765,8 @@ export function CampaignVideoRoomLayout({
           isPresenting={snapshot.isPresenting}
           presentationExpanded={snapshot.presentationExpanded}
           sharedPresentationUrl={snapshot.sharedPresentation?.signedUrl ?? null}
+          sharedPresentationRevision={snapshot.sharedPresentation?.revision ?? 0}
+          onRenewPresentation={onRenewPresentation}
           presentationBusy={snapshot.presentationBusy}
           presentationError={snapshot.presentationError !== null}
           gameSession={gameSession}
@@ -803,6 +808,28 @@ function CampaignVideoRoomInstance({
   const locale = useLocale();
   const [supabase] = useState(createClient);
   const [snapshot, setSnapshot] = useState(createInitialCampaignVideoRoomSnapshot);
+  useEffect(() => {
+    if (!isGameMaster || !snapshot.isPresenting || snapshot.phase !== "connected") return;
+
+    // Renew before the Storage signature expires, even if players keep the image open.
+    const renewalInterval = CAMPAIGN_HANDOUT_SIGNED_URL_TTL * 1000 - 5 * 60_000;
+    let timer: number;
+    let renewAt = Date.now() + renewalInterval;
+    function check() {
+      window.clearTimeout(timer);
+      if (Date.now() >= renewAt) {
+        renewAt = Date.now() + renewalInterval;
+        void controllerRef.current?.renewPresentation();
+      }
+      timer = window.setTimeout(check, Math.max(0, renewAt - Date.now()));
+    }
+    check();
+    document.addEventListener("visibilitychange", check);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", check);
+    };
+  }, [isGameMaster, snapshot.isPresenting, snapshot.phase, snapshot.presentationExpanded]);
   const [seenParticipantIdentities, setSeenParticipantIdentities] = useState(
     () => new Set<string>(),
   );
@@ -911,6 +938,9 @@ function CampaignVideoRoomInstance({
       }
       onStopShare={() =>
         controllerRef.current?.stopPresentation() ?? Promise.resolve(false)
+      }
+      onRenewPresentation={(revision) =>
+        controllerRef.current?.requestPresentationRenewal(revision) ?? Promise.resolve(false)
       }
     />
   );

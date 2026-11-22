@@ -76,6 +76,12 @@ image URL/identity. The selected-image view retains its management controls even
 after the image moves out of the currently browsed folder. Player presentation and
 image authorization remain independent of GM folders.
 
+Both Gallery views request a fresh private Storage URL by image ID when an image
+loads. A failed preview retries once and then offers a reload button. For an
+active presentation, the GM renews the shared URL before it expires. A receiving
+player can also request renewal from the GM. The receiving room applies the URL
+only to the current presentation revision and image.
+
 Phase 5A may refine Campaign and Game Room layout, navigation, responsive behavior, accessibility, and usability without adding new media capabilities.
 
 Recording, transcription, streaming, screen-video sharing, remote moderation, breakout rooms, virtual backgrounds, and similar media expansion are not active roadmap commitments.

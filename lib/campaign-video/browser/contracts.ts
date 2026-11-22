@@ -89,6 +89,7 @@ export type CampaignVideoRoomSnapshot = {
   presentationExpanded: boolean;
   sharedPresentation: {
     signedUrl: string;
+    revision: number;
   } | null;
   presentationBusy: boolean;
   presentationError: "presentation_unavailable" | null;

@@ -20,6 +20,7 @@ import { attachCampaignVideoTrack } from "../../lib/campaign-video/browser/media
 import { getCampaignVideoParticipantSlots } from "../../lib/campaign-video/browser/presentation";
 import {
   CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC,
   createCampaignVideoPresentationPacket,
   parseCampaignVideoPresentationPacket,
   type CampaignVideoPresentationCommand,
@@ -999,6 +1000,47 @@ test("Players accept only valid server presentation packets and clear immediatel
     controller.getSnapshot().presentationError,
     "presentation_unavailable",
   );
+});
+
+test("presentation renewal replaces only the active URL and ignores packets after stop or replacement", async () => {
+  const room = createSessionHarness();
+  const requests: unknown[] = [];
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID, campaignActive: true, directoryReady: true, isGameMaster: false,
+    participantDirectory: DIRECTORY, createSession: room.factory, onChange: () => undefined,
+    fetcher: async (url, init) => {
+      if (String(url).endsWith("/join")) return joinResponse();
+      const command = JSON.parse(String(init?.body));
+      requests.push(command);
+      return Response.json({ ok: true, ...command });
+    },
+  });
+  await controller.join();
+  const show = (revision: number, signedUrl: string, topic = CAMPAIGN_VIDEO_PRESENTATION_TOPIC, sender: string | null = null) =>
+    room.callbacks().onPresentationPacket(createCampaignVideoPresentationPacket({
+      version: 1, action: "show", revision, signedUrl, expanded: topic === CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+    }), sender, topic);
+  const renew = (revision: number, url: string, sender?: string) =>
+    show(revision, url, CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC, sender);
+  const fresh = PRESENTATION_URL.replace("temporary", "fresh");
+  show(1, PRESENTATION_URL);
+  assert.equal(await controller.requestPresentationRenewal(1), true);
+  assert.equal(await controller.requestPresentationRenewal(1), false);
+  assert.deepEqual(requests, [{ action: "request_refresh", revision: 1 }]);
+  renew(1, fresh, "player-2-safe");
+  renew(1, fresh.replace("image.webp", "other.webp"));
+  assert.equal(controller.getSnapshot().sharedPresentation?.signedUrl, PRESENTATION_URL);
+  renew(1, fresh);
+  assert.equal(controller.getSnapshot().sharedPresentation?.signedUrl, fresh);
+  assert.equal(controller.getSnapshot().presentationExpanded, true);
+  room.callbacks().onPresentationPacket(createCampaignVideoPresentationPacket({ version: 1, action: "clear", revision: 2 }), null, CAMPAIGN_VIDEO_PRESENTATION_TOPIC);
+  renew(1, fresh);
+  assert.equal(controller.getSnapshot().sharedPresentation, null);
+  const other = PRESENTATION_URL.replace("image.webp", "other.webp");
+  show(3, other);
+  renew(1, fresh);
+  assert.equal(controller.getSnapshot().sharedPresentation?.signedUrl, other);
+  await controller.dispose();
 });
 
 test("track attachment has symmetric cleanup and no-op empty behavior", () => {

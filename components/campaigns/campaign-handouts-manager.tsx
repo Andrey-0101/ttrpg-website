@@ -41,7 +41,6 @@ export type CampaignHandoutManagerItem = {
   id: string;
   displayName: string;
   storagePath: string;
-  signedUrl: string | null;
   category: CampaignGalleryCategory;
   visibility: CampaignHandoutVisibility;
   recipientIds: string[];
@@ -439,7 +438,7 @@ export default function CampaignHandoutsManager({
       </section>
     ) : (
       <CampaignHandoutGallery
-        gameSystem={gameSystem}
+        campaignId={campaignId}
         items={galleryItems}
         renderCardCaption={campaignActive ? (handout) => (
           <CampaignGalleryImageActions

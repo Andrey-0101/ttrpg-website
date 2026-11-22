@@ -4,6 +4,7 @@ import {
 } from "../contracts";
 import {
   CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC,
   isCampaignVideoPresentationResult,
   parseCampaignVideoPresentationPacket,
   type CampaignVideoPresentationCommand,
@@ -129,6 +130,9 @@ export function createCampaignVideoRoomController(
   let activePresentationImageId: string | null = null;
   let activePresentationRevision = 0;
   let lastReceivedPresentationRevision = 0;
+  let renewalPending = false;
+  let lastRenewalAt = 0;
+  let nextRefreshRequestAt = 0;
   const presentationRequests = new Set<AbortController>();
   let generation = 0;
   let disposed = false;
@@ -183,7 +187,9 @@ export function createCampaignVideoRoomController(
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
           body: JSON.stringify(command),
-          signal: request.signal,
+          signal: command.action === "renew" || command.action === "request_refresh"
+            ? AbortSignal.any([request.signal, AbortSignal.timeout(10000)])
+            : request.signal,
         },
       );
       const body = (await response.json().catch(() => null)) as unknown;
@@ -197,15 +203,51 @@ export function createCampaignVideoRoomController(
         throw new Error("presentation_unavailable");
       }
       if (
-        command.action === "show" &&
-        (body.action !== "show" ||
-          body.expanded !== command.expanded)
+        "expanded" in command &&
+        (!("expanded" in body) || body.expanded !== command.expanded)
       ) {
         throw new Error("presentation_unavailable");
       }
       return body;
     } finally {
       presentationRequests.delete(request);
+    }
+  }
+
+  async function renewPresentation(revision = activePresentationRevision): Promise<boolean> {
+    const imageId = activePresentationImageId;
+    if (!options.isGameMaster || !imageId || !snapshot.isPresenting ||
+        snapshot.phase !== "connected" || snapshot.presentationBusy ||
+        revision !== activePresentationRevision || renewalPending ||
+        Date.now() < lastRenewalAt + 10000) return false;
+
+    const currentGeneration = generation;
+    renewalPending = true;
+    lastRenewalAt = Date.now();
+    try {
+      return await enqueuePresentation(async () => {
+        if (!isCurrent(currentGeneration) || !session || snapshot.phase !== "connected" ||
+            !snapshot.isPresenting || snapshot.presentationBusy ||
+            revision !== activePresentationRevision || imageId !== activePresentationImageId) return false;
+        await requestPresentation({ action: "renew", imageId, revision, expanded: snapshot.presentationExpanded });
+        return true;
+      });
+    } catch {
+      return false;
+    } finally {
+      renewalPending = false;
+    }
+  }
+
+  async function requestPresentationRenewal(revision: number): Promise<boolean> {
+    if (options.isGameMaster || !session || snapshot.phase !== "connected" ||
+        snapshot.sharedPresentation?.revision !== revision || Date.now() < nextRefreshRequestAt) return false;
+    nextRefreshRequestAt = Date.now() + 11000;
+    try {
+      await requestPresentation({ action: "request_refresh", revision });
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -386,7 +428,22 @@ export function createCampaignVideoRoomController(
             }
           },
           onPresentationPacket(payload, senderIdentity, topic) {
-            if (!isCurrent(currentGeneration) || options.isGameMaster) return;
+            if (!isCurrent(currentGeneration) || senderIdentity !== null) return;
+            if (topic === CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC) {
+              const renewal = parseCampaignVideoPresentationPacket(payload);
+              if (options.isGameMaster && renewal?.action === "request_refresh") {
+                void renewPresentation(renewal.revision);
+              } else if (!options.isGameMaster && renewal?.action === "show" &&
+                         snapshot.sharedPresentation?.revision === renewal.revision) {
+                const current = new URL(snapshot.sharedPresentation.signedUrl);
+                const fresh = new URL(renewal.signedUrl);
+                if (current.origin === fresh.origin && current.pathname === fresh.pathname) {
+                  publish({ sharedPresentation: { signedUrl: renewal.signedUrl, revision: renewal.revision } });
+                }
+              }
+              return;
+            }
+            if (options.isGameMaster) return;
             if (
               senderIdentity !== null ||
               topic !== CAMPAIGN_VIDEO_PRESENTATION_TOPIC
@@ -394,6 +451,7 @@ export function createCampaignVideoRoomController(
               return;
             }
             const message = parseCampaignVideoPresentationPacket(payload);
+            if (message?.action === "request_refresh") return;
             if (!message) {
               clearPresentation();
               publish({ presentationError: "presentation_unavailable" });
@@ -401,6 +459,7 @@ export function createCampaignVideoRoomController(
             }
             if (message.revision <= lastReceivedPresentationRevision) return;
             lastReceivedPresentationRevision = message.revision;
+            nextRefreshRequestAt = 0;
             if (message.action === "clear") {
               clearPresentation();
               publish({ presentationError: null });
@@ -411,6 +470,7 @@ export function createCampaignVideoRoomController(
               presentationExpanded: message.expanded,
               sharedPresentation: {
                 signedUrl: message.signedUrl,
+                revision: message.revision,
               },
               presentationError: null,
             });
@@ -424,6 +484,7 @@ export function createCampaignVideoRoomController(
             if (isCurrent(currentGeneration)) {
               publish({ phase: "connected", restored: true, error: null });
               options.onDirectoryRefreshNeeded?.();
+              if (options.isGameMaster) void renewPresentation();
             }
           },
           onTerminalDisconnect() {
@@ -796,6 +857,8 @@ export function createCampaignVideoRoomController(
     shareImage,
     setPresentationExpanded,
     stopPresentation,
+    renewPresentation,
+    requestPresentationRenewal,
     enableSound,
     setComputerAudioQuality,
     startComputerAudio,

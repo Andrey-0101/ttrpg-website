@@ -95,7 +95,7 @@ export default async function CampaignGalleryPage({
     );
   }
 
-  const { images: imagesWithUrls, loadError: imageError } =
+  const { images, loadError: imageError } =
     await loadCampaignGalleryImages({
       supabase,
       campaignId: campaign.id,
@@ -157,7 +157,7 @@ export default async function CampaignGalleryPage({
         recipientIdsByImage.set(recipient.image_id, recipientIds);
       }
 
-      managerItems = imagesWithUrls.flatMap((image) =>
+      managerItems = images.flatMap((image) =>
         isCampaignHandoutVisibility(image.visibility) &&
         isCampaignGalleryCategory(image.category)
           ? [
@@ -165,7 +165,6 @@ export default async function CampaignGalleryPage({
                 id: image.id,
                 displayName: image.display_name,
                 storagePath: image.storage_object_name,
-                signedUrl: image.signedUrl,
                 category: image.category,
                 visibility: image.visibility,
                 recipientIds: recipientIdsByImage.get(image.id) ?? [],
@@ -178,13 +177,12 @@ export default async function CampaignGalleryPage({
 
   const playerItems = isGameMaster
     ? []
-    : imagesWithUrls.flatMap((image) =>
-        image.signedUrl && isCampaignGalleryCategory(image.category)
+    : images.flatMap((image) =>
+        isCampaignGalleryCategory(image.category)
           ? [
               {
                 key: image.id,
                 displayName: image.display_name,
-                signedUrl: image.signedUrl,
                 category: image.category,
               },
             ]
@@ -235,6 +233,7 @@ export default async function CampaignGalleryPage({
         ) : (
           <CampaignHandoutsViewer
             gameSystem={campaign.game_system}
+            campaignId={campaign.id}
             items={playerItems}
           />
         )}

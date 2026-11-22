@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import {
   useEffect,
   useRef,
@@ -25,6 +24,7 @@ import type { GameSessionState } from "@/lib/game-sessions/contracts";
 import { useCampaignGalleryOrganization } from "@/lib/campaign-handouts/use-organization";
 import { galleryImageIsInFolder } from "@/lib/campaign-handouts/organization";
 import { CampaignGalleryFolders, CampaignGalleryImageActions } from "./campaign-gallery-organization";
+import { CampaignGalleryImage, CampaignPresentedImage } from "./campaign-gallery-image";
 
 const CATEGORY_TRANSLATION_KEYS: Record<CampaignGalleryCategory, string> = {
   handout: "categories.handout",
@@ -49,7 +49,6 @@ export type CampaignGameRoomGalleryItem = {
   key: string;
   imageId: string;
   displayName: string;
-  localSignedUrl: string | null;
   storagePath: string;
   category: CampaignGalleryCategory;
 };
@@ -63,6 +62,7 @@ export default function CampaignGameRoomWorkspace({
   isPresenting,
   presentationExpanded,
   sharedPresentationUrl,
+  sharedPresentationRevision,
   presentationBusy,
   presentationError,
   gameSession,
@@ -75,6 +75,7 @@ export default function CampaignGameRoomWorkspace({
   onShareImage,
   onSetPresentationExpanded,
   onStopShare,
+  onRenewPresentation,
 }: {
   campaignId: string;
   campaignGameSystem: string;
@@ -84,6 +85,7 @@ export default function CampaignGameRoomWorkspace({
   isPresenting: boolean;
   presentationExpanded: boolean;
   sharedPresentationUrl: string | null;
+  sharedPresentationRevision: number;
   presentationBusy: boolean;
   presentationError: boolean;
   gameSession: GameSessionState;
@@ -96,6 +98,7 @@ export default function CampaignGameRoomWorkspace({
   onShareImage(imageId: string): Promise<boolean>;
   onSetPresentationExpanded(expanded: boolean): Promise<boolean>;
   onStopShare(): Promise<boolean>;
+  onRenewPresentation(revision: number): Promise<boolean>;
 }) {
   const translations = useTranslations("CampaignGameRoom");
   const galleryTranslations = useTranslations("CampaignHandouts");
@@ -110,6 +113,7 @@ export default function CampaignGameRoomWorkspace({
     "percentile",
   );
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [journalDuringPresentation, setJournalDuringPresentation] = useState<number | null>(null);
   const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
   const [selectedImageDeleting, setSelectedImageDeleting] = useState(false);
   const [folderId, setFolderId] = useState<string | null>(null);
@@ -133,9 +137,9 @@ export default function CampaignGameRoomWorkspace({
   const visibleItems = activeCategory
     ? currentGalleryItems.filter((item) => item.category === activeCategory && galleryImageIsInFolder(item.imageId, organization.locations, folderId))
     : [];
-  const expandedImageUrl = isGameMaster
-    ? selectedImage?.localSignedUrl ?? null
-    : sharedPresentationUrl;
+  const hasExpandedImage = isGameMaster ? Boolean(selectedImage) : Boolean(sharedPresentationUrl);
+  const showSharedImage = !isGameMaster && sharedPresentationUrl && !presentationExpanded &&
+    activeTool === "journal" && journalDuringPresentation !== sharedPresentationRevision;
 
   function closeGallery() {
     setActiveTool("journal");
@@ -157,9 +161,7 @@ export default function CampaignGameRoomWorkspace({
   }
 
   function openImage(item: CampaignGameRoomGalleryItem) {
-    if (item.localSignedUrl) {
-      setSelectedImageId(item.imageId);
-    }
+    setSelectedImageId(item.imageId);
   }
 
   function imageDeleted(imageId: string) {
@@ -218,6 +220,12 @@ export default function CampaignGameRoomWorkspace({
             cocMode={cocDiceMode}
             onJournalEvent={onJournalEvent}
           />
+        ) : showSharedImage ? (
+          <div className="relative min-h-0 w-full" data-game-room-shared-image>
+            <CampaignPresentedImage url={sharedPresentationUrl} revision={sharedPresentationRevision}
+              onRenew={onRenewPresentation} alt={translations("gallery.presentedImageAlt")}
+              sizes="(min-width: 75rem) 40vw, 100vw" className="object-contain" loading="eager" />
+          </div>
         ) : activeTool === "journal" ? (
           <div
             className="flex min-h-0 w-full flex-col overflow-hidden text-white"
@@ -318,7 +326,7 @@ export default function CampaignGameRoomWorkspace({
               />
             </div>
           ) : <GameRoomCharactersList campaignId={campaignId} onOpen={setOpenedCharacter} />
-        ) : isGameMaster && selectedImage?.localSignedUrl ? (
+        ) : isGameMaster && selectedImage ? (
           <div className="flex min-h-0 w-full flex-col" data-game-room-local-image>
             <div className="shrink-0 px-2 py-1">
               <p className="truncate text-xs text-white/70" title={selectedFolder?.name}>
@@ -326,15 +334,15 @@ export default function CampaignGameRoomWorkspace({
               </p>
             </div>
             <div className="relative min-h-0 flex-1">
-            <Image
-              src={selectedImage.localSignedUrl}
+            {!presentationExpanded && <CampaignGalleryImage
+              key={selectedImage.imageId}
+              campaignId={campaignId}
+              imageId={selectedImage.imageId}
               alt={translations("gallery.presentedImageAlt")}
-              fill
-              unoptimized
               sizes="(min-width: 75rem) 40vw, 100vw"
               className="object-contain"
               loading="eager"
-            />
+            />}
             </div>
             <div className="max-h-[55%] shrink-0 overflow-y-auto">
               <CampaignGalleryImageActions key={selectedImage.imageId} organization={organization}
@@ -345,18 +353,6 @@ export default function CampaignGameRoomWorkspace({
                 onDeletePendingChange={setSelectedImageDeleting}
                 onDeleted={() => imageDeleted(selectedImage.imageId)} />
             </div>
-          </div>
-        ) : !isGameMaster && sharedPresentationUrl ? (
-          <div className="relative min-h-0 w-full" data-game-room-shared-image>
-            <Image
-              src={sharedPresentationUrl}
-              alt={translations("gallery.presentedImageAlt")}
-              fill
-              unoptimized
-              sizes="(min-width: 75rem) 40vw, 100vw"
-              className="object-contain"
-              loading="eager"
-            />
           </div>
         ) : activeCategory ? (
           <div
@@ -373,22 +369,21 @@ export default function CampaignGameRoomWorkspace({
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {visibleItems.map((item) => (
                   <article key={item.imageId} className="min-w-0 overflow-hidden rounded-lg border border-white/25 bg-white/5">
+                  <div className="relative aspect-video overflow-hidden">
                   <button
                     type="button"
-                    disabled={!item.localSignedUrl}
                     onDoubleClick={() => openImage(item)}
                     onPointerUp={(event) => handleImagePointerUp(event, item)}
                     onKeyDown={(event) => handleImageKeyDown(event, item)}
                     aria-label={translations("gallery.openImage", {
                       name: item.displayName,
                     })}
-                    className="relative block aspect-video w-full overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber-200 disabled:cursor-not-allowed disabled:opacity-45"
+                    className="absolute inset-0 z-[1] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber-200"
                     data-game-room-gallery-item
-                  >
-                    {item.localSignedUrl
-                      ? <Image src={item.localSignedUrl} alt="" fill unoptimized sizes="(min-width: 40rem) 20vw, 100vw" className="object-contain" />
-                      : <span className="text-sm text-white/80">{organizationTranslations("previewUnavailable")}</span>}
-                  </button>
+                  />
+                  <CampaignGalleryImage campaignId={campaignId} imageId={item.imageId}
+                    alt="" sizes="(min-width: 40rem) 20vw, 100vw" className="object-contain" />
+                  </div>
                   {isGameMaster ? <CampaignGalleryImageActions organization={organization} campaignId={campaignId} imageId={item.imageId}
                     category={item.category} displayName={item.displayName} storagePath={item.storagePath}
                     onDeleted={() => imageDeleted(item.imageId)} /> : null}
@@ -400,21 +395,21 @@ export default function CampaignGameRoomWorkspace({
         ) : null}
       </section>
 
-      {presentationExpanded && expandedImageUrl ? (
+      {presentationExpanded && hasExpandedImage ? (
         <section
           className="game-room-expanded-presentation relative min-h-0 min-w-0 overflow-hidden rounded-xl border border-white/20 bg-black/75"
           aria-label={translations("gallery.presentedImageAlt")}
           data-game-room-expanded-presentation
         >
-          <Image
-            src={expandedImageUrl}
-            alt={translations("gallery.presentedImageAlt")}
-            fill
-            unoptimized
-            sizes="(min-width: 48rem) 70vw, 100vw"
-            className="object-contain"
-            loading="eager"
-          />
+          {isGameMaster && selectedImage ? (
+            <CampaignGalleryImage key={selectedImage.imageId} campaignId={campaignId} imageId={selectedImage.imageId}
+              alt={translations("gallery.presentedImageAlt")} sizes="(min-width: 48rem) 70vw, 100vw"
+              className="object-contain" loading="eager" />
+          ) : sharedPresentationUrl ? (
+            <CampaignPresentedImage url={sharedPresentationUrl} revision={sharedPresentationRevision} onRenew={onRenewPresentation}
+              alt={translations("gallery.presentedImageAlt")} sizes="(min-width: 48rem) 70vw, 100vw"
+              className="object-contain" loading="eager" />
+          ) : null}
         </section>
       ) : null}
 
@@ -580,12 +575,15 @@ export default function CampaignGameRoomWorkspace({
             ) : null}
             <button
               type="button"
-              onClick={() => setActiveTool("journal")}
-              aria-pressed={activeTool === "journal"}
-              className={gameToolButtonClass(activeTool === "journal")}
+              onClick={() => {
+                setJournalDuringPresentation(showSharedImage ? sharedPresentationRevision : null);
+                setActiveTool("journal");
+              }}
+              aria-pressed={activeTool === "journal" && !showSharedImage}
+              className={gameToolButtonClass(activeTool === "journal" && !showSharedImage)}
             >
               <span className="flex min-w-0 items-center justify-center gap-1">
-                {activeTool === "journal" ? (
+                {activeTool === "journal" && !showSharedImage ? (
                   <span aria-hidden="true">✓</span>
                 ) : null}
                 <span className="min-w-0 break-words">

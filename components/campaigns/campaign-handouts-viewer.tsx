@@ -13,9 +13,11 @@ import CampaignHandoutGallery, {
 
 export default function CampaignHandoutsViewer({
   gameSystem,
+  campaignId,
   items,
 }: {
   gameSystem: string;
+  campaignId: string;
   items: CampaignHandoutGalleryItem[];
 }) {
   const translations = useTranslations("CampaignHandouts");
@@ -49,7 +51,7 @@ export default function CampaignHandoutsViewer({
             </p>
           </section>
         ) : (
-          <CampaignHandoutGallery gameSystem={gameSystem} items={visibleItems} />
+          <CampaignHandoutGallery campaignId={campaignId} items={visibleItems} />
         )}
       </div>
     </div>

@@ -348,7 +348,7 @@ test("Game Room loads the GM Gallery through the same ordered server loader as t
   );
   assert.match(route, /isCampaignGalleryCategory\(image\.category\)/u);
   assert.match(route, /imageId: image\.id/u);
-  assert.match(route, /localSignedUrl: image\.signedUrl/u);
+  assert.doesNotMatch(route, /localSignedUrl: image\.signedUrl/u);
   assert.match(galleryRoute, /loadCampaignGalleryImages/u);
   assert.match(loader, /\.from\("campaign_images"\)/u);
   assert.match(loader, /\.eq\("campaign_id", campaignId\)/u);
@@ -396,7 +396,7 @@ test("Game Room Gallery list and local image follow the approved interactions", 
   assert.match(workspace, /data-game-room-gallery-list/u);
   assert.match(workspace, /overflow-y-auto/u);
   assert.match(workspace, /grid grid-cols-1 gap-2 sm:grid-cols-3/u);
-  assert.match(workspace, /src=\{item\.localSignedUrl\}/u);
+  assert.match(workspace, /<CampaignGalleryImage campaignId=\{campaignId\} imageId=\{item\.imageId\}/u);
   assert.match(workspace, /onDoubleClick=\{\(\) => openImage\(item\)\}/u);
   assert.match(workspace, /event\.pointerType === "touch"/u);
   assert.match(workspace, /event\.key !== "Enter" && event\.key !== " "/u);
