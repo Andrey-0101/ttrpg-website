@@ -83,7 +83,7 @@ function presentationResponse(command: CampaignVideoPresentationCommand) {
       ok: true,
       action: command.action,
       revision: command.revision,
-      ...(command.action === "show"
+      ...(command.action === "show" || command.action === "renew"
         ? {
             expanded: command.expanded,
           }
@@ -830,6 +830,7 @@ test("an active GM sends a fresh targeted presentation when a Player joins or re
     revision: 2,
     destinationIdentity,
   });
+  await controller.dispose();
 });
 
 test("a Player joining while Share completes receives the pending presentation", async () => {
@@ -898,6 +899,7 @@ test("a Player joining while Share completes receives the pending presentation",
       destinationIdentity,
     },
   ]);
+  await controller.dispose();
 });
 
 test("Players accept only valid server presentation packets and clear immediately when the GM departs", async () => {
@@ -1041,6 +1043,118 @@ test("presentation renewal replaces only the active URL and ignores packets afte
   renew(1, fresh);
   assert.equal(controller.getSnapshot().sharedPresentation?.signedUrl, other);
   await controller.dispose();
+});
+
+function createRenewalHarness(renew: (command: CampaignVideoPresentationCommand) => Response | Promise<Response>) {
+  const room = createSessionHarness();
+  const attempts: Array<{ at: number; revision: number }> = [];
+  const controller = createCampaignVideoRoomController({
+    campaignId: CAMPAIGN_ID, campaignActive: true, directoryReady: true, isGameMaster: true,
+    participantDirectory: DIRECTORY, createSession: room.factory, onChange: () => undefined,
+    fetcher: async (url, init) => {
+      if (String(url).endsWith("/join")) return joinResponse();
+      const command = JSON.parse(String(init?.body)) as CampaignVideoPresentationCommand;
+      if (command.action !== "renew") return presentationResponse(command);
+      attempts.push({ at: Date.now(), revision: command.revision });
+      return renew(command);
+    },
+  });
+  return { controller, room, attempts };
+}
+
+const flushRenewal = () => new Promise<void>((resolve) => setImmediate(resolve));
+const RENEWAL_INTERVAL = 55 * 60_000;
+
+test("presentation renewal retries promptly after failure and next interval starts at success", async (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: 0 });
+  let failed = false;
+  const { controller, attempts } = createRenewalHarness((command) => {
+    if (failed) return presentationResponse(command);
+    failed = true;
+    return Response.json({ ok: false }, { status: 503 });
+  });
+  t.after(() => controller.dispose());
+  await controller.join();
+  assert.ok(await controller.shareImage(IMAGE_ID));
+  t.mock.timers.tick(RENEWAL_INTERVAL);
+  await flushRenewal();
+  t.mock.timers.tick(11_999);
+  await flushRenewal();
+  assert.equal(attempts.length, 1);
+  t.mock.timers.tick(1);
+  await flushRenewal();
+  t.mock.timers.tick(RENEWAL_INTERVAL - 1);
+  await flushRenewal();
+  assert.deepEqual(attempts.map(({ at }) => at), [RENEWAL_INTERVAL, RENEWAL_INTERVAL + 12_000]);
+  t.mock.timers.tick(1);
+  await flushRenewal();
+  assert.equal(attempts[2]?.at, RENEWAL_INTERVAL * 2 + 12_000);
+});
+
+test("presentation renewal shares one bounded retry schedule across offline, foreground and reconnect", async (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: 0 });
+  let restored = false;
+  const { controller, room, attempts } = createRenewalHarness((command) => restored
+    ? presentationResponse(command) : new Response(null, { status: 503 }));
+  t.after(() => controller.dispose());
+  await controller.join();
+  assert.ok(await controller.shareImage(IMAGE_ID));
+  t.mock.timers.tick(RENEWAL_INTERVAL);
+  await flushRenewal();
+  controller.checkPresentationRenewal(false);
+  room.callbacks().onReconnecting();
+  t.mock.timers.tick(20_000);
+  controller.checkPresentationRenewal(true);
+  await flushRenewal();
+  assert.equal(attempts.length, 1);
+  room.callbacks().onReconnected();
+  for (let i = 0; i < 3; i++) controller.checkPresentationRenewal(true);
+  for (const delay of [1, 24_000, 48_000, RENEWAL_INTERVAL]) {
+    t.mock.timers.tick(delay);
+    await flushRenewal();
+  }
+  assert.equal(attempts.length, 4, "initial attempt and three retries");
+  restored = true;
+  controller.checkPresentationRenewal(true);
+  room.callbacks().onPresentationPacket(createCampaignVideoPresentationPacket({
+    version: 1, action: "request_refresh", revision: 1,
+  }), null, CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC);
+  await flushRenewal();
+  assert.equal(attempts.length, 5, "a player can request recovery after exhaustion");
+  t.mock.timers.tick(RENEWAL_INTERVAL);
+  await flushRenewal();
+  assert.equal(attempts.length, 6, "success restored the normal schedule");
+});
+
+test("presentation renewal cancels after stop, replacement and disposal during a delayed response", async (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: 0 });
+  let finish!: (response: Response) => void;
+  const { controller, attempts } = createRenewalHarness(() => new Promise((resolve) => { finish = resolve; }));
+  t.after(() => controller.dispose());
+  await controller.join();
+  assert.ok(await controller.shareImage(IMAGE_ID));
+  t.mock.timers.tick(RENEWAL_INTERVAL);
+  await flushRenewal();
+  controller.checkPresentationRenewal(true);
+  t.mock.timers.tick(12_000);
+  await flushRenewal();
+  assert.equal(attempts.length, 1, "a pending renewal is not overlapped");
+  const stop = controller.stopPresentation();
+  finish(new Response(null, { status: 503 }));
+  assert.ok(await stop);
+  assert.ok(await controller.shareImage(IMAGE_ID.replace(/4$/, "5")));
+  t.mock.timers.tick(RENEWAL_INTERVAL - 1);
+  await flushRenewal();
+  assert.deepEqual(attempts.map(({ revision }) => revision), [1]);
+  t.mock.timers.tick(1);
+  await flushRenewal();
+  assert.deepEqual(attempts.map(({ revision }) => revision), [1, 3]);
+  await controller.dispose();
+  finish(new Response(null, { status: 503 }));
+  await flushRenewal();
+  t.mock.timers.tick(RENEWAL_INTERVAL);
+  await flushRenewal();
+  assert.equal(attempts.length, 2);
 });
 
 test("track attachment has symmetric cleanup and no-op empty behavior", () => {

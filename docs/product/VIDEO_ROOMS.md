@@ -76,11 +76,17 @@ image URL/identity. The selected-image view retains its management controls even
 after the image moves out of the currently browsed folder. Player presentation and
 image authorization remain independent of GM folders.
 
-Both Gallery views request a fresh private Storage URL by image ID when an image
-loads. A failed preview retries once and then offers a reload button. For an
-active presentation, the GM renews the shared URL before it expires. A receiving
-player can also request renewal from the GM. The receiving room applies the URL
-only to the current presentation revision and image.
+Gallery lists request private WebP thumbnails by image ID. The first authorized
+request generates a preview of up to 384 × 384 pixels, which is reused for the
+same original. Opening or expanding an image uses a fresh private Storage URL
+for the original. A failed image load retries once and then offers a reload button.
+
+The GM's room renews an active presentation's original URL 55 minutes after a
+successful broadcast or renewal. A temporary failure is retried after 12, 24,
+and 48 seconds. Reconnecting defers pending work until the connection returns.
+After automatic attempts are exhausted, a player can still request renewal
+from the GM. The receiving room applies the URL only to the current revision and
+image.
 
 Phase 5A may refine Campaign and Game Room layout, navigation, responsive behavior, accessibility, and usability without adding new media capabilities.
 

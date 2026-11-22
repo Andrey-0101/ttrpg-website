@@ -103,6 +103,18 @@ export type Database = {
           },
         ];
       };
+      campaign_image_thumbnails: {
+        Row: { image_id: string; source_version: string; webp_base64: string };
+        Insert: { image_id: string; source_version: string; webp_base64: string };
+        Update: { image_id?: string; source_version?: string; webp_base64?: string };
+        Relationships: [{
+          foreignKeyName: "campaign_image_thumbnails_image_id_fkey";
+          columns: ["image_id"];
+          isOneToOne: true;
+          referencedRelation: "campaign_images";
+          referencedColumns: ["id"];
+        }];
+      };
       campaign_images: {
         Row: {
           byte_size: number;

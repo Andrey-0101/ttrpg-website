@@ -9,30 +9,35 @@ type ImageProps = Pick<ComponentProps<typeof Image>, "alt" | "className" | "load
 export function CampaignGalleryImage({
   campaignId,
   imageId,
+  thumbnail = false,
   alt,
   ...image
-}: ImageProps & { campaignId: string; imageId: string }) {
-  const [request, setRequest] = useState({ query: "", retried: false, failed: false });
+}: ImageProps & { campaignId: string; imageId: string; thumbnail?: boolean }) {
+  const [request, setRequest] = useState({ retryId: "", failed: false });
 
-  function retry(retried: boolean) {
-    setRequest({ query: `?retry=${crypto.randomUUID()}`, retried, failed: false });
+  function retry() {
+    setRequest({ retryId: crypto.randomUUID(), failed: false });
   }
 
-  if (request.failed) return <GalleryImageRetry onRetry={() => retry(true)} />;
+  if (request.failed) return <GalleryImageRetry onRetry={retry} />;
 
   const url = `/api/campaigns/${encodeURIComponent(campaignId)}/gallery/${encodeURIComponent(imageId)}`;
+  const params = new URLSearchParams();
+  if (thumbnail) params.set("variant", "thumbnail");
+  if (request.retryId) params.set("retry", request.retryId);
+  const src = params.size ? `${url}?${params}` : url;
   return (
     <Image
-      key={request.query}
+      key={src}
       {...image}
-      src={url + request.query}
+      src={src}
       alt={alt}
       fill
       unoptimized
       onError={() => {
         // <img> does not expose the HTTP status, including Storage's 400 InvalidJWT.
-        // Retry once via the authenticated redirect, never via the failed signed URL.
-        if (!request.retried) retry(true);
+        // Retry once via the authenticated endpoint, never via the failed signed URL.
+        if (!request.retryId) retry();
         else setRequest({ ...request, failed: true });
       }}
     />

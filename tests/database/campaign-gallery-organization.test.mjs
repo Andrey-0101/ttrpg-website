@@ -13,7 +13,7 @@ test('Gallery organization migration and real PostgreSQL RLS on isolated synthet
   // Only platform primitives are stubbed. Application tables, policies, triggers and RPCs
   // below come from the actual migrations. No URL, credentials or hosted project is used.
   await db.exec(`
-    create role anon; create role authenticated; create role service_role;
+    create role anon; create role authenticated; create role service_role bypassrls;
     create schema auth; create schema storage; create schema extensions;
     create table auth.users(id uuid primary key, email text);
     create function auth.uid() returns uuid language sql stable as
@@ -53,6 +53,7 @@ test('Gallery organization migration and real PostgreSQL RLS on isolated synthet
   const before = (await db.query('select * from public.campaign_images order by id')).rows;
   const recipients = (await db.query('select * from public.campaign_image_recipients')).rows;
   await db.exec(migration('20261108163016_campaign_gallery_organization'));
+  await db.exec(migration('20261122150757_campaign_gallery_thumbnail_cache'));
   async function actor(user = id(1), role = 'authenticated') {
     await db.exec(`reset role; set role ${role}; select set_config('request.jwt.claim.sub','${user}',false);`);
   }
@@ -159,7 +160,20 @@ test('Gallery organization migration and real PostgreSQL RLS on isolated synthet
     assert.equal((await db.query(`select count(*)::int n from information_schema.columns where table_name='campaign_gallery_folders' and column_name='parent_id'`)).rows[0].n,0);
     assert.equal((await db.query('select count(*)::int n from storage.objects')).rows[0].n,3);
   });
-  await t.test('existing campaign deletion still cascades folders and locations after Storage cleanup', async () => {
+  await t.test('thumbnail cache is private, bounded and follows original metadata deletion', async () => {
+    await actor('', 'service_role');
+    const insert = (imageId, bytes) => db.query('insert into public.campaign_image_thumbnails values($1,$2,$3)', [imageId,'version',bytes]);
+    await insert(id(20), 'AQID');
+    await assert.rejects(insert(id(21), 'A'.repeat(174765)), { code: '23514' });
+    await assert.rejects(insert(id(99), 'AQID'), { code: '23503' });
+    assert.equal((await db.query('select webp_base64 from public.campaign_image_thumbnails')).rows[0].webp_base64, 'AQID');
+    for (const [user, role] of [[id(1), 'authenticated'], [id(2), 'authenticated'], ['', 'anon']]) {
+      await actor(user, role);
+      await assert.rejects(db.query('select webp_base64 from public.campaign_image_thumbnails'), { code: '42501' });
+      await assert.rejects(insert(id(21), 'AQID'), { code: '42501' });
+    }
+  });
+  await t.test('existing campaign deletion still cascades folders, locations and previews after Storage cleanup', async () => {
     // All writes remain inside this disposable in-memory database.
     await db.exec('reset role; drop trigger no_storage_mutation on storage.objects; delete from storage.objects;');
     await actor();
@@ -167,5 +181,7 @@ test('Gallery organization migration and real PostgreSQL RLS on isolated synthet
     assert.equal((await db.query('select count(*)::int n from public.campaign_gallery_folders where campaign_id=$1',[id(10)])).rows[0].n,0);
     assert.equal((await db.query('select count(*)::int n from public.campaign_gallery_locations')).rows[0].n,0);
     assert.equal((await db.query('select count(*)::int n from public.campaign_gallery_folders where campaign_id=$1',[id(11)])).rows[0].n,1);
+    await actor('', 'service_role');
+    assert.equal((await db.query('select count(*)::int n from public.campaign_image_thumbnails')).rows[0].n,0);
   });
 });

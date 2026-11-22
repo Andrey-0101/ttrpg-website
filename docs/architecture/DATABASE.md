@@ -253,6 +253,7 @@ Application persistence revalidates and canonicalizes supported payloads. Malfor
 | `campaign_media_group_members` | zero-or-one group assignment for each Player in a campaign |
 | `campaign_media_restrictions` | directed `audio` or `video` blocks between groups and the separate GM endpoint |
 | `campaign_images` | private image metadata, immutable Gallery category, exact object name, MIME, byte size, and visibility |
+| `campaign_image_thumbnails` | server-only cache of bounded WebP previews by image ID and Storage object version, with cascade on image deletion |
 | `campaign_image_recipients` | selected active Player recipients for an image |
 | `campaign_video_audit_log` | immutable, constrained administrative audit records |
 
