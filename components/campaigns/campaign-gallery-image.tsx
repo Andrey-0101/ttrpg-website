@@ -9,6 +9,7 @@ type ImageProps = Pick<ComponentProps<typeof Image>, "alt" | "className" | "load
 export function CampaignGalleryImage({
   campaignId,
   imageId,
+  alt,
   ...image
 }: ImageProps & { campaignId: string; imageId: string }) {
   const [request, setRequest] = useState({ query: "", retried: false, failed: false });
@@ -25,6 +26,7 @@ export function CampaignGalleryImage({
       key={request.query}
       {...image}
       src={url + request.query}
+      alt={alt}
       fill
       unoptimized
       onError={() => {
@@ -49,6 +51,7 @@ export function CampaignPresentedImage({
 function PresentedImage({
   url,
   onRenew,
+  alt,
   ...image
 }: ImageProps & { url: string; onRenew(): Promise<boolean> }) {
   const [failedUrl, setFailedUrl] = useState<string>();
@@ -68,13 +71,23 @@ function PresentedImage({
   }
 
   if (failedUrl === url) return <GalleryImageRetry pending={pending} onRetry={() => void renew()} />;
-  return <Image key={url} {...image} src={url} fill unoptimized onError={() => {
-    setFailedUrl(url);
-    if (!triedAutomatically.current) {
-      triedAutomatically.current = true;
-      void renew();
-    }
-  }} />;
+  return (
+    <Image
+      key={url}
+      {...image}
+      src={url}
+      alt={alt}
+      fill
+      unoptimized
+      onError={() => {
+        setFailedUrl(url);
+        if (!triedAutomatically.current) {
+          triedAutomatically.current = true;
+          void renew();
+        }
+      }}
+    />
+  );
 }
 
 function GalleryImageRetry({ pending, onRetry }: { pending?: boolean; onRetry(): void }) {
