@@ -1,5 +1,7 @@
 export const CAMPAIGN_VIDEO_PRESENTATION_TOPIC =
   "campaign-image-presentation-v1";
+export const CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC =
+  "campaign-image-renewal-v1";
 
 const MAX_PACKET_BYTES = 8 * 1024;
 const MAX_PRESENTATION_REVISION = 2_147_483_647;
@@ -17,31 +19,36 @@ export type CampaignVideoPresentationMessage =
       version: 1;
       action: "clear";
       revision: number;
+    }
+  | {
+      version: 1;
+      action: "request_refresh";
+      revision: number;
     };
 
 export type CampaignVideoPresentationCommand =
   | {
-      action: "show";
+      action: "show" | "renew";
       imageId: string;
       expanded: boolean;
       revision: number;
       destinationIdentity?: string;
     }
   | {
-      action: "clear";
+      action: "clear" | "request_refresh";
       revision: number;
     };
 
 export type CampaignVideoPresentationResult =
   | {
       ok: true;
-      action: "show";
+      action: "show" | "renew";
       expanded: boolean;
       revision: number;
     }
   | {
       ok: true;
-      action: "clear";
+      action: "clear" | "request_refresh";
       revision: number;
     }
   | {
@@ -114,14 +121,14 @@ export function parseCampaignVideoPresentationCommand(
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const candidate = value as Record<string, unknown>;
 
-  if (candidate.action === "clear") {
+  if (candidate.action === "clear" || candidate.action === "request_refresh") {
     return hasExactKeys(candidate, ["action", "revision"]) &&
       isPresentationRevision(candidate.revision)
-      ? { action: "clear", revision: candidate.revision }
+      ? { action: candidate.action, revision: candidate.revision }
       : null;
   }
 
-  if (candidate.action !== "show") return null;
+  if (candidate.action !== "show" && candidate.action !== "renew") return null;
   const destinationIdentity = candidate.destinationIdentity;
   const expectedKeys =
     destinationIdentity === undefined
@@ -152,13 +159,13 @@ export function parseCampaignVideoPresentationCommand(
 
   return destinationIdentity === undefined
     ? {
-        action: "show",
+        action: candidate.action,
         imageId,
         expanded: candidate.expanded,
         revision: candidate.revision,
       }
     : {
-        action: "show",
+        action: candidate.action,
         imageId,
         expanded: candidate.expanded,
         revision: candidate.revision,
@@ -189,10 +196,10 @@ export function parseCampaignVideoPresentationPacket(
   const candidate = value as Record<string, unknown>;
 
   if (candidate.version !== 1) return null;
-  if (candidate.action === "clear") {
+  if (candidate.action === "clear" || candidate.action === "request_refresh") {
     return hasExactKeys(candidate, ["action", "revision", "version"]) &&
       isPresentationRevision(candidate.revision)
-      ? { version: 1, action: "clear", revision: candidate.revision }
+      ? { version: 1, action: candidate.action, revision: candidate.revision }
       : null;
   }
   if (
@@ -226,14 +233,14 @@ export function isCampaignVideoPresentationResult(
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const candidate = value as Record<string, unknown>;
   if (candidate.ok === true) {
-    if (candidate.action === "clear") {
+    if (candidate.action === "clear" || candidate.action === "request_refresh") {
       return (
         hasExactKeys(candidate, ["action", "ok", "revision"]) &&
         isPresentationRevision(candidate.revision)
       );
     }
     return (
-      candidate.action === "show" &&
+      (candidate.action === "show" || candidate.action === "renew") &&
       hasExactKeys(candidate, [
         "action",
         "expanded",

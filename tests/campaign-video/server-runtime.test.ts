@@ -33,6 +33,7 @@ import {
 } from "../../lib/campaign-video/provider";
 import {
   CAMPAIGN_VIDEO_PRESENTATION_TOPIC,
+  CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC,
   parseCampaignVideoPresentationPacket,
 } from "../../lib/campaign-video/presentation";
 import {
@@ -649,6 +650,36 @@ test("authorized active GM presentation uses the trusted Gallery signing path re
       revision: 4,
     },
   );
+});
+
+test("a player can ask the GM to renew a presentation but only the GM can sign it", async () => {
+  const player = new FakePresentationDataSource({
+    userId: PLAYER_IDS[0]!, campaign: activeCampaign(), player: { displayOrder: 1 }, publication: null,
+  });
+  const gm = new FakePresentationDataSource({
+    userId: GM_ID, campaign: activeCampaign(), player: null, publication: null,
+  });
+  const publisher = new FakePresentationPublisher();
+  const handle = (source: FakePresentationDataSource, body: object) =>
+    createCampaignVideoPresentationHandler({
+      createDataSource: async () => source,
+      getConfiguration: () => ({ ok: true, configuration: TEST_CONFIGURATION }),
+      createPublisher: () => publisher,
+    })(new Request("https://application.test", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    }), { params: Promise.resolve({ campaignId: CAMPAIGN_ID }) });
+  const renew = { action: "renew", imageId: IMAGE_ID, expanded: true, revision: 5 };
+  assert.equal((await handle(player, renew)).status, 403);
+  assert.equal((await handle(player, { action: "request_refresh", revision: 5 })).status, 200);
+  assert.deepEqual(player.presentationCalls, []);
+  assert.equal(publisher.requests[0]?.destinationIdentity, deriveCampaignVideoParticipantIdentity(CAMPAIGN_ID, GM_ID));
+  assert.deepEqual(parseCampaignVideoPresentationPacket(publisher.requests[0]!.payload), {
+    version: 1, action: "request_refresh", revision: 5,
+  });
+  assert.equal((await handle(gm, renew)).status, 200);
+  assert.equal(gm.presentationCalls.at(-1)?.name, "sign");
+  assert.ok(publisher.requests.every(request => request.topic === CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC));
+  assert.equal(parseCampaignVideoPresentationPacket(publisher.requests[1]!.payload)?.action, "show");
 });
 
 test("presentation access is GM-only, validates commands, and clear performs no image lookup", async () => {

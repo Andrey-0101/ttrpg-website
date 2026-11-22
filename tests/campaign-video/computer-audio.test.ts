@@ -656,6 +656,7 @@ test("rendered Game Room authorizes the GM control and has two remote audio elem
       if (name === "@/lib/campaign-video/browser/presentation") return presentationModule;
       if (name === "@/lib/campaign-video/browser/media") return { attachCampaignVideoTrack };
       if (name === "@/lib/campaign-video/browser/mirror-preview") return {};
+      if (name === "@/lib/campaign-handouts/contracts") return { CAMPAIGN_HANDOUT_SIGNED_URL_TTL: 3600 };
       if (["@/lib/campaign-video/browser/livekit", "@/lib/campaign-video/browser/directory-sync", "@/utils/supabase/client"].includes(name)) return {};
       assert.fail(`Unexpected component dependency: ${name}`);
     },

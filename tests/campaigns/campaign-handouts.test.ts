@@ -434,7 +434,7 @@ test("Gallery route keeps recipient metadata on the Game Master-only data path",
   );
   assert.match(
     route,
-    /isGameMaster\s*\?\s*\[\]\s*:\s*imagesWithUrls\.flatMap/u,
+    /isGameMaster\s*\?\s*\[\]\s*:\s*images\.flatMap/u,
   );
   assert.doesNotMatch(
     route.slice(route.indexOf("const playerItems")),

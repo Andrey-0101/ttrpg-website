@@ -28,7 +28,7 @@ function harness(overrides = {}, locale = 'en', confirm = () => false) {
     if (modules.has(absolute)) return modules.get(absolute);
     const exports = {}; modules.set(absolute,exports);
     runInNewContext(transpileModule(readFileSync(absolute,'utf8'), { compilerOptions: { module:ModuleKind.CommonJS, jsx:JsxEmit.ReactJSX } }).outputText, {
-      exports, console, crypto, document: { body:{style:{}} }, window:{confirm,addEventListener(){},removeEventListener(){}},
+      exports, console, crypto, Response, document: { body:{style:{}} }, window:{confirm,addEventListener(){},removeEventListener(){}},
       require(name) {
         if (name in overrides) return overrides[name];
         if (name==='react') return react;
@@ -158,7 +158,7 @@ test('standalone and Game Room use the same folders, root filter and stable sele
     h.find(tree,'select').props.onChange({target:{value:'b'}});
     tree=h.render(Component,props);await h.find(tree,'form').props.onSubmit(event);tree=h.render(Component,props);
     if(surface==='room'){
-      assert.ok(h.nodes(tree).some(n=>n.type==='img' && n.props.src==='/nested.webp'));
+      assert.ok(h.nodes(tree).some(n=>n.type==='img' && n.props.src==='/api/campaigns/campaign/gallery/nested'));
       assert.ok(h.text(tree).includes('Renamed <img>')); assert.equal(stop,0);assert.equal(share,0);
       assert.ok(h.text(tree).includes('Handouts / Folder B'));
       assert.ok(h.nodes(tree).some(n=>n.props['data-game-room-image-tools']===true));
@@ -195,9 +195,102 @@ for (const locale of ['en','ru']) test(`the menu has exactly three ordered actio
 
 test('Player Gallery renders the existing caption without any management menu',()=>{
   const h=harness();const Gallery=h.load('components/campaigns/campaign-handout-gallery.tsx').default;
-  const tree=h.render(Gallery,{gameSystem:'vtm-v5',items:[{key:'shared',category:'handout',displayName:'Shared image',signedUrl:'/shared.webp'}]});
+  const tree=h.render(Gallery,{campaignId:'campaign',items:[{key:'shared',category:'handout',displayName:'Shared image'}]});
   assert.ok(h.text(tree).includes('Shared image'));
   assert.equal(h.nodes(tree).filter(node=>node.props.role==='menuitem').length,0);
+});
+
+test('Game Room reopens a folder with a usable image request after failure', () => {
+  const org = organization();
+  org.locations = [{ image_id: 'nested', folder_id: 'a' }];
+  const h = harness({'@/lib/campaign-handouts/use-organization':{useCampaignGalleryOrganization:()=>org}});
+  const Workspace = h.load('components/campaigns/campaign-game-room-workspace.tsx').default;
+  const props = { campaignId: 'campaign', campaignGameSystem: 'vtm-v5', isGameMaster: true,
+    gameSession: { session: null, journal: [] }, galleryItems: [{ imageId: 'nested', displayName: 'Map', category: 'handout' }] };
+  const render = () => h.render(Workspace, props);
+  h.find(render(), 'button', 'Gallery').props.onClick();
+  h.find(render(), 'button', 'Folder: Folder A').props.onClick();
+  h.find(render(), 'img').props.onError();
+  h.find(render(), 'img').props.onError();
+  assert.ok(h.find(render(), 'button', 'Reload image'));
+  h.find(render(), 'button', 'Back').props.onClick();
+  h.find(render(), 'button', 'Gallery').props.onClick();
+  h.find(render(), 'button', 'Folder: Folder A').props.onClick();
+  assert.equal(h.find(render(), 'img').props.src, '/api/campaigns/campaign/gallery/nested');
+});
+
+test('received presentation requests one automatic renewal and retries manually with the same revision', async () => {
+  const h = harness();
+  const { CampaignPresentedImage } = h.load('components/campaigns/campaign-gallery-image.tsx');
+  const requests = [];
+  const onRenew = async (revision) => { requests.push(revision); return true; };
+  const render = (url, revision = 3) => h.render(CampaignPresentedImage, { url, revision, onRenew, alt: '' });
+  h.find(render('/expired'), 'img').props.onError();
+  await new Promise(setImmediate);
+  assert.deepEqual(requests, [3]);
+  const image = h.find(render('/fresh'), 'img');
+  assert.equal(image.props.src, '/fresh');
+  image.props.onError();
+  assert.deepEqual(requests, [3]);
+  const retry = h.find(render('/fresh'), 'button', 'Reload image');
+  assert.equal(retry.props.disabled, false);
+  retry.props.onClick();
+  await new Promise(setImmediate);
+  assert.deepEqual(requests, [3, 3]);
+  assert.equal(h.find(render('/replacement', 4), 'img').props.src, '/replacement');
+});
+
+test('Gallery retries through a new private redirect after Storage 400 InvalidJWT, then waits for manual retry', async () => {
+  const campaignId = 'a1000000-0000-4000-8000-000000000001';
+  const imageId = 'a1000000-0000-4000-8000-000000000004';
+  let authorized = true;
+  let signed = 0;
+  const calls = [];
+  const h = harness({
+    '@/lib/campaign-video/supabase-data-source.server': {
+      async createCampaignVideoAuthorizationDataSource() { return {
+        async getAuthenticatedUserId() { return 'viewer'; },
+        async findCampaignImageStoragePath(campaign, image) {
+          calls.push([campaign, image]);
+          return authorized ? 'private.webp' : null;
+        },
+        async createCampaignImageSignedUrl() { return `https://storage.test/object?token=synthetic-${++signed}`; },
+      }; },
+    },
+  });
+  const { GET } = h.load('app/api/campaigns/[campaignId]/gallery/[imageId]/route.ts');
+  const { CampaignGalleryImage } = h.load('components/campaigns/campaign-gallery-image.tsx');
+  const props = { campaignId, imageId, alt: '' };
+  const render = () => h.render(CampaignGalleryImage, props);
+  const load = async (image) => {
+    const response = await GET(new Request('https://example.test' + image.props.src), { params: Promise.resolve(props) });
+    assert.equal(response.headers.get('cache-control'), 'private, no-store');
+    assert.equal(response.status, 302);
+    return response.headers.get('location');
+  };
+  const first = h.find(render(), 'img');
+  const expired = await load(first);
+  const storage = (url) => url === expired
+    ? Response.json({ statusCode: '400', error: 'InvalidJWT', message: '"exp" claim timestamp check failed', code: 'InvalidJWT' }, { status: 400 })
+    : new Response('test image bytes', { status: 200 });
+  assert.equal(storage(expired).status, 400);
+  first.props.onError();
+  const second = h.find(render(), 'img');
+  assert.notEqual(first.props.src, second.props.src);
+  assert.equal(storage(await load(second)).status, 200);
+  second.props.onError();
+  const failure = render();
+  assert.equal(h.nodes(failure).some(node => node.type === 'img'), false);
+  h.find(failure, 'button', 'Reload image').props.onClick();
+  assert.notEqual(h.find(render(), 'img').props.src, second.props.src);
+  h.render(() => null, {});
+  assert.equal(storage(await load(h.find(render(), 'img'))).status, 200, 'reopening requests another signature');
+  authorized = false;
+  const denied = await GET(new Request('https://example.test'), { params: Promise.resolve(props) });
+  assert.equal(denied.status, 404);
+  assert.equal(denied.headers.get('location'), null);
+  assert.equal(signed, 3);
+  assert.deepEqual(calls, Array.from({ length: 4 }, () => [campaignId, imageId]));
 });
 
 test('real organization hook uses only metadata RPCs, leaves failed state unchanged and never loads for Players',async()=>{

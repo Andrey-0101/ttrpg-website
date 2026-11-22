@@ -826,6 +826,8 @@
     "emptyPlayerDescription": "The {role} has not shared any images in this section with you.",
     "openImage": "Open {name}",
     "imageUnavailable": "Image unavailable. The {role} can delete this incomplete entry and upload it again.",
+    "previewLoadError": "Image failed to load.",
+    "previewRetry": "Reload image",
     "close": "Close",
     "uploadTitle": "Upload images",
     "uploadsStartAtRoot": "New uploads appear in the category root. Use Move to place an image in a folder.",

@@ -105,7 +105,6 @@ export default async function CampaignGameRoomPage({
             key: image.id,
             imageId: image.id,
             displayName: image.display_name,
-            localSignedUrl: image.signedUrl,
             storagePath: image.storage_object_name,
             category: image.category,
           },
