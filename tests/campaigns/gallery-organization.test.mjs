@@ -4,6 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { createTranslator } from 'next-intl';
+import sharp from 'sharp';
 import { transpileModule, ModuleKind, JsxEmit } from 'typescript';
 
 // A small deterministic hook/JSX harness exercises the real event handlers, not a
@@ -28,7 +29,8 @@ function harness(overrides = {}, locale = 'en', confirm = () => false) {
     if (modules.has(absolute)) return modules.get(absolute);
     const exports = {}; modules.set(absolute,exports);
     runInNewContext(transpileModule(readFileSync(absolute,'utf8'), { compilerOptions: { module:ModuleKind.CommonJS, jsx:JsxEmit.ReactJSX } }).outputText, {
-      exports, console, crypto, Response, document: { body:{style:{}} }, window:{confirm,addEventListener(){},removeEventListener(){}},
+      exports, console, crypto, Response, URL, URLSearchParams, Buffer, AbortSignal,
+      document: { body:{style:{}} }, window:{confirm,addEventListener(){},removeEventListener(){}},
       require(name) {
         if (name in overrides) return overrides[name];
         if (name==='react') return react;
@@ -143,9 +145,11 @@ test('standalone and Game Room use the same folders, root filter and stable sele
     let tree=h.render(Component,props);
     if(surface==='room'){h.find(tree,'button','Gallery').props.onClick();tree=h.render(Component,props);}
     assert.ok(h.nodes(tree).some(n=>n.props['data-gallery-image-actions']==='root'));
+    assert.ok(h.nodes(tree).some(n=>n.type==='img' && n.props.src==='/api/campaigns/campaign/gallery/root?variant=thumbnail'));
     assert.ok(!h.nodes(tree).some(n=>n.props['data-gallery-image-actions']==='nested'));
     h.find(tree,'button','Folder: Folder A').props.onClick(); tree=h.render(Component,props);
     assert.ok(h.nodes(tree).some(n=>n.props['data-gallery-image-actions']==='nested'));
+    assert.ok(h.nodes(tree).some(n=>n.type==='img' && n.props.src==='/api/campaigns/campaign/gallery/nested?variant=thumbnail'));
     if(surface==='room'){
       h.find(tree,'button','Open nested').props.onPointerUp({pointerType:'touch'});tree=h.render(Component,props);
     }
@@ -216,7 +220,7 @@ test('Game Room reopens a folder with a usable image request after failure', () 
   h.find(render(), 'button', 'Back').props.onClick();
   h.find(render(), 'button', 'Gallery').props.onClick();
   h.find(render(), 'button', 'Folder: Folder A').props.onClick();
-  assert.equal(h.find(render(), 'img').props.src, '/api/campaigns/campaign/gallery/nested');
+  assert.equal(h.find(render(), 'img').props.src, '/api/campaigns/campaign/gallery/nested?variant=thumbnail');
 });
 
 test('received presentation requests one automatic renewal and retries manually with the same revision', async () => {
@@ -244,18 +248,24 @@ test('Gallery retries through a new private redirect after Storage 400 InvalidJW
   const campaignId = 'a1000000-0000-4000-8000-000000000001';
   const imageId = 'a1000000-0000-4000-8000-000000000004';
   let authorized = true;
+  let authenticated = true;
   let signed = 0;
+  let thumbnails = 0;
   const calls = [];
   const h = harness({
+    '@/utils/supabase/server': { async createClient() { return {}; } },
+    '@/lib/campaign-handouts/gallery-thumbnail.server': {
+      async loadCampaignGalleryThumbnail() { thumbnails++; return Buffer.from([1, 2, 3]); },
+    },
     '@/lib/campaign-video/supabase-data-source.server': {
-      async createCampaignVideoAuthorizationDataSource() { return {
-        async getAuthenticatedUserId() { return 'viewer'; },
+      SupabaseCampaignVideoAuthorizationDataSource: class {
+        async getAuthenticatedUserId() { return authenticated ? 'viewer' : null; }
         async findCampaignImageStoragePath(campaign, image) {
           calls.push([campaign, image]);
           return authorized ? 'private.webp' : null;
-        },
-        async createCampaignImageSignedUrl() { return `https://storage.test/object?token=synthetic-${++signed}`; },
-      }; },
+        }
+        async createCampaignImageSignedUrl() { return `https://storage.test/object?token=synthetic-${++signed}`; }
+      },
     },
   });
   const { GET } = h.load('app/api/campaigns/[campaignId]/gallery/[imageId]/route.ts');
@@ -291,6 +301,99 @@ test('Gallery retries through a new private redirect after Storage 400 InvalidJW
   assert.equal(denied.headers.get('location'), null);
   assert.equal(signed, 3);
   assert.deepEqual(calls, Array.from({ length: 4 }, () => [campaignId, imageId]));
+
+  const thumbnailRequest = () => GET(new Request('https://example.test?variant=thumbnail'), { params: Promise.resolve(props) });
+  assert.equal((await thumbnailRequest()).status, 404);
+  authenticated = false;
+  assert.equal((await thumbnailRequest()).status, 401);
+  assert.equal(thumbnails, 0);
+  authorized = authenticated = true;
+  const thumbnail = await thumbnailRequest();
+  assert.equal(thumbnail.status, 200);
+  assert.equal(thumbnail.headers.get('content-type'), 'image/webp');
+  assert.equal(thumbnail.headers.get('cache-control'), 'private, no-store');
+  assert.equal(thumbnail.headers.get('location'), null);
+  assert.deepEqual(new Uint8Array(await thumbnail.arrayBuffer()), new Uint8Array([1, 2, 3]));
+  assert.equal(signed, 3);
+});
+
+test('Player Gallery opens the original while list and retry URLs request thumbnails', () => {
+  const h = harness();
+  const { default: Gallery } = h.load('components/campaigns/campaign-handout-gallery.tsx');
+  const props = { campaignId: 'campaign', items: [{ key: 'image', displayName: 'Map' }] };
+  const original = '/api/campaigns/campaign/gallery/image';
+  const render = () => h.render(Gallery, props);
+  const image = h.find(render(), 'img');
+  assert.equal(image.props.src, `${original}?variant=thumbnail`);
+  image.props.onError();
+  assert.ok(h.find(render(), 'img').props.src.startsWith(`${original}?variant=thumbnail&retry=`));
+  h.find(render(), 'button', 'Open Map').props.onClick({ currentTarget: { focus() {} } });
+  assert.ok(h.nodes(render()).some(node => node.type === 'img' && node.props.src === original));
+});
+
+test('Gallery generates a smaller WebP, reuses it and invalidates a changed or inaccessible original', async (t) => {
+  const width = 1600, height = 1000;
+  const pixels = Buffer.alloc(width * height * 3);
+  let seed = 1337;
+  for (let i = 0; i < pixels.length; i++) {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    pixels[i] = (seed >>> 24) + (i / (width * 3) > height / 2 ? 50 : 0);
+  }
+  const original = await sharp(pixels, { raw: { width, height, channels: 3 } }).jpeg({ quality: 88 }).toBuffer();
+  let stored;
+  let downloads = 0;
+  let version = 'one';
+  let visible = true;
+  let replaceOnDownload = false;
+  const bucket = {
+    async info() { return visible ? { data: { version } } : { error: 'denied' }; },
+    async download() {
+      downloads++;
+      if (replaceOnDownload) version = 'replacement';
+      return { data: new Blob([original]) };
+    },
+  };
+  const client = { storage: { from(name) { assert.equal(name, 'campaign-images'); return bucket; } } };
+  const h = harness({
+    'server-only': {},
+    sharp: { default: sharp },
+    '@/utils/supabase/admin': { createAdminClient: () => ({ from(name) {
+      assert.equal(name, 'campaign_image_thumbnails');
+      return {
+        select() {
+          const filter = {};
+          return { eq(key, value) { filter[key] = value; return this; }, async maybeSingle() {
+            const data = stored?.image_id === filter.image_id && stored.source_version === filter.source_version ? stored : null;
+            return { data, error: null };
+          } };
+        },
+        async upsert(row) { stored = row; return { error: null }; },
+      };
+    } }) },
+  });
+  const { loadCampaignGalleryThumbnail } = h.load('lib/campaign-handouts/gallery-thumbnail.server.ts');
+  const load = () => loadCampaignGalleryThumbnail(client, 'existing-image', 'private/original.jpg');
+  const [thumbnail, simultaneous] = await Promise.all([load(), load()]);
+  const preview = await sharp(thumbnail).metadata();
+  assert.equal(preview.format, 'webp');
+  assert.equal(preview.width, 384);
+  assert.equal(preview.height, 240);
+  assert.ok(thumbnail.byteLength < original.byteLength / 5);
+  t.diagnostic(`Original JPEG ${width} × ${height}, ${original.byteLength} bytes. Thumbnail WebP ${preview.width} × ${preview.height}, ${thumbnail.byteLength} bytes.`);
+  assert.deepEqual(thumbnail, simultaneous);
+  assert.deepEqual(await load(), thumbnail);
+  assert.equal(downloads, 1);
+  visible = false;
+  assert.equal(await load(), null);
+  assert.equal(downloads, 1);
+  visible = true;
+  version = 'two';
+  replaceOnDownload = true;
+  assert.equal(await load(), null);
+  replaceOnDownload = false;
+  assert.deepEqual(await load(), thumbnail);
+  assert.equal(downloads, 3);
+  assert.ok(stored.source_version.includes('replacement'));
 });
 
 test('real organization hook uses only metadata RPCs, leaves failed state unchanged and never loads for Players',async()=>{

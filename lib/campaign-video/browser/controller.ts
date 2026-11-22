@@ -9,6 +9,7 @@ import {
   parseCampaignVideoPresentationPacket,
   type CampaignVideoPresentationCommand,
 } from "../presentation";
+import { createPresentationRenewalSchedule, type PresentationRenewalResult } from "./presentation-renewal";
 import type {
   CampaignVideoClientErrorCode,
   CampaignVideoConnectionCredentials,
@@ -129,13 +130,16 @@ export function createCampaignVideoRoomController(
   let presentationQueue = Promise.resolve();
   let activePresentationImageId: string | null = null;
   let activePresentationRevision = 0;
+  let presentationRevision = 0;
   let lastReceivedPresentationRevision = 0;
   let renewalPending = false;
-  let lastRenewalAt = 0;
+  let lastRenewalAt = -Infinity;
   let nextRefreshRequestAt = 0;
   const presentationRequests = new Set<AbortController>();
   let generation = 0;
   let disposed = false;
+  let online = true;
+  const renewalSchedule = createPresentationRenewalSchedule(renewPresentation);
   let participantDirectory = options.participantDirectory;
   let directoryReady = options.directoryReady;
   let providerParticipants: CampaignVideoProviderParticipant[] = [];
@@ -151,12 +155,14 @@ export function createCampaignVideoRoomController(
 
   const publish = (change: Partial<CampaignVideoRoomSnapshot>) => {
     snapshot = { ...snapshot, ...change };
+    updateRenewalAvailability();
     options.onChange(snapshot);
   };
   const isCurrent = (value: number) => !disposed && value === generation;
 
   const clearPresentation = () => {
     activePresentationImageId = null;
+    renewalSchedule.setTarget(null);
     publish({
       isPresenting: false,
       presentationExpanded: false,
@@ -214,26 +220,37 @@ export function createCampaignVideoRoomController(
     }
   }
 
-  async function renewPresentation(revision = activePresentationRevision): Promise<boolean> {
-    const imageId = activePresentationImageId;
-    if (!options.isGameMaster || !imageId || !snapshot.isPresenting ||
-        snapshot.phase !== "connected" || snapshot.presentationBusy ||
-        revision !== activePresentationRevision || renewalPending ||
-        Date.now() < lastRenewalAt + 10000) return false;
+  function updateRenewalAvailability() {
+    renewalSchedule.setAvailable(online && snapshot.phase === "connected" && !snapshot.presentationBusy);
+  }
 
+  function checkPresentationRenewal(isOnline: boolean) {
+    online = isOnline;
+    updateRenewalAvailability();
+    renewalSchedule.check();
+  }
+
+  async function renewPresentation(revision = activePresentationRevision): Promise<PresentationRenewalResult> {
+    const imageId = activePresentationImageId;
     const currentGeneration = generation;
+    const isActive = () => isCurrent(currentGeneration) && !!session && snapshot.isPresenting &&
+      revision === activePresentationRevision && imageId === activePresentationImageId;
+    const canRenew = () => online && snapshot.phase === "connected" && !snapshot.presentationBusy;
+    if (!options.isGameMaster || !imageId || !isActive()) return "obsolete";
+    if (!canRenew() || renewalPending || Date.now() < lastRenewalAt + 10000) return "retry";
+
     renewalPending = true;
     lastRenewalAt = Date.now();
     try {
       return await enqueuePresentation(async () => {
-        if (!isCurrent(currentGeneration) || !session || snapshot.phase !== "connected" ||
-            !snapshot.isPresenting || snapshot.presentationBusy ||
-            revision !== activePresentationRevision || imageId !== activePresentationImageId) return false;
+        if (!isActive()) return "obsolete";
+        if (!canRenew()) return "retry";
         await requestPresentation({ action: "renew", imageId, revision, expanded: snapshot.presentationExpanded });
-        return true;
+        if (!isActive()) return "obsolete";
+        return "renewed";
       });
     } catch {
-      return false;
+      return isActive() ? "retry" : "obsolete";
     } finally {
       renewalPending = false;
     }
@@ -383,6 +400,7 @@ export function createCampaignVideoRoomController(
     });
     activePresentationImageId = null;
     activePresentationRevision = 0;
+    presentationRevision = 0;
     lastReceivedPresentationRevision = 0;
     providerParticipants = [];
     unknownIdentities.clear();
@@ -432,7 +450,9 @@ export function createCampaignVideoRoomController(
             if (topic === CAMPAIGN_VIDEO_PRESENTATION_RENEWAL_TOPIC) {
               const renewal = parseCampaignVideoPresentationPacket(payload);
               if (options.isGameMaster && renewal?.action === "request_refresh") {
-                void renewPresentation(renewal.revision);
+                void renewPresentation(renewal.revision).then((result) => {
+                  if (result === "renewed") renewalSchedule.renewed(renewal.revision);
+                });
               } else if (!options.isGameMaster && renewal?.action === "show" &&
                          snapshot.sharedPresentation?.revision === renewal.revision) {
                 const current = new URL(snapshot.sharedPresentation.signedUrl);
@@ -484,11 +504,11 @@ export function createCampaignVideoRoomController(
             if (isCurrent(currentGeneration)) {
               publish({ phase: "connected", restored: true, error: null });
               options.onDirectoryRefreshNeeded?.();
-              if (options.isGameMaster) void renewPresentation();
             }
           },
           onTerminalDisconnect() {
             if (!isCurrent(currentGeneration)) return;
+            renewalSchedule.setTarget(null);
             providerParticipants = [];
             unknownIdentities.clear();
             session = null;
@@ -509,6 +529,7 @@ export function createCampaignVideoRoomController(
             });
             activePresentationImageId = null;
             activePresentationRevision = 0;
+            presentationRevision = 0;
             lastReceivedPresentationRevision = 0;
           },
           onAudioBlocked(blocked) {
@@ -550,6 +571,7 @@ export function createCampaignVideoRoomController(
       });
       activePresentationImageId = null;
       activePresentationRevision = 0;
+      presentationRevision = 0;
       lastReceivedPresentationRevision = 0;
     } finally {
       if (isCurrent(currentGeneration)) credentialRequest = null;
@@ -569,6 +591,7 @@ export function createCampaignVideoRoomController(
 
   async function leave() {
     generation += 1;
+    renewalSchedule.setTarget(null);
     providerParticipants = [];
     unknownIdentities.clear();
     credentialRequest?.abort();
@@ -576,6 +599,7 @@ export function createCampaignVideoRoomController(
     for (const request of presentationRequests) request.abort();
     activePresentationImageId = null;
     activePresentationRevision = 0;
+    presentationRevision = 0;
     lastReceivedPresentationRevision = 0;
     const currentSession = session;
     session = null;
@@ -646,8 +670,7 @@ export function createCampaignVideoRoomController(
       return false;
     }
     const currentGeneration = generation;
-    const revision = activePresentationRevision + 1;
-    activePresentationRevision = revision;
+    const revision = ++presentationRevision;
     activePresentationImageId = imageId;
     publish({ presentationBusy: true, presentationError: null });
     try {
@@ -666,10 +689,11 @@ export function createCampaignVideoRoomController(
             expanded: false,
             revision,
           });
+          if (isCurrent(currentGeneration) && session) activePresentationRevision = revision;
         } catch (error) {
           if (isCurrent(currentGeneration) && session) {
-            const recoveryRevision = activePresentationRevision + 1;
-            activePresentationRevision = recoveryRevision;
+            activePresentationImageId = null;
+            const recoveryRevision = ++presentationRevision;
             await requestPresentation({
               action: "clear",
               revision: recoveryRevision,
@@ -679,6 +703,7 @@ export function createCampaignVideoRoomController(
         }
       });
       if (!isCurrent(currentGeneration) || !session) return false;
+      renewalSchedule.setTarget(revision);
       publish({
         isPresenting: true,
         presentationExpanded: false,
@@ -717,8 +742,7 @@ export function createCampaignVideoRoomController(
 
     const currentGeneration = generation;
     const imageId = activePresentationImageId;
-    const revision = activePresentationRevision + 1;
-    activePresentationRevision = revision;
+    const revision = ++presentationRevision;
     publish({ presentationBusy: true, presentationError: null });
     try {
       await enqueuePresentation(async () => {
@@ -736,8 +760,10 @@ export function createCampaignVideoRoomController(
           expanded,
           revision,
         });
+        if (isCurrent(currentGeneration) && session) activePresentationRevision = revision;
       });
       if (!isCurrent(currentGeneration) || !session) return false;
+      renewalSchedule.setTarget(revision);
       publish({
         presentationExpanded: expanded,
         presentationBusy: false,
@@ -766,8 +792,7 @@ export function createCampaignVideoRoomController(
       return false;
     }
     const currentGeneration = generation;
-    const revision = activePresentationRevision + 1;
-    activePresentationRevision = revision;
+    const revision = ++presentationRevision;
     publish({ presentationBusy: true, presentationError: null });
     try {
       await enqueuePresentation(async () => {
@@ -779,6 +804,7 @@ export function createCampaignVideoRoomController(
           throw new Error("presentation_unavailable");
         }
         await requestPresentation({ action: "clear", revision });
+        if (isCurrent(currentGeneration) && session) activePresentationImageId = null;
       });
       if (!isCurrent(currentGeneration) || !session) return false;
       clearPresentation();
@@ -833,6 +859,7 @@ export function createCampaignVideoRoomController(
   async function dispose() {
     if (disposed) return;
     disposed = true;
+    renewalSchedule.setTarget(null);
     providerParticipants = [];
     unknownIdentities.clear();
     generation += 1;
@@ -840,6 +867,7 @@ export function createCampaignVideoRoomController(
     for (const request of presentationRequests) request.abort();
     activePresentationImageId = null;
     activePresentationRevision = 0;
+    presentationRevision = 0;
     lastReceivedPresentationRevision = 0;
     const currentSession = session;
     session = null;
@@ -857,7 +885,7 @@ export function createCampaignVideoRoomController(
     shareImage,
     setPresentationExpanded,
     stopPresentation,
-    renewPresentation,
+    checkPresentationRenewal,
     requestPresentationRenewal,
     enableSound,
     setComputerAudioQuality,

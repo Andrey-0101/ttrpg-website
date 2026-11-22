@@ -381,7 +381,7 @@ export default function CampaignGameRoomWorkspace({
                     className="absolute inset-0 z-[1] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber-200"
                     data-game-room-gallery-item
                   />
-                  <CampaignGalleryImage campaignId={campaignId} imageId={item.imageId}
+                  <CampaignGalleryImage campaignId={campaignId} imageId={item.imageId} thumbnail
                     alt="" sizes="(min-width: 40rem) 20vw, 100vw" className="object-contain" />
                   </div>
                   {isGameMaster ? <CampaignGalleryImageActions organization={organization} campaignId={campaignId} imageId={item.imageId}

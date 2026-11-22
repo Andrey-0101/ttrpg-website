@@ -105,6 +105,7 @@ export default function CampaignHandoutGallery<
                   <CampaignGalleryImage
                     campaignId={campaignId}
                     imageId={item.key}
+                    thumbnail
                     alt={item.displayName}
                     loading={index === 0 ? "eager" : undefined}
                     sizes="(min-width: 1024px) 22vw, (min-width: 768px) 30vw, (min-width: 640px) 45vw, 48vw"
